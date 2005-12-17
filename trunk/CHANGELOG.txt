@@ -8,6 +8,15 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
+2005.11.17 Version 0.9.0.14
+
+# Removed minor bug in REALTIME handeling under certain conditions
+# Improved DID handling using REALTIME
+# Improved DID WEB interface
+# Balance using Sendtext by dialing 197
+# Balance using Voiceprompt by dialing 196
+#
+
 2005.11.17 Version 0.9.0.13
 
 # This version is updated for Asterisk 1.2 Stable

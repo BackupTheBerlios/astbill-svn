@@ -1,12 +1,16 @@
-**  This only apply for AstBill versions AstBill-0.9.0.13 and before. 
+**  This only apply for AstBill versions AstBill-0.9.0.14 and before. 
 
-# If you are upgrading from 0.9.0.12 you only need to replace the module files, ajax files and the agi scripts
 # The simplest is just to replace the wwwroot directory
 # 
 # To upgrade your AstBill Database
 # 
 # Run: http://yoursite.com/astbillupdate.php
+
+READ:  http://astbill.com/update14
 # 
+# Update the MySQL stored procedure file in your Database.
+# ./mysql --user=root -p astbill < /home/astbill/AstBill-0.9.0.14/database/astbill_proc.sql
+#
 # Warning; Only run this script when there is a Version Upgrade or when asked to do that by support.
 # If you run the database upgrade script without having the latest versions of the module files 
 # your AstBill installation may be broken.

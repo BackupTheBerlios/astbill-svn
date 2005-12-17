@@ -164,7 +164,7 @@ function _astpbx_all() {
   while ($res = db_fetch_object($result)) {
 
   $sumbalance = number_format(($res->balance + $res->startingcredit), 2);
-
+  $sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
 	$rows[] = array('<a title="Password: '.$res->secret.'"  href="'.url('astpbx/account/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
 	//$res->tech.'&nbsp;&nbsp;&nbsp;',
 	'<img border="0" src="files/astar/'.$res->tech.'.gif">',
@@ -175,7 +175,7 @@ function _astpbx_all() {
 		array('data' => $res->countcalls, 'align' => 'right'),
     // '&nbsp;&nbsp;'.l(t('View'), 'astpbx/account/'.$res->accountcode, null),
 	'&nbsp;&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/topup.gif"></a>'
+	'&nbsp;&nbsp;<a href="'.$sql->value.'"><img border="0" src="files/astar/topup.gif"></a>'
 	);
   }
 
@@ -259,7 +259,7 @@ if (!user_access('can use admin astpbx')){
 // ##########################################################################################################
 
 function _astpbx_printtheme($page_content, $account) {
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">Account - '.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.t('Account -').' '.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
 
   $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
   // $output .= '<div class="astpbx">' . $page_content . "</div>\n";
@@ -283,7 +283,7 @@ function _astpbx_voipadmin() {
 	case t('Go'):
 		$value = $edit['filteracc'];	
 		$output .= _astpbx_voipadmin_list($value);
-		$title = 'View';
+		$title = t('View');
 	break;
 
 	
@@ -314,9 +314,9 @@ function _astpbx_voipadmin_list($value) {
   $output = '
 <form action="'.url('/astbilladm').'" method="post">
 <div class="form-item">
-<B>Search for Accountcode&nbsp;&nbsp;</B>
+<B>'.t('Search for Accountcode').'&nbsp;&nbsp;</B>
 <input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
-<input type="submit" name="op" value="Go" />&#160;&#160;
+<input type="submit" name="op" value="'.('Go').'" />&#160;&#160;
 </div></form>
 ';
   
@@ -367,7 +367,7 @@ function _astpbx_voipadmin_list($value) {
 	   if (empty($countcalls->countcalls)) {$countcalls->countcalls = 0;}
 
 	   $sumbalance =  number_format(($sumpaid->sumpaid + $res->startingcredit - $cdrcost->sumprice), 2);
-      
+	   $sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
        $rows[] = array(
 	'<A HREF="'.url('user/'.$res->uid).'">'.$res->name.'</A>',
 	'<a title="Password: '.$res->secret.'"  href="'.url('astpbx/account/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
@@ -379,8 +379,8 @@ function _astpbx_voipadmin_list($value) {
 		array('data' => $countcalls->countcalls.'&nbsp;&nbsp;', 'align' => 'right'), // Calls
 	'&nbsp;&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
 	'&nbsp;&nbsp;&nbsp;<a href="'.url('astbilladm/editaccount/'.$res->accountcode).'"><img border="0" src="files/astar/edit.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/topup.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.url('astbilladm/removeaccount/'.$res->uid.'/'.$res->accountcode).'">Remove</a>'
+	'&nbsp;&nbsp;<a href="'.$sql->value.'"><img border="0" src="files/astar/topup.gif"></a>',
+	'&nbsp;&nbsp;<a href="'.url('astbilladm/removeaccount/'.$res->uid.'/'.$res->accountcode).'">'.t('Remove').'</a>'
 	
 	//	array('data' => $res->accountcode, 'align' => 'right')
 
@@ -437,7 +437,7 @@ function _admin_astpbx_OLD() {
   $result = pager_query($sql, $maxline);
   
   while ($res = db_fetch_object($result)) {
-   
+   $sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
 	$rows[] = array('<a title="Password: '.$res->secret.'"  href="'.url('astpbx/account/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
 	//$res->tech.'&nbsp;&nbsp;&nbsp;',
 	'<img border="0" src="files/astar/'.$res->tech.'.gif">',
@@ -448,7 +448,7 @@ function _admin_astpbx_OLD() {
 		array('data' => $res->countcalls, 'align' => 'right'),
     // '&nbsp;&nbsp;'.l(t('View'), 'astpbx/account/'.$res->accountcode, null),
 	'&nbsp;&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/topup.gif"></a>'
+	'&nbsp;&nbsp;<a href="'.$sql->value.'"><img border="0" src="files/astar/topup.gif"></a>'
 	);
   }
 
@@ -623,7 +623,7 @@ function rand()
   
   $maxline = 40; // This is the number of records to display on a page
 
-  $output = '<b>Click on the Call Button to Call</b><br>';
+  $output = '<b>'.t('Click on the Call Button to Call').'</b><br>';
   $output .= $myjava . '<pre id="call">&nbsp;&nbsp;&nbsp;&nbsp;</pre>';
 
   $header = array(
@@ -656,7 +656,7 @@ function rand()
    
 	$rows[] = array($res->CountOfcallednum.'&nbsp;&nbsp;&nbsp;',$res->callednum.'&nbsp;&nbsp;&nbsp;',
 		$res->name.'&nbsp;&nbsp;&nbsp;',
-	  '<a title="Click to Call this number" href="javascript:PostCall(' . $res->callednum . ')"><img border="0" id="btncall" src="files/astar/call.gif"></a>', '&nbsp;&nbsp;<a href="'.url('astcontact/astpbx/'.$res->callednum).'">Edit Contact</a>');
+	  '<a title="Click to Call this number" href="javascript:PostCall(' . $res->callednum . ')"><img border="0" id="btncall" src="files/astar/call.gif"></a>', '&nbsp;&nbsp;<a href="'.url('astcontact/astpbx/'.$res->callednum).'">'.t('Edit Contact').'</a>');
 
 	//  '<a href="astpbx/numbers" onclick="PostCall();return false;">Call</a>');
 	// '<img border="0" src="files/astar/call.gif" title="Click to Call this number">');
@@ -669,7 +669,7 @@ function rand()
 
   $output .= (count($rows) == 0) ? t('No Calls for this User.') : theme('table', $header, $rows);
   
-  $outputLine = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">Last Numbers Dialed</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+  $outputLine = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.t('Last Numbers Dialed').'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
 
   $output = $outputLine . '<div class="nodecontent">' . $output . "</div>\n";
   // $output .= '<div class="astpbx">' . $page_content . "</div>\n";
@@ -838,7 +838,7 @@ function rand()
   
   $maxline = 40; // This is the number of records to display on a page
 
-  $output = '<b>Click on the Call Button to Call</b><br>';
+  $output = '<b>'.t('Click on the Call Button to Call').'</b><br>';
   $output .= $myjava . '<pre id="call">&nbsp;&nbsp;&nbsp;&nbsp;</pre>';
 
   $header = array(
@@ -866,7 +866,7 @@ function rand()
    
 	$rows[] = array($res->CountOfcallednum.'&nbsp;&nbsp;&nbsp;',$res->callednum.'&nbsp;&nbsp;&nbsp;',
 		$res->name.'&nbsp;&nbsp;&nbsp;', 
-	  '<a title="Click to Call this number" href="javascript:PostCall(' . $res->callednum . ')"><img border="0" id="btncall" src="files/astar/call.gif"></a>', '&nbsp;&nbsp;<a href="'.url('astcontact/astpbx/'.$res->callednum).'">Edit Contact</a>');
+	  '<a title="Click to Call this number" href="javascript:PostCall(' . $res->callednum . ')"><img border="0" id="btncall" src="files/astar/call.gif"></a>', '&nbsp;&nbsp;<a href="'.url('astcontact/astpbx/'.$res->callednum).'">'.t('Edit Contact').'</a>');
 
 	//  '<a href="astpbx/numbers" onclick="PostCall();return false;">Call</a>');
 	// '<img border="0" src="files/astar/call.gif" title="Click to Call this number">');
@@ -879,7 +879,7 @@ function rand()
 
   $output .= (count($rows) == 0) ? t('No Calls for this User.') : theme('table', $header, $rows);
   
-  $outputLine = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">Last Numbers Dialed</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+  $outputLine = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.t('Last Numbers Dialed').'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
 
   $output = $outputLine . '<div class="nodecontent">' . $output . "</div>\n";
   // $output .= '<div class="astpbx">' . $page_content . "</div>\n";
@@ -943,9 +943,9 @@ $account = arg(2);
   }
 
   if (arg(1) == 'createaccount') {
-	  $title = 'Create';
+	  $title = t('Create');
   } else {
-	  $title = 'Change';
+	  $title = t('Change');
   }
   
 $account = '';
@@ -1221,21 +1221,21 @@ while ($item = db_fetch_object($sql)) {
   $group .= form_textfield(t("Set notification email"), "mailboxemail", $mailboxemail, 30, 150, null, null, false);
   $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI')); 
   $group .= '<BR>';
-  $group .= 'ADVANCED SETTINGS: <BR>';
+  $group .= t('ADVANCED SETTINGS: <BR>');
   $group .= '<BR>';
-  $group .= '<B>NAT:<BR></B>';
-  $group .= 'yes = Always ignore info and assume NAT<BR>';
-  $group .= 'no = Use NAT mode only according to RFC3581<BR>';
-  $group .= 'never = Never attempt NAT mode or RFC3581 support<BR>';
-  $group .= 'route = Assume NAT, dont send rport<BR>';
-  $group .= form_select(NULL, 'nat', $nat, array(0 => 'Yes', 1 => 'No', 2 => 'Never', 3 => 'Route'));
+  $group .= t('<B>NAT:<BR></B>');
+  $group .= t('yes = Always ignore info and assume NAT<BR>');
+  $group .= t('no = Use NAT mode only according to RFC3581<BR>');
+  $group .= t('never = Never attempt NAT mode or RFC3581 support<BR>');
+  $group .= t('route = Assume NAT, dont send rport<BR>');
+  $group .= form_select(NULL, 'nat', $nat, array(0 => t('Yes'), 1 => t('No'), 2 => t('Never'), 3 => t('Route')));
   $group .= form_select(t("Qualify"), 'qualify', $qualify, array(0 => 'On', 1 => 'Off'));
 
   if (arg(1) == 'editaccount') {
 	  
   $group .= form_textfield(t("Context"), "context", $edit['context'], 30, 30, null, null, false);
   $group .= '<BR>';
-  $group .= '<FONT size=1><B>Note: These are user wide settings:</B></FONT>';
+  $group .= t('<FONT size=1><B>Note: These are user wide settings:</B></FONT>');
   $group .= form_select(t("Brand"), 'brand', $getastuser['brand'], $brandlist);
   $group .= form_textfield(t("Country Prefix"), "countryprefix", $getastuser['countryprefix'], 25, 25, null, null, false);
   $group .= form_textfield(t("Call Back To"), "callbackto", $getastuser['callbackto'], 25, 25, null, null, false);

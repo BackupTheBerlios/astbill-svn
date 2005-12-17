@@ -112,7 +112,7 @@ function _astratetable_all() {
   }
   
   if (empty($title)) {
-	  $title = 'Select Country';
+	  $title = t('Select Country');
   }
   
 

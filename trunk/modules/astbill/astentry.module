@@ -144,7 +144,7 @@ function _astentry_all() {
   global $user;
   $maxline = 40; // This is the number of records to display on a page
 
-  $output = '<b>Hover over Account to view Accounts Password</b><br><br>';
+  $output = t('<b>Hover over Account to view Accounts Password</b><br><br>');
 
   $header = array(
     array('data' => t('Account'), 'field' => 'accountcode', 'sort' => 'asc'),
@@ -160,15 +160,14 @@ $sql = "SELECT accountcode, tech, secret, accountname, active FROM astaccount wh
   $result = pager_query($sql, $maxline);
   
   while ($res = db_fetch_object($result)) {
-   
+   $sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
 	$rows[] = array('<a title="Password: '.$res->secret.'"  href="'.url('astentry/swtech/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
 	//$res->tech.'&nbsp;&nbsp;&nbsp;',
 	'<img border="0" src="files/astar/'.$res->tech.'.gif"></a>',
 	
 	$res->accountname.'&nbsp;&nbsp;&nbsp;', 
-
 	'&nbsp;&nbsp;&nbsp;<A HREF="'.url('astentry/swtech/'.$res->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
-	'&nbsp;&nbsp;<a href="'.url('astentry/account/'.$res->accountcode).'"><IMG BORDER="0" SRC="files/astar/topup.gif"></A>',
+	'&nbsp;&nbsp;<a href="'.$sql->value.'"><IMG BORDER="0" SRC="files/astar/topup.gif"></A>',
 	'<A HREF="'.url('astentry/voicemailchange/'.$res->accountcode).'">'.t('Voicemail').'</A>',
 	'&nbsp;&nbsp;<A HREF="'.url('astentry/dialplan/'.$res->accountcode).'">'.t('Dialplan').'</A>',
 	'&nbsp;&nbsp;<A HREF="'.url('astentry/emailme/'.$res->accountcode).'">'.t('Email account info').'</A>',
@@ -184,7 +183,7 @@ $sql = "SELECT accountcode, tech, secret, accountname, active FROM astaccount wh
   
   //$test = mysql_result($result,1,"accountcode");
 $test = $user->uid;
-$title = 'View';
+$title = t('View');
 $account = '';
 _astpbx_printtheme2($output, $account, $test, $title);
 
@@ -194,7 +193,7 @@ function _astpbx_printtheme2($page_content, $account, $test, $title) {
 $output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.''.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
 $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
   
-$output .= '<div class="nodecontent"><B> My account: </B><BR>';
+$output .= '<div class="nodecontent"><B>'.t('My account: ').'</B><BR>';
 $output .= '<FONT SIZE=1><A HREF="'.url('astentry/createnr/'.$test).'">'.t('Create a new account').'</A><BR>';
 $output .= '<FONT SIZE=1><A HREF="'.url('astentry/incomingnr/'.$test).'">'.t('Incoming Numbers').'</A><BR>';
 
@@ -301,7 +300,7 @@ function astentry_form($edit = null) {
 
 
 // Uncomment this for SIP/IAX/VIR change radio menu ALSO LOOK IN ASTENTRY_SAVE FOR FURTHER UNCOMMENTING
-  $group = form_radios(t('Change account type.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'));
+  $group = form_radios(t('Change account type.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => t('Virtual Account')));
 
  /* Dont Delete - This is in use in some implementations
   $group = form_radios(t('Change account type.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account', 3 => 'H323'));   */
@@ -322,7 +321,7 @@ function astentry_form($edit = null) {
 
   //$group .= '<B>Enable or Disable low balance warnings:</B>';
   $group .= form_textfield(t("Set warning balance"), "lowbalance", $edit['lowbalance'], 5, 150, null, null, false);
-  $group .= form_select(t("<FONT SIZE=1>Enable or Disable Warning Balance Email</FONT>"), "lowbalanceemail", $edit['lowbalanceemail'], array(0 => 'Disabled', 1 => 'Activate'));
+  $group .= form_select(t("<FONT SIZE=1>Enable or Disable Warning Balance Email</FONT>"), "lowbalanceemail", $edit['lowbalanceemail'], array(0 => t('Disabled'), 1 => t('Activate')));
 
   if(empty($edit['mailboxemail'])){
   $sql = db_fetch_array(db_query("select mail FROM pbx_users WHERE uid = %s", $user->uid));
@@ -334,7 +333,7 @@ function astentry_form($edit = null) {
   $group .= form_textfield(t("Set notification email"), "mailboxemail", $mailboxemail, 30, 150, null, null, false);
 
  
-  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'Disabled', 1 => 'Activate'));  
+  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => t('Disabled'), 1 => t('Activate')));  
 
  /* Dont Delete - This is in use in some implementations
  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI'));   */
@@ -393,11 +392,11 @@ $uid = $user->uid;
 
 
 function _astentry_printtheme_swtech($page_content, $account, $uid) {
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">Account - '.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.t('Account -').' '.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
 $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
   
-$output .= '<div class="nodecontent"><B> My account: </B><BR>';
-$output .= '<FONT SIZE=1><A HREF="'.url('astentry/advset/'.$account.'/'.$uid).'">Advanced Settings.</A><BR>';
+$output .= '<div class="nodecontent"><B>'.t('My account: ').'</B><BR>';
+$output .= '<FONT SIZE=1><A HREF="'.url('astentry/advset/'.$account.'/'.$uid).'">'.t('Advanced Settings.').'</A><BR>';
 
 $output .= '</FONT></DIV>';
 
@@ -496,7 +495,7 @@ function astpbx_form($edit = null) {
 	
   $callerid = $sql->name.' <>';
 	
-  $group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'));
+  $group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => t('Virtual Account')));
 
 /* Dont Delete - This is in use in some implementations
   $group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account', 3 => 'H323'));   */
@@ -508,7 +507,7 @@ function astpbx_form($edit = null) {
   $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);
 //  $group .= form_textfield(t("Change your Caller ID Example: My Name <9000><BR><FONT SIZE=1>Note: Please select a number you wish to be dialed back on</FONT>"), "callerid", $callerid, 80, 150, null, null, false);
 
-  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'Disabled', 1 => 'Activate'));  
+  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => t('Disabled'), 1 => t('Activate')));  
 
  /* Dont Delete - This is in use in some implementations
  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI'));   */
@@ -937,7 +936,7 @@ if ($edit['fri'] == 1) {$days['4'] = "4";}
 if ($edit['sat'] == 1) {$days['5'] = "5";}
 if ($edit['sun'] == 1) {$days['6'] = "6";}
 
-$weekdays = array(0 => 'Monday' , 1 => 'Tuesday', 2 => 'Wednesday', 3 => 'Thursday', 4 => 'Friday', 5 => 'Saturday', 6 => 'Sunday');
+$weekdays = array(0 => t('Monday'), 1 => t('Tuesday'), 2 => t('Wednesday'), 3 => t('Thursday'), 4 => t('Friday'), 5 => t('Saturday'), 6 => t('Sunday'));
 
 
 if ($edit['conditions'] == 'Offline') {$conditions = 0;}
@@ -947,8 +946,8 @@ if ($edit['action'] == 'Voicemail') {$action = 0;}
 if ($edit['action'] == 'Forward') {$action = 1;}
 if ($edit['action'] == 'NotAvailable') {$action = 2;}
 
-  $group = form_select(t("Action"), "action", $action, array(0 => 'Voicemail', 1 => 'Forward Call', 2 => 'Give Not Available Message'));
-  $group .= form_select(t('conditions'),'dropdown', $conditions, array(0 => 'Offline', 1 => 'No Answer', 2 => 'Busy'));
+  $group = form_select(t("Action"), "action", $action, array(0 => t('Voicemail'), 1 => t('Forward Call'), 2 => t('Give Not Available Message')));
+  $group .= form_select(t('conditions'),'dropdown', $conditions, array(0 => t('Offline'), 1 => t('No Answer'), 2 => t('Busy')));
   $group .= form_checkboxes(t('Days of the week.'), 'days', $days, $weekdays,null ,null ,false);
 
 
@@ -984,10 +983,10 @@ if ($edit['action'] == 'NotAvailable') {$action = 2;}
 	$x++;
   }
 
-  $group .= '<B>Start Time:</B><BR>';
+  $group .= t('<B>Start Time:</B><BR>');
   $group .= form_select(t("Hour"), "starthour", $edit['start_time_hr'], $sttimehr);
   $group .= form_select(t("Min"), "startmin", $edit['start_time_min'], $sttimemin);
-  $group .= '<B>End Time:</B><BR>';
+  $group .= t('<B>End Time:</B><BR>');
   $group .= form_select(t("Hour"), "endhour", $edit['end_time_hr'], $endtimehr);
   $group .= form_select(t("Min"), "endmin", $edit['end_time_min'], $endtimemin);
   //$group .= form_textfield(t("Hour"), "starthour", $edit['start_time_hr'], 5, 150, null, null, false);
@@ -1060,13 +1059,13 @@ $sql = db_query("SELECT did, conditions, action, mon, tue, wed, thu, fri, sat, s
  // $result = pager_query($sql, $maxline);
   
   while ($item = db_fetch_object($sql)) {
-	if($item->mon == 1) {$mon = 'MON';} else $mon = '';
-	if($item->tue == 1) {$tue = 'TUE';} else $tue = '';
-	if($item->wed == 1) {$wed = 'WED';} else $wed = '';
-	if($item->thu == 1) {$thu = 'THU';} else $thu = '';
-	if($item->fri == 1) {$fri = 'FRI';} else $fri = '';
-	if($item->sat == 1) {$sat = 'SAT';} else $sat = '';
-	if($item->sun == 1) {$sun = 'SUN';} else $sun = '';
+	if($item->mon == 1) {$mon = t('MON');} else $mon = '';
+	if($item->tue == 1) {$tue = t('TUE');} else $tue = '';
+	if($item->wed == 1) {$wed = t('WED');} else $wed = '';
+	if($item->thu == 1) {$thu = t('THU');} else $thu = '';
+	if($item->fri == 1) {$fri = t('FRI');} else $fri = '';
+	if($item->sat == 1) {$sat = t('SAT');} else $sat = '';
+	if($item->sun == 1) {$sun = t('SUN');} else $sun = '';
 	$account = arg(2);
 	  	$rows[] = array($item->conditions.'',
     	$item->action.'&nbsp;&nbsp;',
@@ -1075,8 +1074,8 @@ $sql = db_query("SELECT did, conditions, action, mon, tue, wed, thu, fri, sat, s
 		$item->start_time_min,
 		$item->end_time_hr,
 		$item->end_time_min,
-		'<A HREF="'.url('astentry/dialplanchange/'.$item->did.'/'.$account).'">Change</A>',
-		'|<A HREF="'.url('astentry/dialplanremove/'.$item->did.'/'.$account).'">Remove</A>');
+		'<A HREF="'.url('astentry/dialplanchange/'.$item->did.'/'.$account).'">'.t('Change').'</A>',
+		'|<A HREF="'.url('astentry/dialplanremove/'.$item->did.'/'.$account).'">'.t('Remove').'</A>');
 
 
   }
@@ -1094,12 +1093,12 @@ _astentry_printthemedp($output, arg(2));
 }
 
 function _astentry_printthemedp($page_content, $account) {
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">Account - '.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.t('Account -').' '.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
 
   $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
 
 $output .= '<div class="nodecontent">';
-$output .= '<B><FONT SIZE=1><A HREF="'.url('astentry/dialplancreate/'.arg(2)).'">Create new</A></B><BR>';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astentry/dialplancreate/'.arg(2)).'">'.t('Create new').'</A></B><BR>';
 
   print theme("page", $output);
 }
@@ -1269,29 +1268,29 @@ function astadvset_form($edit) {
   $sql = db_fetch_object(db_query("SELECT astbrand.currency from astuser, astbrand where astuser.brand = astbrand.name and astuser.uid = '%s'", $uid->uid));
   $currency = $sql->currency;
 
-  $group = 'Current credit limit for this account is : <B>'.$edit['creditlimit'].'</B><BR>';
-  $group .= 'Currency is: <B>'.$currency.'</B><BR><BR>';
-  $group .= '<B>WARNING!</B> Do not change these settings unless you know what your doing!<BR><BR>';
-  $group .= '<B>NAT:<BR></B>';
-  $group .= '<B><FONT SIZE=1>Note: Might take up to 24hours for change to take effect</FONT></B><BR>';
-  $group .= 'yes = Always ignore info and assume NAT<BR>';
-  $group .= 'no = Use NAT mode only according to RFC3581<BR>';
-  $group .= 'never = Never attempt NAT mode or RFC3581 support<BR>';
-  $group .=	'route = Assume NAT, dont send rport<BR>';
-  $group .= form_select(NULL, 'nat', $nat, array(0 => 'Yes', 1 => 'No', 2 => 'Never', 3 => 'Route'));
+  $group = t('Current credit limit for this account is : ').'<B>'.$edit['creditlimit'].'</B><BR>';
+  $group .= t('Currency is: ').'<B>'.$currency.'</B><BR><BR>';
+  $group .= t('<B>WARNING!</B> Do not change these settings unless you know what your doing!<BR><BR>');
+  $group .= t('<B>NAT:<BR></B>');
+  $group .= t('<B><FONT SIZE=1>Note: Might take up to 24hours for change to take effect</FONT></B><BR>');
+  $group .= t('yes = Always ignore info and assume NAT<BR>');
+  $group .= t('no = Use NAT mode only according to RFC3581<BR>');
+  $group .= t('never = Never attempt NAT mode or RFC3581 support<BR>');
+  $group .= t('route = Assume NAT, dont send rport<BR>');
+  $group .= form_select(NULL, 'nat', $nat, array(0 => t('Yes'), 1 => t('No'), 2 => t('Never'), 3 => t('Route')));
   $group .= '<BR>';
 
-  $group .= '<B>Qualify:<BR></B>';
-  $group .= '<B><FONT SIZE=1>Note: Might take up to 24hours for change to take effect</FONT></B><BR>';
-  $group .= 'Only turn this ON if your phone can dial out, but you can not receive calls ';
-  $group .= form_select(NULL, 'qualify', $qualify, array(0 => 'On', 1 => 'Off'));
+  $group .= t('<B>Qualify:<BR></B>');
+  $group .= t('<B><FONT SIZE=1>Note: Might take up to 24hours for change to take effect</FONT></B><BR>');
+  $group .= t('Only turn this ON if your phone can dial out, but you can not receive calls ');
+  $group .= form_select(NULL, 'qualify', $qualify, array(0 => t('On'), 1 => t('Off')));
 
 
   $sql = db_fetch_array(db_query("select brand, countryprefix, callbackto FROM astuser WHERE uid = %s", $user->uid));
 //  $item = db_fetch_object($sql);
 
   $group .= '<BR><BR>';
-  $group .= 'Current brand is <B>'.$sql['brand'].'</B><BR>';
+  $group .= t('Current brand is ').'<B>'.$sql['brand'].'</B><BR>';
   $group .= form_textfield(t("Country Prefix"), "countryprefix", $sql['countryprefix'], 80, 150, null, null, false);
   $group .= form_textfield(t("Call Back To"), "callbackto", $sql['callbackto'], 80, 150, null, null, false);
 
@@ -1510,7 +1509,7 @@ function page_astentry_voicemailchange() {
       // $output = astpbx_form($edit);
   }
 
-$title = 'Mailbox';
+$title = t('Mailbox');
 $account = ' - '.arg(2);
 _astentry_printtheme_best($output, $account, $title);
 
@@ -1652,7 +1651,7 @@ $sql = db_query("SELECT accountcode, publicnumber, tech, forwardto, comment FROM
 
   $output .= (count($rows) == 0) ? t('No incoming Number for this user.') : theme('table', $header, $rows);
 
-$title = 'View';
+$title = t('View');
 $account = '';
 _astentry_printtheme_best($output, $account, $title);
 
@@ -1703,7 +1702,7 @@ _astentry_printtheme_best($output, $account, $title);
 // ##########################################################################################################
 
 function _astentry_printtheme($page_content, $account) {
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">Account - '.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.t('Account -').' '.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
 
   $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
   // $output .= '<div class="astentry">' . $page_content . "</div>\n";

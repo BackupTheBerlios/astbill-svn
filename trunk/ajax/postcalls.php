@@ -56,7 +56,7 @@ if (empty($callid->callerid)){
 	$callid->callerid = 'Unknown';
 }
 	
-$channel = $tech->tech.'/'.$callbackto->callbackto;
+$channel = $tech->tech.'2/'.$callbackto->callbackto;
 $callerid = $callid->callerid;
 $maxretries = '5';
 $retrytime = '300';

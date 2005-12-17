@@ -23,18 +23,18 @@ If you are using CentOS LinuX ( Asterisk@home) Have a look at the following URLs
 http://astbill.com/mysql5centos
 http://astbill.com/node/135
 
-How to install MySQL 5.0.15
+How to install MySQL 5.0.16
 
 mkdir -p /usr/local
 cd /usr/local
 # See http://dev.mysql.com/downloads/mysql/5.0.html for exact download location
 # They sometimes change it.
-wget http://dev.mysql.com/get/Downloads/MySQL-5.0/mysql-standard-5.0.15-linux-i686.tar.gz/from/http://www.mirrorservice.org/sites/ftp.mysql.com/
+wget http://dev.mysql.com/get/Downloads/MySQL-5.0/mysql-standard-5.0.16-linux-i686.tar.gz/from/http://www.mirrorservice.org/sites/ftp.mysql.com/
 
-tar zxvf mysql-standard-5.0.15-linux-i686.tar.gz
+tar zxvf mysql-standard-5.0.16-linux-i686.tar.gz
 groupadd mysql
 useradd -g mysql mysql
-ln -s /usr/local/mysql-standard-5.0.15-linux-i686 mysql
+ln -s /usr/local/mysql-standard-5.0.16-linux-i686 mysql
 cd mysql
 
 scripts/mysql_install_db --user=mysql
@@ -88,12 +88,13 @@ on debian you can put it in /etc/init.d/ and run update-rc.d mysql.server defaul
 Make sure MySQL 5 is running. 
 
 IMPORTANT: If you are installing AstBill for the first time. We strongly recomend you call the database astbill. 
-When you have it working you can change it to anything you want. 
+We also recomend you don't change the database user defined in astbill_proc.sql and /home/astbill/astbill.conf 
+When you have AstBill working you can change it to anything you want. http://wiki.astbill.com/wiki/Change_database
 This will clearly make it easier for you to get AstBill up and running fast and simple.
-We get many support request due to people changing the database name and are unable to change it in all locations.
+We get many support request due to people changing the database/user name and are unable to change it in all locations.
 
 Create the AstBill database:
-./mysqladmin create astbill -p
+./mysqladmin create astbill --user=root -p
 ./mysql --user=root -p astbill < /home/astbill/database/astbill.sql
 ./mysql --user=root -p astbill < /home/astbill/database/astbill_proc.sql
 

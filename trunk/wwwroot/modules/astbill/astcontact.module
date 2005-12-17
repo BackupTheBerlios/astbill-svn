@@ -264,7 +264,7 @@ function astcontact_view($cid) {
 	$fields = astcontact_get_fields();
 
 	$output .= "<h2>$contact->first_name $contact->middle_name $contact->last_name</h2>";
-    $output .= "<b>Category:</b>&nbsp;&nbsp;" . $result2->name;
+    $output .= "<b>".t('Category:')."</b>&nbsp;&nbsp;" . $result2->name;
 	foreach ($fields as $field => $def) {
 		$view = $def[4];
 		$name = $def[1];

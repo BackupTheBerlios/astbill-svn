@@ -87,13 +87,13 @@ END
 delimiter ;
 
 DROP PROCEDURE IF EXISTS RateAddcdr;
-delimiter |
+delimiter ;;
 
 CREATE PROCEDURE RateAddcdr (saccountcode varchar(255),schannel varchar(255),
                     scallednum varchar(255),stype varchar(255),suniqueid varchar(255))
   NOT DETERMINISTIC
 BEGIN
-  /* Version 2.0.0 */
+  /* Version 2.0.7 */
   /* Written By Are at astartelecom.com */
 
   DECLARE phone    varchar(255); 
@@ -101,6 +101,9 @@ BEGIN
   DECLARE strunk   varchar(128); /* The Trunk used for outgoing Dialing */
   DECLARE cplan    tinyint(1);   /* Tell os to route the calls as daytime, evening or weekend calls */
   DECLARE sbrand   varchar(128); /* The Trunk used for outgoing Dialing */
+  DECLARE tallow00  tinyint(1);   /* Allow 00 dialing for IDD in front of number  */
+  DECLARE tallow011  tinyint(1);   /* Allow 011 dialing for IDD in front of number  */
+  DECLARE tlocallength  tinyint(2);   /* Length of Number for it to be considered Local  */
   
   SELECT brand INTO sbrand FROM astaccount, astuser WHERE astaccount.uid=astuser.uid and astaccount.accountcode = saccountcode;
   SELECT astuser.CountryPrefix INTO Prefix FROM astaccount, astuser WHERE astaccount.uid=astuser.uid and astaccount.accountcode = saccountcode;
@@ -108,19 +111,38 @@ BEGIN
 
   SET prefix = IFNULL(prefix,''); /* Allows for dialing even if use have no valid astaccount. Not likely but works during test with account code 77777 */
   
-  if scallednum REGEXP '^00' THEN
-  	  SET phone = RIGHT(scallednum,LENGTH(scallednum)-2);	
-  ELSEIF scallednum REGEXP '^011' THEN 
-  	  SET phone = RIGHT(scallednum,LENGTH(scallednum)-3);	
-  ELSE  
-	  if scallednum REGEXP '^0' THEN
-  		  SET phone = CONCAT(Prefix,(RIGHT(scallednum,LENGTH(scallednum)-1)));		
-      END IF;
-  END IF;
+  SELECT allow00 INTO tallow00 FROM astcountryprefix WHERE CountryPrefix=Prefix;
   
+  IF tallow00 IS NULL THEN 
+  	IF scallednum REGEXP '^00' THEN
+  		  SET phone = RIGHT(scallednum,LENGTH(scallednum)-2);	
+  	ELSEIF scallednum REGEXP '^011' THEN 
+  		  SET phone = RIGHT(scallednum,LENGTH(scallednum)-3);	
+  	ELSE  
+		  IF scallednum REGEXP '^0' THEN
+  			  SET phone = CONCAT(Prefix,(RIGHT(scallednum,LENGTH(scallednum)-1)));		
+      	END IF;
+  	END IF;
+  ELSE
+	SELECT allow011 INTO tallow011 FROM astcountryprefix WHERE CountryPrefix=Prefix;
+	SELECT locallength INTO tlocallength FROM astcountryprefix WHERE CountryPrefix=Prefix; 
+		
+  	IF scallednum REGEXP '^00' and tallow00 = 1 THEN
+  		  SET phone = RIGHT(scallednum,LENGTH(scallednum)-2);	
+  	ELSEIF scallednum REGEXP '^011' and tallow011 = 1 THEN 
+  		  SET phone = RIGHT(scallednum,LENGTH(scallednum)-3);	
+  	ELSEIF scallednum REGEXP '^0' THEN
+  			  SET phone = CONCAT(Prefix,(RIGHT(scallednum,LENGTH(scallednum)-1)));		
+  	ELSE  
+		  IF LENGTH(scallednum) = tlocallength THEN
+  			  SET phone = CONCAT(Prefix,scallednum);		
+      	  END IF;
+  	END IF; 
+  END IF;
+   
   CALL RateGetTrunk(@ptrunk,phone);
   SET strunk = @ptrunk;
-   
+  
   if strunk is NOT NULL THEN /* No CDR IF WE HAVE NO ROUTE   */
   	INSERT INTO astcdr (accountcode,channel,callednum,type,uniqueid,date_created,trunk,brand) 
   	VALUES (saccountcode,schannel,phone,stype,suniqueid,Now(),strunk,sbrand); 
@@ -138,8 +160,9 @@ BEGIN
   END IF;
  
 END
-|
+;;
 delimiter ;
+
 
 DROP PROCEDURE IF EXISTS RateCost;
 delimiter //

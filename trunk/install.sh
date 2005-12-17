@@ -6,7 +6,7 @@
 #
 # Use at your own RISK!
 #
-# AstBill-0.9.0.12
+# AstBill
 echo "-----------------------------------------"
 echo "Executing AstBill Install Script."
 echo "-----------------------------------------"
@@ -15,7 +15,11 @@ echo "WARNING this script is experimental"
 echo "BACKUP your /etc/asterisk before you run this script"
 echo "Use at your own RISK!"
 echo ""
-echo "AstBill-0.9.0.12"
+echo "Be aware, that this setup of AstBill is not secure. If you would like to"
+echo "have a secure AstBill setup, you'd better go on the manual way, and set"
+echo "every option carefully. This automatically working setup gives you an"
+echo "instantly working AstBill installation, but it is not meant to be used on"
+echo "online servers."
 echo ""
 echo "Type in yes if you are sure you want to continue"
 

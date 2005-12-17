@@ -11,7 +11,7 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
-Installation instructions for AstBill Version 0.9.0.13
+Installation instructions for AstBill Version 0.9.0.14
 
 Please read INSTALLMYSQL.txt and have your MySQL 5 Server working before you start the instructions in this file.
 
@@ -23,12 +23,12 @@ Running on Drupal, A open source content management platform. AstBill gives a We
 2.0 - Requirements:
 
 Asterisk - Version 1.2  (Beta and RC may not work due to minor changes in Realtime)
-(Most of AstBill is also working on Asterisk 1.0.9 but 1.2 is needed for the new REALTIME features)
-Asterisk - Addons Version 1.2-beta1
+(Most of AstBill is also working on Asterisk 1.0.9 but 1.2 is needed for the REALTIME features)
+Asterisk - Addons Version 1.2
 (We are only using the module res_config_mysql from Asterisk - Addons)
 See enclosed file modules.conf for modules to unload to awoid error messages
 Asterisk - Sounds Version 1.2
-MySQL - Version 5.0.15
+MySQL - Version 5.0.16
 (Astbill is using Views and Stored Procedures, which is only in MySQL 5 and up - See mysql Ver 5 Manual Section 2.7)
 Please read INSTALLMYSQL.txt
 
@@ -45,14 +45,14 @@ Drupal - Version 4.6.3 (Included in the wwwroot directory of this AstBill Distri
 
 First of all, make sure you have all the requirements set up properly.
 
-3.1. Extract astbill-0.9.0.13.tar.bz2 to /home
+3.1. Extract astbill-0.9.0.14.tar.bz2 to /home
 
 cd /home
-tar jxvf astbill-0.9.0.13.tar.bz2 
+tar jxvf astbill-0.9.0.14.tar.bz2 
 
-rename the directory astbill-0.9.0.13 to astbill
+rename the directory astbill-0.9.0.14 to astbill
 
-mv astbill-0.9.0.13 astbill
+mv astbill-0.9.0.14 astbill
 cd /home/astbill
 chmod +x install.sh
 

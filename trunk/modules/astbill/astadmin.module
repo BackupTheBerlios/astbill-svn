@@ -244,7 +244,7 @@ $result = pager_query($sql, $maxline);
 	        $item->publicnumber.'&nbsp;&nbsp;',
 		$item->username.'&nbsp;&nbsp;',
 		'<A HREF="'.url('astbilladm/realtime/friends/change/'.$item->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>&nbsp;&nbsp;',
-		'<A HREF="'.url('astbilladm/realtime/friends/remove/'.$item->accountcode).'/'.$item->accountcode.'">remove</A>'
+		'<A HREF="'.url('astbilladm/realtime/friends/remove/'.$item->accountcode).'/'.$item->accountcode.'">'.t('remove').'</A>'
 		);
   }
 
@@ -259,7 +259,7 @@ $result = pager_query($sql, $maxline);
 
 
 
-$title = "View Incoming Numbers, Peers, Users and Friends";
+$title = t("View Incoming Numbers, Peers, Users and Friends");
 $account = $user->uid;
 _astadmin_printtheme_friends($output, $account, $title);
 }
@@ -272,7 +272,7 @@ $output = '<div class="node "><table width="100%" border="0" cellpadding="0" cel
   $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
 
 $output .= '<div class="nodecontent">';
-$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/realtime/friends/create/').'">Create new</A></B><BR>';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/realtime/friends/create/').'">'.t('Create new').'</A></B><BR>';
 
   print theme("page", $output);
 }
@@ -556,8 +556,8 @@ $sql = db_query("SELECT id, uid, accountcode, secret, hardwaretype, hardwareid, 
 	    $item->hardwaretype.'&nbsp;&nbsp;',
 		$item->mac_address.'&nbsp;&nbsp;',
 		$item->date_created.'&nbsp;&nbsp;',
-		'<A HREF="'.url('astbilladm/hardware/change/'.$item->id).'">Details</A>',
-		'|<A HREF="'.url('astbilladm/hardware/remove/'.$item->id.'/'.$item->accountcode).'">Remove</A>&nbsp;&nbsp;'
+		'<A HREF="'.url('astbilladm/hardware/change/'.$item->id).'">'.t('Details').'</A>',
+		'|<A HREF="'.url('astbilladm/hardware/remove/'.$item->id.'/'.$item->accountcode).'">'.t('Remove').'</A>&nbsp;&nbsp;'
 		);
   }
 
@@ -572,7 +572,7 @@ $sql = db_query("SELECT id, uid, accountcode, secret, hardwaretype, hardwareid, 
 
 
 
-$title = 'View';
+$title = t('View');
 $account = $user->uid;
 _astadmin_printtheme_hardware($output, $account, $title);
 }
@@ -585,8 +585,8 @@ $output = '<div class="node "><table width="100%" border="0" cellpadding="0" cel
   $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
 
 $output .= '<div class="nodecontent">';
-$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/hardware/create/').'">Create new</A></B><BR>';
-$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/hardware/idlist/').'">Edit Hardware ID\'s</A></B><BR>';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/hardware/create/').'">'.t('Create new').'</A></B><BR>';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/hardware/idlist/').'">'.t('Edit Hardware ID\'s').'</A></B><BR>';
 
   print theme("page", $output);
 }
@@ -824,11 +824,11 @@ function page_astadmin_realtime() {
 
 if (arg(2) == '') {
 
-	  $output .= '<A HREF="'.url('astbilladm/realtime/iax').'">Iax Users</A><BR>';
-	  $output .= '<A HREF="'.url('astbilladm/realtime/friends').'">Incoming - Friends</A><BR>';
-	  $output .= '<A HREF="'.url('astbilladm/realtime/manager').'">Manager</A><BR>';
-	  $output .= '<A HREF="'.url('astbilladm/realtime/showpeers').'">Show Peers</A><BR>';
-	  $output .= '<A HREF="'.url('astbilladm/realtime/sip').'">Sip Users</A><BR>';
+	  $output .= '<A HREF="'.url('astbilladm/realtime/iax').'">'.t('Iax Users').'</A><BR>';
+	  $output .= '<A HREF="'.url('astbilladm/realtime/friends').'">'.t('Incoming - Friends').'</A><BR>';
+	  $output .= '<A HREF="'.url('astbilladm/realtime/manager').'">'.t('Manager').'</A><BR>';
+	  $output .= '<A HREF="'.url('astbilladm/realtime/showpeers').'">'.t('Show Peers').'</A><BR>';
+	  $output .= '<A HREF="'.url('astbilladm/realtime/sip').'">'.t('Sip Users').'</A><BR>';
 	  
 	  
 	$title = 'Select asterisk REALTIME function';
@@ -839,22 +839,22 @@ if (arg(2) == '') {
 if (arg(2) == 'showpeers') { // START SHOWPEERS
 	  
 
-$output = 'This is a list of the last clients(SIP and IAX2) that have connected to the Asterisk server.<BR>';
-$output .= 'It allows you to keep track of when each client last authenticated with Asterisk.<BR>';
-$output .= 'You also get the IP and configuration information.<BR><BR>';
+$output = t('This is a list of the last clients(SIP and IAX2) that have connected to the Asterisk server.').'<BR>';
+$output .= t('It allows you to keep track of when each client last authenticated with Asterisk.').'<BR>';
+$output .= t('You also get the IP and configuration information.').'<BR><BR>';
 
 
    $header = array(
-    array('data' => t('Accountcode')),
-    array('data' => t('Tech')),
-    array('data' => t('Changed')),
-    array('data' => t('Expires')),
-    array('data' => t('Name')),
-    array('data' => t('Callerid')),
-    array('data' => t('IP'))
+    array('data' => t('Accountcode'), 'field' => 'accountcode', 'sort' => 'asc'),
+    array('data' => t('Tech'), 'field' => 'tech'),
+    array('data' => t('Changed'), 'field' => 'changed'),
+    array('data' => t('Expires'), 'field' => 'regexpire'),
+    array('data' => t('Name'), 'field' => 'name'),
+    array('data' => t('Callerid'), 'field' => 'callerid'),
+    array('data' => t('IP'), 'field' => 'ip')
   );
 
-$sql = "SELECT * FROM asv_peers". tablesort_sql($header);
+$sql = "SELECT accountcode, tech, changed, regexpire, name, callerid, ip FROM asv_peers". tablesort_sql($header);
 $result = pager_query($sql, $maxline);
 
   
@@ -864,7 +864,7 @@ $result = pager_query($sql, $maxline);
 		$item->tech.'&nbsp;&nbsp;',
 		$item->changed.'&nbsp;&nbsp;',
 		$item->regexpire.'&nbsp;&nbsp;',
-	    $item->name.'&nbsp;&nbsp;',
+		$item->name.'&nbsp;&nbsp;',
 		$item->callerid.'&nbsp;&nbsp;',
 		$item->ip.'&nbsp;&nbsp;'
 		);
@@ -876,7 +876,7 @@ $result = pager_query($sql, $maxline);
 if (arg(2) == 'sip') { // START SIP
 	  
 
-$output = '<B>Hover over Account to view Accounts Password</B><BR>';
+$output = '<B>'.t('Hover over Account to view Accounts Password').'</B><BR>';
 
 
    $header = array(
@@ -911,7 +911,7 @@ $result = pager_query($sql, $maxline);
 if (arg(2) == 'iax') { // START IAX
 	  
 
-$output = '<B>Hover over Account to view Accounts Password</B><BR>';
+$output = '<B>'.t('Hover over Account to view Accounts Password').'</B><BR>';
 
 
    $header = array(
@@ -954,7 +954,7 @@ if (!empty($pager)) {
 $output .= (count($rows) == 0) ? t('No records available.') : theme('table', $header, $rows);
 
 
-$title = 'View';
+$title = t('View');
 $account = $user->uid;
 
 }
@@ -1166,9 +1166,9 @@ function page_astadmin_listcdr_form($value, $edit) {
   $output = '
 <form action="'.url('/astbilladm/listcdr').'" method="post">
 <div class="form-item">
-<B>Search for Accountcode&nbsp;&nbsp;</B>
+'.t('<B>Search for Accountcode&nbsp;&nbsp;</B>').'
 <input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
-<input type="submit" name="op" value="Go" />&#160;&#160;
+<input type="submit" name="op" value="'.t('Go').'" />&#160;&#160;
 </div></form>
 ';
 
@@ -1192,46 +1192,54 @@ if (!empty($value)) {
   $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
   $sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
 
-		$output .= '<B>Unique ID: </B>';
+		$output .= t('<B>Unique ID: </B>');
 		$output .= $res->uniqueid.'<BR>';
-		$output .= '<B>ID: </B>';
+		$output .= t('<B>ID: </B>');
 		$output .= $res->id.'<BR>';
-		$output .= '<B>User: </B>';
+		$output .= t('<B>User: </B>');
 		$output .= '<A HREF="'.url('user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A><BR>';
 		$output .= '<BR>';
-		$output .= '<B>Accountcode: </B>';
+		$output .= t('<B>Accountcode: </B>');
 		$output .= $res->accountcode.'<BR>';
-		$output .= '<B>Channel: </B>';
+		$output .= t('<B>Callerid: </B>');
+		$output .= $res->callerid.'<BR>';
+		$output .= t('<B>Channel: </B>');
 		$output .= $res->channel.'<BR>';
-		$output .= '<B>Called Number: </B>';
+		$output .= t('<B>Called Number: </B>');
 		$output .= $res->callednum.'<BR>';
-		$output .= '<B>Brand: </B>';
+		$output .= t('<B>Brand: </B>');
 		$output .= $res->brand.'<BR>';
-		$output .= '<B>Type: </B>';
+		$output .= t('<B>Type: </B>');
 		$output .= $res->type.'<BR>';
-		$output .= '<B>Trunk: </B>';
+		$output .= t('<B>Trunk: </B>');
 		$output .= $res->trunk.'<BR>';
-		$output .= '<B>Date Created: </B>';
-		$output .= $res->date_created.'<BR>';
-		$output .= '<B>Dialstatus: </B>';
+		$output .= t('<B>Amaflags: </B>');
+		$output .= $res->amaflags.'<BR>';
+		$output .= t('<B>Dialstatus: </B>');
 		$output .= $res->dialstatus.'<BR>';
+		$output .= t('<B>Master: </B>');
+		$output .= $res->master.'<BR>';
+		$output .= t('<B>Sub Master: </B>');
+		$output .= $res->submaster.'<BR>';
+		$output .= t('<B>Date Created: </B>');
+		$output .= $res->date_created.'<BR>';
 		$output .= '<BR>';
-		$output .= '<B>Dialed Time: </B>';
+		$output .= t('<B>Dialed Time: </B>');
 		$output .= $res->dialedtime.'<BR>';
-		$output .= '<B>Answered Time: </B>';
+		$output .= t('<B>Answered Time: </B>');
 		$output .= $res->answeredtime.'<BR>';
-		$output .= '<B>Billed Time: </B>';
+		$output .= t('<B>Billed Time: </B>');
 		$output .= $res->billtime.'<BR>';
-		$output .= '<B>Our Cost: </B>';
+		$output .= t('<B>Our Cost: </B>');
 		$output .= $res->ourcost.'<BR>';
-		$output .= '<B>Price Rate per minute: </B>';
+		$output .= t('<B>Price Rate per minute: </B>');
 		$output .= $res->pricerate.'<BR>';
-		$output .= '<B>Total Price: </B>';
+		$output .= t('<B>Total Price: </B>');
 		$output .= $res->price.'<BR>';
 		$output .= '<BR>';
-		$output .= '<B>IP Port: </B>';
+		$output .= t('<B>IP Port: </B>');
 		$output .= $res->ipport.'<BR>';
-		$output .= '<B>User Agent: </B>';
+		$output .= t('<B>User Agent: </B>');
 		$output .= $res->useragent.'<BR>';
 		$output .= '<BR><BR><FORM><INPUT TYPE="button" VALUE="Back" onClick="history.go(-1);return true;"> </FORM>';
 
@@ -1514,7 +1522,7 @@ $output .= '<BR><FORM><INPUT TYPE="button" VALUE="Back" onClick="history.go(-1);
 }
 // END BOTTOM BUTTONS
 
-$title = 'View';
+$title = t('View');
 }
 
 _astadmin_printtheme_best($output, $account, $title);
@@ -1586,7 +1594,7 @@ $agi_err_voicemail = '/home/astbill/logs/agi_err_voicemail.log';
 
 $output .= '<BR>';
 $output .= 'Astbill --><BR>';
-$output .= '<A HREF="'.url('astbilladm/accesslog/astlog').'">AstBill System Log</A><BR>';
+$output .= '<A HREF="'.url('astbilladm/accesslog/astlog').'">'.t('AstBill System Log').'</A><BR>';
 $output .= '<BR>';
 $output .= 'Asterisk --><BR>';
 $output .= '<A HREF="'.url('astbilladm/accesslog/ast_messages').'">Messages</A><BR>';
@@ -1598,7 +1606,7 @@ $output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_dead').'">agi_err_dead<
 $output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_voicemail').'">agi_err_voicemail</A><BR>';
 
 if (arg(2) == '') {
-	$title = 'Select log file';
+	$title = t('Select log file');
 }
 if (arg(2) == 'ast_messages') {
 $output = output_textfile($ast_messages, $lines);
@@ -1647,8 +1655,39 @@ return $output;
 // START PAYMENT STUFF
 
 function page_astadmin_payment() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+
+
+  switch (($op ? $op : arg(1))) {
+    case t('Go'):
+       $value = $edit['filteracc'];
+       drupal_goto("astbilladm/payment/payment/".$edit['filteracc']."/");
+       //page_astadmin_listcdr_form($value, $edit);
+	break;
+    default:
+    	page_astadmin_payment_form($value, $edit);
+	
+  }		
+	
+}
+
+function page_astadmin_payment_form($value, $edit) {
 	global $user;
 
+	$value = arg(3);
+	
+$output = '
+<form action="'.url('/astbilladm/payment').'" method="post">
+<div class="form-item">
+<B>Search for Accountcode&nbsp;&nbsp;</B>
+<input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
+<input type="submit" name="op" value="'.('Go').'" />&#160;&#160;
+</div></form>
+';
 
   $maxline = 40; // This is the number of records to display on a page
 
@@ -1664,9 +1703,13 @@ function page_astadmin_payment() {
     array('data' => t('Operations'), 'colspan' => 2)
                                                                                      
   );                                                                                 
-                                                                                      
-  $sql = "SELECT paid, accountcode, paytype, comment, paidamount, paiddate, date_created FROM astpayment". tablesort_sql($header);
-                                                                                     
+         
+  
+  if (!empty($value)) {
+	  $sql = "SELECT paid, accountcode, paytype, comment, paidamount, paiddate, date_created FROM astpayment WHERE accountcode LIKE '%".$value."%'". tablesort_sql($header);
+  } else {
+	  $sql = "SELECT paid, accountcode, paytype, comment, paidamount, paiddate, date_created FROM astpayment". tablesort_sql($header);
+  }                                                                           
 
   $result = pager_query($sql, $maxline);
   
@@ -1683,7 +1726,7 @@ function page_astadmin_payment() {
 		$res->paiddate,
 		$res->date_created,
 		'<A HREF="'.url('astbilladm/payment/change/'.$res->paid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
-		'<A HREF="'.url('astbilladm/payment/remove/'.$res->paid).'">Remove</A>'
+		'<A HREF="'.url('astbilladm/payment/remove/'.$res->paid).'">'.t('Remove').'</A>'
 	);
   }
 
@@ -1698,7 +1741,7 @@ if (!empty($pager)) {
 $output .= (count($rows) == 0) ? t('No records available.') : theme('table', $header, $rows);
 
 
-$title = 'View';
+$title = t('View');
 
 
 _astadmin_printtheme_payment($output, $account, $title);
@@ -1716,7 +1759,7 @@ $output = '<div class="node "><table width="100%" border="0" cellpadding="0" cel
   $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
 
 $output .= '<div class="nodecontent">';
-$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/payment/create/').'">Create New Payment</A></B><BR>';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/payment/create/').'">'.t('Create New Payment').'</A></B><BR>';
 
   print theme("page", $output);
 }
@@ -1785,8 +1828,8 @@ function page_astadmin_paymentremove() {
 
 	$edit = $_POST['edit'];
 
-	$deletedmsg = 'The payment was deleted';
-	$confirmmsg = '<P>Are you sure you want to delete this payment?</P>';
+	$deletedmsg = t('The payment was deleted');
+	$confirmmsg = '<P>'.t('Are you sure you want to delete this payment?').'</P>';
 	$dbquery = "DELETE FROM astpayment WHERE paid = '".arg(3)."'";
 	$goto = "astbilladm/payment";
 	$item = arg(4);
@@ -1896,7 +1939,7 @@ $sqlout = db_fetch_object($sql);
 	$sql = db_fetch_object(db_query("SELECT astbrand.currency from astuser, astbrand where astuser.brand = astbrand.name and astuser.uid = '%s'", $user->uid));
   	$currency = $sql->currency;
 	
-	$group .= 'Currency is: <B>'.$currency.'</B><BR><BR>';
+	$group .= t('Currency is: ').'<B>'.$currency.'</B><BR><BR>';
 	if ($value->value == 1) {
 	//$sql = db_query("SELECT accountcode FROM astaccount where tech in ('IAX','SIP','VIR') ORDER BY accountcode");
 	$sql = db_query("SELECT accountcode FROM astaccount where tech in (select actype from astactype) ORDER BY accountcode");
@@ -1970,9 +2013,9 @@ function page_astadmin_credit_form($value, $edit) {
 $output = '
 <form action="'.url('/astbilladm/payment/credit').'" method="post">
 <div class="form-item">
-<B>Search for Accountcode&nbsp;&nbsp;</B>
+'.t('<B>Search for Accountcode').'&nbsp;&nbsp;</B>
 <input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
-<input type="submit" name="op" value="Go" />&#160;&#160;
+<input type="submit" name="op" value="'.('Go').'" />&#160;&#160;
 </div></form>
 ';
 
@@ -2016,7 +2059,7 @@ if (!empty($pager)) {
 $output .= (count($rows) == 0) ? t('No records available.') : theme('table', $header, $rows);
 
 
-$title = 'View';
+$title = t('View');
 
 
 _astadmin_printtheme_best($output, $account, $title);
@@ -2160,7 +2203,7 @@ function astadmin_confirm_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $got
 	//return form($output);
 	$group = form($output);
 
-$title = 'Remove '.$item;
+$title = t('Remove ').$item;
 $account = $user->uid;
 _astadmin_printtheme_best($group, $account, $title);
 //return $output;

@@ -66,11 +66,11 @@ else {
 
 sub load_config() {
 		$runtime = localtime(time);
-		if (-e "conf-astbill.conf"){
-			open(CFG, "<conf-astbill.conf");
+		if (-e "astbill.conf"){
+			open(CFG, "<astbill.conf");
 			
 		} else {
-			open(CFG, "</home/astbill/conf-astbill.conf");
+			open(CFG, "</home/astbill/astbill.conf");
 		}
 		# chdir ('../newdir') || die ("Could not set new directory");
         while(<CFG>) {
