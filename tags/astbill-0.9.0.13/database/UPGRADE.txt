@@ -1,0 +1,9 @@
+AstBill-0.9.0.12
+
+# If you are upgrading from 0.9.0.10 you only need to replace the module files and the agi script agiastar.agi
+
+There is no database update with this upgrade.
+
+For Support:
+http://astbill.com/forum/3
+
