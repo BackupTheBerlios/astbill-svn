@@ -71,6 +71,7 @@ function astpricelist_perm() {
 // BEGIN PRICELIST
 function _astratetable_all() {
   global $user;
+  global $db_prefix; 
 
   $edit = $_POST["edit"];
   $op = $_POST["op"];
@@ -80,7 +81,7 @@ function _astratetable_all() {
   switch (($op ? $op : arg(1))) {
     case t('Go'):
 
-    	$sql = db_fetch_object(db_query("SELECT brand FROM astuser WHERE uid = '%s'", $user->uid));
+    	$sql = db_fetch_object(db_query("SELECT brand FROM astuser WHERE uid = '%s' and db_prefix ='".$db_prefix."'", $user->uid));
 	drupal_goto("astpbx/pricelist/country/".$edit['countrycode']."/".$sql->brand);
 	break;
         default:
@@ -141,6 +142,7 @@ function astratetable_save($edit) {
 
 function astratetable_form($where, $value, $value2) {
 	global $user;
+	global $db_prefix; 
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
 
@@ -212,7 +214,7 @@ if (empty($where)) {
 
 
 	if (empty($value)) {
-	$sql = db_fetch_object(db_query("SELECT countryprefix FROM astuser WHERE uid = '%d'", $user->uid));
+	$sql = db_fetch_object(db_query("SELECT countryprefix FROM astuser WHERE uid = '%d' and db_prefix ='".$db_prefix."'", $user->uid));
 	$defaultcountry = $sql->countryprefix;
 	} else {
 		$defaultcountry = $value;

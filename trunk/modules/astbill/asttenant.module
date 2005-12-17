@@ -201,8 +201,10 @@ if (is_numeric(arg(2))) {
     array('data' => t('Operations'), 'colspan' => 1)
                                                                                      
   );                                                                                 
-                                                                                      
-  $sql = "SELECT asttenant.tid, asttenant.company, pbx_users.uid, pbx_users.name, astuser.brand, astuser.CountryPrefix, astuser.currency, astuser.creditlimit FROM (astuser LEFT JOIN asttenant ON astuser.tid = asttenant.tid) INNER JOIN pbx_users ON astuser.uid = pbx_users.uid WHERE astuser.uid <> 0 and asttenant.tid = '".arg(2)."'". tablesort_sql($header);
+
+  $sql = "SELECT asttenant.tid, asttenant.company, pbx_users.uid, pbx_users.name, astuser.brand, astuser.CountryPrefix, astuser.currency, astuser.creditlimit FROM (astuser LEFT JOIN asttenant ON astuser.tid = asttenant.tid) INNER JOIN pbx_users ON astuser.uid = pbx_users.uid WHERE astuser.uid <> 0 and asttenant.tid = '".arg(2)."'". tablesort_sql($header);																					  
+
+  $sql = "SELECT asttenant.tid, asttenant.company, usr.uid, usr.name, astuser.brand, astuser.CountryPrefix, astuser.currency, astuser.creditlimit FROM (astuser LEFT JOIN asttenant ON astuser.tid = asttenant.tid) INNER JOIN {users} usr ON astuser.uid = usr.uid WHERE astuser.uid <> 0 and asttenant.tid = '".arg(2)."'". tablesort_sql($header);
 
 
   $result = pager_query($sql, $maxline);

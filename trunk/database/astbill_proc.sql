@@ -37,6 +37,63 @@ END
 |
 delimiter ;
 
+
+DROP PROCEDURE IF EXISTS astCreateAcc2;
+delimiter ;;
+
+CREATE PROCEDURE astCreateAcc2 (OUT nextid varchar(40), suid int(10), stech varchar(128), sdb_prefix varchar(40),
+sbrand varchar(128),sPrefix int(3))
+  NOT DETERMINISTIC
+BEGIN
+  DECLARE mycallerid  varchar(255); 
+  DECLARE mycount  int(11);
+  DECLARE accountstart varchar(40);
+  DECLARE tbluser varchar(128);
+  DECLARE vbrand varchar(128);
+  DECLARE vPrefix int(3);
+  DECLARE vtech varchar(128);
+  DECLARE vwhere varchar(128);
+      
+  SET tbluser = CONCAT(sdb_prefix,'users');
+  SET @s := CONCAT(' uid from ',tbluser,' where uid = suid');
+  SET @t := CONCAT(' name from ',tbluser,' where uid = suid');
+  
+    select CONCAT(value,'%') into accountstart from astsystem where name = 'accountstart' and serverid = 'DEF';
+   
+    if EXISTS (select accountcode from astaccount where accountcode like accountstart) THEN
+  		select (max(accountcode)+1) into nextid from astaccount where accountcode like accountstart;
+  	ELSE
+  		SET nextid = (select value from astsystem where name = 'firstaccount' and serverid = 'DEF');  
+   	END IF;
+  
+ 	insert into astaccount (db_prefix,uid,accountcode,tech,date_created, secret, mailboxpin) 
+	values (sdb_prefix,suid, nextid, stech, Now(),RIGHT(Rand(),6),RIGHT(Rand(),4));  
+	
+		/*  SET lastid =  LAST_INSERT_ID();  */
+	update astaccount set callerid = nextid, mailbox = nextid where accountcode = nextid;
+    
+    if EXISTS (select @s) THEN
+  		update astaccount set callerid = (select @t) where accountcode = nextid;
+  	END IF;
+
+  	if NOT EXISTS (select uid from astuser where uid = suid and db_prefix = sdb_prefix) THEN
+  	  insert into astuser (db_prefix, uid, callbackto, comment) values (sdb_prefix, suid, nextid, mycallerid);
+      update astuser set brand = sbrand, CountryPrefix = sPrefix where uid = suid and db_prefix = sdb_prefix;
+    END IF;
+  	
+ /*   SET vwhere = 'AstBill Brand';
+    SET @v := CONCAT(' value FROM ',db_prefix,'variable where name = vwhere');	
+    SET @v := CONCAT(' value FROM ',db_prefix,'variable where name = ','"',vwhere,'"');	 
+    SET vbrand = (select @v);    
+    SET vPrefix = (select @v);
+    SET vtech = (select @v);  */
+
+    update astuser set lastaccount = nextid where uid = suid and db_prefix = sdb_prefix;
+   
+END
+;;
+delimiter ;
+
 DROP PROCEDURE IF EXISTS astCreateAccount;
 delimiter |
 

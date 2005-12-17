@@ -218,8 +218,15 @@ function astcontact_list_contacts($edit) {
 
 	$sql = "SELECT co.cid, CONCAT_WS(' ', co.last_name, co.first_name) AS name, 
 	co.phone as phone, co.mail as mail, ca.name as category
-	FROM (pbx_contact_directory co LEFT JOIN pbx_contact_category ca ON co.category = ca.cid) 
+	FROM ({contact_directory} co LEFT JOIN {contact_directory} ca ON co.category = ca.cid) 
 	WHERE co.uid = " . $user->uid;
+
+
+	$sql = "SELECT co.cid, CONCAT_WS(' ', co.last_name, co.first_name) AS name, 
+	co.phone as phone, co.mail as mail, ca.name as category
+	FROM ({contact_directory} co LEFT JOIN {contact_category} ca ON co.category = ca.cid) 
+	WHERE co.uid = " . $user->uid;
+
 
 
 	$sql .= tablesort_sql($header);
@@ -478,8 +485,7 @@ function astcontact_save_contact($contact, $edit, $uid) {
 
 function astcontact_getcategory() {
 global $user;
-$sql = db_query("SELECT cid, name FROM pbx_contact_category WHERE uid = %d", $user->uid);
-// $sql = db_query("SELECT cid, name FROM pbx_contact_category");
+$sql = db_query("SELECT cid, name FROM {contact_category} WHERE uid = %d", $user->uid);
 $account = "test";
  $sql_output = array();
   

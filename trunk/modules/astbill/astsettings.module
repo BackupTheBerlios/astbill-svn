@@ -310,7 +310,7 @@ function page_astsettings_createbatch_validate($edit) {
 		$errors['batchno'] = t('Enter a numeric only batch number.');
 		$myerror = 0;
 	} else {
-		$sql = db_fetch_object(db_query("select ccbatchno from astaccount where ccbatchno = '%s'", $edit['batchno']));
+		$sql = db_fetch_object(db_query("select ccbatchno from astaccount where ccbatchno = '%s' and db_prefix ='".$db_prefix."' ", $edit['batchno']));
 		
 		if(!empty($sql->ccbatchno)) {
 			$errors['batchno'] = t('Batch Number already exists.');
@@ -400,6 +400,7 @@ function page_astsettings_createbatch_validate($edit) {
 
 function page_astsettings_createbatch_save($edit) {
   global $user;
+  global $db_prefix; 
 
 /*
 [batchno] => 1
@@ -702,6 +703,7 @@ while($x <= $edit['nracc']) {
 
 db_query("INSERT INTO astaccount SET
 accountcode = '".$accountcodechecked[$y]."',
+db_prefix = '".$db_prefix."',
 secret = '".$secret[$y]."',
 ccserialno = '".$ccserialno[$y]."',
 ccbatchno = '".$edit['batchno']."',
@@ -1521,7 +1523,7 @@ $output .= $iax_conf." was written succesfully<BR><BR>";
 
 // Write Voicemail config
 $output .= "Trying to write Voicemail Config at ".$voicemail_conf."<BR><BR>";
-$sql = db_query("SELECT accountcode, mailboxpin, mailboxemail, IFNULL(callerid,'') callerid, mail, name FROM astaccount a, pbx_users p where a.uid = p.uid and tech in (select actype from astactype) and active = '". $active . "'");
+$sql = db_query("SELECT accountcode, mailboxpin, mailboxemail, IFNULL(callerid,'') callerid, mail, name FROM astaccount a, {users} p where a.uid = p.uid and tech in (select actype from astactype) and active = '". $active . "'");
 
    if (!$handle = fopen($voicemail_conf, 'w')) {
          echo "Error, unable to open file";
@@ -1772,7 +1774,7 @@ function page_astsettings_anicli() {
 
   
 function page_astsettings_anicli_form($edit) {
-	
+	global $db_prefix; 
 	$arg3 = arg(3);
 	$arg4 = arg(4);
 	
@@ -1825,7 +1827,7 @@ function page_astsettings_anicli_form($edit) {
 			$output .= form_textfield(t('AccountCode'), 'accountcode', $sql->accountcode, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
 		} else {
 			
-			$accountsql = db_query("SELECT accountcode FROM astaccount WHERE uid <> 0 and tech in (select actype from astactype)");
+			$accountsql = db_query("SELECT accountcode FROM astaccount WHERE uid <> 0 and db_prefix = '".$db_prefix."' and tech in (select actype from astactype)");
 			
 			$accountlist = array();
 			while ($item = db_fetch_object($accountsql)) {

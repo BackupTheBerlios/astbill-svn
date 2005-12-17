@@ -140,6 +140,7 @@ function _astpbx_all() {
   //  return;
   //}
   global $user;
+  global $db_prefix;
   $maxline = 40; // This is the number of records to display on a page
   
   $output = '<b>'.t('Hover over Account to view Accounts Password').'</b><br><br>';
@@ -156,7 +157,7 @@ function _astpbx_all() {
 	
   );
   $sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,startingcredit,countcalls FROM asvaccount2 
-  where tech in (select actype from astactype) and uid ='".$user->uid."'". tablesort_sql($header);
+  where tech in (select actype from astactype) and db_prefix ='".$db_prefix."' and uid ='".$user->uid."'". tablesort_sql($header);
   //$sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
   //$result = pager_query($sql, $maxline, 0, $sqlCount);
   $result = pager_query($sql, $maxline);
@@ -272,6 +273,7 @@ $output = '<div class="node "><table width="100%" border="0" cellpadding="0" cel
 
 function _astpbx_voipadmin() {
   global $user;
+  global $db_prefix; 
 
   $edit = $_POST["edit"];
   $op = $_POST["op"];
@@ -307,6 +309,7 @@ function _astpbx_voipadmin_list($value) {
   //  return;
   //}
   global $user;
+  global $db_prefix;
   $maxline = 40; // This is the number of records to display on a page
 
   
@@ -341,11 +344,11 @@ function _astpbx_voipadmin_list($value) {
  if (!empty($value)) {
   $value = trim($value);
   //$sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,countcalls FROM asvaccount2 where accountcode LIKE '%".$value."%'". tablesort_sql($header);
-  $sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,15) as accountname FROM astaccount, pbx_users usr where astaccount.uid = usr.uid and tech in (select actype from astactype) AND accountcode LIKE '%".$value."%'". tablesort_sql($header);
+  $sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,15) as accountname FROM astaccount, {users} usr where astaccount.uid = usr.uid and db_prefix ='".$db_prefix."' and tech in (select actype from astactype) AND accountcode LIKE '%".$value."%'". tablesort_sql($header);
 
  } else {
 
-  $sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,15) as accountname FROM astaccount, pbx_users usr where astaccount.uid = usr.uid and tech in (select actype from astactype)". tablesort_sql($header);
+  $sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,15) as accountname FROM astaccount, {users} usr where astaccount.uid = usr.uid and db_prefix ='".$db_prefix."' and tech in (select actype from astactype)". tablesort_sql($header);
  
  }
  
@@ -409,6 +412,7 @@ function _admin_astpbx_OLD() {
   //  return;
   //}
   global $user;
+  global $db_prefix; 
 
   // Do not let anonymous users have access, even if the admin decides this
   if ($user->uid != 0 && user_access('astpbx voip account')) {
@@ -514,6 +518,7 @@ GetXMLH();
 ';
   global $user;
 
+
   // Do not let anonymous users have access, even if the admin decides this
   if ($user->uid != 0 && user_access('astpbx voip account')) {
 
@@ -553,6 +558,8 @@ function _astpbx_numbers() {
   //  return;
   //}
   global $user;
+  global $db_prefix; 
+
   $myjava = '
 <script type="text/javascript">
 var p;
@@ -634,18 +641,12 @@ function rand()
 	
   );
 
-	$sql = "SELECT Count(astcdr.callednum) AS CountOfcallednum, astcdr.callednum
-	FROM astcdr INNER JOIN astaccount ON astcdr.accountcode = astaccount.accountcode
-	WHERE (((astaccount.uid)= '" . $user->uid . "') AND ((astcdr.trunk)<>'Local') AND ((astcdr.dialstatus)='ANSWER'))
-	GROUP BY astcdr.callednum
-	ORDER BY Count(astcdr.callednum) DESC";
-
 	$sql  = "SELECT Count(astcdr.callednum) AS CountOfcallednum, astcdr.callednum, ";
 	$sql .= "LEFT(CONCAT_WS(' ', last_name, first_name),18) AS name ";
 	$sql .= "FROM (astcdr INNER JOIN astaccount ON astcdr.accountcode = astaccount.accountcode) ";
-	$sql .= "LEFT JOIN pbx_contact_directory ON astcdr.callednum = pbx_contact_directory.phone ";
-	$sql .= "WHERE (((astaccount.uid)='" . $user->uid . "') AND ((astcdr.trunk)<>'Local') AND ((astcdr.dialstatus)='ANSWER')) ";
-	$sql .= "GROUP BY astcdr.callednum, pbx_contact_directory.first_name ";
+	$sql .= "LEFT JOIN {contact_directory} cd ON astcdr.callednum = cd.phone ";
+	$sql .= "WHERE (((astaccount.uid)='" . $user->uid . "') and db_prefix ='".$db_prefix."' AND ((astcdr.trunk)<>'Local') AND ((astcdr.dialstatus)='ANSWER')) ";
+	$sql .= "GROUP BY astcdr.callednum, cd.first_name ";
 	$sql .= "ORDER BY Count(astcdr.callednum) DESC ";
 
   //$sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
@@ -770,6 +771,7 @@ function _astpbx_numbersLocal() {
   //  return;
   //}
   global $user;
+  global $db_prefix; 
   $myjava = '
 <script type="text/javascript">
 var p;
@@ -852,9 +854,9 @@ function rand()
 	$sql  = "SELECT Count(astcdr.callednum) AS CountOfcallednum, astcdr.callednum, ";
 	$sql .= "LEFT(CONCAT_WS(' ', last_name, first_name),18) AS name ";
 	$sql .= "FROM (astcdr INNER JOIN astaccount ON astcdr.accountcode = astaccount.accountcode) ";
-	$sql .= "LEFT JOIN pbx_contact_directory ON astcdr.callednum = pbx_contact_directory.phone ";
-	$sql .= "WHERE (((astaccount.uid)='" . $user->uid . "') AND ((astcdr.trunk)='Local') AND ((astcdr.dialstatus)='ANSWER')) ";
-	$sql .= "GROUP BY astcdr.callednum, pbx_contact_directory.first_name ";
+	$sql .= "LEFT JOIN {contact_directory} cd ON astcdr.callednum = cd.phone ";
+	$sql .= "WHERE (((astaccount.uid)='" . $user->uid . "') and db_prefix ='".$db_prefix."' AND ((astcdr.trunk)='Local') AND ((astcdr.dialstatus)='ANSWER')) ";
+	$sql .= "GROUP BY astcdr.callednum, cd.first_name ";
 	$sql .= "ORDER BY Count(astcdr.callednum) DESC ";
 
 
@@ -895,10 +897,8 @@ function rand()
 // BEGIN ACCOUNTS STUFF
 
 function _astpbx_accounts() {
-	
-
   global $user;
-
+  global $db_prefix; 
   $edit = $_POST["edit"];
   $op = $_POST["op"];
 
@@ -1039,7 +1039,8 @@ function _astpbx_accounts_validate($edit) {
 
 function _astpbx_accounts_save($edit, $account) {
   global $user;
-  
+  global $db_prefix;
+
   
 if ($edit['qualify'] == 0) {$qualify = 'yes';}
 if ($edit['qualify'] == 1) {$qualify = 'no';}
@@ -1066,8 +1067,8 @@ if (arg(1) == 'editaccount') {
   }
 
 
- $presql = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", $account));
- $sql = db_fetch_array(db_query("select mail FROM pbx_users WHERE uid = %s", $presql->uid));
+ $presql = db_fetch_object(db_query("SELECT uid, db_prefix FROM astaccount WHERE accountcode = '%s'", $account));
+ $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $presql->uid));
 
  if ($sql['mail'] == $edit['mailboxemail']){
 	$mailboxemail = '';
@@ -1078,11 +1079,11 @@ if (arg(1) == 'editaccount') {
 
  db_query("
  UPDATE astaccount SET language = '%s', secret = '%s', context = '%s', tech = '%s', nat = '%s', qualify = '%s', hardwareid = '%s', forwardto = '%s', lowbalance = '%s', lowbalanceemail = '%s',
- callerid = '%s', accountname = '%s', mailboxemail = '%s', active = '%s' WHERE accountcode = '%s'", 
+ callerid = '%s', accountname = '%s', mailboxemail = '%s', active = '%s' WHERE db_prefix ='".$db_prefix."' and accountcode = '%s'", 
  $edit['language'], $edit['secret'], $edit['context'], $tech, $nat, $qualify, $edit['hardwareid'], $edit['forwardto'], $edit['lowbalance'], $edit['lowbalanceemail'], 
  $edit['callerid'], $edit['accountname'], $mailboxemail, $edit['active'], $account);
 
- db_query("UPDATE astuser SET brand = '%s', countryprefix = '%s', callbackto = '%s' WHERE uid = '%s'", 
+ db_query("UPDATE astuser SET brand = '%s', countryprefix = '%s', callbackto = '%s' WHERE db_prefix ='".$db_prefix."' and uid = '%s'", 
  $edit['brand'], $edit['countryprefix'], $edit['callbackto'], $presql->uid);
 
  
@@ -1093,7 +1094,7 @@ if (arg(1) == 'editaccount') {
   if (arg(1) == 'createaccount') {
 
 	  if (empty($edit['mailboxemail'])) {
-		  $sql = db_fetch_array(db_query("select mail FROM pbx_users WHERE uid = %s", $edit['account']));
+		  $sql = db_fetch_array(db_query("select mail FROM ".$db_prefix."users WHERE uid = %s", $edit['account']));
 		  $mailboxemail = $sql->mail;
 	  }
 
@@ -1115,6 +1116,8 @@ $secret, $edit['language'], $edit['account'], $edit['accountcode'], $tech, $nat,
 
 function _astpbx_accounts_form($edit = null) {
   global $user;
+  global $db_prefix;
+
 
 
 if (arg(1) == 'editaccount') {
@@ -1128,7 +1131,7 @@ if (arg(1) == 'editaccount') {
 
 
   if(empty($edit['mailboxemail'])){
-  $sql = db_fetch_array(db_query("select mail FROM pbx_users WHERE uid = %s", $edit['uid']));
+  $sql = db_fetch_array(db_query("select mail FROM ".$db_prefix."users WHERE uid = %s", $edit['uid']));
   $mailboxemail = $sql['mail'];
   } else {
 	  $mailboxemail = $edit['mailboxemail'];
@@ -1168,7 +1171,7 @@ $getastuser['callbackto'] = NULL;
 $accountcode = NULL;
 $mailboxemail = NULL;
 
-$sql2 = db_query("select name, uid from pbx_users");
+$sql2 = db_query("select name, uid from ".$db_prefix."users");
 
 $users = array();
 
@@ -1320,6 +1323,7 @@ function astpbx_user($type, &$edit, &$user, $category = NULL) {
 
 function page_astpbx_emailme() {
 	global $user;
+        global $db_prefix;
 
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
@@ -1366,7 +1370,7 @@ function page_astpbx_emailme() {
 
 		default:
 			$uid = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", arg(2)));
-			$email = db_fetch_object(db_query("SELECT mail FROM pbx_users WHERE uid = '%s'", $uid->uid));
+			$email = db_fetch_object(db_query("SELECT mail FROM ".$db_prefix."users WHERE uid = '%s'", $uid->uid));
 			$group .= 'Please check that the email bellow is correct before confirming.<BR>';
 			$group .= form_textfield(t('Email:'), 'email', $email->mail, 30, 100);
 		

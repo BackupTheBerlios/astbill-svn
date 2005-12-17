@@ -235,7 +235,7 @@ $result = pager_query($sql, $maxline);
 
   
   while ($item = db_fetch_object($result)) {
-	  $sql2 = db_fetch_object(db_query("select name from pbx_users where uid='".$item->uid."'"));
+	  $sql2 = db_fetch_object(db_query("select name from {users} where uid='".$item->uid."'"));
 	$account = arg(1);
 	  	$rows[] = array('<A HREF="'.url('user/'.$item->uid).'">'.$sql2->name.'</A>',
 		$item->uid.'&nbsp;&nbsp;',
@@ -440,7 +440,7 @@ if (arg(3) == 'change'){ // START CHECK IF FRIENDSCHANGE
 	
 	$sql = db_query("SELECT serverid, uid, username, forwardto, fromuser, authuser, fromdomain, host, port, callerid, context, disallow, allow, comment, type, publicnumber, secret, nat, qualify, dtmfmode, insecure, canreinvite, restrictid, active, tech FROM asv_friend WHERE accountcode = '%s'", $account);
 	$sqlout = db_fetch_object($sql);
-	$sql2 = db_query("select name, uid from pbx_users");
+	$sql2 = db_query("select name, uid from {users}");
 
 	$users = array();
 
@@ -527,6 +527,7 @@ function astadmin_friends_load($account) {
 
 function page_astadmin_hardware() {
   global $user;
+  global $db_prefix; 
 
   $edit = $_POST["edit"];
   $op = $_POST["op"];
@@ -542,12 +543,12 @@ function page_astadmin_hardware() {
     array('data' => t('Operations'), 'colspan' => 2)
   );
 
-$sql = db_query("SELECT id, uid, accountcode, secret, hardwaretype, hardwareid, mac_address, serialnumber, comment, name, date_created FROM asthardware");
+$sql = db_query("SELECT id, hw.uid, hw.accountcode, hw.secret, hw.hardwaretype, hw.hardwareid, hw.mac_address, hw.serialnumber, hw.comment, hw.name, hw.date_created FROM asthardware hw, astaccount where hw.accountcode = astaccount.accountcode  and db_prefix ='".$db_prefix."'");
 
  // $result = pager_query($sql, $maxline);
   
   while ($item = db_fetch_object($sql)) {
-	  $sql2 = db_fetch_object(db_query("select name from pbx_users where uid='".$item->uid."'"));
+	  $sql2 = db_fetch_object(db_query("select name from {users} where uid='".$item->uid."'"));
 	$account = arg(1);
 	  	$rows[] = array('<A HREF="'.url('user/'.$item->uid).'">'.$sql2->name.'</A>',
 		$item->uid.'&nbsp;&nbsp;',
@@ -760,7 +761,7 @@ $sqlout = db_fetch_object($sql);
 
 }// END CHECK IF HARDWARECHANGE
 
-	$sql = db_query("select name, uid from pbx_users");
+	$sql = db_query("select name, uid from {users}");
 
 	$users = array();
 
@@ -1148,6 +1149,7 @@ function page_astadmin_listcdr() {
 
 function page_astadmin_listcdr_form($value, $edit) {
   global $user;
+  global $db_prefix; 
   $edit = $_POST["edit"];
   $op = $_POST["op"];
 
@@ -1190,7 +1192,7 @@ if (!empty($value)) {
   $res = db_fetch_object($sql);
 
   $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
-  $sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+  $sqlfetch2 = db_fetch_object(db_query("select name from {users} where uid = '%s'", $sqlfetch1->uid));
 
 		$output .= t('<B>Unique ID: </B>');
 		$output .= $res->uniqueid.'<BR>';
@@ -1201,8 +1203,14 @@ if (!empty($value)) {
 		$output .= '<BR>';
 		$output .= t('<B>Accountcode: </B>');
 		$output .= $res->accountcode.'<BR>';
+		$output .= t('<B>Master Account: </B>');
+		$output .= $res->master.'<BR>';
+		$output .= t('<B>Sub Master Account: </B>');
+		$output .= $res->submaster.'<BR>';
 		$output .= t('<B>Callerid: </B>');
 		$output .= $res->callerid.'<BR>';
+		$output .= t('<B>Extension: </B>');
+		$output .= $res->extension.'<BR>';
 		$output .= t('<B>Channel: </B>');
 		$output .= $res->channel.'<BR>';
 		$output .= t('<B>Called Number: </B>');
@@ -1217,10 +1225,6 @@ if (!empty($value)) {
 		$output .= $res->amaflags.'<BR>';
 		$output .= t('<B>Dialstatus: </B>');
 		$output .= $res->dialstatus.'<BR>';
-		$output .= t('<B>Master: </B>');
-		$output .= $res->master.'<BR>';
-		$output .= t('<B>Sub Master: </B>');
-		$output .= $res->submaster.'<BR>';
 		$output .= t('<B>Date Created: </B>');
 		$output .= $res->date_created.'<BR>';
 		$output .= '<BR>';
@@ -1273,7 +1277,7 @@ if (!empty($value)) {
   
   while ($res = db_fetch_object($result)) {
     $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
-	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$sqlfetch2 = db_fetch_object(db_query("select name from {users} where uid = '%s'", $sqlfetch1->uid));
 	$rows[] = array(
 		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>',
 		$res->id.'&nbsp;&nbsp;',
@@ -1318,7 +1322,7 @@ if (!empty($value)) {
   
   while ($res = db_fetch_object($result)) {
     $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
-	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$sqlfetch2 = db_fetch_object(db_query("select name from {users} where uid = '%s'", $sqlfetch1->uid));
 	$rows[] = array(
 		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>',
 		$res->id.'&nbsp;&nbsp;',
@@ -1363,7 +1367,7 @@ if (!empty($value)) {
   
   while ($res = db_fetch_object($result)) {
     $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
-	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$sqlfetch2 = db_fetch_object(db_query("select name from {users} where uid = '%s'", $sqlfetch1->uid));
 	$rows[] = array(
 		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>',
 		$res->id.'&nbsp;&nbsp;',
@@ -1410,7 +1414,7 @@ if (!empty($value)) {
   
   while ($res = db_fetch_object($result)) {
     $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
-	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$sqlfetch2 = db_fetch_object(db_query("select name from users} where uid = '%s'", $sqlfetch1->uid));
 	$rows[] = array(
 		$sqlfetch2->name,
 		$res->id.'&nbsp;&nbsp;',
@@ -1457,6 +1461,7 @@ $value = arg(3);
 $value = trim($value);
  $sql = "SELECT id, accountcode, callednum, type, trunk, date_created, dialstatus, billtime FROM astcdr WHERE accountcode LIKE '%".$value."%'". tablesort_sql($header);
 
+ $sql = "SELECT id, cdr.accountcode, callednum, cdr.type, cdr.trunk, cdr.date_created, dialstatus, billtime FROM astcdr cdr, astaccount WHERE cdr.accountcode = astaccount.accountcode and db_prefix ='".$db_prefix."' and cdr.accountcode LIKE '%".$value."%'". tablesort_sql($header);
 
 
 
@@ -1464,7 +1469,7 @@ $value = trim($value);
   
   while ($res = db_fetch_object($result)) {
     $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
-	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$sqlfetch2 = db_fetch_object(db_query("select name from {users} where uid = '%s'", $sqlfetch1->uid));
 	$rows[] = array(
 		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>',
 		$res->id.'&nbsp;&nbsp;',
@@ -1677,6 +1682,7 @@ function page_astadmin_payment() {
 
 function page_astadmin_payment_form($value, $edit) {
 	global $user;
+	global $db_prefix; 
 
 	$value = arg(3);
 	
@@ -1706,16 +1712,16 @@ $output = '
          
   
   if (!empty($value)) {
-	  $sql = "SELECT paid, accountcode, paytype, comment, paidamount, paiddate, date_created FROM astpayment WHERE accountcode LIKE '%".$value."%'". tablesort_sql($header);
+	  $sql = "SELECT paid, pay.accountcode, paytype, pay.comment, paidamount, paiddate, pay.date_created FROM astpayment WHERE pay.accountcode = astaccount.accountcode and db_prefix ='".$db_prefix."' and accountcode LIKE '%".$value."%'". tablesort_sql($header);
   } else {
-	  $sql = "SELECT paid, accountcode, paytype, comment, paidamount, paiddate, date_created FROM astpayment". tablesort_sql($header);
+	  $sql = "SELECT paid, pay.accountcode, paytype, pay.comment, paidamount, paiddate, pay.date_created FROM astpayment pay, astaccount where pay.accountcode = astaccount.accountcode and db_prefix ='".$db_prefix."' ". tablesort_sql($header);
   }                                                                           
 
   $result = pager_query($sql, $maxline);
   
   while ($res = db_fetch_object($result)) {                                          
     $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
-	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$sqlfetch2 = db_fetch_object(db_query("select name from {users} where uid = '%s'", $sqlfetch1->uid));
 	$rows[] = array(
 		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>&nbsp;&nbsp;',
 		$res->paid.'&nbsp;&nbsp;',
@@ -1901,6 +1907,7 @@ drupal_set_message(t('Payment changed'));
 
 function astadmin_payment_form($account) {
 	global $user;
+	global $db_prefix; 
 	$edit = $_POST["edit"];
     $op = $_POST["op"];
 
@@ -1920,7 +1927,7 @@ if (arg(2) == 'create'){ // START CHECK IF PAYMENTCREATE
 
 if (arg(2) == 'change'){ // START CHECK IF PAYMENTCHANGE
 
-$sql = db_query("SELECT paid, accountcode, paytype, comment, paidamount, paiddate, date_created FROM astpayment WHERE paid = '%s'", arg(3));
+$sql = db_query("SELECT paid, astpayment.accountcode, paytype, astpayment.comment, paidamount, paiddate, astpayment.date_created FROM astpayment, astaccount WHERE astpayment.accountcode = astaccount.accountcode and db_prefix ='".$db_prefix."' and paid = '%s'", arg(3));
 $sqlout = db_fetch_object($sql);
 
 	$paid = $sqlout->paid;
@@ -1942,7 +1949,7 @@ $sqlout = db_fetch_object($sql);
 	$group .= t('Currency is: ').'<B>'.$currency.'</B><BR><BR>';
 	if ($value->value == 1) {
 	//$sql = db_query("SELECT accountcode FROM astaccount where tech in ('IAX','SIP','VIR') ORDER BY accountcode");
-	$sql = db_query("SELECT accountcode FROM astaccount where tech in (select actype from astactype) ORDER BY accountcode");
+	$sql = db_query("SELECT accountcode FROM astaccount where db_prefix ='".$db_prefix."' and tech in (select actype from astactype) ORDER BY accountcode");
 	
 	$accountcodelist = array();
 	while ($fetchit = db_fetch_object($sql)) {
@@ -2007,6 +2014,7 @@ function page_astadmin_credit() {
 
 function page_astadmin_credit_form($value, $edit) {
 	global $user;
+	global $db_prefix; 
 	$edit = $_POST["edit"];
   	$op = $_POST["op"];
   
@@ -2030,16 +2038,16 @@ $output = '
   $value = arg(3);
   if (!empty($value)) {
   $value = trim($value);
-  $sql = "SELECT accountcode, creditlimit FROM astaccount where uid <> 0 and tech in (select actype from astactype) AND accountcode LIKE '%".$value."%'". tablesort_sql($header);
+  $sql = "SELECT accountcode, creditlimit FROM astaccount where uid <> 0 and db_prefix ='".$db_prefix."' and tech in (select actype from astactype) AND accountcode LIKE '%".$value."%'". tablesort_sql($header);
   } else {
-  $sql = "SELECT accountcode, creditlimit FROM astaccount where uid <> 0 and tech in (select actype from astactype)". tablesort_sql($header);
+  $sql = "SELECT accountcode, creditlimit FROM astaccount where uid <> 0 and db_prefix ='".$db_prefix."' and tech in (select actype from astactype)". tablesort_sql($header);
   }
 
   $result = pager_query($sql, $maxline);
   
   while ($res = db_fetch_object($result)) {                                          
     $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
-	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$sqlfetch2 = db_fetch_object(db_query("select name from {users} where uid = '%s'", $sqlfetch1->uid));
 	$rows[] = array(
 		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>&nbsp;&nbsp;',
 		$res->accountcode,

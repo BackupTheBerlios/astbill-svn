@@ -152,6 +152,7 @@ if (arg(2) == 'edit') {
 
 function astcallcard_form($where, $value) {
 	global $user;
+	global $db_prefix; 
 
 	
 	if ($where == 'LISTALL') {
@@ -191,14 +192,14 @@ $output = '
 		$value = trim($value);
 		$sql = "SELECT astaccount.accountcode, astaccount.secret, astaccount.ccserialno,
 				date(astaccount.ccfirstused) ccfirstused, date(astaccount.cclastused) cclastused, 
-				round(astaccount.cccardvalue,2) cccardvalue, astaccount.creditlimit, astaccount.startingcredit, astaccount.ccbatchno, astaccount.active FROM astaccount WHERE tech in (select actype from astactype) AND accountcode LIKE '%".$value."%'". tablesort_sql($header);		
+				round(astaccount.cccardvalue,2) cccardvalue, astaccount.creditlimit, astaccount.startingcredit, astaccount.ccbatchno, astaccount.active FROM astaccount WHERE db_prefix ='".$db_prefix."' and tech in (select actype from astactype) AND accountcode LIKE '%".$value."%'". tablesort_sql($header);		
 		
 		} else {
 		$sql = "SELECT astaccount.accountcode, astaccount.secret, astaccount.ccserialno,
 				date(astaccount.ccfirstused) ccfirstused, date(astaccount.cclastused) cclastused, 
 				round(astaccount.cccardvalue,2) cccardvalue, astaccount.creditlimit, astaccount.startingcredit, astaccount.ccbatchno,
 				astaccount.active
-				FROM astaccount WHERE tech in (select actype from astactype)". tablesort_sql($header);
+				FROM astaccount WHERE db_prefix ='".$db_prefix."' and tech in (select actype from astactype)". tablesort_sql($header);
 		}
 				
 		$result = pager_query($sql, $maxline);

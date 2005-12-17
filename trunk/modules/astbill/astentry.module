@@ -28,6 +28,7 @@
 */
 
 
+
 function astentry_help($section='') {
   $output = '';
   switch ($section) {
@@ -142,6 +143,7 @@ function _astentry_all() {
   //  return;
   //}
   global $user;
+  global $db_prefix; 
   $maxline = 40; // This is the number of records to display on a page
 
   $output = t('<b>Hover over Account to view Accounts Password</b><br><br>');
@@ -154,7 +156,7 @@ function _astentry_all() {
 	
   );
 //  $sql = "SELECT accountcode, tech, secret, accountname, active FROM astaccount where uid ='".$user->uid."'". tablesort_sql($header);
-$sql = "SELECT accountcode, tech, secret, accountname, active FROM astaccount where (tech = 'SIP' or tech = 'IAX' or tech = 'VIR' or tech = 'H323') and uid ='".$user->uid."'". tablesort_sql($header);
+$sql = "SELECT accountcode, tech, secret, accountname, active FROM astaccount where (tech = 'SIP' or tech = 'IAX' or tech = 'VIR' or tech = 'H323') and db_prefix ='".$db_prefix."' and uid ='".$user->uid."'". tablesort_sql($header);
   //$sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
   //$result = pager_query($sql, $maxline, 0, $sqlCount);
   $result = pager_query($sql, $maxline);
@@ -255,7 +257,7 @@ function astentry_save($edit, $account) {
   if ($edit['tech'] == 3) {$tech = "H323";}
 
 
-$sql = db_fetch_array(db_query("select mail FROM pbx_users WHERE uid = %s", $user->uid));
+$sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $user->uid));
 
 if ($sql['mail'] == $edit['mailboxemail']){
 	$mailboxemail = '';
@@ -324,7 +326,7 @@ function astentry_form($edit = null) {
   $group .= form_select(t("<FONT SIZE=1>Enable or Disable Warning Balance Email</FONT>"), "lowbalanceemail", $edit['lowbalanceemail'], array(0 => t('Disabled'), 1 => t('Activate')));
 
   if(empty($edit['mailboxemail'])){
-  $sql = db_fetch_array(db_query("select mail FROM pbx_users WHERE uid = %s", $user->uid));
+  $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $user->uid));
   $mailboxemail = $sql['mail'];
   } else {
 	  $mailboxemail = $edit['mailboxemail'];
@@ -446,6 +448,7 @@ if (!is_numeric($edit['secret'])){
 
 function astpbx_save($edit, $account) {
   global $user;
+  global $db_prefix; 
   // Make sure you don't trust the URL to be safe! Always check for exploits.
   //if (!is_numeric($alice) || !is_numeric($bob)) {
   if (!is_numeric($account)) {
@@ -459,25 +462,27 @@ function astpbx_save($edit, $account) {
   if ($edit['tech'] == 2) {$tech = "VIR";} 
   if ($edit['tech'] == 3) {$tech = "H323";} 
 
-  
-//  db_query("INSERT INTO `astaccount` VALUES ( '%s', '', '%s', ' ', ' ', 'dynamic', 'default', ' ', '1', '1', '%s', '%s' , '1', '0', '0.00', '0000-00-00 00:00:00', NOW( ))", $user->uid , $tech , $edit['forwardto'] , $edit['comment']);
-db_query("CALL astCreateAccount(@a,%s,'%s')",$user->uid, $tech);
+// This variables are site specific.
+// variable_set('AstBill Brand', 'SESE');
+// variable_set('AstBill CountryPrefix', 35);
+// variable_set('AstBill Tech', 'IAX');
 
-$sql = db_fetch_object(db_query("SELECT name FROM pbx_users WHERE uid = '%s'", $user->uid));
-$lastaccount = db_fetch_object(db_query("SELECT lastaccount from astuser WHERE uid='%s'", $user->uid));
+db_query("CALL astCreateAcc2(@a,%d,'%s','%s','%s','%d')",$user->uid, $tech,$db_prefix,variable_get("AstBill Brand", 'default'),variable_get("AstBill CountryPrefix", '44'));
+
+$sql = db_fetch_object(db_query("SELECT name FROM {users} WHERE uid = '%s'", $user->uid));
+
+$lastaccount = db_fetch_object(db_query("SELECT lastaccount from astuser WHERE uid='%s' and db_prefix ='".$db_prefix."'", $user->uid));
 $callerid = $sql->name.' <'.$lastaccount->lastaccount.'>';
 
-db_query("UPDATE astaccount SET language = '%s', forwardto = '%s' , callerid = '%s' , accountname = '%s', active = '%s' WHERE accountcode=(SELECT lastaccount from astuser WHERE uid='%s')",
-$edit['language'], $edit['forwardto'],$callerid,$edit['accountname'],$edit['active'],$user->uid);
-//  db_query("UPDATE astaccount SET tech = '%s', forwardto = '%s', comment = '%s' WHERE uid = %s AND accountcode = '%s'", $tech, $edit['forwardto'], $edit['comment'], $user->uid, $account);
-  // tech, forwardto, comment
-  // db_query("UPDATE astaccount SET title = '%s', url = '%s' WHERE uid = %s AND url = '%s'", $edit['title'], 
-  // db_query("INSERT INTO t (fname) VALUES ('%s')", $account.$edit['techsw'].$edit['forsw'].$edit['commentsw']);
+db_query("UPDATE astaccount SET language = '%s', forwardto = '%s' , callerid = '%s' , accountname = '%s', active = '%s' WHERE accountcode = '%s'",
+$edit['language'], $edit['forwardto'],$callerid,$edit['accountname'],$edit['active'],$lastaccount->lastaccount);
+
   drupal_set_message(t('The Account settings have been updated.'));
 }
 
 function astpbx_form($edit = null) {
 	global $user;
+	global $db_prefix; 
   $tech = 9;
   if ($edit['tech'] == "SIP") {$tech = 0;} 
   if ($edit['tech'] == "IAX") {$tech = 1;} 
@@ -491,7 +496,7 @@ function astpbx_form($edit = null) {
 	while ($item = db_fetch_object($sql)) {
 		array_push2($languagelist, $item->languagename, $item->language);
 	}
-  $sql = db_fetch_object(db_query("SELECT name FROM pbx_users WHERE uid = '%s'", $user->uid));
+  $sql = db_fetch_object(db_query("SELECT name FROM {users} WHERE uid = '%s'", $user->uid));
 	
   $callerid = $sql->name.' <>';
 	
@@ -507,7 +512,9 @@ function astpbx_form($edit = null) {
   $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);
 //  $group .= form_textfield(t("Change your Caller ID Example: My Name <9000><BR><FONT SIZE=1>Note: Please select a number you wish to be dialed back on</FONT>"), "callerid", $callerid, 80, 150, null, null, false);
 
-  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => t('Disabled'), 1 => t('Activate')));  
+/*  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(1 => t('Activate'), 0 => t('Disabled')));   */
+
+ $group .= form_select(t("Set the Account Status:"), "active", 1, array(1 => t('Activate'), 0 => t('Disabled')));  
 
  /* Dont Delete - This is in use in some implementations
  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI'));   */
@@ -522,8 +529,9 @@ function astpbx_form($edit = null) {
 
 function astpbx_load($account) {
   global $user;
+  global $db_prefix; 
 //  return db_fetch_array(db_query("SELECT * FROM {bookmarks} WHERE uid = %s AND url = '%s'", $user->uid, $url));
-  return db_fetch_array(db_query("SELECT tech, forwardto, accountname, active FROM astaccount WHERE uid = %s AND accountcode = '%s'", $user->uid, $account));
+  return db_fetch_array(db_query("SELECT tech, forwardto, accountname, active FROM astaccount WHERE uid = %s and db_prefix ='".$db_prefix."' AND accountcode = '%s'", $user->uid, $account));
 }
 // END FORM STUFF
 
@@ -531,6 +539,7 @@ function astpbx_load($account) {
 function page_astentry_createnr() {
 
   global $user;
+  global $db_prefix; 
 
   $edit = $_POST["edit"];
   $op = $_POST["op"];
@@ -613,7 +622,7 @@ function page_astentry_emailme() {
 
 		default:
 			$uid = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", arg(2)));
-			$email = db_fetch_object(db_query("SELECT mail FROM pbx_users WHERE uid = '%s'", $uid->uid));
+			$email = db_fetch_object(db_query("SELECT mail FROM {users} WHERE uid = '%s'", $uid->uid));
 			$group .= 'Please check that the email bellow is correct before confirming.<BR>';
 			$group .= form_textfield(t('Email:'), 'email', $email->mail, 30, 100);
 		
@@ -1223,6 +1232,7 @@ if ($edit['tech'] == 2)
 
 function astadvset_save($edit, $account) {
   global $user;
+  global $db_prefix; 
   // Make sure you don't trust the URL to be safe! Always check for exploits.
   //if (!is_numeric($alice) || !is_numeric($bob)) {
   if (!is_numeric($account)) {
@@ -1240,7 +1250,7 @@ if ($edit['nat'] == 3) {$nat = 'route';}
 
 
 db_query("UPDATE astaccount SET qualify = '%s', nat = '%s' WHERE accountcode = '%s'", $qualify, $nat, $account);
-db_query("UPDATE astuser SET countryprefix = '%s', callbackto = '%s' WHERE uid = '%s'", $edit['countryprefix'], $edit['callbackto'], $user->uid);
+db_query("UPDATE astuser SET countryprefix = '%s', callbackto = '%s' WHERE uid = '%s' and db_prefix ='".$db_prefix."'", $edit['countryprefix'], $edit['callbackto'], $user->uid);
 //  db_query("INSERT INTO `astaccount` VALUES ( '%s', '', '%s', ' ', ' ', 'dynamic', 'default', ' ', '1', '1', '%s', '%s' , '1', '0', '0.00', '0000-00-00 00:00:00', NOW( ))", $user->uid , $tech , $edit['forwardto'] , $edit['comment']);
 //db_query("CALL astCreateAccount(@a,%s,'%s')",$user->uid, $tech);
 //db_query("UPDATE astaccount SET forwardto = '%s' , accountname = '%s' WHERE accountcode=(SELECT lastaccount from astuser WHERE uid='%s')",$edit['forwardto'],$edit['accountname'],$user->uid);
@@ -1310,9 +1320,8 @@ function astadvset_load($account) {
 
 
 function page_astentry_advset() {
-
-  global $user;
-
+  global $user; 
+  global $db_prefix; 
   $edit = $_POST["edit"];
   $op = $_POST["op"];
 
@@ -1413,7 +1422,7 @@ function astvoicemail_save($edit, $account) {
     drupal_access_denied();
     return;
   }
-$sql = db_fetch_array(db_query("select mail FROM pbx_users WHERE uid = %s", $user->uid));
+$sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $user->uid));
 
 if ($sql['mail'] == $edit['mailboxemail']){
 	$mailboxemail = '';
@@ -1436,7 +1445,7 @@ function astvoicemail_form($edit) {
   $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);*/
 
   if(empty($edit['mailboxemail'])){
-  $sql = db_fetch_array(db_query("select mail FROM pbx_users WHERE uid = %s", $user->uid));
+  $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $user->uid));
   $mailboxemail = $sql['mail'];
   } else {
 	  $mailboxemail = $edit['mailboxemail'];
@@ -1554,6 +1563,7 @@ function astincomingnr_validate($edit) {
 
 function astincomingnr_save($edit, $account) {
   global $user;
+  global $db_prefix;
   // Make sure you don't trust the URL to be safe! Always check for exploits.
   //if (!is_numeric($alice) || !is_numeric($bob)) {
   if (!is_numeric($account)) {
@@ -1564,7 +1574,7 @@ function astincomingnr_save($edit, $account) {
 
 
 
-db_query("UPDATE asv_friend SET forwardto = '%s', comment = '%s' WHERE publicnumber = '%s' AND uid = '%s'", $edit['forwardto'], $edit['comment'], arg(2), $user->uid);
+db_query("UPDATE asv_friend SET forwardto = '%s', comment = '%s' WHERE publicnumber = '%s' AND uid = '%s' and db_prefix ='".$db_prefix."'", $edit['forwardto'], $edit['comment'], arg(2), $user->uid);
 
 
   drupal_set_message(t('The Account settings have been updated.'));
@@ -1572,6 +1582,7 @@ db_query("UPDATE asv_friend SET forwardto = '%s', comment = '%s' WHERE publicnum
 
 function astincomingnr_form($edit) {
   global $user;
+  
   /*$group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'));
 //  $group = form_textfield(t('Title'), 'title', $edit['title'], 60, 128, null, null, true);
   $group .= form_textfield(t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
@@ -1591,14 +1602,16 @@ function astincomingnr_form($edit) {
 
 function astincomingnr_load($account) {
   global $user;
+  global $db_prefix;
 //  return db_fetch_array(db_query("SELECT * FROM {bookmarks} WHERE uid = %s AND url = '%s'", $user->uid, $url));
-  return db_fetch_array(db_query("SELECT accountcode, publicnumber, tech, forwardto, comment FROM asv_friend WHERE uid = %s AND publicnumber = '%s'", $user->uid, arg(2)));
+  return db_fetch_array(db_query("SELECT accountcode, publicnumber, tech, forwardto, comment FROM asv_friend WHERE uid = %s and db_prefix ='".$db_prefix."' AND publicnumber = '%s'", $user->uid, arg(2)));
 }
 // END FORM STUFF
 
 function page_astentry_incomingnr() {
 
   global $user;
+  global $db_prefix; 
 
   $edit = $_POST["edit"];
   $op = $_POST["op"];
@@ -1623,7 +1636,7 @@ function page_astentry_incomingnr() {
 	
   );
 
-$sql = db_query("SELECT accountcode, publicnumber, tech, forwardto, comment FROM asv_friend WHERE uid = '%s'", $user->uid);
+$sql = db_query("SELECT accountcode, publicnumber, tech, forwardto, comment FROM asv_friend WHERE uid = '%s' and db_prefix ='".$db_prefix."' ", $user->uid);
 
  // $result = pager_query($sql, $maxline);
   
@@ -1660,6 +1673,7 @@ _astentry_printtheme_best($output, $account, $title);
 function page_astentry_incomingnrchange(){
 
   global $user;
+  global $db_prefix;
 
   $edit = $_POST["edit"];
   $op = $_POST["op"];
