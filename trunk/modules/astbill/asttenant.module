@@ -1,0 +1,610 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2005.10.03 Version 0.9.0.8
+ * 
+ */
+
+
+function asttenant_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Tenants");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function asttenant_menu($may_cache) {
+  $items = array();
+  $access = user_access('can use admin astbill reseller');
+  $items[] = array('path' => 'asttenant',
+                                  'title' => t('admin'),
+                                  'callback' => '_asttenant_all',
+                                  'access' => $access,
+                                  'type' => MENU_CALLBACK);
+				  
+        $items[] = array('path' => 'astbilladm/tenant', 'title' => t('Tenants'),
+      'callback' => 'page_asttenant_tenant',
+      'access' => $access);
+     // 'type' => MENU_CALLBACK);
+
+     	$items[] = array('path' => 'astbilladm/tenant/create', 'title' => t('Create Tenants'),
+      'callback' => 'page_asttenant_tenantcreate',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+ 	
+	$items[] = array('path' => 'astbilladm/tenant/change', 'title' => t('Change Tenants'),
+      'callback' => 'page_asttenant_tenantchange',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+      
+      	$items[] = array('path' => 'astbilladm/tenant/changespecific', 'title' => t('Change Tenants'),
+      'callback' => 'page_asttenant_tenantchange',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+
+      	$items[] = array('path' => 'astbilladm/tenant/remove', 'title' => t('Delete Tenants'),
+      'callback' => 'page_asttenant_remove',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+
+
+
+  return $items;
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+
+
+function asttenant_perm() {
+	return array('can use astentry', 'can use admin astentry', 'can use admin astbill reseller');
+  // return array('can use astentry');
+} // function astentry_perm()
+
+
+// ##########################################################################################################
+
+
+function _asttenant_all() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+
+
+$title = 'UID';
+$account = $user->uid;
+_asttenant_printtheme_best($output, $account, $title);
+
+}
+
+
+
+// START TENANT STUFF
+
+function page_asttenant_remove() {
+	global $user;
+	
+	$test = db_fetch_object(db_query("select count(*) count from astuser where tid = '%s'", arg(3)));
+	
+	if ($test->count == '0') {
+
+	$edit = $_POST['edit'];
+
+	$deletedmsg = 'The tenant was deleted';
+	$confirmmsg = '<P>Are you sure you want to delete this tenant?</P>';
+	$dbquery = "DELETE FROM asttenant WHERE tid = '".arg(3)."'";
+	$goto = "astbilladm/tenant";
+	$item = arg(4);
+
+	$output = asttenant_confirm_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item);
+	} else {
+		form_set_error("test", "Unable to delete, Tenant contains users.");
+		drupal_goto("astbilladm/tenant");
+		
+	}
+	
+	
+}
+
+
+
+function page_asttenant_tenant() {
+	global $user;
+
+	
+if (!is_numeric(arg(2))) {
+	if (arg(2) == '') {
+	} else {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+	}
+  }
+	
+	
+if (arg(2) == '') {
+  $maxline = 40; // This is the number of records to display on a page
+
+  $header = array(
+    array('data' => t('Users'), 'field' => 'users'),
+    array('data' => t('TID'), 'field' => 'tid', 'sort' => 'asc'),
+    array('data' => t('Company'), 'field' => 'company'),
+    array('data' => t('Contact Name'), 'field' => 'contactname'),
+    array('data' => t('Operations'), 'colspan' => 2)
+                                                                                     
+  );                                                                                 
+                                                                                      
+  $sql = "SELECT asttenant.tid, asttenant.company, asttenant.contactname, Count(astuser.tid) AS users FROM asttenant LEFT JOIN astuser ON asttenant.tid = astuser.tid GROUP BY asttenant.tid, asttenant.company, asttenant.contactname". tablesort_sql($header);
+
+
+  $result = pager_query($sql, $maxline);
+  
+  while ($res = db_fetch_object($result)) {                                          
+	$rows[] = array(
+		'<A HREF="'.url('astbilladm/tenant/'.$res->tid).'">'.$res->users.'</A>',
+		$res->tid,
+		$res->company,
+		$res->contactname,
+		'<A HREF="'.url('astbilladm/tenant/change/'.$res->tid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<A HREF="'.url('astbilladm/tenant/remove/'.$res->tid.'/'.$res->company).'">Remove</A>'
+	);
+  }
+  $title = 'View';
+}
+
+
+
+if (is_numeric(arg(2))) {
+  $maxline = 40; // This is the number of records to display on a page
+
+  $header = array(
+    array('data' => t('UID'), 'field' => 'uid', 'sort' => 'asc'),
+    array('data' => t('Name'), 'field' => 'name'),
+    array('data' => t('TID'), 'field' => 'tid'),
+    array('data' => t('Company'), 'field' => 'company'),
+    array('data' => t('Brand'), 'field' => 'brand'),
+    array('data' => t('Prefix'), 'field' => 'CountryPrefix'),
+    array('data' => t('Currency'), 'field' => 'currency'),
+    array('data' => t('CreditLimit'), 'field' => 'creditlimit'),    
+
+    array('data' => t('Operations'), 'colspan' => 1)
+                                                                                     
+  );                                                                                 
+                                                                                      
+  $sql = "SELECT asttenant.tid, asttenant.company, pbx_users.uid, pbx_users.name, astuser.brand, astuser.CountryPrefix, astuser.currency, astuser.creditlimit FROM (astuser LEFT JOIN asttenant ON astuser.tid = asttenant.tid) INNER JOIN pbx_users ON astuser.uid = pbx_users.uid WHERE astuser.uid <> 0 and asttenant.tid = '".arg(2)."'". tablesort_sql($header);
+
+
+  $result = pager_query($sql, $maxline);
+  
+  while ($res = db_fetch_object($result)) {                                          
+	$rows[] = array(
+		$res->uid,
+		$res->name,
+		$res->tid,
+		$res->company,
+		$res->brand,
+		$res->CountryPrefix,
+		$res->currency,
+		$res->creditlimit,
+		'<A HREF="'.url('astbilladm/tenant/changespecific/'.$res->uid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>'
+	);
+  }
+  $title = 'User list';
+}
+
+
+
+$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+if (!empty($pager)) {
+  $rows[] = array(array('data' => $pager, 'colspan' => 10));
+}
+
+$output .= (count($rows) == 0) ? t('No records available.') : theme('table', $header, $rows);
+
+
+
+
+_asttenant_printtheme_tenant($output, $account, $title);
+	
+	
+}
+
+
+
+
+function _asttenant_printtheme_tenant($page_content, $account, $title) {
+	global $user;
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+
+$output .= '<div class="nodecontent">';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/tenant/create/').'">Create New Tenant</A></B><BR>';
+
+  print theme("page", $output);
+}
+
+
+
+function page_asttenant_tenantchange() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(1))) {
+    case t('Change'):
+      $title = t('Edit Account');
+      if (asttenant_tenant_validate($edit)) {
+        asttenant_tenant_save($edit,arg(3));
+        drupal_goto("astbilladm/tenant");
+      } else {
+		drupal_goto("astbilladm/tenant/change/".arg(3));
+	  }
+      break;
+  	case t('Back'):
+		drupal_goto("astbilladm/tenant");
+    default:
+	  $output = asttenant_tenant_form(arg(3));
+  }
+
+
+$title = 'Change';
+$account = $user->uid;
+_asttenant_printtheme_best($output, $account, $title);
+}
+
+
+function page_asttenant_tenantcreate() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(1))) {
+    case t('Create'):
+      $title = t('Edit Account');
+      if (asttenant_tenant_validate($edit)) {
+        asttenant_tenant_save($edit,arg(3));
+        drupal_goto("astbilladm/tenant");
+      } else {
+		drupal_goto("astbilladm/tenant/create/".arg(3));
+	  }
+      break;
+  	case t('Back'):
+		drupal_goto("astbilladm/tenant");
+    default:
+	  $output = asttenant_tenant_form(arg(3));
+  }
+
+$title = 'Create';
+$account = $user->uid;
+_asttenant_printtheme_best($output, $account, $title);
+}
+
+
+
+
+// TENANT FORM STUFF
+function asttenant_tenant_validate($edit) {
+  global $user;
+  $myerror = 1;
+  $errors = array();
+
+
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+
+function asttenant_tenant_save($edit, $account) {
+  global $user;
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+ /*
+  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }*/
+
+if (arg(2) == 'create'){ // START CHECK IF TENANTCREATE
+
+	$accountcode = null;
+	$paytype = null;
+	$comment = null;
+	$paidamount = null;
+	$paiddate = null;
+
+
+db_query("INSERT INTO asttenant (resellerid, company, contactname, address1, address2, zip, city, state, country, phone, phone2, fax, status) 
+VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+$edit['resellerid'], $edit['company'], $edit['contactname'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['phone'], $edit['phone2'], $edit['fax'], $edit['status']);
+
+
+drupal_set_message(t('New tenant added'));
+
+} // END CHECK IF TENANTCREATE
+
+
+if (arg(2) == 'change'){ // START CHECK IF TENANTCHANGE
+
+db_query("UPDATE asttenant SET resellerid = '%s', company = '%s', contactname = '%s', address1 = '%s', address2 = '%s'
+, zip = '%s', city = '%s', state = '%s', country = '%s', phone = '%s', phone2 = '%s', fax = '%s', status = '%s' WHERE tid = '%s'"
+, $edit['resellerid'], $edit['company'], $edit['contactname'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['phone'], $edit['phone2'], $edit['fax'], $edit['status'], arg(3));
+
+
+drupal_set_message(t('Tenant changed'));
+
+} // END CHECK IF TENANTCHANGE
+
+if (arg(2) == 'changespecific'){ // START CHECK IF TENANTCHANGESPECIFIC
+
+	
+	
+	if ($edit['country'] == 'United States of America') {
+		$countryprefix = '1';
+	} else {
+	
+	$sql = db_query("select country, countrycode from astcountrycode");
+	while ($sqlfetch = db_fetch_object($sql)){
+		if ($edit['country'] == $sqlfetch->country) {
+			$sql2 = db_query("select countrycode from astcountrycode WHERE country = '%s'", $sqlfetch->country);
+			$sql2fetch = db_fetch_object($sql2);
+			$countryprefix = $sql2fetch->countrycode;
+		}
+	}
+	}
+	
+	
+	
+db_query("UPDATE astuser SET tid = '%s', brand = '%s', CountryPrefix = '%s', currency = '%s' WHERE uid = '%s'", $edit['tid'], $edit['brand'], $countryprefix, $edit['currency'], arg(3));
+
+
+drupal_set_message(t('Tenant changed'));
+
+} // END CHECK IF TENANTCHANGE
+
+
+}
+
+function asttenant_tenant_form($account) {
+	global $user;
+	$edit = $_POST["edit"];
+    $op = $_POST["op"];
+
+
+if (arg(2) == 'create'){ // START CHECK IF TENANTCREATE
+
+	$resellerid = null;
+	$company = null;
+	$contactname = null;
+	$address1 = null;
+	$address2 = null;
+	$zip = null;
+	$city = null;
+	$state = null;
+	$country = null;
+	$phone = null;
+	$phone2 = null;
+	$fax = null;
+	$status = null;
+
+
+} // END CHECK IF TENANTCREATE
+
+if (arg(2) == 'change'){ // START CHECK IF TENANTCHANGE
+
+$sql = db_query("SELECT resellerid, company, contactname, address1, address2, zip, city, state, country, phone, phone2, fax, status FROM asttenant WHERE tid = '%s'", arg(3));
+$sqlout = db_fetch_object($sql);
+
+	$resellerid = $sqlout->resellerid;
+	$company = $sqlout->company;
+	$contactname = $sqlout->contactname;
+	$address1 = $sqlout->address1;
+	$address2 = $sqlout->address2;
+	$zip = $sqlout->zip;
+	$city = $sqlout->city;
+	$state = $sqlout->state;
+	$country = $sqlout->country;
+	$phone = $sqlout->phone;
+	$phone2 = $sqlout->phone2;
+	$fax = $sqlout->fax;
+	$status = $sqlout->status;
+
+
+}// END CHECK IF TENANTCHANGE
+
+
+if (arg(2) == 'changespecific'){ // START CHECK IF TENANTCHANGESPECIFIC
+
+	$sql = db_query("SELECT astuser.tid, astuser.brand, astuser.CountryPrefix, astuser.currency FROM astuser WHERE uid = '%s'", arg(3));
+	$sqlout = db_fetch_object($sql);
+
+	$tid = $sqlout->tid;
+	$currency = $sqlout->currency;
+	$brand = $sqlout->brand;
+	$countryprefix = $sqlout->CountryPrefix;
+
+	
+	if ($countryprefix == '1') {
+		$country = 'United States of America';
+	} else {
+	
+	$sql = db_query("select country, countrycode from astcountrycode");
+	while ($sqlfetch = db_fetch_object($sql)){
+		if ($countryprefix == $sqlfetch->countrycode) {
+			$sql2 = db_query("select country from astcountrycode WHERE countrycode = '%s'", $sqlfetch->countrycode);
+			$sql2fetch = db_fetch_object($sql2);
+			$country = $sql2fetch->country;
+		}
+	}
+	}
+	
+	$sql = db_query("select company, tid from asttenant");
+	$companylist = array();
+	while ($fetchit = db_fetch_object($sql)) {
+	   array_push2($companylist, $fetchit->company, $fetchit->tid);
+	}
+	
+	$sql = db_query("select name from astbrand");
+	$brandlist = array();
+	while ($fetchit = db_fetch_object($sql)) {
+	   array_push2($brandlist, $fetchit->name, $fetchit->name);
+	}
+	
+	$sql = db_query("SELECT DISTINCT country FROM astcountrycode WHERE usstate is null order by country");
+	$countrylist = array();
+	while ($fetchit = db_fetch_object($sql)) {
+	   array_push2($countrylist, $fetchit->country, $fetchit->country);
+	}
+	
+	$sql = db_query("SELECT currency FROM astcurrency ORDER BY currency");
+	$currencylist = array();
+	while ($fetchit = db_fetch_object($sql)) {
+	   array_push2($currencylist, $fetchit->currency, $fetchit->currency);
+	}
+	
+
+	
+	$group .= form_select(t("Company"), "tid", $tid, $companylist);
+	$group .= form_select(t("Brand"), "brand", $brand, $brandlist);
+	$group .= form_select(t("Country"), "country", $country, $countrylist);
+	$group .= form_select(t("Currency"), "currency", $currency, $currencylist);
+
+	
+	
+	
+} else {
+
+
+	$group .= form_textfield(t('Company'), 'company', $company, 30, 100);
+	$group .= form_textfield(t('Contactname'), 'contactname', $contactname, 30, 100);
+	$group .= form_textfield(t('Address1'), 'address1', $address1, 30, 100);
+	$group .= form_textfield(t('Address2'), 'address2', $address2, 30, 100);
+	$group .= form_textfield(t('Zip'), 'zip', $zip, 30, 100);
+	$group .= form_textfield(t('City'), 'city', $city, 30, 100);
+	$group .= form_textfield(t('State'), 'state', $state, 30, 100);
+	$group .= form_textfield(t('Country'), 'country', $country, 30, 100);
+	$group .= form_textfield(t('Phone'), 'phone', $phone, 30, 100);
+	$group .= form_textfield(t('Phone2'), 'phone2', $phone2, 30, 100);
+	$group .= form_textfield(t('Fax'), 'fax', $fax, 30, 100);
+	$group .= form_textfield(t('resellerid'), 'resellerid', $resellerid, 30, 100);
+	$group .= form_textfield(t('Status'), 'status', $status, 30, 100);
+
+}
+
+if (arg(2) == 'create'){
+	$group .= form_submit(t('Create'));
+} else {
+	$group .= form_submit(t('Change'));
+}
+	$group .= form_submit(t('Back'));
+	//$form = form_group(t('Account details'), $group);
+	return form($group);
+}
+
+
+// END TENANT FORM STUFF
+// END TENANT STUFF
+
+
+
+
+// START COMMON FUNCTIONS
+
+
+function _asttenant_printtheme_best($page_content, $account, $title) {
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+  // $output .= '<div class="astentry">' . $page_content . "</div>\n";
+  print theme("page", $output);
+}
+
+
+function asttenant_confirm_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item) {
+	global $user;
+	$cid = arg(2);
+	$output = '';
+
+	if ($edit) {
+		db_query($dbquery);
+		//db_query("DELETE FROM {contact_category} WHERE cid = %d and uid = %d", $cid, $user->uid);
+		// db_query("DELETE FROM {contact_category} WHERE cid = % d", $edit['cid']);
+
+		// Redirects the response to the list page
+		drupal_set_message(t($deletedmsg));
+		drupal_goto($goto);
+	}
+
+	// Creates a confirmation form
+	$categories = astcontact_get_categories();
+
+	$output .= t($confirmmsg);
+	$output .= form_hidden('cid', $cid);
+	$output .= form_submit(t('Delete'));
+
+	//return form($output);
+	$group = form($output);
+
+$title = 'Remove '.$item;
+$account = $user->uid;
+_asttenant_printtheme_best($group, $account, $title);
+//return $output;
+}
+
+/*
+function array_push2(&$array,$object,$key=null){
+   $keys = array_keys($array);
+   rsort($keys);
+   $newkey = ($key==null)?$keys[0]+1:$key;
+   $array[$newkey] = $object;
+   return $newkey;
+}
+
+function myRange($low,$high,$step=1)
+{
+$ranArray = range($low,$high);
+$step--;
+$keys = count($ranArray);
+   for($i=0;$i<$keys;$i++)
+   {
+   $retArray[] = $ranArray[$i];
+   $i = $i + $step;
+   }
+return $retArray;
+}
+*/
+// END COMMON FUNCTIONS
