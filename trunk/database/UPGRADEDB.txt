@@ -1,0 +1,12 @@
+To upgrade your AstBill Database
+
+Run: http://yoursite.com/astbillupdate.php
+
+Warning; Only run this script when there is a Version Upgrade or when asked to do that by support.
+If you run the database upgrade script without having the latest versions of the module files 
+your AstBill installation may be broken.
+
+READ:  http://astbill.com/update14
+
+AstBill Support
+http://astbill.com/forum/3
