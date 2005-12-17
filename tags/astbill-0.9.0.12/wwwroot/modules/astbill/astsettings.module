@@ -1,0 +1,637 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2005.10.03 Version 0.9.0.8
+ * 
+ */
+
+/**
+* Display help and module information
+* @param section which section of the site we're displaying help
+* @return help text for section
+*/
+
+
+function astsettings_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Settings");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astsettings_menu($may_cache) {
+  $items = array();
+  $access = user_access('astsettings brand');
+  $accessmgr = user_access('astsettings manager');
+  $items[] = array('path' => 'astbilladm/settings',
+                                  'title' => t('Settings'),
+                                  'callback' => '_astsettings_all',
+                                  'access' => $access);
+                                 // 'type' => MENU_CALLBACK);
+
+  $items[] = array('path' => 'astbilladm/settings/brand', 'title' => t('Brand'),
+  'callback' => 'page_astsettings_brand',
+  'access' => $access);
+  // 'type' => MENU_CALLBACK);
+  
+  $items[] = array('path' => 'astbilladm/settings/brand/edit', 'title' => t('Brand'),
+  'callback' => 'page_astsettings_brand',
+  'access' => $access,
+  'type' => MENU_CALLBACK);
+    
+  $items[] = array('path' => 'astbilladm/settings/brand/create', 'title' => t('Brand'),
+  'callback' => 'page_astsettings_brand',
+  'access' => $access,
+  'type' => MENU_CALLBACK);
+  
+  $items[] = array('path' => 'astbilladm/realtime/manager', 'title' => t('Manager'),
+  'callback' => 'page_astsettings_manager',
+  'access' => $accessmgr);
+  //'type' => MENU_CALLBACK);
+
+
+	// By using the MENU_CALLBACK type, we can register the callback for this
+    // path but not have the item show up in the menu; the admin is not allowed
+    // to enable the item in the menu, either.
+
+
+
+
+
+
+  return $items;
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+function astsettings_perm() {
+	return array('astsettings brand','astsettings manager' );
+  // return array('can use astentry');
+} // function astentry_perm()
+
+
+// ##########################################################################################################
+
+function _astsettings_all() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+//$fetchbrand = db_query("SELECT brand FROM astuser WHERE uid=%s", $user->uid);
+//$brand = db_fetch_object($sql);
+
+
+$title = 'Settings';
+
+
+_astsettings_printtheme_best($output, $title);
+}
+
+// BEGIN BRAND STUFF
+function page_astsettings_brand() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];	
+  
+  $arg3 = arg(3);
+  $arg4 = arg(4);
+  $pass = 0;
+  
+  if ($arg3 == 'edit') {$pass = 1;}
+  if (empty($arg4)) {$pass = 0;}
+  if ($arg3 == 'create') {$pass = 1;}
+  
+  if ($pass == '1') {
+	  switch (($op ? $op : arg(1))) {
+		  case t('Save'):
+		  if (astsettings_validate($edit)) {
+			  astsettings_save($edit);
+			  drupal_goto("astbilladm/settings/brand/");
+		  } else {
+			  drupal_goto("astbilladm/settings/brand/");
+		  }
+		  break;
+		  
+		  case t('Create'):
+		  if (astsettings_validate($edit)) {
+			  astsettings_save($edit);
+			  drupal_goto("astbilladm/settings/brand/");
+		  } else {
+			  drupal_goto("astbilladm/settings/brand/create");
+		  }
+		  break;
+		  
+		  case t('Back'):
+		  drupal_goto("astbilladm/settings/brand");
+		  default:
+		  $output = astsettings_form($arg4);
+	  }
+  }
+
+if (empty($arg3)) {
+  
+  
+  $maxline = 40;
+  
+  
+  $header = array(
+    array('data' => t('Name'), 'field' => 'name'),
+    array('data' => t('Language'), 'field' => 'language'),
+    array('data' => t('Currency'), 'field' => 'currency'),
+    array('data' => t('Published Number'), 'field' => 'publishednum'),
+    array('data' => t('Did'), 'field' => 'did'),
+    array('data' => t('Markup'), 'field' => 'markup'),
+    array('data' => t('Bill Increment'), 'field' => 'billincrement'),
+    array('data' => t('Connection Charge'), 'field' => 'connectcharge'),
+    array('data' => t('Status'), 'field' => 'status'),
+    array('data' => t('Operations'))
+  );
+
+$sql = "SELECT name, currency, language, publishednum, did, markup, billincrement, connectcharge, status FROM astbrand". tablesort_sql($header);
+$result = pager_query($sql, $maxline);
+
+  
+  while ($item = db_fetch_object($result)) {
+	  if (empty($item->language)) { $item->language = 0 ;}
+	  if (empty($item->publishednum)) { $item->publishednum = 0 ;}
+	  	$rows[] = array(
+		$item->name.'&nbsp;&nbsp;',
+		$item->language.'&nbsp;&nbsp;',
+		$item->currency.'&nbsp;&nbsp;',
+	        $item->publishednum.'&nbsp;&nbsp;',
+		$item->did.'&nbsp;&nbsp;',
+		$item->markup.'&nbsp;&nbsp;',
+		$item->billincrement.'&nbsp;&nbsp;',
+		$item->connectcharge.'&nbsp;&nbsp;',
+		$item->status.'&nbsp;&nbsp;',
+		'<A HREF="'.url("astbilladm/settings/brand/edit/".$item->name).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>'
+		);
+  }
+
+
+
+  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+  if (!empty($pager)) {
+    $rows[] = array(array('data' => $pager, 'colspan' => 8));
+  }
+
+  $output .= (count($rows) == 0) ? t('No Peers.') : theme('table', $header, $rows);
+  $title = 'View';
+  
+  _astbrand_printtheme_best($output, $title);
+} else {
+
+
+if ($arg3 == 'edit') {$title = 'Edit';}
+if ($arg3 == 'create') {$title = 'Create';}
+
+_astsettings_printtheme_best($output, $title);
+}
+}
+
+function _astbrand_printtheme_best($page_content, $title) {
+	global $user;
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+
+$output .= '<div class="nodecontent">';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/settings/brand/create/').'">Create new</A></B><BR>';
+
+  print theme("page", $output);
+}
+
+//END BRAND STUFF
+
+
+// FORM STUFF
+function astsettings_validate($edit) {
+  $myerror = 1;
+  $errors = array();
+
+  if (arg(3) == 'create'){
+	  if(empty($edit['name'])){
+		  $errors['test'] = t('Please enter a unique brand name');
+		  $myerror = 0;
+	  }
+	  
+	  $sql = db_query("SELECT name FROM astbrand");
+
+	  while ($getname = db_fetch_object($sql)){
+		  if ($edit['name'] == $getname->name){
+			  $errors['test'] = t('Please enter a unique brand name');
+			  $myerror = 0;
+		  }
+	  }
+}
+
+  
+  
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+function astsettings_save($edit) {
+	global $user;
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+//  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+//    drupal_access_denied();
+//    return;
+//  }
+
+	if (arg(3) == 'create') {
+	db_query("INSERT INTO astbrand ( name, currency,
+	language, publishednum, did, markup, 
+	billincrement, connectcharge, status ) VALUES ( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
+        $edit['name'], $edit['currency'], $edit['language'],
+	$edit['publishednum'], $edit['did'] , $edit['markup'],
+	$edit['billincrement'], $edit['connectcharge'], $edit['status']);
+
+	drupal_set_message(t('A new brand has been created.'));
+	}
+
+
+	if (arg(3) == 'edit') {
+	db_query("UPDATE astbrand SET currency = '%s', 
+	language = '%s', publishednum = '%s', did = '%s', markup = '%s', 
+	billincrement = '%s', connectcharge = '%s', status = '%s' WHERE name = '%s'",
+        $edit['currency'], $edit['language'],
+	$edit['publishednum'], $edit['did'] , $edit['markup'],
+	$edit['billincrement'], $edit['connectcharge'], $edit['status'], arg(4));
+
+	drupal_set_message(t('The brand has been updated.'));
+	}
+
+
+}
+
+function astsettings_form($name) {
+	global $user;
+
+	
+	$sql = db_query("SELECT currency FROM astcurrency");
+	$currency = array();
+	while ($model = db_fetch_object($sql)) {
+		array_push2($currency, $model->currency, $model->currency);
+	}
+	
+	if (arg(3) == 'create') {
+		$valuesql->name = NULL;
+		$valuesql->currency = NULL;
+		$valuesql->language = NULL;
+		$valuesql->publishednum = NULL;
+		$valuesql->did = NULL;
+		$valuesql->markup = NULL;
+		$valuesql->billincrement = NULL;
+		$valuesql->connectcharge = NULL;
+		$valuesql->status = NULL;
+	}
+	
+	if (arg(3) == 'edit') {
+		
+	$valuesql = db_fetch_object(db_query("SELECT name, currency, language, publishednum, did, markup, billincrement, connectcharge, status FROM astbrand WHERE name = '%s'", $name));
+
+	$group .= '<BR>';
+	$group .= 'Name: '.$valuesql->name;	
+	
+		
+	}
+	
+	if (arg(3) == 'create') {
+	$group .= form_textfield(t('Name'), 'name', $valuesql->name, 30, 100);
+	}
+	
+	$group .= form_select(t("Select Currency"), "currency", $valuesql->currency, $currency);
+	$group .= form_textfield(t('Language'), 'language', $valuesql->language, 30, 100);
+	$group .= form_textfield(t('Published Number'), 'publishednum', $valuesql->publishednum, 30, 100);
+	$group .= form_textfield(t('Did'), 'did', $valuesql->did, 30, 100);
+	$group .= form_textfield(t('Markup'), 'markup', $valuesql->markup, 30, 100);
+	$group .= form_textfield(t('Billing Increment'), 'billincrement', $valuesql->billincrement, 30, 100);
+	$group .= form_textfield(t('Connection Charge'), 'connectcharge', $valuesql->connectcharge, 30, 100);
+	$group .= form_textfield(t('Status'), 'status', $valuesql->status, 30, 100);
+
+
+	if (arg(3) == 'edit') {
+	$group .= form_submit(t('Save'));
+	}
+	
+	if (arg(3) == 'create') {
+	$group .= form_submit(t('Create'));
+	}
+		
+	$group .= form_submit(t('Back'));
+	return form($group);
+}
+
+// END FORM STUFF
+
+
+// BEGIN MANAGER
+
+function page_astsettings_manager() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];	
+	
+	switch (($op ? $op : arg(1))) {
+		  case t('Reload'):
+		  	$group .= page_astsettings_manager_reload();
+			$group .= form_submit(t('Back'));
+		  break;
+		  case t('Write'):
+		  	$group = page_astsettings_manager_writeconf();
+			$group .= form_submit(t('Back'));
+		  break;
+		  case t('Back'):
+		  	drupal_goto("astbilladm/realtime/manager");
+		  break;
+		  default:
+		  $group .= 'Click here to write configuration for accounts marked with STATIC:<BR><BR>';
+		  $group .= '<STRONG>This will overwrite the following files:</STRONG><BR><BR>';
+		  $group .= '/etc/asterisk/sip_additional.conf<BR>';
+		  $group .= '/etc/asterisk/iax_additional.conf<BR>';
+		  $group .= '/etc/asterisk/voicemail_additional.conf<BR>';
+		  $group .= '<BR><BR>';
+		  $group .= form_submit(t('Write'));
+		  $group .= '<BR><BR><BR>';
+		  $group .= 'Click here to Reload  Asterisk: ';
+		  $group .= '<BR><BR>';
+		  $group .= form_submit(t('Reload'));
+	  }
+	  
+	  $output = form($group);
+	
+
+
+$title = 'Manager';
+
+_astsettings_printtheme_best($output, $title);
+}
+
+function page_astsettings_manager_writeconf() {
+/*
+ Must Standard configurations for AstBill REALTIME will not use this program.
+
+ $active = 1 if used with Asterisk REALTIME configuration. Only possible on Asterisk Version 1.2 Beta and above.
+ $active = 5 if used with Static Asterisk configuration. Must be used for Asterisk Version 1.09 and below.
+*/
+$active = "5";
+
+$astpath  = "/etc/asterisk/";
+
+$sip_conf = $astpath."sip_additional.conf";
+$iax_conf = $astpath."iax_additional.conf";
+$voicemail_conf = $astpath."voicemail_additional.conf";
+
+$timecreated = date('Y-m-d H-i-s');
+
+// Write SIP config
+$output .= "Trying to write SIP Config at ".$sip_conf."<BR><BR>";
+$sql = db_query("SELECT accountcode, secret, host, IFNULL(callerid,'') callerid, context, nat, qualify FROM astaccount where tech = 'SIP' and active = '".$active."'");
+
+   if (!$handle = fopen($sip_conf, 'w')) {
+         echo "Error, unable to open file";
+         exit;
+   }
+   
+   $content = "; Generated by AstBill-0.9.0.9
+; Created: ".$timecreated."
+; 	".$sip_conf."
+; 
+";
+   
+   
+   if (fwrite($handle, $content) === FALSE) {
+       echo "Permission denied on file";
+       exit;
+   }
+   fclose($handle);
+
+
+while ($get = db_fetch_object($sql)) {
+
+$content = "[".$get->accountcode."]
+type=friend
+username=".$get->accountcode."
+secret=".$get->secret."
+host=".$get->host."
+callerid=".$get->callerid."
+context=".$get->context."
+dtmfmode=rfc2833
+mailbox=".$get->accountcode."
+nat=".$get->nat."
+qualify=".$get->qualify."
+
+";
+
+   if (!$handle = fopen($sip_conf, 'a')) {
+         echo "Error, unable to open file";
+         exit;
+   }
+
+   if (fwrite($handle, $content) === FALSE) {
+       echo "Permission denied on file";
+       exit;
+   }
+
+fclose($handle);	
+}
+$output .= $sip_conf." was written succesfully<BR><BR>";
+
+// Write IAX config
+$output .= "Trying to write IAX Config at ".$iax_conf."<BR><BR>";
+$sql = db_query("SELECT accountcode, secret, host, IFNULL(callerid,'') callerid, context, nat FROM astaccount where tech = 'IAX' and active = '".$active."'");
+
+   if (!$handle = fopen($iax_conf, 'w')) {
+         echo "Error, unable to open file";
+         exit;
+   }
+   
+   $content = "; Generated by AstBill-0.9.0.9
+; Created: ".$timecreated."
+; 	".$iax_conf."
+; 
+";
+   
+   
+   if (fwrite($handle, $content) === FALSE) {
+       echo "Permission denied on file";
+       exit;
+   }
+   fclose($handle);
+
+while ($get = db_fetch_object($sql)) {
+
+$content = "[".$get->accountcode."]
+type=friend
+username=".$get->accountcode."
+secret=".$get->secret."
+host=".$get->host."
+callerid=".$get->callerid."
+context=".$get->context."
+dtmfmode=rfc2833
+mailbox=".$get->accountcode."
+nat=".$get->nat."
+
+";
+
+
+   if (!$handle = fopen($iax_conf, 'a')) {
+         echo "Error, unable to open file";
+         exit;
+   }
+
+   if (fwrite($handle, $content) === FALSE) {
+       echo "Permission denied on file";
+       exit;
+   }
+fclose($handle);	
+}
+$output .= $iax_conf." was written succesfully<BR><BR>";
+
+
+// Write Voicemail config
+$output .= "Trying to write Voicemail Config at ".$voicemail_conf."<BR><BR>";
+$sql = db_query("SELECT accountcode, mailboxpin, mailboxemail, IFNULL(callerid,'') callerid, mail, name FROM astaccount a, pbx_users p where a.uid = p.uid and tech in (select actype from astactype) and active = '". $active . "'");
+
+   if (!$handle = fopen($voicemail_conf, 'w')) {
+         echo "Error, unable to open file";
+         exit;
+   }
+   
+   $content = "; Generated by AstBill-0.9.0.9
+; Created: ".$timecreated."
+; 	".$voicemail_conf."
+;
+[default]
+";
+   
+   
+   if (fwrite($handle, $content) === FALSE) {
+       echo "Permission denied on file";
+       exit;
+   }
+   fclose($handle);
+
+while ($get = db_fetch_object($sql)) {
+
+$callerid = strip_tags($get->callerid);
+$callerid = trim($callerid);
+
+$mailboxemail = trim($get->mailboxemail);
+	
+$content = $get->accountcode." => ".$get->mailboxpin.",".$callerid.",".$mailboxemail."
+";
+
+
+   if (!$handle = fopen($voicemail_conf, 'a')) {
+         echo "Error, unable to open file";
+         exit;
+   }
+
+   if (fwrite($handle, $content) === FALSE) {
+       echo "Permission denied on file";
+       exit;
+   }
+
+fclose($handle);	
+}
+$output .= $voicemail_conf." was written succesfully<BR>";
+
+return $output;
+}
+
+
+function page_astsettings_manager_reload() { 
+	
+	#uses manager api to reload Asterisk
+	#asterisk server manager interface information
+	$user='astbillman';
+	$pass='ab87AstBtii3';
+	$host='127.0.0.1';
+	$port = '5038';
+
+	
+	// open a client connection
+	$fp = fsockopen ($host, $port, $errno, $errstr);
+
+	// if a handle is not returned
+	if (!$fp) {
+		die("Error: could not open socket connection\n");
+	} else {
+	
+		$welcome = fgets ($fp, 150);
+		$output .= $welcome."<BR>";
+		
+		fputs ($fp, "Action: login\r\nUsername: ".$user."\r\nSecret: ".$pass."\r\n\r\n");
+		$welcome = fgets ($fp, 150);
+		$output .= 'Sending login information...';
+		$output .= $welcome."<BR>";
+		
+		fputs ($fp, "Action: command\r\nCommand: reload\r\n\r\n\r\n");
+		$welcome = fgets ($fp, 150);
+		$output .= 'Sending reload command...';
+		$output .= $welcome."<BR>";
+		
+		fputs ($fp, "Action: Logoff\r\n\r\n");
+		$welcome = fgets ($fp, 150);
+		$output .= 'Logging off...';
+		$output .= $welcome."<BR>";
+		
+		fclose($fp);
+	}
+
+	return $output;
+}
+
+// END MANAGER
+
+
+
+// ##########################################################################################################
+
+
+function _astsettings_printtheme_best($page_content, $title) {
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+  // $output .= '<div class="astentry">' . $page_content . "</div>\n";
+  print theme("page", $output);
+}
+
+
+// ##########################################################################################################
