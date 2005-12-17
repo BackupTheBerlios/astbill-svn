@@ -1,0 +1,2234 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2005.10.03 Version 0.9.0.8
+ * 
+ */
+
+
+function astadmin_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Admin");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astadmin_menu($may_cache) {
+  $items = array();
+  $access = user_access('can use admin astbill reseller');
+  $accessrt = user_access('astadmin asterisk');
+  $accesspay = user_access('astadmin payment');
+  $items[] = array('path' => 'astbilladm',
+                                  'title' => t('admin'),
+                                  'callback' => '_astadmin_all',
+                                  'access' => $access,
+                                  'type' => MENU_CALLBACK);
+
+	// By using the MENU_CALLBACK type, we can register the callback for this
+    // path but not have the item show up in the menu; the admin is not allowed
+    // to enable the item in the menu, either.
+
+
+ 	$items[] = array('path' => 'astbilladm/hardware', 'title' => t('Hardware'),
+      'callback' => 'page_astadmin_hardware',
+      'access' => $access);
+     // 'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astbilladm/hardware/create', 'title' => t('Create Hardware'),
+      'callback' => 'page_astadmin_hardwarecreate',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+ 	
+	$items[] = array('path' => 'astbilladm/hardware/change', 'title' => t('Change Hardware'),
+      'callback' => 'page_astadmin_hardwarechange',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astbilladm/hardware/remove', 'title' => t('Remove Hardware'),
+      'callback' => 'page_astadmin_hardwareremove',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astbilladm/hardware/idlist',
+                   'title' => t('Hardware ID'),
+                   'callback' => 'page_astadmin_hardwareidlist',
+                   'callback arguments' => 'list',
+                   'access' => $access);
+				  // 'weight' => 5);
+	$items[] = array('path' => 'astbilladm/hardware/idlist/list',
+                     'title' => t('List Hardware ID'),
+                     'type' => MENU_DEFAULT_LOCAL_TASK,
+                     'access' => $access,
+                     'callback' => 'page_astadmin_hardwareidlist',
+                     'callback arguments' => 'list',
+                     'weight' => 5);
+		  
+	$items[] = array('path' => 'astbilladm/hardware/idlist/add',
+                     'title' => t('Add Hardware ID'),
+                     'type' => MENU_LOCAL_TASK,
+                     'access' => $access,
+                     'callback' => 'page_astadmin_hardwareidlist',
+                     'callback arguments' => 'add',
+					 'weight' => 7);
+        $items[] = array('path' => 'astbilladm/hardware/idlist/delete',
+                     'title' => t('Delete Hardware ID'),
+                     'type' => MENU_CALLBACK,
+                     'access' => $access,
+                     'callback' => 'page_astadmin_hardwareidlist',
+		 			 'callback arguments' => 'delete',
+					 'weight' => 7);
+
+
+	$items[] = array('path' => 'astbilladm/realtime', 'title' => t('Asterisk'),
+      'callback' => 'page_astadmin_realtime',
+      'access' => $accessrt);
+      //'type' => MENU_CALLBACK);
+     	$items[] = array('path' => 'astbilladm/realtime/showpeers', 'title' => t('Show Peers'),
+      'callback' => 'page_astadmin_realtime',
+      'access' => $accessrt);
+     // 'type' => MENU_CALLBACK);
+     	$items[] = array('path' => 'astbilladm/realtime/sip', 'title' => t('Sip Users'),
+      'callback' => 'page_astadmin_realtime',
+      'access' => $accessrt);
+     // 'type' => MENU_CALLBACK);
+     	$items[] = array('path' => 'astbilladm/realtime/iax', 'title' => t('Iax Users'),
+      'callback' => 'page_astadmin_realtime',
+      'access' => $accessrt);
+     // 'type' => MENU_CALLBACK);
+     
+	$items[] = array('path' => 'astbilladm/realtime/friends', 'title' => t('Incoming Friends'),
+      'callback' => 'page_astadmin_friends',
+      'access' => $access);
+     // 'type' => MENU_CALLBACK);
+
+ 	$items[] = array('path' => 'astbilladm/realtime/friends/change', 'title' => t('Change Friend'),
+      'callback' => 'page_astadmin_friendschange',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+ 	$items[] = array('path' => 'astbilladm/realtime/friends/create', 'title' => t('Create Friend'),
+      'callback' => 'page_astadmin_friendscreate',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+
+ 	$items[] = array('path' => 'astbilladm/realtime/friends/remove', 'title' => t('Remove Friend'),
+      'callback' => 'page_astadmin_friendsremove',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+
+ 	$items[] = array('path' => 'astbilladm/listcdr', 'title' => t('Call Data Record'),
+      'callback' => 'page_astadmin_listcdr',
+      'access' => $access);
+     // 'type' => MENU_CALLBACK);
+
+ 	$items[] = array('path' => 'astbilladm/accesslog', 'title' => t('View Logs'),
+      'callback' => 'page_astadmin_accesslog',
+      'access' => user_access('astadmin accesslog'));
+     // 'type' => MENU_CALLBACK);
+     
+     	$items[] = array('path' => 'astbilladm/payment', 'title' => t('Payments'),
+      'callback' => 'page_astadmin_payment',
+      'access' => $accesspay);
+     // 'type' => MENU_CALLBACK);
+
+     	$items[] = array('path' => 'astbilladm/payment/create', 'title' => t('Create Payments'),
+      'callback' => 'page_astadmin_paymentcreate',
+      'access' => $accesspay,
+      'type' => MENU_CALLBACK);
+ 	
+	$items[] = array('path' => 'astbilladm/payment/change', 'title' => t('Change Payments'),
+      'callback' => 'page_astadmin_paymentchange',
+      'access' => $accesspay,
+      'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astbilladm/payment/remove', 'title' => t('Remove Payments'),
+      'callback' => 'page_astadmin_paymentremove',
+      'access' => $accesspay,
+      'type' => MENU_CALLBACK);
+      
+        $items[] = array('path' => 'astbilladm/payment/credit', 'title' => t('Credit'),
+      'callback' => 'page_astadmin_credit',
+      'access' => $accesspay);
+     // 'type' => MENU_CALLBACK);
+     
+	$items[] = array('path' => 'astbilladm/payment/credit/change', 'title' => t('Change Credit'),
+      'callback' => 'page_astadmin_creditchange',
+      'access' => $accesspay,
+      'type' => MENU_CALLBACK);
+
+
+
+  return $items;
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+function astadmin_perm() {
+	return array('can use admin astbill reseller','astadmin asterisk','astadmin accesslog','astadmin payment');
+} // function astentry_perm()
+
+
+// ##########################################################################################################
+
+function _astadmin_all() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+
+
+$title = 'UID';
+$account = $user->uid;
+_astadmin_printtheme_best($output, $account, $title);
+
+}
+
+
+
+
+function page_astadmin_friends() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  $maxline = 40;
+
+  $header = array(
+    array('data' => t('User / UID'), 'colspan' => 2),
+    array('data' => t('Accountcode'), 'field' => 'accountcode', 'sort' => 'desc'),
+    array('data' => t('Type')),
+    array('data' => t('Publicnumber')),
+    array('data' => t('Username')),
+    array('data' => t('Operations'), 'colspan' => 2)	
+  );
+
+//$result = db_query("SELECT uid, accountcode, username, publicnumber, tech, type, secret, forwardto, fromuser, authuser, fromdomain, nat, qualify, host, port, callerid, context, dtmfmode, insecure, canreinvite, disallow, allow, restrictid, comment, active, trunkpath, date_created, timestamp FROM asv_friend");
+$sql = "SELECT uid, accountcode, username, publicnumber, tech, type, secret, forwardto, fromuser, authuser, fromdomain, nat, qualify, host, port, callerid, context, dtmfmode, insecure, canreinvite, disallow, allow, restrictid, comment, active, date_created, timestamp FROM asv_friend". tablesort_sql($header);
+$result = pager_query($sql, $maxline);
+
+  
+  while ($item = db_fetch_object($result)) {
+	  $sql2 = db_fetch_object(db_query("select name from pbx_users where uid='".$item->uid."'"));
+	$account = arg(1);
+	  	$rows[] = array('<A HREF="'.url('user/'.$item->uid).'">'.$sql2->name.'</A>',
+		$item->uid.'&nbsp;&nbsp;',
+		$item->accountcode.'&nbsp;&nbsp;',
+		$item->type.'&nbsp;&nbsp;',
+	        $item->publicnumber.'&nbsp;&nbsp;',
+		$item->username.'&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/realtime/friends/change/'.$item->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/realtime/friends/remove/'.$item->accountcode).'/'.$item->accountcode.'">'.t('remove').'</A>'
+		);
+  }
+
+
+
+  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+  if (!empty($pager)) {
+    $rows[] = array(array('data' => $pager, 'colspan' => 8));
+  }
+
+  $output .= (count($rows) == 0) ? t('No Friend entries.') : theme('table', $header, $rows);
+
+
+
+$title = t("View Incoming Numbers, Peers, Users and Friends");
+$account = $user->uid;
+_astadmin_printtheme_friends($output, $account, $title);
+}
+
+
+function _astadmin_printtheme_friends($page_content, $account, $title) {
+	global $user;
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+
+$output .= '<div class="nodecontent">';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/realtime/friends/create/').'">'.t('Create new').'</A></B><BR>';
+
+  print theme("page", $output);
+}
+
+
+
+function page_astadmin_friendschange() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(2))) {
+    case t('Change'):
+      $title = t('Edit Account');
+      if (astadmin_friends_validate($edit)) {
+        astadmin_friends_save($edit,arg(4));
+        drupal_goto("astbilladm/realtime/friends");
+      } else {
+		drupal_goto("astbilladm/realtime/friends/change/".arg(4));
+	  }
+      break;
+  	case t('Back'):
+		drupal_goto("astbilladm/realtime/friends");
+    default:
+	  $output = astadmin_friends_form(arg(4));
+  }
+
+
+$title = 'Change';
+$account = $user->uid;
+_astadmin_printtheme_best($output, $account, $title);
+}
+
+
+function page_astadmin_friendscreate() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(1))) {
+    case t('Create'):
+      $title = t('Edit Account');
+      if (astadmin_friends_validate($edit)) {
+      //  astadmin_ends_save($edit,arg(5));
+        drupal_goto("astbilladm/realtime/friends/change/".astadmin_friends_save($edit,arg(4)));
+      } else {
+		drupal_goto("astbilladm/realtime/friends/create/".arg(4));
+	  }
+      break;
+  	case t('Back'):
+		drupal_goto("astbilladm/realtime/friends");
+    default:
+	  $output = astadmin_friends_form(arg(4));
+  }
+
+$title = 'Insert';
+$account = $user->uid;
+_astadmin_printtheme_best($output, $account, $title);
+}
+
+
+function page_astadmin_friendsremove() {
+  global $user;
+
+
+	$edit = $_POST['edit'];
+
+	$deletedmsg = 'The friend was deleted';
+	$confirmmsg = '<P>Are you sure you want to delete this friend?</P>';
+	$dbquery = "DELETE FROM asv_friend WHERE accountcode = '".arg(4)."'";
+	$goto = "astbilladm/realtime/friends";
+	$item = arg(4);
+
+	$output = astadmin_confirm_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item);
+
+//	print theme('page', $output);
+//	$title = 'Remove '.$item;
+//	$account = $user->uid;
+//	_astadmin_printtheme_best($output, $account, $title);
+
+
+}
+
+
+
+// FRIENDS FORM STUFF
+function astadmin_friends_validate($edit) {
+  global $user;
+  $myerror = 1;
+  $errors = array();
+
+if (arg(2) == 'create'){
+
+
+$sql = db_query("SELECT accountcode FROM astaccount");
+
+while ($getname = db_fetch_object($sql)){
+	if ($edit['accountcode'] == $getname->accountcode){
+		$errors['test'] = t('Please enter a unique name');
+		$myerror = 0;
+	}
+}
+
+
+}
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+function astadmin_friends_save($edit, $account) {
+  global $user;
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+ /*
+  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }*/
+
+if (arg(3) == 'create'){ // START CHECK IF FRIENDSCREATE
+
+$sql = db_query("INSERT INTO asv_friend (accountcode, tech, type,date_created) VALUES ('%s', 'IN-SIP', 'peer', now())", $edit['accountcode']);
+
+  drupal_set_message(t('Please set up your new friend'));
+  return $edit['accountcode'];
+} // END CHECK IF FRIENDSCREATE
+
+
+if (arg(3) == 'change'){ // START CHECK IF FRIENDSCHANGE
+
+//db_query("INSERT INTO `astdialplan` ( `accountcode` , `conditions` , `action` , `mon` , `tue` , `wed` , `thu` , `` , `sat` , `sun` , `start_time_hr` , `start_time_min` , `end_time_hr` , `end_time_min` ) VALUES ('trunk".arg(4)."', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0')");
+
+//publicnumber, secret, username, forwardto, fromuser, authuser, fromdomain, host, port, callerid, context, disallow, allow, comment, trunkpath
+
+$sql = db_query("UPDATE asv_friend SET uid = '%s', type = '%s', nat = '%s', qualify = '%s', dtmfmode = '%s', insecure = '%s', canreinvite = '%s', restrictid = '%s', active = '%s', tech = '%s', publicnumber = '%s', secret = '%s', username = '%s', forwardto = '%s', fromuser = '%s', authuser = '%s', fromdomain = '%s', host = '%s', port = '%s', callerid = '%s', context = '%s', disallow = '%s', allow = '%s', comment = '%s', serverid = '%s' WHERE accountcode = '%s'", $edit['account'], $edit['type'], $edit['nat'], $edit['qualify'], $edit['dtmfmode'], $edit['insecure'], $edit['canreinvite'], $edit['restrictid'], $edit['active'], $edit['tech'], $edit['publicnumber'], $edit['secret'],$edit['username'],$edit['forwardto'],$edit['fromuser'],$edit['authuser'],$edit['fromdomain'],$edit['host'],$edit['port'],$edit['callerid'],$edit['context'],$edit['disallow'],$edit['allow'],$edit['comment'],$edit['serverid'], $account);
+
+
+  drupal_set_message(t('The friend settings have been updated.'));
+} // END CHECK IF FRIENDSCHANGE
+
+
+}
+
+function astadmin_friends_form($account) {
+	global $user;
+	$edit = $_POST["edit"];
+    $op = $_POST["op"];
+
+
+if (arg(3) == 'create'){ // START CHECK IF FRIENDSCREATE
+
+$group = form_textfield(t("Select a unique name for your new friend"), "accountcode", null, 80, 150, null, null, false);
+
+} // END CHECK IF FRIENDSCREATE
+
+
+
+if (arg(3) == 'change'){ // START CHECK IF FRIENDSCHANGE
+	
+	$sql = db_query("SELECT serverid, uid, username, forwardto, fromuser, authuser, fromdomain, host, port, callerid, context, disallow, allow, comment, type, publicnumber, secret, nat, qualify, dtmfmode, insecure, canreinvite, restrictid, active, tech FROM asv_friend WHERE accountcode = '%s'", $account);
+	$sqlout = db_fetch_object($sql);
+	$sql2 = db_query("select name, uid from pbx_users");
+
+	$users = array();
+
+	while ($items = db_fetch_object($sql2)) {
+		array_push2($users, $items->uid.' '.$items->name, $items->uid);
+	}
+  
+	$getserverid = array(null => 'All');
+
+	$sql = db_query("select serverid from aststatus");
+
+	while ($fetchit = db_fetch_object($sql)) {
+		array_push2($getserverid, $fetchit->serverid, $fetchit->serverid);
+	}
+
+	if (empty($sqlout->nat)) {$sqlout->nat = 'no';}
+
+
+	$group .= form_select(t('User/Owner of this number'), 'account', $sqlout->uid, $users);
+	$group .= form_textfield(t("Publicnumber"), "publicnumber", $sqlout->publicnumber, 40, 150, null, null, false);
+	$group .= form_textfield(t("password"), "secret", $sqlout->secret, 40, 150, null, null, false);
+	$group .= form_textfield(t("Username"), "username", $sqlout->username, 40, 150, null, null, false);
+	$group .= form_textfield(t("Forward to"), "forwardto", $sqlout->forwardto, 40, 150, null, null, false);
+	$group .= form_textfield(t("From User"), "fromuser", $sqlout->fromuser, 40, 150, null, null, false);
+	$group .= form_textfield(t("Auth User"), "authuser", $sqlout->authuser, 40, 150, null, null, false);
+	$group .= form_textfield(t("From Domain"), "fromdomain", $sqlout->fromdomain, 40, 150, null, null, false);
+	$group .= form_textfield(t("Host"), "host", $sqlout->host, 40, 150, null, null, false);
+	$group .= form_textfield(t("Port"), "port", $sqlout->port, 40, 150, null, null, false);
+	$group .= form_textfield(t("Callerid"), "callerid", $sqlout->callerid, 40, 150, null, null, false);
+	$group .= form_textfield(t("Context"), "context", $sqlout->context, 40, 150, null, null, false);
+	$group .= form_textfield(t("Disallow"), "disallow", $sqlout->disallow, 40, 150, null, null, false);
+	$group .= form_textfield(t("Allow"), "allow", $sqlout->allow, 40, 150, null, null, false);
+	$group .= form_textfield(t("Comment"), "comment", $sqlout->comment, 80, 150, null, null, false);
+	$group .= form_radios(t('Change friend type'), 'type', $sqlout->type, array('user' => 'User' , 'peer' => 'Peer', 'friend' => 'Friend'));
+	$group .= '<B>NAT:<BR></B>';
+	$group .= 'yes = Always ignore info and assume NAT<BR>';
+	$group .= 'no = Use NAT mode only according to RFC3581<BR>';
+	$group .= 'never = Never attempt NAT mode or RFC3581 support<BR>';
+	$group .= 'route = Assume NAT, dont send rport  (work around more UNIDEN bugs)<BR>';
+	$group .= form_select(NULL, 'nat', $sqlout->nat, array('yes' => 'Yes', 'no' => 'No', 'never' => 'Never', 'route' => 'Route'));
+	$group .= form_select(t('ServerID'), 'serverid', $sqlout->serverid, $getserverid);
+	$group .= form_select(t('Qualify'), 'qualify', $sqlout->qualify, array('no' => 'Off', 'yes' => 'On'));
+	$group .= form_select(t('DTMF Mode'), 'dtmfmode', $sqlout->dtmfmode, array(null => 'Off', 'info' => 'Info', 'rfc2833' => 'rfc2833'));
+	$group .= form_select(t('Insecure'), 'insecure', $sqlout->insecure, array(null => 'Off', 'very' => 'Very'));
+	$group .= form_select(t('Can reinvite'), 'canreinvite', $sqlout->canreinvite, array(null => 'Off', 'yes' => 'Yes', 'no' => 'No'));
+	$group .= form_select(t('RestrictID'), 'restrictid', $sqlout->restrictid, array(null => 'Off', 'yes' => 'Yes'));
+	$group .= form_select(t('Active'), 'active', $sqlout->active, array(0 => 'Not Active', 1 => 'Realtime', 5 => 'Static'));
+	$group .= form_select(t('Tech'), 'tech', $sqlout->tech, array('IN-SIP' => 'SIP', 'IN-IAX' => 'IAX2', 'IN-ZAP' => 'ZAP'));
+
+
+//publicnumber, secret, username, forwardto, fromuser, authuser, fromdomain, host, port, callerid, context, disallow, allow, comment, trunkpath, date_created
+
+} // END CHECK IF FRIENDSCHANGE
+
+
+
+if (arg(3) == 'create'){
+	$group .= form_submit(t('Create'));
+} else {
+	$group .= form_submit(t('Change'));
+}
+	$group .= form_submit(t('Back'));
+	//$form = form_group(t('Account details'), $group);
+	return form($group);
+}
+
+/*
+function astadmin_friends_load($account) {
+	global $user;
+
+	return db_query("SELECT name, tech, path, serverid, trunkcost, usagecount FROM asttrunk WHERE tid = '%s'", $account);
+}
+*/
+// END FRIENDS FORM STUFF
+// END FRIENDS STUFF
+
+
+
+
+
+
+// START HARDWARE STUFF
+
+
+function page_astadmin_hardware() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+
+   $header = array(
+    array('data' => t('User / UID'), 'colspan' => 2),
+    array('data' => t('Accountcode')),
+    array('data' => t('Secret')),
+    array('data' => t('Hardwaretype')),
+    array('data' => t('Mac Address')),
+	array('data' => t('Date Created')),
+    array('data' => t('Operations'), 'colspan' => 2)
+  );
+
+$sql = db_query("SELECT id, uid, accountcode, secret, hardwaretype, hardwareid, mac_address, serialnumber, comment, name, date_created FROM asthardware");
+
+ // $result = pager_query($sql, $maxline);
+  
+  while ($item = db_fetch_object($sql)) {
+	  $sql2 = db_fetch_object(db_query("select name from pbx_users where uid='".$item->uid."'"));
+	$account = arg(1);
+	  	$rows[] = array('<A HREF="'.url('user/'.$item->uid).'">'.$sql2->name.'</A>',
+		$item->uid.'&nbsp;&nbsp;',
+		$item->accountcode.'&nbsp;&nbsp;',
+		$item->secret.'&nbsp;&nbsp;',
+	    $item->hardwaretype.'&nbsp;&nbsp;',
+		$item->mac_address.'&nbsp;&nbsp;',
+		$item->date_created.'&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/hardware/change/'.$item->id).'">'.t('Details').'</A>',
+		'|<A HREF="'.url('astbilladm/hardware/remove/'.$item->id.'/'.$item->accountcode).'">'.t('Remove').'</A>&nbsp;&nbsp;'
+		);
+  }
+
+
+
+  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+  if (!empty($pager)) {
+    $rows[] = array(array('data' => $pager, 'colspan' => 8));
+  }
+
+  $output .= (count($rows) == 0) ? t('No Hardware entries.') : theme('table', $header, $rows);
+
+
+
+$title = t('View');
+$account = $user->uid;
+_astadmin_printtheme_hardware($output, $account, $title);
+}
+
+
+function _astadmin_printtheme_hardware($page_content, $account, $title) {
+	global $user;
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+
+$output .= '<div class="nodecontent">';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/hardware/create/').'">'.t('Create new').'</A></B><BR>';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/hardware/idlist/').'">'.t('Edit Hardware ID\'s').'</A></B><BR>';
+
+  print theme("page", $output);
+}
+
+
+
+function page_astadmin_hardwarechange() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(1))) {
+    case t('Change'):
+      $title = t('Edit Account');
+      if (astadmin_hardware_validate($edit)) {
+        astadmin_hardware_save($edit,arg(3));
+        drupal_goto("astbilladm/hardware");
+      } else {
+		drupal_goto("astbilladm/hardware/change/".arg(3));
+	  }
+      break;
+  	case t('Back'):
+		drupal_goto("astbilladm/hardware");
+    default:
+	  $output = astadmin_hardware_form(arg(3));
+  }
+
+
+$title = 'Change';
+$account = $user->uid;
+_astadmin_printtheme_best($output, $account, $title);
+}
+
+
+function page_astadmin_hardwarecreate() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(1))) {
+    case t('Create'):
+      $title = t('Edit Account');
+      if (astadmin_hardware_validate($edit)) {
+        astadmin_hardware_save($edit,arg(3));
+        drupal_goto("astbilladm/hardware");
+      } else {
+		drupal_goto("astbilladm/hardware/create/".arg(3));
+	  }
+      break;
+  	case t('Back'):
+		drupal_goto("astbilladm/hardware");
+    default:
+	  $output = astadmin_hardware_form(arg(3));
+  }
+
+$title = 'Insert';
+$account = $user->uid;
+_astadmin_printtheme_best($output, $account, $title);
+}
+
+function page_astadmin_hardwareremove() {
+  global $user;
+
+
+	$edit = $_POST['edit'];
+
+	$deletedmsg = 'The hardware was deleted';
+	$confirmmsg = '<P>Are you sure you want to delete this hardware?</P>';
+	$dbquery = "DELETE FROM asthardware WHERE id = '".arg(3)."'";
+	$goto = "astbilladm/hardware";
+	$item = arg(4);
+
+	$output = astadmin_confirm_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item);
+
+	//print theme('page', $output);
+}
+
+
+
+// HARDWARE FORM STUFF
+function astadmin_hardware_validate($edit) {
+  global $user;
+  $myerror = 1;
+  $errors = array();
+
+
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+
+function astadmin_hardware_save($edit, $account) {
+  global $user;
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+ /*
+  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }*/
+
+if (arg(2) == 'create'){ // START CHECK IF HARDWARECREATE
+
+	$accountcode = null;
+	$secret = null;
+	$hardwaretype = null;
+	$hardwareid = null;
+	$mac_address = null;
+	$serialnumber = null;
+	$comment = null;
+	$name = null;
+
+db_query("INSERT INTO asthardware (uid, accountcode, secret, hardwaretype, hardwareid, mac_address, serialnumber, comment, name, date_created) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', now())", $edit['uid'], $edit['accountcode'], $edit['secret'], $edit['hardwaretype'], $edit['hardwareid'], $edit['mac_address'], $edit['serialnumber'], $edit['comment'], $edit['name']);
+
+drupal_set_message(t('New hardware added'));
+
+} // END CHECK IF HARDWARECREATE
+
+
+if (arg(2) == 'change'){ // START CHECK IF HARDWARECHANGE
+
+db_query("UPDATE asthardware SET uid = '%s', accountcode = '%s', secret = '%s', hardwaretype = '%s', hardwareid = '%s', mac_address = '%s', serialnumber = '%s', comment = '%s', name = '%s' WHERE id = '%s'", $edit['uid'], $edit['accountcode'], $edit['secret'], $edit['hardwaretype'], $edit['hardwareid'], $edit['mac_address'], $edit['serialnumber'], $edit['comment'], $edit['name'], arg(3));
+
+drupal_set_message(t('Hardware changed'));
+
+} // END CHECK IF HARDWARECHANGE
+
+
+}
+
+function astadmin_hardware_form($account) {
+	global $user;
+	$edit = $_POST["edit"];
+    $op = $_POST["op"];
+
+
+if (arg(2) == 'create'){ // START CHECK IF HARDWARECREATE
+
+	$uid = null;
+	$accountcode = null;
+	$secret = null;
+	$hardwaretype = null;
+	$hardwareid = null;
+	$mac_address = null;
+	$serialnumber = null;
+	$comment = null;
+	$name = null;
+
+} // END CHECK IF HARDWARECREATE
+
+if (arg(2) == 'change'){ // START CHECK IF HARDWARECHANGE
+
+$sql = db_query("SELECT id, uid, accountcode, secret, hardwaretype, hardwareid, mac_address, serialnumber, comment, name, date_created FROM asthardware WHERE id = '%s'", arg(3));
+$sqlout = db_fetch_object($sql);
+
+	$uid = $sqlout->uid;
+	$accountcode = $sqlout->accountcode;
+	$secret = $sqlout->secret;
+	$hardwaretype = $sqlout->hardwaretype;
+	$hardwareid = $sqlout->hardwareid;
+	$mac_address = $sqlout->mac_address;
+	$serialnumber = $sqlout->serialnumber;
+	$comment = $sqlout->comment;
+	$name = $sqlout->name;
+
+}// END CHECK IF HARDWARECHANGE
+
+	$sql = db_query("select name, uid from pbx_users");
+
+	$users = array();
+
+	while ($items = db_fetch_object($sql)) {
+		array_push2($users, $items->uid.' '.$items->name, $items->uid);
+	}
+
+
+	$sql = db_query("select hid, hardware from asthardwareid");
+
+	$hardwareidlist = array();
+
+	while ($item = db_fetch_object($sql)) {
+		array_push2($hardwareidlist, $item->hardware, $item->hid);
+	}
+
+
+	$group .= form_select(t('User/Owner of this hardware'), 'uid', $uid, $users);
+	$group .= form_textfield(t('Accountcode'), 'accountcode', $accountcode, 30, 100);
+	$group .= form_textfield(t('Secret'), 'secret', $secret, 30, 100);
+	$group .= form_textfield(t('Hardwaretype'), 'hardwaretype', $hardwaretype, 30, 100);
+
+	$group .= form_select(t("HardwareID"), "hardwareid", $hardwareid, $hardwareidlist);
+
+	$group .= form_textfield(t('Mac Address'), 'mac_address', $mac_address, 30, 100);
+	$group .= form_textfield(t('Serialnumber'), 'serialnumber', $serialnumber, 30, 100);
+	$group .= form_textfield(t('Comment'), 'comment', $comment, 30, 100);
+	$group .= form_textfield(t('Name'), 'name', $name, 30, 100);
+
+
+
+
+
+
+if (arg(2) == 'create'){
+	$group .= form_submit(t('Create'));
+} else {
+	$group .= form_submit(t('Change'));
+}
+	$group .= form_submit(t('Back'));
+	//$form = form_group(t('Account details'), $group);
+	return form($group);
+}
+
+function astadmin_hardware_load($account) {
+	global $user;
+
+	return db_query("SELECT name, tech, path, serverid, trunkcost, usagecount FROM asttrunk WHERE tid = '%s'", $account);
+}
+// END HARDWARE FORM STUFF
+// END HARDWARE STUFF
+
+
+// START SHOW PEERS STUFF
+function page_astadmin_realtime() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+  $maxline = 40;
+
+if (arg(2) == '') {
+
+	  $output .= '<A HREF="'.url('astbilladm/realtime/iax').'">'.t('Iax Users').'</A><BR>';
+	  $output .= '<A HREF="'.url('astbilladm/realtime/friends').'">'.t('Incoming - Friends').'</A><BR>';
+	  $output .= '<A HREF="'.url('astbilladm/realtime/manager').'">'.t('Manager').'</A><BR>';
+	  $output .= '<A HREF="'.url('astbilladm/realtime/showpeers').'">'.t('Show Peers').'</A><BR>';
+	  $output .= '<A HREF="'.url('astbilladm/realtime/sip').'">'.t('Sip Users').'</A><BR>';
+	  
+	  
+	$title = 'Select asterisk REALTIME function';
+	$account = $user->uid;  
+}
+
+
+if (arg(2) == 'showpeers') { // START SHOWPEERS
+	  
+
+$output = t('This is a list of the last clients(SIP and IAX2) that have connected to the Asterisk server.').'<BR>';
+$output .= t('It allows you to keep track of when each client last authenticated with Asterisk.').'<BR>';
+$output .= t('You also get the IP and configuration information.').'<BR><BR>';
+
+
+   $header = array(
+    array('data' => t('Accountcode'), 'field' => 'accountcode', 'sort' => 'asc'),
+    array('data' => t('Tech'), 'field' => 'tech'),
+    array('data' => t('Changed'), 'field' => 'changed'),
+    array('data' => t('Expires'), 'field' => 'regexpire'),
+    array('data' => t('Name'), 'field' => 'name'),
+    array('data' => t('Callerid'), 'field' => 'callerid'),
+    array('data' => t('IP'), 'field' => 'ip')
+  );
+
+$sql = "SELECT accountcode, tech, changed, regexpire, name, callerid, ip FROM asv_peers". tablesort_sql($header);
+$result = pager_query($sql, $maxline);
+
+  
+  while ($item = db_fetch_object($result)) {
+	$account = arg(1);
+	  	$rows[] = array($item->accountcode.'&nbsp;&nbsp;',
+		$item->tech.'&nbsp;&nbsp;',
+		$item->changed.'&nbsp;&nbsp;',
+		$item->regexpire.'&nbsp;&nbsp;',
+		$item->name.'&nbsp;&nbsp;',
+		$item->callerid.'&nbsp;&nbsp;',
+		$item->ip.'&nbsp;&nbsp;'
+		);
+  }
+
+} // END SHOWPEERS
+  
+  
+if (arg(2) == 'sip') { // START SIP
+	  
+
+$output = '<B>'.t('Hover over Account to view Accounts Password').'</B><BR>';
+
+
+   $header = array(
+    array('data' => t('Accountcode'), 'field' => 'accountcode', 'sort' => 'desc'),
+    array('data' => t('Callerid'), 'field' => 'callerid'),
+    array('data' => t('Context'), 'field' => 'context'),
+    array('data' => t('Mailbox'), 'field' => 'mailbox'),
+    array('data' => t('Nat'), 'field' => 'nat'),
+    array('data' => t('Type'), 'field' => 'type')
+  );
+
+//$sql = "select secret, username, callerid, context, mailbox, nat, type from asv_sip". tablesort_sql($header);
+$sql = "SELECT accountcode username, type, secret, callerid, context, mailbox FROM astaccount where (tech = 'SIP' or tech = 'IN-SIP' ) and active = 1". tablesort_sql($header);
+$result = pager_query($sql, $maxline);
+ // $result = pager_query($sql, $maxline);
+  
+  while ($item = db_fetch_object($result)) {
+	  	$rows[] = array(
+		'<a title="Password: '.$item->secret.'"  href="'.url('astbilladm/realtime').'">'. '<b>'.$item->username.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
+		$item->callerid.'&nbsp;&nbsp;',
+		$item->context.'&nbsp;&nbsp;',
+		$item->mailbox.'&nbsp;&nbsp;',
+		$item->nat.'&nbsp;&nbsp;',
+		$item->type.'&nbsp;&nbsp;'
+		);
+  }
+
+
+} // END SIP
+
+
+if (arg(2) == 'iax') { // START IAX
+	  
+
+$output = '<B>'.t('Hover over Account to view Accounts Password').'</B><BR>';
+
+
+   $header = array(
+    array('data' => t('Accountcode'), 'field' => 'accountcode'),
+    array('data' => t('Callerid'), 'field' => 'callerid'),
+    array('data' => t('Context'), 'field' => 'context'),
+    array('data' => t('Mailbox'), 'field' => 'mailbox'),
+    array('data' => t('Type'), 'field' => 'type')
+  );
+
+
+//$sql = "select secret, username, callerid, context, mailbox, type from asv_iax where true". tablesort_sql($header);
+$sql =  "SELECT accountcode username, type, secret, callerid, context, mailbox FROM astaccount where (tech = 'IAX' or tech = 'IN-IAX' ) and active = 1". tablesort_sql($header);
+$result = pager_query($sql, $maxline);
+
+//$sql = db_query("select secret, username, callerid, context, mailbox, type from asv_iax");
+//$result = $sql;
+  
+  while ($item = db_fetch_object($result)) {
+	  	$rows[] = array(
+		'<a title="Password: '.$item->secret.'"  href="'.url('astbilladm/realtime').'">'. '<b>'.$item->username.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
+		$item->callerid.'&nbsp;&nbsp;',
+		$item->context.'&nbsp;&nbsp;',
+		$item->mailbox.'&nbsp;&nbsp;',
+		$item->type.'&nbsp;&nbsp;'
+		);
+  }
+
+
+} // END IAX
+  
+
+if (arg(2) == 'iax' || arg(2) == 'sip' || arg(2) == 'showpeers') {
+
+$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+if (!empty($pager)) {
+  $rows[] = array(array('data' => $pager, 'colspan' => 10));
+}
+
+$output .= (count($rows) == 0) ? t('No records available.') : theme('table', $header, $rows);
+
+
+$title = t('View');
+$account = $user->uid;
+
+}
+
+_astadmin_printtheme_best($output, $account, $title);
+}
+// END SHOWPEERS STUFF
+
+
+// START IDLIST STUFF
+function page_astadmin_hardwareidlist($action) {
+	$op = $_POST['op'];
+	if (empty($op)) {
+		$op = $action;
+	}
+
+	$edit = $_POST['edit'];
+	$output = '';
+
+	if (user_access('can use astcontact')) {
+		switch ($op) {
+			case 'list':
+				$output = page_astadmin_hardwareidlist_list();
+				break;
+			case 'add':
+			case t('Create Hardware'):
+				$output = page_astadmin_hardwareidlist_add($edit);
+				break;
+			case 'delete':
+			case t('Delete'):
+				$output = page_astadmin_hardwareidlist_delete($edit);
+				break;
+			case t('Save Hardware'):
+				page_astadmin_hardwareidlist_update($edit);
+				break;
+		}
+		print theme('page', $output);
+	} else {
+		print theme('page', message_access());
+	}
+}
+
+
+
+function page_astadmin_hardwareidlist_list() {
+	$output = '';
+
+	// declares the table header
+	$header = array();
+	$header[] = array('data' => t('Hardware'));
+	$header[] = array('data' => t('Comment'));
+	$header[] = array('data' => t('Operations'));
+
+	$categories = page_astadmin_hardwareidlist_get_categories();
+	$rows = array();
+	foreach ($categories as $key => $value) {
+		$sql = db_fetch_object(db_query("SELECT comment FROM asthardwareid WHERE hid = '%d'", $key));
+		$rows[] = array(
+				form_textfield('', 'hardware]['. $key, $value, 40, 100),
+				form_textfield('', 'comment]['. $key, $sql->comment, 40, 100),
+				l(t('delete'), 'astbilladm/hardware/idlist/delete/'. urlencode($key)));
+	}
+
+	$output = theme('table', $header, $rows);
+	$output .= form_submit(t('Save Hardware'));
+	return form($output);
+}
+/**
+ * Returns an array with all the records in the table contact_dir_category
+ */
+function page_astadmin_hardwareidlist_get_categories() {
+	global $user;
+	static $contact_dir_categories;
+	if ( !isset($contact_dir_categories) ) {
+		$result = db_query('SELECT hid, hardware, comment FROM asthardwareid ORDER BY hardware');
+		while ($field = db_fetch_object($result)) {
+			$contact_dir_categories[$field->hid] = $field->hardware;
+		}    
+	}
+	return $contact_dir_categories;
+}
+
+/**
+ * Creates a input form for a new contact category
+ */
+function page_astadmin_hardwareidlist_add($edit) {
+	global $user;
+	$output = '';
+
+	if ($edit) {
+		if (empty($edit['category_hardware'])) {
+			form_set_error('category_hardware', t('The hardware name is required.'));
+		}
+		if ( !form_get_errors() ) {
+			// Insert the new category
+			//$cid = db_next_id('asthardwareid_uid');
+			db_query("INSERT INTO asthardwareid (hardware, comment) VALUES ('%s', '%s')", $edit['category_hardware'], $edit['category_comment']);
+
+			// Redirects the response to the list page
+	        drupal_set_message(t('The changes have been saved.'));
+   		    drupal_goto("astbilladm/hardware/idlist");    // AMI
+		}
+	}
+
+	// Display the input form
+	$output = form_textfield(t('Hardware'), 'category_hardware', $edit['category_hardware'], 30, 100);
+	$output .= form_textfield(t('Comment'), 'category_comment', $edit['category_comment'], 30, 100);
+	$output = form_group(t('Category'), $output);
+	$output .= form_submit(t('Create Hardware'));
+	return form($output);
+}
+/**
+ * Creates a form for delete a category
+ */
+function page_astadmin_hardwareidlist_delete($edit) {
+	global $user;
+	$hid = arg(4);
+	$output = '';
+
+	if ($edit) {
+		db_query("DELETE FROM asthardwareid WHERE hid = %d", $hid);
+		// db_query("DELETE FROM {contact_category} WHERE cid = % d", $edit['cid']);
+
+		// Redirects the response to the list page
+		drupal_set_message(t('The hardware was deleted.'));
+		drupal_goto("astbilladm/hardware/idlist");
+	}
+
+	// Creates a confirmation form
+	$categories = page_astadmin_hardwareidlist_get_categories();
+
+	$output = form_item(t("Delete hardware '%name'", array('%name' => $categories[$hid])), '');
+	$output .= t('<p>Are you sure you want to delete this hardware from the list?</p>');
+	$output .= form_hidden('cid', $cid);
+	$output .= form_submit(t('Delete'));
+
+	return form($output);
+}
+
+/**
+ * Update the category list
+ */
+function page_astadmin_hardwareidlist_update($edit) {
+	$categories = page_astadmin_hardwareidlist_get_categories();
+
+	if ( $edit ) {
+		foreach ($categories as $key => $value) {
+			$hardware = $edit['hardware'][$key];
+			$comment = $edit['comment'][$key];
+			if ( empty($hardware) ) {
+				$hardware = $value;
+			}
+			if ( $hardware && $key ) {
+				db_query("UPDATE asthardwareid SET hardware = '%s', comment = '%s' WHERE hid = %d", $hardware, $comment, $key);
+			}
+		}
+		drupal_set_message(t('The changes have been saved.'));
+	}
+	// Redirects the response to the list page
+	drupal_goto("astbilladm/hardware/idlist");
+}
+
+
+// END IDLIST STUFF
+// START CDR STUFF
+
+function page_astadmin_listcdr() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+
+
+  switch (($op ? $op : arg(1))) {
+    case t('Go'):
+       $value = $edit['filteracc'];
+       drupal_goto("astbilladm/listcdr/search/".$edit['filteracc']."/");
+       //page_astadmin_listcdr_form($value, $edit);
+	break;
+    default:
+    	page_astadmin_listcdr_form($value, $edit);
+	
+  }
+
+  
+
+	
+}
+
+
+function page_astadmin_listcdr_form($value, $edit) {
+  global $user;
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  // Used to View Valid Accounts
+
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  //if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+  //  drupal_access_denied();
+  //  return;
+  //}
+// MAKE SUB LIST FOR USER, ACCOUNTCODE, CALLEDNUM AND TRUNK
+
+
+  $output = '
+<form action="'.url('/astbilladm/listcdr').'" method="post">
+<div class="form-item">
+'.t('<B>Search for Accountcode&nbsp;&nbsp;</B>').'
+<input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
+<input type="submit" name="op" value="'.t('Go').'" />&#160;&#160;
+</div></form>
+';
+
+
+$skipcolumlist = 0; // set this to not skip the list stuff at bottom per default
+$maxline = 40;
+
+if (arg(2) == 'specific') { // START CHECK IF SPECIFIC RECORD
+  $skipcolumlist = 1;
+  $title = 'Specific Record';
+
+if (!empty($value)) {
+  $value = trim($value);
+  $sql = db_query("SELECT * FROM astcdr WHERE astcdr.id = '%d' AND accountcode LIKE '%".$value."%'", arg(3));
+}
+  else {
+  $sql = db_query("SELECT * FROM astcdr WHERE astcdr.id = '%d'", arg(3));
+  }
+  $res = db_fetch_object($sql);
+
+  $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
+  $sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+
+		$output .= t('<B>Unique ID: </B>');
+		$output .= $res->uniqueid.'<BR>';
+		$output .= t('<B>ID: </B>');
+		$output .= $res->id.'<BR>';
+		$output .= t('<B>User: </B>');
+		$output .= '<A HREF="'.url('user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A><BR>';
+		$output .= '<BR>';
+		$output .= t('<B>Accountcode: </B>');
+		$output .= $res->accountcode.'<BR>';
+		$output .= t('<B>Callerid: </B>');
+		$output .= $res->callerid.'<BR>';
+		$output .= t('<B>Channel: </B>');
+		$output .= $res->channel.'<BR>';
+		$output .= t('<B>Called Number: </B>');
+		$output .= $res->callednum.'<BR>';
+		$output .= t('<B>Brand: </B>');
+		$output .= $res->brand.'<BR>';
+		$output .= t('<B>Type: </B>');
+		$output .= $res->type.'<BR>';
+		$output .= t('<B>Trunk: </B>');
+		$output .= $res->trunk.'<BR>';
+		$output .= t('<B>Amaflags: </B>');
+		$output .= $res->amaflags.'<BR>';
+		$output .= t('<B>Dialstatus: </B>');
+		$output .= $res->dialstatus.'<BR>';
+		$output .= t('<B>Master: </B>');
+		$output .= $res->master.'<BR>';
+		$output .= t('<B>Sub Master: </B>');
+		$output .= $res->submaster.'<BR>';
+		$output .= t('<B>Date Created: </B>');
+		$output .= $res->date_created.'<BR>';
+		$output .= '<BR>';
+		$output .= t('<B>Dialed Time: </B>');
+		$output .= $res->dialedtime.'<BR>';
+		$output .= t('<B>Answered Time: </B>');
+		$output .= $res->answeredtime.'<BR>';
+		$output .= t('<B>Billed Time: </B>');
+		$output .= $res->billtime.'<BR>';
+		$output .= t('<B>Our Cost: </B>');
+		$output .= $res->ourcost.'<BR>';
+		$output .= t('<B>Price Rate per minute: </B>');
+		$output .= $res->pricerate.'<BR>';
+		$output .= t('<B>Total Price: </B>');
+		$output .= $res->price.'<BR>';
+		$output .= '<BR>';
+		$output .= t('<B>IP Port: </B>');
+		$output .= $res->ipport.'<BR>';
+		$output .= t('<B>User Agent: </B>');
+		$output .= $res->useragent.'<BR>';
+		$output .= '<BR><BR><FORM><INPUT TYPE="button" VALUE="Back" onClick="history.go(-1);return true;"> </FORM>';
+
+} // END CHECK IF SPECIFIC RECORD
+
+if (arg(2) == 'callednum') { // START CHECK IF CALLEDNUM RECORDS
+
+
+  $header = array(
+    array('data' => t('User')),
+    array('data' => t('ID'), 'field' => 'id', 'sort' => 'desc'),
+    array('data' => t('Accountcode'), 'field' => 'accountcode'),
+    array('data' => t('Callednum'), 'field' => 'callednum'),
+    array('data' => t('Type'), 'field' => 'type'),
+    array('data' => t('Trunk'), 'field' => 'trunk'),
+    array('data' => t('Date Created'), 'field' => 'date_created'),
+    array('data' => t('Dial Status'), 'field' => 'dialstatus'),
+    array('data' => t('Billtime'), 'field' => 'billtime'),
+    array('data' => t('Operations'), 'colspan' => 1)
+	
+  );
+if (!empty($value)) {
+  $value = trim($value);
+  $sql = "SELECT astcdr.id, astcdr.accountcode, astcdr.callednum, astcdr.type, astcdr.trunk, astcdr.date_created, astcdr.dialstatus, astcdr.billtime FROM astcdr WHERE astcdr.callednum = '".arg(3)."' AND accountcode LIKE '%".$value."%'". tablesort_sql($header);
+
+} else {
+  $sql = "SELECT astcdr.id, astcdr.accountcode, astcdr.callednum, astcdr.type, astcdr.trunk, astcdr.date_created, astcdr.dialstatus, astcdr.billtime FROM astcdr WHERE astcdr.callednum = '".arg(3)."'". tablesort_sql($header);
+}
+
+  $result = pager_query($sql, $maxline);
+  
+  while ($res = db_fetch_object($result)) {
+    $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
+	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$rows[] = array(
+		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>',
+		$res->id.'&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/listcdr/account/'.$res->accountcode).'">'.$res->accountcode.'</A>',
+		$res->callednum ,
+	    array('data' => $res->type.'&nbsp;&nbsp;', 'align' => 'right'),
+		'<A HREF="'.url('astbilladm/listcdr/trunk/'.$res->trunk).'">'.$res->trunk.'</A>&nbsp;&nbsp;',
+		array('data' => $res->date_created, 'align' => 'right'),
+		array('data' => $res->dialstatus, 'align' => 'right'),
+		array('data' => $res->billtime, 'align' => 'right'),
+	    '&nbsp;&nbsp;<a href="'.url('astbilladm/listcdr/specific/'.$res->id).'"><img border="0" src="files/astar/view.gif"></a>'
+
+	);
+  }
+
+} // END CHECK IF CALLEDNUM RECORDS
+
+if (arg(2) == 'account') { // START CHECK IF ACCOUNTCODE RECORDS
+
+
+  $header = array(
+	array('data' => t('User')),
+    array('data' => t('ID'), 'field' => 'id', 'sort' => 'desc'),
+    array('data' => t('Accountcode'), 'field' => 'accountcode'),
+    array('data' => t('Callednum'), 'field' => 'callednum'),
+    array('data' => t('Type'), 'field' => 'type'),
+    array('data' => t('Trunk'), 'field' => 'trunk'),
+    array('data' => t('Date Created'), 'field' => 'date_created'),
+    array('data' => t('Dial Status'), 'field' => 'dialstatus'),
+	array('data' => t('Billtime'), 'field' => 'billtime'),
+    array('data' => t('Operations'), 'colspan' => 1)
+	
+  );
+if (!empty($value)) {
+  $value = trim($value);
+  $sql = "SELECT astcdr.id, astcdr.accountcode, astcdr.callednum, astcdr.type, astcdr.trunk, astcdr.date_created, astcdr.dialstatus, astcdr.billtime FROM astcdr WHERE astcdr.accountcode = '".arg(3)."' AND accountcode LIKE '%".$value."%'". tablesort_sql($header);
+} else {
+  $sql = "SELECT astcdr.id, astcdr.accountcode, astcdr.callednum, astcdr.type, astcdr.trunk, astcdr.date_created, astcdr.dialstatus, astcdr.billtime FROM astcdr WHERE astcdr.accountcode = '".arg(3)."'". tablesort_sql($header);
+}
+
+  $result = pager_query($sql, $maxline);
+  
+  while ($res = db_fetch_object($result)) {
+    $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
+	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$rows[] = array(
+		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>',
+		$res->id.'&nbsp;&nbsp;',
+		$res->accountcode,
+		'<A HREF="'.url('astbilladm/listcdr/callednum/'.$res->callednum).'">'.$res->callednum.'</A>',
+	    array('data' => $res->type.'&nbsp;&nbsp;', 'align' => 'right'),
+		'<A HREF="'.url('astbilladm/listcdr/trunk/'.$res->trunk).'">'.$res->trunk.'</A>&nbsp;&nbsp;',
+		array('data' => $res->date_created, 'align' => 'right'),
+		array('data' => $res->dialstatus, 'align' => 'right'),
+		array('data' => $res->billtime, 'align' => 'right'),
+	    '&nbsp;&nbsp;<a href="'.url('astbilladm/listcdr/specific/'.$res->id).'"><img border="0" src="files/astar/view.gif"></a>'
+
+	);
+  }
+
+} // END CHECK IF ACCOUNTCODE RECORDS
+
+if (arg(2) == 'trunk') { // START CHECK IF TRUNK RECORDS
+
+
+  $header = array(
+	array('data' => t('User')),
+    array('data' => t('ID'), 'field' => 'id', 'sort' => 'desc'),
+    array('data' => t('Accountcode'), 'field' => 'accountcode'),
+    array('data' => t('Callednum'), 'field' => 'callednum'),
+    array('data' => t('Type'), 'field' => 'type'),
+    array('data' => t('Trunk'), 'field' => 'trunk'),
+    array('data' => t('Date Created'), 'field' => 'date_created'),
+    array('data' => t('Dial Status'), 'field' => 'dialstatus'),
+	array('data' => t('Billtime'), 'field' => 'billtime'),
+    array('data' => t('Operations'), 'colspan' => 1)
+	
+  );
+if (!empty($value)) {
+  $value = trim($value);
+  $sql = "SELECT astcdr.id, astcdr.accountcode, astcdr.callednum, astcdr.type, astcdr.trunk, astcdr.date_created, astcdr.dialstatus, astcdr.billtime FROM astcdr WHERE astcdr.trunk = '".arg(3)."' AND accountcode LIKE '%".$value."%'". tablesort_sql($header);
+} else {
+  $sql = "SELECT astcdr.id, astcdr.accountcode, astcdr.callednum, astcdr.type, astcdr.trunk, astcdr.date_created, astcdr.dialstatus, astcdr.billtime FROM astcdr WHERE astcdr.trunk = '".arg(3)."'". tablesort_sql($header);
+}
+
+  $result = pager_query($sql, $maxline);
+  
+  while ($res = db_fetch_object($result)) {
+    $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
+	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$rows[] = array(
+		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>',
+		$res->id.'&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/listcdr/account/'.$res->accountcode).'">'.$res->accountcode.'</A>',
+		'<A HREF="'.url('astbilladm/listcdr/callednum/'.$res->callednum).'">'.$res->callednum.'</A>',
+	    array('data' => $res->type.'&nbsp;&nbsp;', 'align' => 'right'),
+		$res->trunk.'&nbsp;&nbsp;',
+		array('data' => $res->date_created, 'align' => 'right'),
+		array('data' => $res->dialstatus, 'align' => 'right'),
+		array('data' => $res->billtime, 'align' => 'right'),
+	    '&nbsp;&nbsp;<a href="'.url('astbilladm/listcdr/specific/'.$res->id).'"><img border="0" src="files/astar/view.gif"></a>'
+
+	);
+  }
+
+} // END CHECK IF TRUNK RECORDS
+
+
+if (arg(2) == 'user') { // START CHECK IF DRUPAL USER RECORDS
+
+
+  $header = array(
+	array('data' => t('User')),
+    array('data' => t('ID'), 'field' => 'id', 'sort' => 'desc'),
+    array('data' => t('Accountcode'), 'field' => 'accountcode'),
+    array('data' => t('Callednum'), 'field' => 'callednum'),
+    array('data' => t('Type'), 'field' => 'type'),
+    array('data' => t('Trunk'), 'field' => 'trunk'),
+    array('data' => t('Date Created'), 'field' => 'date_created'),
+    array('data' => t('Dial Status'), 'field' => 'dialstatus'),
+	array('data' => t('Billtime'), 'field' => 'billtime'),
+    array('data' => t('Operations'), 'colspan' => 1)
+	
+  );
+
+if (!empty($value)) {
+  $value = trim($value);
+  $sql = "SELECT astcdr.id, astcdr.accountcode, astcdr.callednum, astcdr.type, astcdr.trunk, astcdr.date_created, astcdr.dialstatus, astcdr.billtime FROM astcdr, astaccount WHERE astcdr.accountcode = astaccount.accountcode and astaccount.uid = '".arg(3)."' AND accountcode LIKE '%".$value."%'". tablesort_sql($header);
+} else {
+  $sql = "SELECT astcdr.id, astcdr.accountcode, astcdr.callednum, astcdr.type, astcdr.trunk, astcdr.date_created, astcdr.dialstatus, astcdr.billtime FROM astcdr, astaccount WHERE astcdr.accountcode = astaccount.accountcode and astaccount.uid = '".arg(3)."'". tablesort_sql($header);
+}
+
+  $result = pager_query($sql, $maxline);
+  
+  while ($res = db_fetch_object($result)) {
+    $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
+	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$rows[] = array(
+		$sqlfetch2->name,
+		$res->id.'&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/listcdr/account/'.$res->accountcode).'">'.$res->accountcode.'</A>',
+		'<A HREF="'.url('astbilladm/listcdr/callednum/'.$res->callednum).'">'.$res->callednum.'</A>',
+	    array('data' => $res->type.'&nbsp;&nbsp;', 'align' => 'right'),
+		'<A HREF="'.url('astbilladm/listcdr/trunk/'.$res->trunk).'">'.$res->trunk.'</A>&nbsp;&nbsp;',
+		array('data' => $res->date_created, 'align' => 'right'),
+		array('data' => $res->dialstatus, 'align' => 'right'),
+		array('data' => $res->billtime, 'align' => 'right'),
+	    '&nbsp;&nbsp;<a href="'.url('astbilladm/listcdr/specific/'.$res->id).'"><img border="0" src="files/astar/view.gif"></a>');
+  }
+
+
+} // END CHECK IF DRUPAL USER RECORDS
+
+
+
+if (arg(2) == '' || arg(2) == 'search') { // START CHECK IF ALL RECORDS
+
+
+  $header = array(
+    array('data' => t('User')),
+    array('data' => t('ID'), 'field' => 'id', 'sort' => 'desc'),
+    array('data' => t('Accountcode'), 'field' => 'accountcode'),
+    array('data' => t('Callednum'), 'field' => 'callednum'),
+    array('data' => t('Type'), 'field' => 'type'),
+    array('data' => t('Trunk'), 'field' => 'trunk'),
+    array('data' => t('Date Created'), 'field' => 'date_created'),
+    array('data' => t('Dial Status'), 'field' => 'dialstatus'),
+    array('data' => t('Billtime'), 'field' => 'billtime'),
+    array('data' => t('Operations'), 'colspan' => 1)
+	
+  );
+
+//if (!empty($value)) {
+//  $value = trim($value);
+//  $sql = "SELECT astcdr.id, astcdr.accountcode, astcdr.callednum, astcdr.type, astcdr.trunk, astcdr.date_created, astcdr.dialstatus, astcdr.billtime FROM astcdr WHERE accountcode LIKE '%".$value."%'". tablesort_sql($header);
+//} else {
+//  $sql = "SELECT astcdr.id, astcdr.accountcode, astcdr.callednum, astcdr.type, astcdr.trunk, astcdr.date_created, astcdr.dialstatus, astcdr.billtime FROM astcdr ". tablesort_sql($header);
+//}
+
+$value = arg(3);
+$value = trim($value);
+ $sql = "SELECT id, accountcode, callednum, type, trunk, date_created, dialstatus, billtime FROM astcdr WHERE accountcode LIKE '%".$value."%'". tablesort_sql($header);
+
+
+
+
+  $result = pager_query($sql, $maxline);
+  
+  while ($res = db_fetch_object($result)) {
+    $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
+	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$rows[] = array(
+		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>',
+		$res->id.'&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/listcdr/account/'.$res->accountcode).'">'.$res->accountcode.'</A>',
+		'<A HREF="'.url('astbilladm/listcdr/callednum/'.$res->callednum).'">'.$res->callednum.'</A>',
+	    array('data' => $res->type.'&nbsp;&nbsp;', 'align' => 'right'),
+		'<A HREF="'.url('astbilladm/listcdr/trunk/'.$res->trunk).'">'.$res->trunk.'</A>&nbsp;&nbsp;',
+		array('data' => $res->date_created, 'align' => 'right'),
+		array('data' => $res->dialstatus, 'align' => 'right'),
+		array('data' => $res->billtime, 'align' => 'right'),
+	    '&nbsp;&nbsp;<a href="'.url('astbilladm/listcdr/specific/'.$res->id).'"><img border="0" src="files/astar/view.gif"></a>'
+
+	);
+  }
+
+} // END CHECK IF ALL RECORDS
+
+// START TOP BUTTONS
+if ($skipcolumlist == 0) {
+if (arg(2) == ''){
+	if (!empty($value)) {
+		$output .= '<FORM><INPUT TYPE="button" VALUE="Back" onClick="history.go(-1);return true;"> <INPUT TYPE="button" VALUE="Forward" onClick="history.go(+1);return true;"></FORM><BR>';
+	} else {
+		$output .= '<FORM><INPUT TYPE="button" VALUE="Forward" onClick="history.go(+1);return true;"></FORM><BR>';
+	}
+}
+
+
+if (arg(2) != ''){
+$output .= '<FORM><INPUT TYPE="button" VALUE="Back" onClick="history.go(-1);return true;"> <INPUT TYPE="button" VALUE="Forward" onClick="history.go(+1);return true;"></FORM><BR>';
+}
+// END TOP BUTTONS
+
+// START OUTPUT LIST CODE
+$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+if (!empty($pager)) {
+  $rows[] = array(array('data' => $pager, 'colspan' => 10));
+}
+
+$output .= (count($rows) == 0) ? t('No records available.') : theme('table', $header, $rows);
+
+
+// END OUTPUT LIST CODE
+
+// START BOTTOM BUTTONS
+if (arg(2) == ''){
+	if (!empty($value)) {
+		$output .= '<FORM><INPUT TYPE="button" VALUE="Back" onClick="history.go(-1);return true;"> <INPUT TYPE="button" VALUE="Forward" onClick="history.go(+1);return true;"></FORM><BR>';
+	} else {
+		$output .= '<FORM><INPUT TYPE="button" VALUE="Forward" onClick="history.go(+1);return true;"></FORM><BR>';
+	}
+}
+if (arg(2) != ''){
+$output .= '<BR><FORM><INPUT TYPE="button" VALUE="Back" onClick="history.go(-1);return true;"> <INPUT TYPE="button" VALUE="Forward" onClick="history.go(+1);return true;"></FORM>';
+}
+// END BOTTOM BUTTONS
+
+$title = t('View');
+}
+
+_astadmin_printtheme_best($output, $account, $title);
+
+}
+// END CDR STUFF
+
+
+// START ACCESS LOGS STUFF
+function page_astadmin_accesslog() {
+	global $user;
+	
+	if (arg(2) == 'astlog') {
+	
+		
+  $maxline = 40; // This is the number of records to display on a page
+//  $output = '<b>Hover over Account to view Accounts Password</b><br><br>';
+
+  $header = array(
+    array('data' => t('ID'), 'field' => 'id', 'sort' => 'desc'),
+    array('data' => t('Type'), 'field' => 'type'),
+    array('data' => t('Message'), 'field' => 'message'),
+    array('data' => t('UniqueID'), 'field' => 'uniqueid'),
+    array('data' => t('Called Number'), 'field' => 'callednum'),
+    array('data' => t('Comment'), 'field' => 'comment'),
+    array('data' => t('Active'), 'field' => 'active'),
+    array('data' => t('email'), 'field' => 'email'),
+    array('data' => t('Timestamp'), 'colspan' => 1)
+	
+  );
+
+  $sql = "select id, type, message, uniqueid, callednum, comment, active, email, timestamp from astlog". tablesort_sql($header);
+
+
+  $result = pager_query($sql, $maxline);
+  
+  while ($res = db_fetch_object($result)) {
+
+	$rows[] = array(
+		$res->id.'&nbsp;&nbsp;',
+		$res->type.'&nbsp;&nbsp;',
+		$res->message.'&nbsp;&nbsp;',
+		$res->uniqueid.'&nbsp;&nbsp;',
+		$res->callednum.'&nbsp;&nbsp;',
+		$res->comment.'&nbsp;&nbsp;',
+		$res->active.'&nbsp;&nbsp;',
+		$res->email.'&nbsp;&nbsp;',
+		$res->timestamp.'&nbsp;&nbsp;'
+
+	);
+  }		
+
+  $title = 'AstBill Log';
+  
+  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+if (!empty($pager)) {
+  $rows[] = array(array('data' => $pager, 'colspan' => 10));
+}
+$output .= (count($rows) == 0) ? t('No log entries.') : theme('table', $header, $rows);
+
+  
+	} else {
+
+$ast_messages = '/var/log/asterisk/messages';
+$agi_err_astar = '/home/astbill/logs/agi_err_astar.log';
+$agi_err_local = '/home/astbill/logs/agi_err_astlocal.log';
+$agi_err_dead = '/home/astbill/logs/agi_err_dead.log';
+$agi_err_voicemail = '/home/astbill/logs/agi_err_voicemail.log';
+
+$output .= '<BR>';
+$output .= 'Astbill --><BR>';
+$output .= '<A HREF="'.url('astbilladm/accesslog/astlog').'">'.t('AstBill System Log').'</A><BR>';
+$output .= '<BR>';
+$output .= 'Asterisk --><BR>';
+$output .= '<A HREF="'.url('astbilladm/accesslog/ast_messages').'">Messages</A><BR>';
+$output .= '<BR>';
+$output .= 'Admin/logs --><BR>';
+$output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_astar').'">agi_err_astar</A><BR>';
+$output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_local').'">agi_err_local</A><BR>';
+$output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_dead').'">agi_err_dead</A><BR>';
+$output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_voicemail').'">agi_err_voicemail</A><BR>';
+
+if (arg(2) == '') {
+	$title = t('Select log file');
+}
+if (arg(2) == 'ast_messages') {
+$output = output_textfile($ast_messages, $lines);
+$title = 'ast_messages';
+}
+if (arg(2) == 'agi_err_astar') {
+$output = output_textfile($agi_err_astar, $lines);
+$title = 'agi_err_astar';
+}
+if (arg(2) == 'agi_err_local') {
+$output = output_textfile($agi_err_local, $lines);
+$title = 'agi_err_local';
+}
+if (arg(2) == 'agi_err_dead') {
+$output = output_textfile($agi_err_dead, $lines);
+$title = 'agi_err_dead';
+}
+if (arg(2) == 'agi_err_voicemail') {
+$output = output_textfile($agi_err_voicemail, $lines);
+$title = 'agi_err_voicemail';
+}
+
+	}
+	
+_astadmin_printtheme_best($output, $account, $title);
+}
+
+
+function output_textfile($filename, $lines) {
+/*
+$lines = file($filename);
+
+foreach ($lines as $line_num => $line) {
+   $output .= htmlspecialchars($line) . "<br>\n";
+}
+*/
+
+$output = '<PRE>'.shell_exec('/usr/bin/tac '.$filename).'</PRE>';
+return $output;
+}
+
+
+// END ACCESS LOGS STUFF
+
+
+// START PAYMENT STUFF
+
+function page_astadmin_payment() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+
+
+  switch (($op ? $op : arg(1))) {
+    case t('Go'):
+       $value = $edit['filteracc'];
+       drupal_goto("astbilladm/payment/payment/".$edit['filteracc']."/");
+       //page_astadmin_listcdr_form($value, $edit);
+	break;
+    default:
+    	page_astadmin_payment_form($value, $edit);
+	
+  }		
+	
+}
+
+function page_astadmin_payment_form($value, $edit) {
+	global $user;
+
+	$value = arg(3);
+	
+$output = '
+<form action="'.url('/astbilladm/payment').'" method="post">
+<div class="form-item">
+<B>Search for Accountcode&nbsp;&nbsp;</B>
+<input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
+<input type="submit" name="op" value="'.('Go').'" />&#160;&#160;
+</div></form>
+';
+
+  $maxline = 40; // This is the number of records to display on a page
+
+  $header = array(
+    array('data' => t('User')),
+    array('data' => t('ID'), 'field' => 'paid', 'sort' => 'desc'),
+    array('data' => t('Accountcode'), 'field' => 'accountcode'),
+    array('data' => t('Pay Type'), 'field' => 'paytype'),
+    array('data' => t('Comment'), 'field' => 'comment'),
+    array('data' => t('Paid Amount'), 'field' => 'paidamount'),
+    array('data' => t('Last Paid'), 'field' => 'paiddate'),
+    array('data' => t('Date Created'), 'field' => 'date_created'),
+    array('data' => t('Operations'), 'colspan' => 2)
+                                                                                     
+  );                                                                                 
+         
+  
+  if (!empty($value)) {
+	  $sql = "SELECT paid, accountcode, paytype, comment, paidamount, paiddate, date_created FROM astpayment WHERE accountcode LIKE '%".$value."%'". tablesort_sql($header);
+  } else {
+	  $sql = "SELECT paid, accountcode, paytype, comment, paidamount, paiddate, date_created FROM astpayment". tablesort_sql($header);
+  }                                                                           
+
+  $result = pager_query($sql, $maxline);
+  
+  while ($res = db_fetch_object($result)) {                                          
+    $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
+	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$rows[] = array(
+		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>&nbsp;&nbsp;',
+		$res->paid.'&nbsp;&nbsp;',
+		$res->accountcode,
+		$res->paytype,
+		$res->comment,
+		$res->paidamount,
+		$res->paiddate,
+		$res->date_created,
+		'<A HREF="'.url('astbilladm/payment/change/'.$res->paid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<A HREF="'.url('astbilladm/payment/remove/'.$res->paid).'">'.t('Remove').'</A>'
+	);
+  }
+
+
+
+
+$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+if (!empty($pager)) {
+  $rows[] = array(array('data' => $pager, 'colspan' => 10));
+}
+
+$output .= (count($rows) == 0) ? t('No records available.') : theme('table', $header, $rows);
+
+
+$title = t('View');
+
+
+_astadmin_printtheme_payment($output, $account, $title);
+	
+	
+}
+
+
+
+
+function _astadmin_printtheme_payment($page_content, $account, $title) {
+	global $user;
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+
+$output .= '<div class="nodecontent">';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/payment/create/').'">'.t('Create New Payment').'</A></B><BR>';
+
+  print theme("page", $output);
+}
+
+
+
+function page_astadmin_paymentchange() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(1))) {
+    case t('Change'):
+      $title = t('Edit Account');
+      if (astadmin_payment_validate($edit)) {
+        astadmin_payment_save($edit,arg(3));
+        drupal_goto("astbilladm/payment");
+      } else {
+		drupal_goto("astbilladm/payment/change/".arg(3));
+	  }
+      break;
+  	case t('Back'):
+		drupal_goto("astbilladm/payment");
+    default:
+	  $output = astadmin_payment_form(arg(3));
+  }
+
+
+$title = 'Change';
+$account = $user->uid;
+_astadmin_printtheme_best($output, $account, $title);
+}
+
+
+function page_astadmin_paymentcreate() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(1))) {
+    case t('Create'):
+      $title = t('Edit Account');
+      if (astadmin_payment_validate($edit)) {
+        astadmin_payment_save($edit,arg(3));
+        drupal_goto("astbilladm/payment");
+      } else {
+		drupal_goto("astbilladm/payment/create/".arg(3));
+	  }
+      break;
+  	case t('Back'):
+		drupal_goto("astbilladm/payment");
+    default:
+	  $output = astadmin_payment_form(arg(3));
+  }
+
+$title = 'Create';
+$account = $user->uid;
+_astadmin_printtheme_best($output, $account, $title);
+}
+
+function page_astadmin_paymentremove() {
+  global $user;
+
+
+	$edit = $_POST['edit'];
+
+	$deletedmsg = t('The payment was deleted');
+	$confirmmsg = '<P>'.t('Are you sure you want to delete this payment?').'</P>';
+	$dbquery = "DELETE FROM astpayment WHERE paid = '".arg(3)."'";
+	$goto = "astbilladm/payment";
+	$item = arg(4);
+
+	$output = astadmin_confirm_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item);
+
+	//print theme('page', $output);
+}
+
+
+
+
+// PAYMENT FORM STUFF
+function astadmin_payment_validate($edit) {
+  global $user;
+  $myerror = 1;
+  $errors = array();
+  
+if (!is_numeric($edit['accountcode'])){
+    $errors['accountcode'] = t('You must enter a numeric only accountcode.');
+    $myerror = 0;	
+}
+
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+
+function astadmin_payment_save($edit, $account) {
+  global $user;
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+ /*
+  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }*/
+
+if (arg(2) == 'create'){ // START CHECK IF PAYMENTCREATE
+
+	$accountcode = null;
+	$paytype = null;
+	$comment = null;
+	$paidamount = null;
+	$paiddate = null;
+
+
+db_query("INSERT INTO astpayment (accountcode, paytype, comment, paidamount, paiddate, date_created) VALUES ('%s', '%s', '%s', '%s', '%s', now())", $edit['accountcode'], $edit['paytype'], $edit['comment'], $edit['paidamount'], $edit['paiddate']);
+
+drupal_set_message(t('New payment added'));
+
+} // END CHECK IF PAYMENTCREATE
+
+
+if (arg(2) == 'change'){ // START CHECK IF PAYMENTCHANGE
+
+db_query("UPDATE astpayment SET accountcode = '%s', paytype = '%s', comment = '%s', paidamount = '%s', paiddate = '%s' WHERE paid = '%s'", $edit['accountcode'], $edit['paytype'], $edit['comment'], $edit['paidamount'], $edit['paiddate'], arg(3));
+
+drupal_set_message(t('Payment changed'));
+
+} // END CHECK IF PAYMENTCHANGE
+
+
+}
+
+function astadmin_payment_form($account) {
+	global $user;
+	$edit = $_POST["edit"];
+    $op = $_POST["op"];
+
+
+if (arg(2) == 'create'){ // START CHECK IF PAYMENTCREATE
+
+	$accountcode = null;
+	$paytype = null;
+	$comment = null;
+	$paidamount = null;
+	//$paiddate = null;
+	//2005-07-24 15:34:51
+	$paiddate = date('Y-m-d');
+
+
+} // END CHECK IF PAYMENTCREATE
+
+if (arg(2) == 'change'){ // START CHECK IF PAYMENTCHANGE
+
+$sql = db_query("SELECT paid, accountcode, paytype, comment, paidamount, paiddate, date_created FROM astpayment WHERE paid = '%s'", arg(3));
+$sqlout = db_fetch_object($sql);
+
+	$paid = $sqlout->paid;
+	$accountcode = $sqlout->accountcode;
+	$paytype = $sqlout->paytype;
+	$comment = $sqlout->comment;
+	$paidamount = $sqlout->paidamount;
+	$paiddate = $sqlout->paiddate;
+	$date_created = $sqlout->date_created;
+
+
+}// END CHECK IF PAYMENTCHANGE
+
+	$value = db_fetch_object(db_query("SELECT value FROM astsystem WHERE name = 'AccountDropDown' and serverid = 'DEF'"));
+	
+	$sql = db_fetch_object(db_query("SELECT astbrand.currency from astuser, astbrand where astuser.brand = astbrand.name and astuser.uid = '%s'", $user->uid));
+  	$currency = $sql->currency;
+	
+	$group .= t('Currency is: ').'<B>'.$currency.'</B><BR><BR>';
+	if ($value->value == 1) {
+	//$sql = db_query("SELECT accountcode FROM astaccount where tech in ('IAX','SIP','VIR') ORDER BY accountcode");
+	$sql = db_query("SELECT accountcode FROM astaccount where tech in (select actype from astactype) ORDER BY accountcode");
+	
+	$accountcodelist = array();
+	while ($fetchit = db_fetch_object($sql)) {
+	   array_push2($accountcodelist, $fetchit->accountcode, $fetchit->accountcode);
+	}
+
+	$group .= form_select(t("Accountcode"), "accountcode", $accountcode, $accountcodelist);
+	} else {
+		
+		$group .= form_textfield(t('Accountcode'), 'accountcode', $accountcode, 30, 100);
+	}
+	
+	$group .= form_textfield(t('Pay Type'), 'paytype', $paytype, 30, 100);
+	$group .= form_textfield(t('Comment'), 'comment', $comment, 30, 100);
+	$group .= form_textfield(t('Paid Amount'), 'paidamount', $paidamount, 30, 100);
+	$group .= form_textfield(t('Paid Date'), 'paiddate', $paiddate, 30, 100);
+
+
+if (arg(2) == 'create'){
+	$group .= form_submit(t('Create'));
+} else {
+	$group .= form_submit(t('Change'));
+}
+	$group .= form_submit(t('Back'));
+	//$form = form_group(t('Account details'), $group);
+	return form($group);
+}
+
+
+// END PAYMENT FORM STUFF
+// END PAYMENT STUFF
+
+                 
+
+
+
+
+
+// START CREDIT LIMIT STUFF
+
+
+function page_astadmin_credit() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+
+
+  switch (($op ? $op : arg(1))) {
+    case t('Go'):
+       $value = $edit['filteracc'];
+       drupal_goto("astbilladm/payment/credit/".$edit['filteracc']."/");
+       //page_astadmin_listcdr_form($value, $edit);
+	break;
+    default:
+    	page_astadmin_credit_form($value, $edit);
+	
+  }
+
+}
+
+function page_astadmin_credit_form($value, $edit) {
+	global $user;
+	$edit = $_POST["edit"];
+  	$op = $_POST["op"];
+  
+$output = '
+<form action="'.url('/astbilladm/payment/credit').'" method="post">
+<div class="form-item">
+'.t('<B>Search for Accountcode').'&nbsp;&nbsp;</B>
+<input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
+<input type="submit" name="op" value="'.('Go').'" />&#160;&#160;
+</div></form>
+';
+
+  $maxline = 40; // This is the number of records to display on a page
+
+  $header = array(
+    array('data' => t('User'), 'field' => 'uid'),
+    array('data' => t('Accountcode'), 'field' => 'accountcode', 'sort' => 'asc'),
+    array('data' => t('Credit limit'), 'field' => 'creditlimit'),
+    array('data' => t('Operations'), 'colspan' => 1)                                                                             
+  );
+  $value = arg(3);
+  if (!empty($value)) {
+  $value = trim($value);
+  $sql = "SELECT accountcode, creditlimit FROM astaccount where uid <> 0 and tech in (select actype from astactype) AND accountcode LIKE '%".$value."%'". tablesort_sql($header);
+  } else {
+  $sql = "SELECT accountcode, creditlimit FROM astaccount where uid <> 0 and tech in (select actype from astactype)". tablesort_sql($header);
+  }
+
+  $result = pager_query($sql, $maxline);
+  
+  while ($res = db_fetch_object($result)) {                                          
+    $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
+	$sqlfetch2 = db_fetch_object(db_query("select name from pbx_users where uid = '%s'", $sqlfetch1->uid));
+	$rows[] = array(
+		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>&nbsp;&nbsp;',
+		$res->accountcode,
+		$res->creditlimit,
+		'<A HREF="'.url('astbilladm/payment/credit/change/'.$res->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>'
+	);
+  }
+
+
+
+
+$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+if (!empty($pager)) {
+  $rows[] = array(array('data' => $pager, 'colspan' => 10));
+}
+
+$output .= (count($rows) == 0) ? t('No records available.') : theme('table', $header, $rows);
+
+
+$title = t('View');
+
+
+_astadmin_printtheme_best($output, $account, $title);
+	
+	
+}
+
+
+function page_astadmin_creditchange() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(2))) {
+    case t('Save'):
+      $title = t('Change account credit');
+      if (astadmin_credit_validate($edit)) {
+        astadmin_credit_save($edit,arg(4));
+        drupal_goto("astbilladm/payment/credit");
+      } else {
+		drupal_goto("astbilladm/payment/credit/change/".arg(4));
+	  }
+      break;
+  	case t('Back'):
+		drupal_goto("astbilladm/payment/credit");
+    default:
+	  $output = astadmin_credit_form(arg(4));
+  }
+
+
+$title = 'Change';
+$account = $user->uid;
+_astadmin_printtheme_best($output, $account, $title);
+}
+
+
+
+
+// CREDIT LIMIT FORM STUFF
+function astadmin_credit_validate($edit) {
+  global $user;
+  $myerror = 1;
+  $errors = array();
+
+
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+
+function astadmin_credit_save($edit, $account) {
+  global $user;
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+ /*
+  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }*/
+
+
+db_query("UPDATE astaccount SET creditlimit = '%s' WHERE accountcode = '%s'", $edit['creditlimit'], arg(4));
+
+drupal_set_message(t('Credit changed'));
+
+
+}
+
+function astadmin_credit_form($account) {
+	global $user;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+
+	$group .= 'AccountCode: <B>'.arg(4).'</B>';
+	
+	$sql = db_query("SELECT creditlimit FROM astaccount WHERE accountcode = '%s'", arg(4));
+        $sqlout = db_fetch_object($sql);
+	
+	$group .= form_textfield(t('Credit Limit'), 'creditlimit', $sqlout->creditlimit, 30, 100);
+
+
+	$group .= form_submit(t('Save'));
+	$group .= form_submit(t('Back'));
+	//$form = form_group(t('Account details'), $group);
+	return form($group);
+}
+
+
+// END CREDIT LIMIT STUFF
+// END CREDIT LIMIT STUFF
+
+
+
+
+
+
+
+
+
+
+// START COMMON FUNCTIONS
+
+
+function _astadmin_printtheme_best($page_content, $account, $title) {
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+  // $output .= '<div class="astentry">' . $page_content . "</div>\n";
+  print theme("page", $output);
+}
+
+
+function astadmin_confirm_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item) {
+	global $user;
+	$cid = arg(2);
+	$output = '';
+
+	if ($edit) {
+		db_query($dbquery);
+		//db_query("DELETE FROM {contact_category} WHERE cid = %d and uid = %d", $cid, $user->uid);
+		// db_query("DELETE FROM {contact_category} WHERE cid = % d", $edit['cid']);
+
+		// Redirects the response to the list page
+		drupal_set_message(t($deletedmsg));
+		drupal_goto($goto);
+	}
+
+	// Creates a confirmation form
+	$categories = astcontact_get_categories();
+
+	$output .= t($confirmmsg);
+	$output .= form_hidden('cid', $cid);
+	$output .= form_submit(t('Delete'));
+
+	//return form($output);
+	$group = form($output);
+
+$title = t('Remove ').$item;
+$account = $user->uid;
+_astadmin_printtheme_best($group, $account, $title);
+//return $output;
+}
+
+/*
+function array_push2(&$array,$object,$key=null){
+   $keys = array_keys($array);
+   rsort($keys);
+   $newkey = ($key==null)?$keys[0]+1:$key;
+   $array[$newkey] = $object;
+   return $newkey;
+}
+
+function myRange($low,$high,$step=1)
+{
+$ranArray = range($low,$high);
+$step--;
+$keys = count($ranArray);
+   for($i=0;$i<$keys;$i++)
+   {
+   $retArray[] = $ranArray[$i];
+   $i = $i + $step;
+   }
+return $retArray;
+}
+*/
+// END COMMON FUNCTIONS
