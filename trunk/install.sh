@@ -117,3 +117,6 @@ cp -fr agi-bin/* /var/lib/asterisk/agi-bin/
 # chown -R asterisk:asterisk /var/lib/asterisk/agi-bin/
 chmod -R +x /var/lib/asterisk/agi-bin/*
 
+echo "Remember to edit /etc/asterisk/res_mysql.conf"
+echo "You have to put the right path to mysql.sock"
+echo "-----------------------------------------"

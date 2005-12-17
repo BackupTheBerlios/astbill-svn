@@ -11,7 +11,7 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
-Installation instructions for AstBill Version 0.9.0.12
+Installation instructions for AstBill Version 0.9.0.13
 
 Please read INSTALLMYSQL.txt and have your MySQL 5 Server working before you start the instructions in this file.
 
@@ -22,8 +22,8 @@ Running on Drupal, A open source content management platform. AstBill gives a We
 
 2.0 - Requirements:
 
-Asterisk - Version 1.2-beta1
-(Most of AstBill is also working on Asterisk 1.0.9 but the 1.2 beta is needed for the new REALTIME features)
+Asterisk - Version 1.2  (Beta and RC may not work due to minor changes in Realtime)
+(Most of AstBill is also working on Asterisk 1.0.9 but 1.2 is needed for the new REALTIME features)
 Asterisk - Addons Version 1.2-beta1
 (We are only using the module res_config_mysql from Asterisk - Addons)
 See enclosed file modules.conf for modules to unload to awoid error messages
@@ -45,14 +45,14 @@ Drupal - Version 4.6.3 (Included in the wwwroot directory of this AstBill Distri
 
 First of all, make sure you have all the requirements set up properly.
 
-3.1. Extract astbill-0.9.0.12.tar.bz2 to /home
+3.1. Extract astbill-0.9.0.13.tar.bz2 to /home
 
 cd /home
-tar jxvf astbill-0.9.0.12.tar.bz2 
+tar jxvf astbill-0.9.0.13.tar.bz2 
 
-rename the directory astbill-0.9.0.12 to astbill
+rename the directory astbill-0.9.0.13 to astbill
 
-mv astbill-0.9.0.12 astbill
+mv astbill-0.9.0.13 astbill
 cd /home/astbill
 chmod +x install.sh
 
@@ -65,9 +65,12 @@ cd /home/astbill
 
 Read INSTALLMYSQL.txt and Prepare MySQL 5 for AstBill.
 
+You have to edit /etc/asterisk/res_mysql.conf for your OS.
+You have to put the right path to mysql.sock. (See INSTALLMYSQL.txt. You need the same path as in /etc/my.cnf)
+
 Ensure wwwroot of AstBill is visible for the Web Server
 
-ln -s /home/astbill/wwwroot /var/www/astbill
+ln -s /home/astbill/wwwroot /var/www/html/astbill
 
 Remember the files in the ajax directory have to be one level down from your web root. In a sub directory called ajax.
 This is allready done if you are using AstBill's wwwroot

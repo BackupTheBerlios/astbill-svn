@@ -29,12 +29,12 @@ mkdir -p /usr/local
 cd /usr/local
 # See http://dev.mysql.com/downloads/mysql/5.0.html for exact download location
 # They sometimes change it.
-wget http://dev.mysql.com/get/Downloads/MySQL-5.0/mysql-standard-5.0.15-linux-i686-glibc23.tar.gz/from/http://www.mirrorservice.org/sites/ftp.mysql.com/
+wget http://dev.mysql.com/get/Downloads/MySQL-5.0/mysql-standard-5.0.15-linux-i686.tar.gz/from/http://www.mirrorservice.org/sites/ftp.mysql.com/
 
-tar zxvf mysql-standard-5.0.15-linux-i686-glibc23.tar.gz
+tar zxvf mysql-standard-5.0.15-linux-i686.tar.gz
 groupadd mysql
 useradd -g mysql mysql
-ln -s /usr/local/mysql-standard-5.0.15-linux-i686-glibc23 mysql
+ln -s /usr/local/mysql-standard-5.0.15-linux-i686 mysql
 cd mysql
 
 scripts/mysql_install_db --user=mysql
