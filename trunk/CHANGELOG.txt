@@ -8,6 +8,20 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
+2005.12.18 Version 0.9.15 Alpha
+
+# Warning - This software is not stable. If you are in production wait for 
+# Version 0.9.16 before you upgrade. Major system changes in the database is done.
+# Please TEST and TEST and report back in http://astbill.com/forum/3
+#
+# Now AstBill is multisite. You can have unlimited Drupal/VOIP sites on one server using one database
+# Changed 
+# Renamed table astbrand to astrates (Bug 249)
+# Fixed url error when importing (Bug 254)
+# Fixed Brand only visible when there is price records (Bug 258)
+# You can now have default countryprefix, brand and account type (Bug 227)
+# Have a look at the Settings / System Config 
+
 2005.11.17 Version 0.9.0.14
 
 # Removed minor bug in REALTIME handeling under certain conditions
