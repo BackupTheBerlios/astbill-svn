@@ -1200,7 +1200,7 @@ while ($item = db_fetch_object($sql)) {
 }
 
 
-$sql = db_query("select name from astbrand");
+$sql = db_query("select name from astplans");
   
 $brandlist = array();
 

@@ -868,7 +868,8 @@ function _astpriceedit_export() {
 	break;
 
         default:
-		$sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+		// $sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+		$sql = db_query("SELECT name brand FROM astplans order by name");
 		$brandlist = array('ALL' => 'ALL');
 		
 		while ($fetchit = db_fetch_object($sql)) {
@@ -894,7 +895,8 @@ function _astpriceedit_import() {
 	$clear = $_POST["clear"]['0'];
 	
 	
-	$sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	// $sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	$sql = db_query("SELECT name brand FROM astplans order by name");
 	$brandlist = array('ALL' => 'ALL');
 	while ($fetchit = db_fetch_object($sql)) {
 	   array_push2($brandlist, $fetchit->brand, $fetchit->brand);
@@ -1205,7 +1207,7 @@ $maxline = 40;
     
   while ($item = db_fetch_object($sql)) {
 	  
-	  $sql2 = db_fetch_object(db_query("select currency FROM astbrand WHERE name='%s'", $value2));
+	  $sql2 = db_fetch_object(db_query("select currency FROM astplans WHERE name='%s'", $value2));
 	  // $cur = astpricelist_currency($sql2->currency);
    	  $cur = db_fetch_object(db_query("select ratetabledesc FROM astcurrency WHERE currency='%s'", $sql2->currency));
 
@@ -1257,7 +1259,8 @@ if ($where == 'edit') {
 	
 	$valuessql = db_fetch_object(db_query("SELECT id, pattern, name, connectcharge, includedseconds, minimumprice, price, brand FROM astpricelist WHERE id = '%s'", $value));
 
-	$sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	// $sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	$sql = db_query("SELECT name brand FROM astplans order by name");
 	$brandlist = array();
 	while ($model = db_fetch_object($sql)) {
 		array_push2($brandlist, $model->brand, $model->brand);
@@ -1298,7 +1301,8 @@ if ($where == 'create') {
 		array_push2($countryout, $model->country, $model->countrycode);
 	}
 
-	$sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	// $sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	$sql = db_query("SELECT name brand FROM astplans order by name");
 	$brandlist = array();
 	while ($model = db_fetch_object($sql)) {
 		array_push2($brandlist, $model->brand, $model->brand);
@@ -1344,7 +1348,8 @@ if (empty($where)) {
 		array_push2($countryout, $model->country, $model->countrycode);
 	}
 
-	$brandlist = db_query("SELECT DISTINCT brand FROM astpricelist");
+	// $brandlist = db_query("SELECT DISTINCT brand FROM astpricelist");
+	$brandlist = db_query("SELECT name brand FROM astplans order by name");
 	$brandout = array();
 	
 	while ($model = db_fetch_object($brandlist)) {

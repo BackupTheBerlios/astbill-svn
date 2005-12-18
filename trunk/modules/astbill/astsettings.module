@@ -1172,7 +1172,7 @@ if (empty($arg3)) {
     array('data' => t('Operations'))
   );
 
-$sql = "SELECT name, currency, language, publishednum, did, markup, billincrement, connectcharge, status FROM astbrand". tablesort_sql($header);
+$sql = "SELECT name, currency, language, publishednum, did, markup, billincrement, connectcharge, status FROM astplans". tablesort_sql($header);
 $result = pager_query($sql, $maxline);
 
   
@@ -1203,7 +1203,7 @@ $result = pager_query($sql, $maxline);
   $output .= (count($rows) == 0) ? t('No Peers.') : theme('table', $header, $rows);
   $title = t('View');
   
-  _astbrand_printtheme_best($output, $title);
+  _astplans_printtheme_best($output, $title);
 } else {
 
 
@@ -1214,7 +1214,7 @@ _astsettings_printtheme_best($output, $title);
 }
 }
 
-function _astbrand_printtheme_best($page_content, $title) {
+function _astplans_printtheme_best($page_content, $title) {
 	global $user;
 $output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
 
@@ -1240,7 +1240,7 @@ function astsettings_validate($edit) {
 		  $myerror = 0;
 	  }
 	  
-	  $sql = db_query("SELECT name FROM astbrand");
+	  $sql = db_query("SELECT name FROM astplans");
 
 	  while ($getname = db_fetch_object($sql)){
 		  if ($edit['name'] == $getname->name){
@@ -1270,7 +1270,7 @@ function astsettings_save($edit) {
 //  }
 
 	if (arg(3) == 'create') {
-	db_query("INSERT INTO astbrand ( name, currency,
+	db_query("INSERT INTO astplans ( name, currency,
 	language, publishednum, did, markup, 
 	billincrement, connectcharge, status ) VALUES ( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
         $edit['name'], $edit['currency'], $edit['language'],
@@ -1282,7 +1282,7 @@ function astsettings_save($edit) {
 
 
 	if (arg(3) == 'edit') {
-	db_query("UPDATE astbrand SET currency = '%s', 
+	db_query("UPDATE astplans SET currency = '%s', 
 	language = '%s', publishednum = '%s', did = '%s', markup = '%s', 
 	billincrement = '%s', connectcharge = '%s', status = '%s' WHERE name = '%s'",
         $edit['currency'], $edit['language'],
@@ -1319,7 +1319,7 @@ function astsettings_form($name) {
 	
 	if (arg(3) == 'edit') {
 		
-	$valuesql = db_fetch_object(db_query("SELECT name, currency, language, publishednum, did, markup, billincrement, connectcharge, status FROM astbrand WHERE name = '%s'", $name));
+	$valuesql = db_fetch_object(db_query("SELECT name, currency, language, publishednum, did, markup, billincrement, connectcharge, status FROM astplans WHERE name = '%s'", $name));
 
 	$group .= '<BR>';
 	$group .= t('Name:').' '.$valuesql->name;	

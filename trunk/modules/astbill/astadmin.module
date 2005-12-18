@@ -1943,7 +1943,7 @@ $sqlout = db_fetch_object($sql);
 
 	$value = db_fetch_object(db_query("SELECT value FROM astsystem WHERE name = 'AccountDropDown' and serverid = 'DEF'"));
 	
-	$sql = db_fetch_object(db_query("SELECT astbrand.currency from astuser, astbrand where astuser.brand = astbrand.name and astuser.uid = '%s'", $user->uid));
+	$sql = db_fetch_object(db_query("SELECT astplans.currency from astuser, astplans where astuser.brand = astplans.name and astuser.uid = '%s'", $user->uid));
   	$currency = $sql->currency;
 	
 	$group .= t('Currency is: ').'<B>'.$currency.'</B><BR><BR>';

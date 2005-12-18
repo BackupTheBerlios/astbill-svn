@@ -173,7 +173,7 @@ $maxline = 40;
 
     $sql = db_query("SELECT id, pattern, name, round(price, 2) price, brand FROM astpricelist WHERE (countrycode LIKE '".$value."' AND brand LIKE '".$value2."')". tablesort_sql($header));
     
-    $sql2 = db_fetch_object(db_query("select currency FROM astbrand WHERE name='%s'", $value2));
+    $sql2 = db_fetch_object(db_query("select currency FROM astplans WHERE name='%s'", $value2));
     
 	$cur = db_fetch_object(db_query("select ratetabledesc FROM astcurrency WHERE currency='%s'", $sql2->currency));
      
