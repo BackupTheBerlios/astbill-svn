@@ -233,7 +233,7 @@ BEGIN
      
   /*  TABLE astpricelist is our price list to the customer. This can be totally different from the price list we have from our vendors. */ 
   
-  /*  TABLE astbrand contain values for billincrement, connectioncharge and markup = (our margin/profit)  
+  /*  TABLE astplans contain values for billincrement, connectioncharge and markup = (our margin/profit)  
       Each customer will be assigned a brand. That brand will determine the sales price to the customer.   */  
   
   DECLARE phone       varchar(255);   
@@ -288,7 +288,7 @@ IF mytrunk <> 'Local' THEN
 
   
   /* If astroute.minimumcost = 0 use connectcost and includedseconds. */
-  /* astbrand.billincrement  = How many step of secounds the billing is. */
+  /* astplans.billincrement  = How many step of secounds the billing is. */
   
   SET mycost = IFNULL(mycost,'-1');
   IF mycost = -1 THEN  /* This can only happend if there is no route to the destination. Log as CRITICAL ERROR and go on with default */
@@ -431,7 +431,7 @@ BEGIN
      
   /*  TABLE astpricelist is our price list to the customer. This can be totally different from the price list we have from our vendors. */ 
   
-  /*  TABLE astbrand contain values for billincrement, connectioncharge and markup = (our margin/profit)  
+  /*  TABLE astplans contain values for billincrement, connectioncharge and markup = (our margin/profit)  
       Each customer will be assigned a brand. That brand will determine the sales price to the customer.   */  
   
   DECLARE phone       varchar(255);   
@@ -478,7 +478,7 @@ IF mytrunk <> 'Local' THEN
   
   
   /* If astroute.minimumcost = 0 use connectcost and includedseconds. */
-  /* astbrand.billincrement  = How many step of secounds the billing is. */
+  /* astplans.billincrement  = How many step of secounds the billing is. */
   
   SET myprice = IFNULL(myprice,'-1');
   IF myprice = -1 THEN  /* This can only happend if there is no route to the destination. Log as CRITICAL ERROR and go on with default */
