@@ -1296,12 +1296,21 @@ function astpbx_user($type, &$edit, &$user, $category = NULL) {
     case 'update':    */
     case 'insert':
 
- //  $start = variable_get("update_start", 0);
- //  variable_set("update_start", $date);
- // INSERT INTO `pbx_variable` VALUES ('AstBill CountryPrefix', 'i:49;');
- // INSERT INTO `pbx_variable` VALUES ('AstBill Brand', 's:6:"Norge3";');
- // INSERT INTO `pbx_variable` VALUES ('AstBill Tech', 's:3:"SIP";');
+// This is the section for Default Values.
+//  $start = variable_get("update_start", 0);
+//  variable_set("update_start", $date);
+// INSERT INTO `pbx_variable` (`name`, `value`) VALUES ('AstBill Brand', 's:6:"Norge3";');
+// INSERT INTO `pbx_variable` (`name`, `value`) VALUES ('AstBill CountryPrefix', 'i:49;');
+// INSERT INTO `pbx_variable` (`name`, `value`) VALUES ('AstBill Tech', 's:3:"SIP";');
 
+	   	variable_set("AstBill CountryPrefix",47)."  ";
+	    variable_set("AstBill Brand","Future")."  ";
+	    variable_set("AstBill Tech","SIP");
+
+		$strtemp = variable_get("AstBill CountryPrefix",0)."  ";
+	    $strtemp .= variable_get("AstBill Brand",0)."  ";
+	    $strtemp .= variable_get("AstBill Tech",0);
+	//	$sql = db_query ("insert into test (subject) values ('$strtemp')");
 
 	    $sql = db_query ("CALL astCreateAccount(@a,$user->uid,'IAX')");
 		$sql2 = db_query("select @a accountcode");

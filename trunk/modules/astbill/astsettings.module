@@ -1664,7 +1664,18 @@ function page_astsettings_system_list() {
 				//form_textfield('', 'comment]['. $key, $sql->comment, 80, 150));
 	}
 
+    $group .= form_textfield(t('Language'), 'language', $valuesql->language, 30, 100);
+// form_textfield('', 'value]['. $key, $value, 20, 100),
+//	$group .= form_select(t("Select Currency"), "currency", $valuesql->currency, $currency);
+//	$group .= form_textfield(t('Language'), 'language', $valuesql->language, 30, 100);
+
 	$output = theme('table', $header, $rows);
+	$output .= "<BR>";
+    $output .= form_textfield(t('<FONT SIZE=2>The default CountryPrefix to use when creating new accounts</FONT>'), 'countryprefix', variable_get("AstBill CountryPrefix",44), 30, 100);
+    $output .= form_textfield(t('<FONT SIZE=2>The default Brand to use when creating new accounts</FONT>'), 'brand', variable_get("AstBill Brand",'default'), 30, 100);
+    $output .= form_textfield(t('<FONT SIZE=2>The default Channel type to use when creating new accounts (SIP or IAX)</FONT>'), 'tech', variable_get("AstBill Tech",'SIP'), 30, 100);
+
+	
 	$output .= form_submit(t('Save Settings'));
 	return form($output);
 }
@@ -1703,6 +1714,11 @@ function page_astsettings_system_update($edit) {
 			}
 			
 		}
+		
+		variable_set("AstBill CountryPrefix",$edit['countryprefix']);
+	    variable_set("AstBill Brand",$edit['brand']);
+	    variable_set("AstBill Tech",$edit['tech']);
+
 		drupal_set_message(t('The changes have been saved.'));
 	}
 	// Redirects the response to the list page
