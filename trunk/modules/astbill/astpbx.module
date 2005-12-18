@@ -1295,7 +1295,15 @@ function astpbx_user($type, &$edit, &$user, $category = NULL) {
       return profile_form_profile($edit, $user, $category);
     case 'update':    */
     case 'insert':
-		$sql = db_query ("CALL astCreateAccount(@a,$user->uid,'IAX')");
+
+ //  $start = variable_get("update_start", 0);
+ //  variable_set("update_start", $date);
+ // INSERT INTO `pbx_variable` VALUES ('AstBill CountryPrefix', 'i:49;');
+ // INSERT INTO `pbx_variable` VALUES ('AstBill Brand', 's:6:"Norge3";');
+ // INSERT INTO `pbx_variable` VALUES ('AstBill Tech', 's:3:"SIP";');
+
+
+	    $sql = db_query ("CALL astCreateAccount(@a,$user->uid,'IAX')");
 		$sql2 = db_query("select @a accountcode");
 		$result = db_fetch_object($sql2);
 
