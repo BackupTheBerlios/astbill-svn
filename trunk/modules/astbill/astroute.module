@@ -305,7 +305,7 @@ function _astroute_import() {
 	$clear = $_POST["clear"]['0'];
 	
 	$output .= '
-	<form enctype="multipart/form-data" action="astbilladm/route/import" method="POST">
+	<form enctype="multipart/form-data" action='.url("astbilladm/route/import").' method="POST">
     	<input type="hidden" name="MAX_FILE_SIZE" value="0" />
     	Send this file: <input name="import" type="file" /><BR>
 	<BR>
@@ -903,7 +903,7 @@ function _astpriceedit_import() {
 	}
 	
 	$output .= '
-	<form enctype="multipart/form-data" action="astbilladm/pricelist/import" method="POST">
+	<form enctype="multipart/form-data" action='.url("astbilladm/pricelist/import").' method="POST">
     	<input type="hidden" name="MAX_FILE_SIZE" value="0" />
     	Send this file: <input name="import" type="file" /><BR>
 	<BR>
