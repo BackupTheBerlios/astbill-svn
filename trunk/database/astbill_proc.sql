@@ -154,11 +154,12 @@ delimiter ;
 DROP PROCEDURE IF EXISTS RateAddcdr;
 delimiter ;;
 
+
 CREATE PROCEDURE RateAddcdr (saccountcode varchar(255),schannel varchar(255),
                     scallednum varchar(255),stype varchar(255),suniqueid varchar(255))
   NOT DETERMINISTIC
 BEGIN
-  /* Version 2.0.7 */
+  /* Version 2.0.8 */
   /* Written By Are at astartelecom.com */
 
   DECLARE phone    varchar(255); 
@@ -170,8 +171,8 @@ BEGIN
   DECLARE tallow011  tinyint(1);   /* Allow 011 dialing for IDD in front of number  */
   DECLARE tlocallength  tinyint(2);   /* Length of Number for it to be considered Local  */
   
-  SELECT brand INTO sbrand FROM astaccount, astuser WHERE astaccount.uid=astuser.uid and astaccount.accountcode = saccountcode;
-  SELECT astuser.CountryPrefix INTO Prefix FROM astaccount, astuser WHERE astaccount.uid=astuser.uid and astaccount.accountcode = saccountcode;
+  SELECT brand INTO sbrand FROM astaccount, astuser WHERE astaccount.uid=astuser.uid and astaccount.db_prefix=astuser.db_prefix and astaccount.accountcode = saccountcode;
+  SELECT astuser.CountryPrefix INTO Prefix FROM astaccount, astuser WHERE astaccount.uid=astuser.uid and astaccount.db_prefix=astuser.db_prefix and astaccount.accountcode = saccountcode;
   SET phone = scallednum;
 
   SET prefix = IFNULL(prefix,''); /* Allows for dialing even if use have no valid astaccount. Not likely but works during test with account code 77777 */
