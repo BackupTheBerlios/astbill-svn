@@ -1278,7 +1278,7 @@ function astadvset_form($edit) {
   if ($edit['nat'] == 'route') {$nat = 3;}
   
   $uid = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", $edit['accountcode']));
-  $sql = db_fetch_object(db_query("SELECT astplans.currency from astuser, astplans where astuser.brand = astplans.name and astuser.uid = '%s'", $uid->uid));
+  $sql = db_fetch_object(db_query("SELECT astplans.currency from astuser, astplans where astuser.brand = astplans.name and astuser.uid = '%s' and db_prefix ='".$db_prefix."'", $uid->uid));
   $currency = $sql->currency;
 
   $group = t('Current credit limit for this account is : ').'<B>'.$edit['creditlimit'].'</B><BR>';

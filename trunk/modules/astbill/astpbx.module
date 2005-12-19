@@ -1330,7 +1330,7 @@ $edit['language'], $edit['forwardto'],$callerid,$edit['accountname'],$lastaccoun
 db_query("UPDATE astuser SET brand = '%s' WHERE uid='%s' and db_prefix ='".$db_prefix."'", variable_get("AstBill Brand", 'default'), $user->uid);   
 
 		//   drupal_set_message(t('New Account Created: '. $result->accountcode));
-		astpbx_sendemail("ASTARREG", $user->mail, $result->accountcode);
+		astpbx_sendemail($db_prefix."ASTARREG", $user->mail, $result->accountcode);
 		// $sql = db_query ("insert into test (subject) values ('Drupal $db_prefix  $user->uid')");
 		// $sql = db_query ("insert into test (subject) values ('$item->id')");
 
