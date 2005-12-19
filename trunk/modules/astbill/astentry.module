@@ -477,7 +477,9 @@ $callerid = $sql->name.' <'.$lastaccount->lastaccount.'>';
 db_query("UPDATE astaccount SET language = '%s', forwardto = '%s' , callerid = '%s' , accountname = '%s', active = '%s' WHERE accountcode = '%s'",
 $edit['language'], $edit['forwardto'],$callerid,$edit['accountname'],$edit['active'],$lastaccount->lastaccount);
 
-  drupal_set_message(t('The Account settings have been updated.'));
+/*  db_query("UPDATE astuser SET brand = '%s' WHERE uid='%s' and db_prefix ='".$db_prefix."'", variable_get("AstBill Brand", 'default'), $user->uid);    */
+
+  drupal_set_message(t('The New Account has been Created.'));
 }
 
 function astpbx_form($edit = null) {
@@ -1303,7 +1305,7 @@ function astadvset_form($edit) {
 // ='".$db_prefix."'", $user->uid));
 
   $group .= '<BR><BR>';
-  $group .= t('Current brand is ').'<B>'.$sql['brand'].'</B><BR>';
+  $group .= t('Current Rate Plan is: ').'<B>'.$sql['brand'].'</B><BR>';
   $group .= form_textfield(t("Country Prefix"), "countryprefix", $sql['countryprefix'], 80, 150, null, null, false);
   $group .= form_textfield(t("Call Back To"), "callbackto", $sql['callbackto'], 80, 150, null, null, false);
 

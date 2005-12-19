@@ -1094,7 +1094,7 @@ if (arg(1) == 'editaccount') {
   if (arg(1) == 'createaccount') {
 
 	  if (empty($edit['mailboxemail'])) {
-		  $sql = db_fetch_array(db_query("select mail FROM ".$db_prefix."users WHERE uid = %s", $edit['account']));
+		  $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $edit['account']));
 		  $mailboxemail = $sql->mail;
 	  }
 
@@ -1131,7 +1131,7 @@ if (arg(1) == 'editaccount') {
 
 
   if(empty($edit['mailboxemail'])){
-  $sql = db_fetch_array(db_query("select mail FROM ".$db_prefix."users WHERE uid = %s", $edit['uid']));
+  $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $edit['uid']));
   $mailboxemail = $sql['mail'];
   } else {
 	  $mailboxemail = $edit['mailboxemail'];
@@ -1146,7 +1146,7 @@ if (arg(1) == 'editaccount') {
   if ($edit['nat'] == 'route') {$nat = 3;}
   
   
-  $getastuser = db_fetch_array(db_query("select brand, countryprefix, callbackto FROM astuser WHERE uid = %s", $edit['uid']));
+  $getastuser = db_fetch_array(db_query("select brand, countryprefix, callbackto FROM astuser WHERE uid = %s and db_prefix ='".$db_prefix."'", $edit['uid']));
   
   $accountcode = arg(2);
   
@@ -1171,7 +1171,7 @@ $getastuser['callbackto'] = NULL;
 $accountcode = NULL;
 $mailboxemail = NULL;
 
-$sql2 = db_query("select name, uid from ".$db_prefix."users");
+$sql2 = db_query("select name, uid from {users}");
 
 $users = array();
 
@@ -1239,7 +1239,7 @@ while ($item = db_fetch_object($sql)) {
   $group .= form_textfield(t("Context"), "context", $edit['context'], 30, 30, null, null, false);
   $group .= '<BR>';
   $group .= t('<FONT size=1><B>Note: These are user wide settings:</B></FONT>');
-  $group .= form_select(t("Brand"), 'brand', $getastuser['brand'], $brandlist);
+  $group .= form_select(t("Rate Plan"), 'brand', $getastuser['brand'], $brandlist);
   $group .= form_textfield(t("Country Prefix"), "countryprefix", $getastuser['countryprefix'], 25, 25, null, null, false);
   $group .= form_textfield(t("Call Back To"), "callbackto", $getastuser['callbackto'], 25, 25, null, null, false);
   }
@@ -1303,16 +1303,19 @@ function astpbx_user($type, &$edit, &$user, $category = NULL) {
 // INSERT INTO `pbx_variable` (`name`, `value`) VALUES ('AstBill CountryPrefix', 'i:49;');
 // INSERT INTO `pbx_variable` (`name`, `value`) VALUES ('AstBill Tech', 's:3:"SIP";');
 
-	   	variable_set("AstBill CountryPrefix",47)."  ";
-	    variable_set("AstBill Brand","Future")."  ";
-	    variable_set("AstBill Tech","SIP");
+//	   	variable_set("AstBill CountryPrefix",47)."  ";
+//	    variable_set("AstBill Brand","Future")."  ";
+//	    variable_set("AstBill Tech","SIP");
 
-		$strtemp = variable_get("AstBill CountryPrefix",0)."  ";
-	    $strtemp .= variable_get("AstBill Brand",0)."  ";
-	    $strtemp .= variable_get("AstBill Tech",0);
+//		$strtemp = variable_get("AstBill CountryPrefix",0)."  ";
+//	    $strtemp .= variable_get("AstBill Brand",0)."  ";
+//	    $strtemp .= variable_get("AstBill Tech",0);
 	//	$sql = db_query ("insert into test (subject) values ('$strtemp')");
 
-	    $sql = db_query ("CALL astCreateAccount(@a,$user->uid,'IAX')");
+//	    $sql = db_query ("CALL astCreateAccount(@a,$user->uid,'IAX')");
+		
+		db_query("CALL astCreateAcc2(@a,%d,'%s','%s','%s','%d')",$user->uid,variable_get("AstBill Tech", 'SIP'),$db_prefix,variable_get("AstBill Brand", 'default'),variable_get("AstBill CountryPrefix", '44'));
+
 		$sql2 = db_query("select @a accountcode");
 		$result = db_fetch_object($sql2);
 
@@ -1387,7 +1390,7 @@ function page_astpbx_emailme() {
 
 		default:
 			$uid = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", arg(2)));
-			$email = db_fetch_object(db_query("SELECT mail FROM ".$db_prefix."users WHERE uid = '%s'", $uid->uid));
+			$email = db_fetch_object(db_query("SELECT mail FROM {users} WHERE uid = '%s'", $uid->uid));
 			$group .= 'Please check that the email bellow is correct before confirming.<BR>';
 			$group .= form_textfield(t('Email:'), 'email', $email->mail, 30, 100);
 		
