@@ -53,11 +53,18 @@ BEGIN
   DECLARE vPrefix int(3);
   DECLARE vtech varchar(128);
   DECLARE vwhere varchar(128);
-      
+  DECLARE passlen int(4);
+  DECLARE voicepinlen int(4);
+  
+        
   SET tbluser = CONCAT(sdb_prefix,'users');
   SET @s := CONCAT(' uid from ',tbluser,' where uid = suid');
   SET @t := CONCAT(' name from ',tbluser,' where uid = suid');
-  
+
+  select value into passlen from astsystem where name like 'def-password-length';
+  select value into voicepinlen from astsystem where name like 'def-voicemail-pin-length';
+
+    
     select CONCAT(value,'%') into accountstart from astsystem where name = 'accountstart' and serverid = 'DEF';
    
     if EXISTS (select accountcode from astaccount where accountcode like accountstart) THEN
@@ -67,7 +74,7 @@ BEGIN
    	END IF;
   
  	insert into astaccount (db_prefix,uid,accountcode,tech,date_created, secret, mailboxpin) 
-	values (sdb_prefix,suid, nextid, stech, Now(),RIGHT(Rand(),6),RIGHT(Rand(),4));  
+	values (sdb_prefix,suid, nextid, stech, Now(),RIGHT(Rand(),passlen),RIGHT(Rand(),voicepinlen));  
 	
 		/*  SET lastid =  LAST_INSERT_ID();  */
 	update astaccount set callerid = nextid, mailbox = nextid where accountcode = nextid;
@@ -93,6 +100,7 @@ BEGIN
 END
 ;;
 delimiter ;
+
 
 DROP PROCEDURE IF EXISTS astCreateAccount;
 delimiter |

@@ -876,7 +876,7 @@ function _astpriceedit_export() {
 			array_push2($brandlist, $fetchit->brand, $fetchit->brand);
 		}
 		
-		$group .= form_select(t('Select brand'), "brand", 'ALL', $brandlist);
+		$group .= form_select(t('Select Rate Plan'), "brand", 'ALL', $brandlist);
 		$group .= form_submit(t('Export'));
 
 		$output = form($group);
@@ -907,7 +907,7 @@ function _astpriceedit_import() {
     	<input type="hidden" name="MAX_FILE_SIZE" value="0" />
     	Send this file: <input name="import" type="file" /><BR>
 	<BR>
-	<input name="clear[]" value="1" type="checkbox"> Check this and select what brand you want to delete before importing.<BR>'.
+	<input name="clear[]" value="1" type="checkbox"> Check this and select what Rate Plan you want to delete before importing.<BR>'.
 	form_select(NULL, "brand", 'ALL', $brandlist).'
     	<input type="submit" value="Send File" /><BR>
     	</form>
@@ -1266,7 +1266,7 @@ if ($where == 'edit') {
 		array_push2($brandlist, $model->brand, $model->brand);
 	}
 	
-	$group .= form_select(t("Select Brand"), "brand", $valuessql->brand, $brandlist);
+	$group .= form_select(t("Select Rate Plan"), "brand", $valuessql->brand, $brandlist);
 	$group .= form_textfield(t('Pattern'), 'pattern', $valuessql->pattern, 30, 100);
 	$group .= form_textfield(t('Name'), 'name', $valuessql->name, 30, 100);
 	$group .= form_textfield(t('Connection Charge'), 'connectcharge', $valuessql->connectcharge, 30, 100);
@@ -1317,7 +1317,7 @@ if ($where == 'create') {
 	$cost = '0.0000';
 	
 	$group .= form_select(t("Select Country"), "countrycode", $countrydefault, $countryout);
-	$group .= form_select(t("Select Brand"), "brand", $branddefault, $brandlist);
+	$group .= form_select(t("Select Rate Plan"), "brand", $branddefault, $brandlist);
 	$group .= form_textfield(t('Pattern'), 'pattern', $countrydefault, 30, 100);
 	
 	$group .= form_textfield(t('Name'), 'name', $name->country, 30, 100);
@@ -1372,7 +1372,7 @@ if (empty($where)) {
 	}
 	
 	
-	$group .= form_select(t("Select Brand"), "brand", $defaultbrand, $brandout);
+	$group .= form_select(t("Select Rate Plan"), "brand", $defaultbrand, $brandout);
 	$group .= form_select(t("Select Country"), "countrycode", $defaultcountry, $countryout);
 	$group .= form_submit(t('Go'));
 	$group .= form_submit(t('Add'));

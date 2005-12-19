@@ -42,7 +42,7 @@ function astsettings_help($section='') {
 
 function astsettings_menu($may_cache) {
   $items = array();
-  $access = user_access('astsettings brand');
+  $access = user_access('astsettings plans');
   $accessmgr = user_access('astsettings manager');
   $items[] = array('path' => 'astbilladm/settings',
                                   'title' => t('Settings'),
@@ -61,18 +61,18 @@ function astsettings_menu($may_cache) {
   // 'type' => MENU_CALLBACK);
 				 
 				 
-  $items[] = array('path' => 'astbilladm/settings/brand', 'title' => t('Brand'),
-  'callback' => 'page_astsettings_brand',
+  $items[] = array('path' => 'astbilladm/settings/plans', 'title' => t('Rate Plans'),
+  'callback' => 'page_astsettings_plans',
   'access' => $access);
   // 'type' => MENU_CALLBACK);
   
-  $items[] = array('path' => 'astbilladm/settings/brand/edit', 'title' => t('Brand'),
-  'callback' => 'page_astsettings_brand',
+  $items[] = array('path' => 'astbilladm/settings/plans/edit', 'title' => t('Rate Plans'),
+  'callback' => 'page_astsettings_plans',
   'access' => $access,
   'type' => MENU_CALLBACK);
     
-  $items[] = array('path' => 'astbilladm/settings/brand/create', 'title' => t('Brand'),
-  'callback' => 'page_astsettings_brand',
+  $items[] = array('path' => 'astbilladm/settings/plans/create', 'title' => t('Rate Plans'),
+  'callback' => 'page_astsettings_plans',
   'access' => $access,
   'type' => MENU_CALLBACK);
   
@@ -126,7 +126,7 @@ function astsettings_menu($may_cache) {
 * or administrate the module:
 */
 function astsettings_perm() {
-	return array('astsettings brand','astsettings manager' );
+	return array('astsettings plans','astsettings manager' );
   // return array('can use astentry');
 } // function astentry_perm()
 
@@ -1111,8 +1111,8 @@ _astsettings_printtheme_best($output, $title);
 
 
 
-// BEGIN BRAND STUFF
-function page_astsettings_brand() {
+// BEGIN RATE PLANS (BRAND) STUFF
+function page_astsettings_plans() {
   global $user;
 
   $edit = $_POST["edit"];
@@ -1131,23 +1131,23 @@ function page_astsettings_brand() {
 		  case t('Save'):
 		  if (astsettings_validate($edit)) {
 			  astsettings_save($edit);
-			  drupal_goto("astbilladm/settings/brand/");
+			  drupal_goto("astbilladm/settings/plans/");
 		  } else {
-			  drupal_goto("astbilladm/settings/brand/");
+			  drupal_goto("astbilladm/settings/plans/");
 		  }
 		  break;
 		  
 		  case t('Create'):
 		  if (astsettings_validate($edit)) {
 			  astsettings_save($edit);
-			  drupal_goto("astbilladm/settings/brand/");
+			  drupal_goto("astbilladm/settings/plans/");
 		  } else {
-			  drupal_goto("astbilladm/settings/brand/create");
+			  drupal_goto("astbilladm/settings/plans/create");
 		  }
 		  break;
 		  
 		  case t('Back'):
-		  drupal_goto("astbilladm/settings/brand");
+		  drupal_goto("astbilladm/settings/plans");
 		  default:
 		  $output = astsettings_form($arg4);
 	  }
@@ -1189,7 +1189,7 @@ $result = pager_query($sql, $maxline);
 		$item->billincrement.'&nbsp;&nbsp;',
 		$item->connectcharge.'&nbsp;&nbsp;',
 		$item->status.'&nbsp;&nbsp;',
-		'<A HREF="'.url("astbilladm/settings/brand/edit/".$item->name).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>'
+		'<A HREF="'.url("astbilladm/settings/plans/edit/".$item->name).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>'
 		);
   }
 
@@ -1221,7 +1221,7 @@ $output = '<div class="node "><table width="100%" border="0" cellpadding="0" cel
 $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
 
 $output .= '<div class="nodecontent">';
-$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/settings/brand/create/').'">'.t('Create new').'</A></B><BR>';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/settings/plans/create/').'">'.t('Create new').'</A></B><BR>';
 
   print theme("page", $output);
 }
@@ -1236,7 +1236,7 @@ function astsettings_validate($edit) {
 
   if (arg(3) == 'create'){
 	  if(empty($edit['name'])){
-		  $errors['test'] = t('Please enter a unique brand name');
+		  $errors['test'] = t('Please enter a unique Rate Plan name');
 		  $myerror = 0;
 	  }
 	  
@@ -1244,7 +1244,7 @@ function astsettings_validate($edit) {
 
 	  while ($getname = db_fetch_object($sql)){
 		  if ($edit['name'] == $getname->name){
-			  $errors['test'] = t('Please enter a unique brand name');
+			  $errors['test'] = t('Please enter a unique Rate Plan name');
 			  $myerror = 0;
 		  }
 	  }
@@ -1277,7 +1277,7 @@ function astsettings_save($edit) {
 	$edit['publishednum'], $edit['did'] , $edit['markup'],
 	$edit['billincrement'], $edit['connectcharge'], $edit['status']);
 
-	drupal_set_message(t('A new brand has been created.'));
+	drupal_set_message(t('A new Rate Plan has been created.'));
 	}
 
 
@@ -1289,7 +1289,7 @@ function astsettings_save($edit) {
 	$edit['publishednum'], $edit['did'] , $edit['markup'],
 	$edit['billincrement'], $edit['connectcharge'], $edit['status'], arg(4));
 
-	drupal_set_message(t('The brand has been updated.'));
+	drupal_set_message(t('The Rate Plan has been updated.'));
 	}
 
 
@@ -1672,7 +1672,7 @@ function page_astsettings_system_list() {
 	$output = theme('table', $header, $rows);
 	$output .= "<BR>";
     $output .= form_textfield(t('<FONT SIZE=2>The default CountryPrefix to use when creating new accounts</FONT>'), 'countryprefix', variable_get("AstBill CountryPrefix",44), 30, 100);
-    $output .= form_textfield(t('<FONT SIZE=2>The default Brand to use when creating new accounts</FONT>'), 'brand', variable_get("AstBill Brand",'default'), 30, 100);
+    $output .= form_textfield(t('<FONT SIZE=2>The default Rate Plan to use when creating new accounts</FONT>'), 'brand', variable_get("AstBill Brand",'default'), 30, 100);
     $output .= form_textfield(t('<FONT SIZE=2>The default Channel type to use when creating new accounts (SIP or IAX)</FONT>'), 'tech', variable_get("AstBill Tech",'SIP'), 30, 100);
 
 	

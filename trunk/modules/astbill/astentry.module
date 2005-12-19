@@ -1263,6 +1263,7 @@ db_query("UPDATE astuser SET countryprefix = '%s', callbackto = '%s' WHERE uid =
 
 function astadvset_form($edit) {
   global $user;
+  global $db_prefix; 
   /*$group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'));
 //  $group = form_textfield(t('Title'), 'title', $edit['title'], 60, 128, null, null, true);
   $group .= form_textfield(t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
@@ -1296,8 +1297,10 @@ function astadvset_form($edit) {
   $group .= form_select(NULL, 'qualify', $qualify, array(0 => t('On'), 1 => t('Off')));
 
 
-  $sql = db_fetch_array(db_query("select brand, countryprefix, callbackto FROM astuser WHERE uid = %s", $user->uid));
-//  $item = db_fetch_object($sql);
+  $sql = db_fetch_array(db_query("select brand, countryprefix, callbackto FROM astuser WHERE uid = %s and db_prefix ='".$db_prefix."'", $user->uid));
+
+// $lastaccount = db_fetch_object(db_query("SELECT lastaccount from astuser WHERE uid='%s' and db_prefix 
+// ='".$db_prefix."'", $user->uid));
 
   $group .= '<BR><BR>';
   $group .= t('Current brand is ').'<B>'.$sql['brand'].'</B><BR>';

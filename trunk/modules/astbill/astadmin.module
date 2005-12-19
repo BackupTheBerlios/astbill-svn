@@ -36,7 +36,7 @@ function astadmin_help($section='') {
 
 function astadmin_menu($may_cache) {
   $items = array();
-  $access = user_access('can use admin astbill reseller');
+  $access = user_access('can use AstBill Admin');
   $accessrt = user_access('astadmin asterisk');
   $accesspay = user_access('astadmin payment');
   $items[] = array('path' => 'astbilladm',
@@ -189,7 +189,7 @@ function astadmin_menu($may_cache) {
 * or administrate the module:
 */
 function astadmin_perm() {
-	return array('can use admin astbill reseller','astadmin asterisk','astadmin accesslog','astadmin payment');
+	return array('can use AstBill Admin','astadmin asterisk','astadmin accesslog','astadmin payment');
 } // function astentry_perm()
 
 
