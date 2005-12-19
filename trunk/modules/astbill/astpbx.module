@@ -1319,6 +1319,16 @@ function astpbx_user($type, &$edit, &$user, $category = NULL) {
 		$sql2 = db_query("select @a accountcode");
 		$result = db_fetch_object($sql2);
 
+$sql = db_fetch_object(db_query("SELECT name FROM {users} WHERE uid = '%s'", $user->uid));
+
+$lastaccount = db_fetch_object(db_query("SELECT lastaccount from astuser WHERE uid='%s' and db_prefix ='".$db_prefix."'", $user->uid));
+$callerid = $sql->name.' <'.$lastaccount->lastaccount.'>';
+
+db_query("UPDATE astaccount SET language = '%s', forwardto = '%s' , callerid = '%s' , accountname = '%s' WHERE accountcode = '%s'",
+$edit['language'], $edit['forwardto'],$callerid,$edit['accountname'],$lastaccount->lastaccount);
+
+db_query("UPDATE astuser SET brand = '%s' WHERE uid='%s' and db_prefix ='".$db_prefix."'", variable_get("AstBill Brand", 'default'), $user->uid);   
+
 		//   drupal_set_message(t('New Account Created: '. $result->accountcode));
 		astpbx_sendemail("ASTARREG", $user->mail, $result->accountcode);
 		// $sql = db_query ("insert into test (subject) values ('Drupal $db_prefix  $user->uid')");
