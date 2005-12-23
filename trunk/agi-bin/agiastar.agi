@@ -109,6 +109,16 @@ sub getLocal($) {
 	$sth->finish;
 	return $res;
 }
+sub getCallerID($) {
+	my ($callednum) = @_;
+	my $res;
+	$sth = $dbh->prepare("select callerid, forcecallerid, hidecallerid from astaccount where accountcode = '" . $callednum . "' LIMIT 1");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	length
+	return $res;
+}
 sub getPath($) {
 	my ($trunk) = @_;
 	my $res;
@@ -291,7 +301,9 @@ else {
 my $cnumber = &getNumber($uniqueid);
 #  $cnumber->{callednum}   $cnumber->{trunk}
 my $acc = &getBalance($cnumber->{accountcode});
+my $cli = &getCallerID($cnumber->{accountcode});
 my $cost = &getCost($uniqueid);
+
 
  if (defined($cnumber))  {
 	print STDERR "getNumber: $cnumber->{callednum}   $cnumber->{trunk}  $uniqueid\n";
@@ -338,6 +350,12 @@ my $cost = &getCost($uniqueid);
 
 	} else {
 
+	 if (defined($cli)) {  
+		 # select callerid, forcecallerid, hidecallerid from astaccount
+		if ($cli->{forcecallerid} 
+
+		$dialstr
+	 }
 	 if (defined($acc)) {  
 		# This is an issue if user come in without autentication. If account number don't exist. We have to check for that and prevent any calls.
 		# $acc is not defined if there is no valid account number in the system.

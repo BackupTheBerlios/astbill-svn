@@ -23,6 +23,7 @@ http://astbill.com/forum/3
 # You can now have default countryprefix, brand and account type (Bug 227)
 # Have a look at the Settings / System Config 
 # Default password length and voicemail pin length can now be set in Settings / System Config (Bug 199)
+# Added Force Callerid. This is usefull if you want to force any account to use a specific callerid when dialing to PSTN.
 
 2005.11.17 Version 0.9.0.14
 
