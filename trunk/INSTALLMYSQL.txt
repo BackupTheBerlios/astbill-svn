@@ -93,6 +93,10 @@ When you have AstBill working you can change it to anything you want. http://wik
 This will clearly make it easier for you to get AstBill up and running fast and simple.
 We get many support request due to people changing the database/user name and are unable to change it in all locations.
 
+If you control your databases through a web-based control panel,
+check its documentation, as the following instructions are for the
+command line only.
+
 Create the AstBill database:
 ./mysqladmin create astbill --user=root -p
 ./mysql --user=root -p astbill < /home/astbill/database/astbill.sql

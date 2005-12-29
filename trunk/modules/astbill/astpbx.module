@@ -176,7 +176,7 @@ function _astpbx_all() {
 		array('data' => $res->countcalls, 'align' => 'right'),
     // '&nbsp;&nbsp;'.l(t('View'), 'astpbx/account/'.$res->accountcode, null),
 	'&nbsp;&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.$sql->value.'"><img border="0" src="files/astar/topup.gif"></a>'
+	'&nbsp;&nbsp;<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>'
 	);
   }
 
@@ -382,7 +382,7 @@ function _astpbx_voipadmin_list($value) {
 		array('data' => $countcalls->countcalls.'&nbsp;&nbsp;', 'align' => 'right'), // Calls
 	'&nbsp;&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
 	'&nbsp;&nbsp;&nbsp;<a href="'.url('astbilladm/editaccount/'.$res->accountcode).'"><img border="0" src="files/astar/edit.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.$sql->value.'"><img border="0" src="files/astar/topup.gif"></a>',
+	'&nbsp;&nbsp;<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>',
 	'&nbsp;&nbsp;<a href="'.url('astbilladm/removeaccount/'.$res->uid.'/'.$res->accountcode).'">'.t('Remove').'</a>'
 	
 	//	array('data' => $res->accountcode, 'align' => 'right')
@@ -452,7 +452,7 @@ function _admin_astpbx_OLD() {
 		array('data' => $res->countcalls, 'align' => 'right'),
     // '&nbsp;&nbsp;'.l(t('View'), 'astpbx/account/'.$res->accountcode, null),
 	'&nbsp;&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.$sql->value.'"><img border="0" src="files/astar/topup.gif"></a>'
+	'&nbsp;&nbsp;<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>'
 	);
   }
 

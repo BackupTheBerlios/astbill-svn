@@ -169,7 +169,7 @@ $sql = "SELECT accountcode, tech, secret, accountname, active FROM astaccount wh
 	
 	$res->accountname.'&nbsp;&nbsp;&nbsp;', 
 	'&nbsp;&nbsp;&nbsp;<A HREF="'.url('astentry/swtech/'.$res->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
-	'&nbsp;&nbsp;<a href="'.$sql->value.'"><IMG BORDER="0" SRC="files/astar/topup.gif"></A>',
+	'&nbsp;&nbsp;<a href="'.$sql->value.$res->accountcode.'"><IMG BORDER="0" SRC="files/astar/topup.gif"></A>',
 	'<A HREF="'.url('astentry/voicemailchange/'.$res->accountcode).'">'.t('Voicemail').'</A>',
 	'&nbsp;&nbsp;<A HREF="'.url('astentry/dialplan/'.$res->accountcode).'">'.t('Dialplan').'</A>',
 	'&nbsp;&nbsp;<A HREF="'.url('astentry/emailme/'.$res->accountcode).'">'.t('Email account info').'</A>',
@@ -1595,7 +1595,7 @@ function astincomingnr_form($edit) {
 
 
   $group .= form_textfield(t("Change the number(s) you want to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 50, 150, null, null, false);
-  $group .= form_textfield(t("Change comment"), "comment", $edit['comment'], 20, 150, null, null, false);
+  $group .= form_textfield(t("Comment"), "comment", $edit['comment'], 50, 150, null, null, false);
 
 
   // $group .= form_hidden('AmiTest', "JustTesting");

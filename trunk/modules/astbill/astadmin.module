@@ -460,6 +460,7 @@ if (arg(3) == 'change'){ // START CHECK IF FRIENDSCHANGE
 
 
 	$group .= form_select(t('User/Owner of this number'), 'account', $sqlout->uid, $users);
+	$group .= form_select(t('Tech'), 'tech', $sqlout->tech, array('IN-SIP' => 'SIP', 'IN-IAX' => 'IAX2', 'IN-ZAP' => 'ZAP'));
 	$group .= form_textfield(t("Publicnumber"), "publicnumber", $sqlout->publicnumber, 40, 150, null, null, false);
 	$group .= form_textfield(t("password"), "secret", $sqlout->secret, 40, 150, null, null, false);
 	$group .= form_textfield(t("Username"), "username", $sqlout->username, 40, 150, null, null, false);
@@ -488,7 +489,6 @@ if (arg(3) == 'change'){ // START CHECK IF FRIENDSCHANGE
 	$group .= form_select(t('Can reinvite'), 'canreinvite', $sqlout->canreinvite, array(null => 'Off', 'yes' => 'Yes', 'no' => 'No'));
 	$group .= form_select(t('RestrictID'), 'restrictid', $sqlout->restrictid, array(null => 'Off', 'yes' => 'Yes'));
 	$group .= form_select(t('Active'), 'active', $sqlout->active, array(0 => 'Not Active', 1 => 'Realtime', 5 => 'Static'));
-	$group .= form_select(t('Tech'), 'tech', $sqlout->tech, array('IN-SIP' => 'SIP', 'IN-IAX' => 'IAX2', 'IN-ZAP' => 'ZAP'));
 
 
 //publicnumber, secret, username, forwardto, fromuser, authuser, fromdomain, host, port, callerid, context, disallow, allow, comment, trunkpath, date_created

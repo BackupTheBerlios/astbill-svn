@@ -310,7 +310,7 @@ function page_astsettings_createbatch_validate($edit) {
 		$errors['batchno'] = t('Enter a numeric only batch number.');
 		$myerror = 0;
 	} else {
-		$sql = db_fetch_object(db_query("select ccbatchno from astaccount where ccbatchno = '%s' and db_prefix ='".$db_prefix."' ", $edit['batchno']));
+		$sql = db_fetch_object(db_query("select ccbatchno from astaccount where ccbatchno = '%s'", $edit['batchno']));
 		
 		if(!empty($sql->ccbatchno)) {
 			$errors['batchno'] = t('Batch Number already exists.');

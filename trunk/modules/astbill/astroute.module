@@ -265,13 +265,13 @@ function _astroute_export() {
 		case t('Export'):
 		
 		
-		$list = 'countrycode,routename,pattern,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk
+		$list = 'countrycode,pattern,routename,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk
 ';
 
-		$sqlout = db_query("SELECT countrycode,routename,pattern,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk FROM astroute");
+		$sqlout = db_query("SELECT countrycode,pattern,routename,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk FROM astroute order by countrycode, pattern");
 		
 		while ($sql = db_fetch_object($sqlout)) {
-			$list .= $sql->countrycode.','.$sql->routename.','.$sql->pattern.','.$sql->costplan.','.$sql->connectcharge.','.$sql->includedseconds.','.$sql->billincrement.','.$sql->minimumcost.','.$sql->cost.','.$sql->trunk.'
+			$list .= $sql->countrycode.','.$sql->pattern.','.$sql->routename.','.$sql->costplan.','.$sql->connectcharge.','.$sql->includedseconds.','.$sql->billincrement.','.$sql->minimumcost.','.$sql->cost.','.$sql->trunk.'
 ';
 		}
 		$filename = 'RouteList_ALL.csv';
@@ -847,9 +847,9 @@ function _astpriceedit_export() {
 		$list = 'countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand
 ';
 		if ($edit['brand'] == 'ALL') {
-			$sqlout = db_query("SELECT countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand FROM astpricelist");
+			$sqlout = db_query("SELECT countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand FROM astpricelist order by brand,countrycode,pattern");
 		} else {
-			$sqlout = db_query("SELECT countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand FROM astpricelist WHERE brand = '%s'", $edit['brand']);
+			$sqlout = db_query("SELECT countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand FROM astpricelist WHERE brand = '%s'  order by countrycode,pattern", $edit['brand']);
 		}
 		
 		while ($sql = db_fetch_object($sqlout)) {
