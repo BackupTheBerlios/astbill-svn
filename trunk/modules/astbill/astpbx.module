@@ -590,7 +590,7 @@ function PostCall(callnum)
 	} catch (e) {
 	  // ignore
 	}
-	postq = "q=" + callnum + "/' . $user->uid . '&sec=9dkd8d76dj&tt=" + Math.random();
+	postq = "q=" + callnum + "/' . $user->uid . '/'.$db_prefix.'&sec=9dkd8d76dj&tt=" + Math.random();
 	p.open("GET", "ajax/postcalls.php?" + postq);
 	// postq = "num=" + callnum + "&uid=' . $user->uid . '&sec=9dkd8d76dj&tt=" + Math.random();
 	// p.open("GET", "/cgi2-bin/post2calls.pl?" + postq);
