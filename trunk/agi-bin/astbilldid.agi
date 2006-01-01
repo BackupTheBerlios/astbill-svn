@@ -259,12 +259,12 @@ my $accountcode = $ARGV[3];
 
 my $channel = $AGI{'channel'};
 my $type = $AGI{'type'};
-;my $strlen = length(trimwhitespace($getcard));
+# my $strlen = length(trimwhitespace($getcard));
 my $endnow = "0";
 	
 # $language = $AGI{'language'};
 
-print LOG "dnid=$exten  account=$callerid PhoneNo= $getnumb  Cardno=$getcard   noargs=$#ARGV  strlen=$strlen\n";	
+print LOG "dnid=$exten  account=$callerid PhoneNo= $getnumb  Cardno=$getcard   noargs=$#ARGV \n";	
 
 $accountcode = "70105";
 
