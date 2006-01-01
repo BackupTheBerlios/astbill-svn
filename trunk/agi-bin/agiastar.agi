@@ -50,6 +50,16 @@ my $maxminute = $defmaxminute->{value};
 
 #### END OF CONFIGURATION #######################################################################################################
 
+sub getCallerID($) {
+	my ($callednum) = @_;
+	my $res;
+	$sth = $dbh->prepare("select callerid, forcecallerid, hidecallerid from astaccount where accountcode = '" . $callednum . "' LIMIT 1");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
 sub getBalance($) {
 	my ($acc) = @_;
 	my $res;
@@ -109,16 +119,7 @@ sub getLocal($) {
 	$sth->finish;
 	return $res;
 }
-sub getCallerID($) {
-	my ($callednum) = @_;
-	my $res;
-	$sth = $dbh->prepare("select callerid, forcecallerid, hidecallerid from astaccount where accountcode = '" . $callednum . "' LIMIT 1");
-	$sth->execute;
-	$res = $sth->fetchrow_hashref;
-	$sth->finish;
-	length
-	return $res;
-}
+
 sub getPath($) {
 	my ($trunk) = @_;
 	my $res;
@@ -350,12 +351,6 @@ my $cost = &getCost($uniqueid);
 
 	} else {
 
-	 if (defined($cli)) {  
-		 # select callerid, forcecallerid, hidecallerid from astaccount
-		if ($cli->{forcecallerid} 
-
-		$dialstr
-	 }
 	 if (defined($acc)) {  
 		# This is an issue if user come in without autentication. If account number don't exist. We have to check for that and prevent any calls.
 		# $acc is not defined if there is no valid account number in the system.
@@ -406,6 +401,25 @@ my $cost = &getCost($uniqueid);
 		# $acc is not defined if there is no valid account number in the system.
 		print "SET VARIABLE DIALSTRING $dialstr\n";
 		print STDERR "DEBUG: $dialstr\n";
+
+		my $callid = "";
+		my $nocallid = "hidden";
+		if (defined($cli))  {
+			if (defined($cli->{callerid}))  {
+				$callid = $cli->{callerid};
+		    } else { $callid = $nocallid; }
+			if (defined($cli->{forcecallerid}))  {
+				$callid = "<".$cli->{forcecallerid}.">";
+				#  $callid = $cli->{forcecallerid};
+				# print STDERR "$cli->{callerid} $cli->{forcecallerid} \n";
+		} 
+		} else {   
+			$callid = $nocallid;
+		}
+		print "SET VARIABLE ASTCALLERID $callid\n";
+		print STDERR $callid;
+
+
 	} else {
 	    print STDERR "Warning: NO ACCOUNT - NO CREDIT\n";
 		print "SET VARIABLE BILLSTATUS NOACCOUNT\n";

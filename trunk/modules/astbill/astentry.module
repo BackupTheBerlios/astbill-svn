@@ -1594,7 +1594,7 @@ function astincomingnr_form($edit) {
   $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);*/
 
 
-  $group .= form_textfield(t("Change the number(s) you want to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 50, 150, null, null, false);
+  $group .= form_textfield(t("Enter the number(s) you want to forward to separated by &<BR>(Example: 70500&70501)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 50, 150, null, null, false);
   $group .= form_textfield(t("Comment"), "comment", $edit['comment'], 50, 150, null, null, false);
 
 
