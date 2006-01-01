@@ -18,6 +18,7 @@ my $dialpath;
 my $dialstr;
 my $uniqueid = "";
 my $accountcode = "";
+my $callerid = "";
 
 my $config = &load_config();
 print STDERR "config.conf loaded. dbhost = $config{dbhost}\n";
@@ -253,7 +254,7 @@ if ($config{odbc} eq "YES") {
 }
 else {
 	$accountcode = $AGI{'accountcode'};
-	# $callerid = $AGI{'callerid'};
+	$callerid = $AGI{'callerid'};
 	# $calleridname = $AGI{'calleridname'};
 	my $channel = $AGI{'channel'};
 	# $context = $AGI{'context'};
@@ -295,6 +296,7 @@ else {
 	if ($dnid eq 'unknown') {$dnid = $extension};  # Problem when Zap is used
 
 	$dbh->do("CALL RateAddcdr('$accountcode','$channel','$dnid','$type','$uniqueid')");
+    $dbh->do("update astcdr set callerid = '$callerid', extension = '$extension' where uniqueid = '$uniqueid'");
 	print STDERR "CALL RateAddcdr('$accountcode','$channel','$dnid','$type','$uniqueid')\n";
 }
 
@@ -403,7 +405,7 @@ my $cost = &getCost($uniqueid);
 		print STDERR "DEBUG: $dialstr\n";
 
 		my $callid = "";
-		my $nocallid = "hidden";
+		my $nocallid = "unknown";
 		if (defined($cli))  {
 			if (defined($cli->{callerid}))  {
 				$callid = $cli->{callerid};

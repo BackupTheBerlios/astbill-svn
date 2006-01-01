@@ -246,16 +246,10 @@ sub load_config() {
 }
 
 #### PROGRAM START HER #######################################################################################################
-# exten => 508,34,AGI(astbillani2.agi,${getnumb}|${DIDSTATUS}|${getcard})
-# exten => 508,34,AGI(astbillani2.agi,${EXTEN}|${CALLERIDNUM}|${getnumb}|${getcard})
 
 my $uniqueid = $AGI{'uniqueid'};
 my $exten = $ARGV[0];
 my $callerid = $ARGV[1];
-
-my $getnumb = $ARGV[2];
-my $getcard = $ARGV[3];
-my $accountcode = $ARGV[3];
 
 my $channel = $AGI{'channel'};
 my $type = $AGI{'type'};
@@ -264,13 +258,24 @@ my $endnow = "0";
 	
 # $language = $AGI{'language'};
 
-print LOG "dnid=$exten  account=$callerid PhoneNo= $getnumb  Cardno=$getcard   noargs=$#ARGV \n";	
+# print LOG "dnid=$exten  account=$callerid PhoneNo= $getnumb  Cardno=$getcard   noargs=$#ARGV \n";	
+print LOG "dnid=$exten  account=$callerid noargs=$#ARGV \n";	
 
 $accountcode = "70105";
 
-$dbh->do("CALL RateAddcdr('70107','$channel','$accountcode','$type','$uniqueid')");
-$dbh->do("update astcdr set callerid = '$callerid', extension = '$exten' where uniqueid = '$uniqueid'");
-print LOG "CALL RateAddcdr('$accountcode','$channel','$getnumb','$type','$uniqueid')\n";
+my $clocal = &getLocal($exten);
+if (defined($clocal))  {
+	# $clocal->{tech}   $clocal->{forwardto}
+	print STDERR $clocal->{forwardto}."\n";
+	$dialstr = getForward($clocal->{forwardto});
+	print "SET VARIABLE DIALSTRING $dialstr\n";
+#	print STDERR "DEBUG: $dialstr\n";
+
+	$dbh->do("CALL RateAddcdr($exten,'$channel','$accountcode','$type','$uniqueid')");
+	$dbh->do("update astcdr set callerid = '$callerid', extension = '$exten' where uniqueid = '$uniqueid'");
+	print LOG "CALL RateAddcdr('$accountcode','$channel','xxx','$type','$uniqueid')\n";
+}
+		
 
 
 close(LOG);
