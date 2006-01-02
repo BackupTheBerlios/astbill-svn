@@ -146,13 +146,13 @@ function _astentry_all() {
   global $db_prefix; 
   $maxline = 40; // This is the number of records to display on a page
 
-  $output = t('<b>Hover over Account to view Accounts Password</b><br><br>');
+  $output = '<b>'.t('Hover over Account to view Accounts Password').'</b><br><br>';
 
   $header = array(
     array('data' => t('Account'), 'field' => 'accountcode', 'sort' => 'asc'),
     array('data' => t('Type'), 'field' => 'tech'),
     array('data' => t('Name')),
-    array('data' => t('<CENTER>Operations</CENTER>'), 'colspan' => 6)
+    array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 6)
 	
   );
 //  $sql = "SELECT accountcode, tech, secret, accountname, active FROM astaccount where uid ='".$user->uid."'". tablesort_sql($header);
@@ -1061,7 +1061,7 @@ function page_astentry_dialplan() {
     array('data' => t('Start Min')),
     array('data' => t('End Hour')),
     array('data' => t('End Min')),
-	array('data' => t('<CENTER>Operations</CENTER>'), 'colspan' => 2)
+	array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 2)
 	
   );
 
@@ -1637,7 +1637,7 @@ function page_astentry_incomingnr() {
 	array('data' => t('Tech')),
     array('data' => t('Forwarded to')),
     array('data' => t('Comment')),
-	array('data' => t('<CENTER>Operations</CENTER>'), 'colspan' => 1)
+	array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 1)
 	
   );
 
@@ -1655,7 +1655,7 @@ $sql = db_query("SELECT accountcode, publicnumber, tech, forwardto, comment FROM
 		'&nbsp;&nbsp;<img border="0" src="files/astar/'.$tech.'.gif">&nbsp;&nbsp;',
 	    	$item->forwardto,
 		'&nbsp;&nbsp;'.$item->comment,
-		'<A HREF="'.url('astentry/incomingnrchange/'.$item->publicnumber).'">Change</A>');
+		'<A HREF="'.url('astentry/incomingnrchange/'.$item->publicnumber).'">'.t('Change').'</A>');
 
 
   }
@@ -1708,7 +1708,7 @@ function page_astentry_incomingnrchange(){
       // $output = astpbx_form($edit);
   }
 
-$title = 'Change';
+$title = t('Change');
 $account = ' - '.arg(2);
 _astentry_printtheme_best($output, $account, $title);
 

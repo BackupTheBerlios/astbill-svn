@@ -44,22 +44,22 @@ function astpbx_menu($may_cache) {
   $items = array();
   $access = user_access('astpbx voip account');
   $items[] = array('path' => 'astpbx',
-                                  'title' => t('astpbx voip account'),
+                                  'title' => t('My Subscription'),
                                   'callback' => '_astpbx_all',
                                   'access' => $access);
                                  // 'type' => MENU_CALLBACK);
   $items[] = array('path' => 'astpbx/numbers',
-                                  'title' => t('Numbers Dialed'),
+                                  'title' => t('Calls'),
                                   'callback' => '_astpbx_numbers',
                                   'access' => user_access('astpbx numbers dialed'));
                                  // 'type' => MENU_DEFAULT_LOCAL_TASK);
   $items[] = array('path' => 'astpbx/numbers/ext',
-                                  'title' => t('Public Numbers'),
+                                  'title' => t('Telephone Calls'),
                                   //'callback' => '_astpbx_numbers',
                                   'access' => user_access('astpbx numbers dialed'),
                                   'type' => MENU_DEFAULT_LOCAL_TASK);
   $items[] = array('path' => 'astpbx/numbers/local',
-                                  'title' => t('VOIP Numbers'),
+                                  'title' => t('VOIP Calls'),
                                   'callback' => '_astpbx_numbersLocal',
                                   'access' => user_access('astpbx voip numbers dialed'),
                                   'type' => MENU_LOCAL_TASK);
@@ -78,7 +78,7 @@ function astpbx_menu($may_cache) {
     'access' => $access,
     'type' => MENU_CALLBACK);
 
-  $items[] = array('path' => 'astbilladm', 'title' => t('AstBill Admin'),
+  $items[] = array('path' => 'astbilladm', 'title' => t('Site Admin'),
     'callback' => '_astpbx_voipadmin',
     'access' => user_access('can use admin astpbx'),
     );
@@ -153,7 +153,7 @@ function _astpbx_all() {
     array('data' => t('Expenditure'), 'field' => 'sumprice'),
     array('data' => t('Payments'), 'field' => 'sumpaid'),
     array('data' => t('Calls'), 'field' => 'countcalls'),
-    array('data' => t('operations'), 'colspan' => 2)
+    array('data' => t('Operations'), 'colspan' => 2)
 	
   );
   $sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,startingcredit,countcalls FROM asvaccount2 
@@ -229,16 +229,16 @@ if (!user_access('can use admin astpbx')){
     array('data' => t('Duration hh:mm:ss'), 'field' => 'billtime'),
     array('data' => t('Price Rate/min'), 'field' => 'pricerate'),
     array('data' => t('Charge'), 'field' => 'price')
-    //array('data' => t('operations'), 'colspan' => 2)
+    //array('data' => t('Operations'), 'colspan' => 2)
   );
-  $sql = 'select date_created,datec,callednum,billtime, billtime2,pricerate,price from asvbill where accountcode = '. db_escape_string($account). tablesort_sql($header);
+  $sql = 'select UNIX_TIMESTAMP(date_created) datec,callednum,billtime, billtime2,pricerate,price from asvbill where accountcode = '. db_escape_string($account). tablesort_sql($header);
   $sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
   $result = pager_query($sql, $maxline, 0, $sqlCount);
   //$result = pager_query($sql, 10);
 
   while ($res = db_fetch_object($result)) {
    
-	$rows[] = array($res->datec.'&nbsp;&nbsp;&nbsp;',$res->callednum.'&nbsp;&nbsp;&nbsp;', 
+	$rows[] = array(format_date($res->datec,"custom","Y-m-d H:i:s").'&nbsp;&nbsp;&nbsp;',$res->callednum.'&nbsp;&nbsp;&nbsp;', 
 	array('data' => $res->billtime2, 'align' => 'right'), array('data' => $res->pricerate, 'align' => 'right'), 
 	array('data' => $res->price, 'align' => 'right'));
   }
@@ -335,7 +335,7 @@ function _astpbx_voipadmin_list($value) {
     array('data' => t('Expenditure')),
     array('data' => t('Payments')),
     array('data' => t('Calls')),
-    array('data' => t('operations'), 'colspan' => 4)
+    array('data' => t('Operations'), 'colspan' => 4)
 	
   );
  // $sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,countcalls FROM asvaccount2 
@@ -429,7 +429,7 @@ function _admin_astpbx_OLD() {
     array('data' => t('Expenditure'), 'field' => 'sumprice'),
     array('data' => t('Payments'), 'field' => 'sumpaid'),
     array('data' => t('Calls'), 'field' => 'countcalls'),
-    array('data' => t('operations'), 'colspan' => 2)
+    array('data' => t('Operations'), 'colspan' => 2)
 	
   );
   $sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,countcalls FROM asvaccount2 
@@ -637,7 +637,7 @@ function rand()
     array('data' => t('No Calls'), 'field' => 'CountOfcallednum', 'sort' => 'asc'),
     array('data' => t('Number Dialed'), 'field' => 'callednum'),
     array('data' => t('Name'), 'field' => 'name'),
-    array('data' => t('operations'), 'colspan' => 2)
+    array('data' => t('Operations'), 'colspan' => 2)
 	
   );
 
@@ -847,7 +847,7 @@ function rand()
     array('data' => t('No Calls'), 'field' => 'CountOfcallednum', 'sort' => 'asc'),
     array('data' => t('Number Dialed'), 'field' => 'callednum'),
     array('data' => t('Name'), 'field' => 'name'),
-    array('data' => t('operations'), 'colspan' => 2)
+    array('data' => t('Operations'), 'colspan' => 2)
 	
   );
 

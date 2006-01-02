@@ -108,7 +108,7 @@ sub getNumber($) {
     }
 	if ($res->{usstyleprefix} eq "1") {
 		$firstVar = substr($res->{callednum}, 0, 1);
-		if ($firstVar ne "1") {$usidd = "011"; print LOG ("US 011 Appended: = $firstVar\n");}
+		if ($firstVar ne "1") {$usidd = "011"; print STDERR ("US 011 Appended: = $firstVar\n");}
     }
 	$res->{callednum} = $res->{addprefix} . $usidd . $res->{callednum};
 	return $res;
@@ -210,7 +210,9 @@ sub getForward($) {
 		exit; }
 	my @resSet = @{$result};
 	if ( $#resSet == -1 ) {          
-		print LOG "You Currently have no Forwarding Account\n";
+		# print LOG "You Currently have no Forwarding Account\n";
+		print LOG "Forward to PSTN\n";
+		return "77074490";
 		exit; }
 	foreach my $row ( @{ $result } ) {
 		my @result = @{ $row };
@@ -245,6 +247,7 @@ sub load_config() {
 		return $config;
 }
 
+
 #### PROGRAM START HER #######################################################################################################
 
 my $uniqueid = $AGI{'uniqueid'};
@@ -261,7 +264,7 @@ my $endnow = "0";
 # print LOG "dnid=$exten  account=$callerid PhoneNo= $getnumb  Cardno=$getcard   noargs=$#ARGV \n";	
 print LOG "dnid=$exten  account=$callerid noargs=$#ARGV \n";	
 
-$accountcode = "70105";
+# $accountcode = "70105";
 
 my $clocal = &getLocal($exten);
 if (defined($clocal))  {
@@ -271,8 +274,8 @@ if (defined($clocal))  {
 	print "SET VARIABLE DIALSTRING $dialstr\n";
 #	print STDERR "DEBUG: $dialstr\n";
 
-	$dbh->do("CALL RateAddcdr($exten,'$channel','$accountcode','$type','$uniqueid')");
-	$dbh->do("update astcdr set callerid = '$callerid', extension = '$exten' where uniqueid = '$uniqueid'");
+	$dbh->do("CALL RateAddcdr($exten,'$channel','$exten','$type','$uniqueid')");
+	$dbh->do("update astcdr set callerid = '$callerid', extension = '$exten', trunk = 'Did', callednum = '$clocal->{forwardto}' where uniqueid = '$uniqueid'");
 	print LOG "CALL RateAddcdr('$accountcode','$channel','xxx','$type','$uniqueid')\n";
 }
 		

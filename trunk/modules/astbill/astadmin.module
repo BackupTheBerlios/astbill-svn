@@ -1168,7 +1168,7 @@ function page_astadmin_listcdr_form($value, $edit) {
   $output = '
 <form action="'.url('/astbilladm/listcdr').'" method="post">
 <div class="form-item">
-'.t('<B>Search for Accountcode&nbsp;&nbsp;</B>').'
+<B>'.t('Search for Accountcode').'&nbsp;&nbsp;</B>
 <input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
 <input type="submit" name="op" value="'.t('Go').'" />&#160;&#160;
 </div></form>
@@ -1184,10 +1184,10 @@ if (arg(2) == 'specific') { // START CHECK IF SPECIFIC RECORD
 
 if (!empty($value)) {
   $value = trim($value);
-  $sql = db_query("SELECT * FROM astcdr WHERE astcdr.id = '%d' AND accountcode LIKE '%".$value."%'", arg(3));
+  $sql = db_query("SELECT *, UNIX_TIMESTAMP(astcdr.date_created) dcreat FROM astcdr WHERE astcdr.id = '%d' AND accountcode LIKE '%".$value."%'", arg(3));
 }
   else {
-  $sql = db_query("SELECT * FROM astcdr WHERE astcdr.id = '%d'", arg(3));
+  $sql = db_query("SELECT *, UNIX_TIMESTAMP(astcdr.date_created) dcreat FROM astcdr WHERE astcdr.id = '%d'", arg(3));
   }
   $res = db_fetch_object($sql);
 
@@ -1226,7 +1226,9 @@ if (!empty($value)) {
 		$output .= t('<B>Dialstatus: </B>');
 		$output .= $res->dialstatus.'<BR>';
 		$output .= t('<B>Date Created: </B>');
-		$output .= $res->date_created.'<BR>';
+		// $output .= $res->date_created.'<BR>';
+		$output .= format_date($res->dcreat,"custom","Y-m-d H:i:s").'<BR>';
+
 		$output .= '<BR>';
 		$output .= t('<B>Dialed Time: </B>');
 		$output .= $res->dialedtime.'<BR>';
@@ -1689,7 +1691,7 @@ function page_astadmin_payment_form($value, $edit) {
 $output = '
 <form action="'.url('/astbilladm/payment').'" method="post">
 <div class="form-item">
-<B>Search for Accountcode&nbsp;&nbsp;</B>
+<B>'.t('Search for Accountcode').'&nbsp;&nbsp;</B>
 <input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
 <input type="submit" name="op" value="'.('Go').'" />&#160;&#160;
 </div></form>
@@ -2021,7 +2023,7 @@ function page_astadmin_credit_form($value, $edit) {
 $output = '
 <form action="'.url('/astbilladm/payment/credit').'" method="post">
 <div class="form-item">
-'.t('<B>Search for Accountcode').'&nbsp;&nbsp;</B>
+<B>'.t('Search for Accountcode').'&nbsp;&nbsp;</B>
 <input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
 <input type="submit" name="op" value="'.('Go').'" />&#160;&#160;
 </div></form>

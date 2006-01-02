@@ -1184,10 +1184,10 @@ if (arg(2) == 'specific') { // START CHECK IF SPECIFIC RECORD
 
 if (!empty($value)) {
   $value = trim($value);
-  $sql = db_query("SELECT * FROM astcdr WHERE astcdr.id = '%d' AND accountcode LIKE '%".$value."%'", arg(3));
+  $sql = db_query("SELECT *, UNIX_TIMESTAMP(astcdr.date_created) dcreat FROM astcdr WHERE astcdr.id = '%d' AND accountcode LIKE '%".$value."%'", arg(3));
 }
   else {
-  $sql = db_query("SELECT * FROM astcdr WHERE astcdr.id = '%d'", arg(3));
+  $sql = db_query("SELECT *, UNIX_TIMESTAMP(astcdr.date_created) dcreat FROM astcdr WHERE astcdr.id = '%d'", arg(3));
   }
   $res = db_fetch_object($sql);
 
@@ -1226,7 +1226,8 @@ if (!empty($value)) {
 		$output .= t('<B>Dialstatus: </B>');
 		$output .= $res->dialstatus.'<BR>';
 		$output .= t('<B>Date Created: </B>');
-		$output .= $res->date_created.'<BR>';
+		$output .= $res->date_created.'   klj ';
+		$output .= $res->date_created.'jjj<BR>';
 		$output .= '<BR>';
 		$output .= t('<B>Dialed Time: </B>');
 		$output .= $res->dialedtime.'<BR>';
