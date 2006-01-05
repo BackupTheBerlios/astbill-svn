@@ -163,9 +163,9 @@ $maxline = 40;
 
 
   $header = array(
-    array('data' => t('Pattern&nbsp;&nbsp;'), 'field' => 'pattern'),
-    array('data' => t('Name&nbsp;&nbsp;'), 'field' => 'routename', 'colspan' => 2),
-    array('data' => t('Price&nbsp;&nbsp;'), 'field' => 'price'),
+    array('data' => t('Pattern').'&nbsp;&nbsp;', 'field' => 'pattern'),
+    array('data' => t('Name').'&nbsp;&nbsp;', 'field' => 'routename', 'colspan' => 2),
+    array('data' => t('Price').'&nbsp;&nbsp;', 'field' => 'price'),
     );
 
 

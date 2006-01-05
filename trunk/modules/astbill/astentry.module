@@ -302,7 +302,7 @@ function astentry_form($edit = null) {
 
 
 // Uncomment this for SIP/IAX/VIR change radio menu ALSO LOOK IN ASTENTRY_SAVE FOR FURTHER UNCOMMENTING
-  $group = form_radios(t('Change account type.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => t('Virtual Account')));
+  $group = form_radios(t('Change account type'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => t('Virtual Account')));
 
  /* Dont Delete - This is in use in some implementations
   $group = form_radios(t('Change account type.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account', 3 => 'H323'));   */
@@ -317,13 +317,13 @@ function astentry_form($edit = null) {
   
   $group .= form_textfield(t("Password"), "secret", $edit['secret'], 30, 30, null, null, false);
 
-  $group .= form_textfield(t("Your Caller ID Example: My Name <9000><BR><FONT SIZE=1>Note: Please select the number you wish to be dialed back on</FONT>"), "callerid", $edit['callerid'], 80, 150, null, null, false);
+  $group .= form_textfield(t("Caller ID - Example: My Name <75000><BR><FONT SIZE=1>Note: Please select the number you wish to be dialed back on</FONT>"), "callerid", $edit['callerid'], 80, 150, null, null, false);
 
   $group .= form_select(t("Your Hardware"), "hardwareid", $edit['hardwareid'], $hardwareidlist);
 
   //$group .= '<B>Enable or Disable low balance warnings:</B>';
   $group .= form_textfield(t("Set warning balance"), "lowbalance", $edit['lowbalance'], 5, 150, null, null, false);
-  $group .= form_select(t("<FONT SIZE=1>Enable or Disable Warning Balance Email</FONT>"), "lowbalanceemail", $edit['lowbalanceemail'], array(0 => t('Disabled'), 1 => t('Activate')));
+  $group .= form_select('<FONT SIZE=1>'.t("Enable or Disable Warning Balance Email").'</FONT>', "lowbalanceemail", $edit['lowbalanceemail'], array(0 => t('Disabled'), 1 => t('Activate')));
 
   if(empty($edit['mailboxemail'])){
   $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $user->uid));
@@ -335,7 +335,7 @@ function astentry_form($edit = null) {
   $group .= form_textfield(t("Set notification email"), "mailboxemail", $mailboxemail, 30, 150, null, null, false);
 
  
-  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => t('Disabled'), 1 => t('Activate')));  
+  $group .= form_select(t("Set Account Status"), "active", $edit['active'], array(0 => t('Disabled'), 1 => t('Activate')));  
 
  /* Dont Delete - This is in use in some implementations
  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI'));   */
@@ -625,12 +625,12 @@ function page_astentry_emailme() {
 		default:
 			$uid = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", arg(2)));
 			$email = db_fetch_object(db_query("SELECT mail FROM {users} WHERE uid = '%s'", $uid->uid));
-			$group .= 'Please check that the email bellow is correct before confirming.<BR>';
-			$group .= form_textfield(t('Email:'), 'email', $email->mail, 30, 100);
+			$group .= t('Please check that the email bellow is correct before confirming').'<BR>';
+			$group .= form_textfield(t('Email'), 'email', $email->mail, 30, 100);
 		
 			$group .= form_submit(t('Confirm'));
 			$group .= form_submit(t('Back'));
-			$title = 'Confirm';
+			$title = t('Confirm');
 
 	}
 	
@@ -1281,20 +1281,20 @@ function astadvset_form($edit) {
   $sql = db_fetch_object(db_query("SELECT astplans.currency from astuser, astplans where astuser.brand = astplans.name and astuser.uid = '%s' and db_prefix ='".$db_prefix."'", $uid->uid));
   $currency = $sql->currency;
 
-  $group = t('Current credit limit for this account is : ').'<B>'.$edit['creditlimit'].'</B><BR>';
-  $group .= t('Currency is: ').'<B>'.$currency.'</B><BR><BR>';
-  $group .= t('<B>WARNING!</B> Do not change these settings unless you know what your doing!<BR><BR>');
-  $group .= t('<B>NAT:<BR></B>');
-  $group .= t('<B><FONT SIZE=1>Note: Might take up to 24hours for change to take effect</FONT></B><BR>');
-  $group .= t('yes = Always ignore info and assume NAT<BR>');
-  $group .= t('no = Use NAT mode only according to RFC3581<BR>');
-  $group .= t('never = Never attempt NAT mode or RFC3581 support<BR>');
-  $group .= t('route = Assume NAT, dont send rport<BR>');
+  $group = t('Current credit limit for this account is').' : <B>'.$edit['creditlimit'].'</B><BR>';
+  $group .= t('Currency is').' : <B>'.$currency.'</B><BR><BR>';
+  $group .= t('<B>WARNING!</B> Do not change these settings unless you know what your doing!').'<BR><BR>';
+  $group .= '<B>'.t('NAT').':<BR></B>';
+  $group .= '<B><FONT SIZE=1>'.t('Note: Might take up to 24hours for change to take effect').'</FONT></B><BR>';
+  $group .= t('yes = Always ignore info and assume NAT').'<BR>';
+  $group .= t('no = Use NAT mode only according to RFC3581').'<BR>';
+  $group .= t('never = Never attempt NAT mode or RFC3581 support').'<BR>';
+  $group .= t('route = Assume NAT, dont send rport').'<BR>';
   $group .= form_select(NULL, 'nat', $nat, array(0 => t('Yes'), 1 => t('No'), 2 => t('Never'), 3 => t('Route')));
   $group .= '<BR>';
 
-  $group .= t('<B>Qualify:<BR></B>');
-  $group .= t('<B><FONT SIZE=1>Note: Might take up to 24hours for change to take effect</FONT></B><BR>');
+  $group .= '<B>'.t('Qualify').':<BR></B>';
+  $group .= '<B><FONT SIZE=1>'.t('Note: Might take up to 24hours for change to take effect').'</FONT></B><BR>';
   $group .= t('Only turn this ON if your phone can dial out, but you can not receive calls ');
   $group .= form_select(NULL, 'qualify', $qualify, array(0 => t('On'), 1 => t('Off')));
 
