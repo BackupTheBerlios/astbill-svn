@@ -136,7 +136,12 @@ function astadmin_menu($may_cache) {
       'access' => $access,
       'type' => MENU_CALLBACK);
 
- 	$items[] = array('path' => 'astbilladm/listcdr', 'title' => t('Call Data Record'),
+	$items[] = array('path' => 'astbilladm/realtime/friends/assign', 'title' => t('Assign DID'),
+      'callback' => 'page_astadmin_friendassign',
+      'access' => user_access('astadmin use Assign DID'),
+      'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astbilladm/listcdr', 'title' => t('Call Data Record'),
       'callback' => 'page_astadmin_listcdr',
       'access' => $access);
      // 'type' => MENU_CALLBACK);
@@ -189,7 +194,7 @@ function astadmin_menu($may_cache) {
 * or administrate the module:
 */
 function astadmin_perm() {
-	return array('can use AstBill Admin','astadmin asterisk','astadmin accesslog','astadmin payment');
+	return array('can use AstBill Admin','astadmin asterisk','astadmin accesslog','astadmin payment','astadmin use Assign DID');
 } // function astentry_perm()
 
 
@@ -226,7 +231,7 @@ function page_astadmin_friends() {
     array('data' => t('Type')),
     array('data' => t('Publicnumber')),
     array('data' => t('Username')),
-    array('data' => t('Operations'), 'colspan' => 2)	
+    array('data' => t('Operations'), 'colspan' => 3)	
   );
 
 //$result = db_query("SELECT uid, accountcode, username, publicnumber, tech, type, secret, forwardto, fromuser, authuser, fromdomain, nat, qualify, host, port, callerid, context, dtmfmode, insecure, canreinvite, disallow, allow, restrictid, comment, active, trunkpath, date_created, timestamp FROM asv_friend");
@@ -244,7 +249,8 @@ $result = pager_query($sql, $maxline);
 	        $item->publicnumber.'&nbsp;&nbsp;',
 		$item->username.'&nbsp;&nbsp;',
 		'<A HREF="'.url('astbilladm/realtime/friends/change/'.$item->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>&nbsp;&nbsp;',
-		'<A HREF="'.url('astbilladm/realtime/friends/remove/'.$item->accountcode).'/'.$item->accountcode.'">'.t('remove').'</A>'
+		'<A HREF="'.url('astbilladm/realtime/friends/assign/'.$item->accountcode).'">'.t('Assign').'</A>&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/realtime/friends/remove/'.$item->accountcode).'/'.$item->accountcode.'">'.t('Remove').'</A>'
 		);
   }
 
@@ -307,6 +313,43 @@ $account = $user->uid;
 _astadmin_printtheme_best($output, $account, $title);
 }
 
+function page_astadmin_friendassign() {
+  global $user;
+  global $db_prefix; 
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(2))) {
+    case t('Assign'):
+		$sqlout = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'",$edit['assignto']));
+
+		db_query("update astaccount set forwardto = '%s', uid = '%d'  WHERE accountcode = '%s' and db_prefix = '".$db_prefix."'",$edit['assignto'],$sqlout->uid, arg(4));
+
+		db_query("update astaccount set forcecallerid = '%s' WHERE accountcode = '%s' and db_prefix = '".$db_prefix."'",arg(4),$edit['assignto']);
+
+
+// $sqlout->uid
+
+		drupal_set_message(t('Account').' '.arg(4).' '.t('Assigned to').' '.$edit['assignto'].t(' userid: ').$sqlout->uid);
+        // astadmin_friends_save($edit,arg(4));
+        drupal_goto("astbilladm/realtime/friends");
+      break;
+  	// case t('Back'):
+		//drupal_goto("astbilladm/realtime/friends");
+    default:
+		$sql = db_query("SELECT serverid, uid, username, forwardto, fromuser, authuser, fromdomain, host, port, callerid, context, disallow, allow, comment, type, publicnumber, secret, nat, qualify, dtmfmode, insecure, canreinvite, restrictid, active, tech FROM asv_friend WHERE accountcode = '%s' and db_prefix = '".$db_prefix."'", arg(4));
+		$sqlout = db_fetch_object($sql);
+		$sql2 = db_query("select name, uid from {users}");
+
+		$group .= form_textfield(t("Assign to Accountcode"), "assignto", "", 40, 150, null, null, false);
+		$group .= form_submit(t('Assign'));
+		$output = form($group);
+	    $title = t('Assign').arg(4);
+		$account = $user->uid;
+	    _astadmin_printtheme_best($output, $account, $title);
+  }
+}
 
 function page_astadmin_friendscreate() {
   global $user;

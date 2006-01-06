@@ -37,6 +37,7 @@ $sql_updates = array(
   "2005-12-18" => "astbill_update_028",
   "2005-12-19" => "astbill_update_029",
   "2005-12-31" => "astbill_update_030",
+  "2006-01-02" => "astbill_update_031",
 );
 
 function update_sql($sql) {
@@ -324,4 +325,10 @@ FROM astpricelist GROUP BY astpricelist.name order by astpricelist.name");
   return $ret;
 }
 
+function astbill_update_031() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astcompany` ADD `firstname` VARCHAR(128) default NULL AFTER `company`");
+  $ret[] = update_sql("ALTER TABLE `astcompany` CHANGE `contactname` `lastname` VARCHAR( 128 ) NULL");
+  return $ret;
+}
 ?>
