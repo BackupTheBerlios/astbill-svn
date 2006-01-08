@@ -1327,8 +1327,8 @@ $callerid = $sql->name.' <'.$lastaccount->lastaccount.'>';
 db_query("UPDATE astaccount SET language = '%s', forwardto = '%s' , callerid = '%s' , accountname = '%s' WHERE accountcode = '%s'",
 $edit['language'], $edit['forwardto'],$callerid,$edit['accountname'],$lastaccount->lastaccount);
 
-db_query("UPDATE astuser SET brand = '%s' WHERE uid='%s' and db_prefix ='".$db_prefix."'", variable_get("AstBill Brand", 'default'), $user->uid);   
-
+db_query("UPDATE astuser SET brand = '%s', ipaddr = '".$_SERVER['REMOTE_ADDR']."' WHERE uid='%s' and db_prefix ='".$db_prefix."'", variable_get("AstBill Brand", 'default'), $user->uid);   
+  //  $_SERVER['REMOTE_ADDR'];
 		//   drupal_set_message(t('New Account Created: '. $result->accountcode));
 		astpbx_sendemail($db_prefix."ASTARREG", $user->mail, $result->accountcode);
 		// $sql = db_query ("insert into test (subject) values ('Drupal $db_prefix  $user->uid')");

@@ -38,6 +38,7 @@ $sql_updates = array(
   "2005-12-19" => "astbill_update_029",
   "2005-12-31" => "astbill_update_030",
   "2006-01-02" => "astbill_update_031",
+  "2006-01-03" => "astbill_update_032",
 );
 
 function update_sql($sql) {
@@ -329,6 +330,27 @@ function astbill_update_031() {
   $ret = array();
   $ret[] = update_sql("ALTER TABLE `astcompany` ADD `firstname` VARCHAR(128) default NULL AFTER `company`");
   $ret[] = update_sql("ALTER TABLE `astcompany` CHANGE `contactname` `lastname` VARCHAR( 128 ) NULL");
+  return $ret;
+}
+function astbill_update_032() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `company` varchar(128) NULL default NULL AFTER `lastaccount`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `firstname` varchar(128) default NULL AFTER `company`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `lastname` varchar(128) default NULL AFTER `firstname`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `address1` varchar(128) default NULL AFTER `lastname`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `address2` varchar(128) default NULL AFTER `address1`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `zip` varchar(64) NULL default NULL AFTER `address2`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `city` varchar(128) NULL default NULL AFTER `zip`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `state` varchar(128) NULL default NULL AFTER `city`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `country` varchar(128) NULL default NULL AFTER `state`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `phone` varchar(128) NULL default NULL AFTER `country`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `phone2` varchar(128) NULL default NULL AFTER `phone`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `mobile` varchar(128) NULL default NULL AFTER `phone2`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `fax` varchar(128) NULL default NULL AFTER `mobile`");
+
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `birthdate` date NULL default NULL AFTER `fax`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `valuecode` varchar(128) NULL default NULL AFTER `birthdate`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `birthdate2` varchar(128) NULL default NULL AFTER `birthdate`");
   return $ret;
 }
 ?>
