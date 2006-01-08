@@ -351,6 +351,8 @@ function astbill_update_032() {
   $ret[] = update_sql("ALTER TABLE `astuser` ADD `birthdate` date NULL default NULL AFTER `fax`");
   $ret[] = update_sql("ALTER TABLE `astuser` ADD `valuecode` varchar(128) NULL default NULL AFTER `birthdate`");
   $ret[] = update_sql("ALTER TABLE `astuser` ADD `birthdate2` varchar(128) NULL default NULL AFTER `birthdate`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `ordercode` varchar(128) NULL default NULL AFTER `valuecode`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `ipaddr` varchar(128) NULL default NULL AFTER `comment`");
   return $ret;
 }
 ?>
