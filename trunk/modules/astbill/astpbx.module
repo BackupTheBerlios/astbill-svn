@@ -1321,16 +1321,20 @@ function astpbx_user($type, &$edit, &$user, $category = NULL) {
 
 $sql = db_fetch_object(db_query("SELECT name FROM {users} WHERE uid = '%s'", $user->uid));
 
-$lastaccount = db_fetch_object(db_query("SELECT lastaccount from astuser WHERE uid='%s' and db_prefix ='".$db_prefix."'", $user->uid));
+$lastaccount = db_fetch_object(db_query("SELECT lastaccount,comment from astuser WHERE uid='%s' and db_prefix ='".$db_prefix."'", $user->uid));
 $callerid = $sql->name.' <'.$lastaccount->lastaccount.'>';
 
 db_query("UPDATE astaccount SET language = '%s', forwardto = '%s' , callerid = '%s' , accountname = '%s' WHERE accountcode = '%s'",
 $edit['language'], $edit['forwardto'],$callerid,$edit['accountname'],$lastaccount->lastaccount);
 
 db_query("UPDATE astuser SET brand = '%s', ipaddr = '".$_SERVER['REMOTE_ADDR']."' WHERE uid='%s' and db_prefix ='".$db_prefix."'", variable_get("AstBill Brand", 'default'), $user->uid);   
-  //  $_SERVER['REMOTE_ADDR'];
+
 		//   drupal_set_message(t('New Account Created: '. $result->accountcode));
-		astpbx_sendemail($db_prefix."ASTARREG", $user->mail, $result->accountcode);
+// variable_set("AstBill Sendemail",1);
+if (variable_get('AstBill Sendemail', 1)) {
+	drupal_set_message("astpbx_sendemail");
+	astpbx_sendemail($db_prefix."ASTARREG", $user->mail, $result->accountcode,$user->name,$lastaccount->comment);
+}
 		// $sql = db_query ("insert into test (subject) values ('Drupal $db_prefix  $user->uid')");
 		// $sql = db_query ("insert into test (subject) values ('$item->id')");
 
@@ -1416,7 +1420,7 @@ function page_astpbx_emailme() {
 	_astentry_printtheme_best($output, $account, $title);	
 }
 
-function astpbx_sendemail($EmailText, $tomail, $accountcode) {
+function astpbx_sendemail($EmailText, $tomail, $accountcode, $wwwuser, $wwwpw) {
    
 	$sql = db_query("select EmailText, Subject, BodyText, SenderEmail, bcc from astemailtext where EmailText = '$EmailText'");
 	$result = db_fetch_object($sql);
@@ -1434,6 +1438,8 @@ function astpbx_sendemail($EmailText, $tomail, $accountcode) {
 
 	$message = str_replace("%username%", $accountcode, $message);
 	$message = str_replace("%password%", $result2->secret, $message);
+	$message = str_replace("%wwwuser%", $wwwuser, $message);
+	$message = str_replace("%wwwpassword%", $wwwpw, $message);
 
 	// In case any of our lines are larger than 70 characters, we should use wordwrap()
 	$message = wordwrap($message, 70);
