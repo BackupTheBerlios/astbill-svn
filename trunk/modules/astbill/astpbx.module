@@ -1332,7 +1332,7 @@ db_query("UPDATE astuser SET brand = '%s', ipaddr = '".$_SERVER['REMOTE_ADDR']."
 		//   drupal_set_message(t('New Account Created: '. $result->accountcode));
 // variable_set("AstBill Sendemail",1);
 if (variable_get('AstBill Sendemail', 1)) {
-	drupal_set_message("astpbx_sendemail");
+	// drupal_set_message("astpbx_sendemail");
 	astpbx_sendemail($db_prefix."ASTARREG", $user->mail, $result->accountcode,$user->name,$lastaccount->comment);
 }
 		// $sql = db_query ("insert into test (subject) values ('Drupal $db_prefix  $user->uid')");
