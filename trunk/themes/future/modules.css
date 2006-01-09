@@ -1,0 +1,477 @@
+/* $Id: modules.css,v 1.2 2005/04/14 07:45:50 frjo Exp $ */
+
+/* modules.css for Slash */
+
+/* Code filter */
+
+div.codeblock {
+  padding: 5px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  white-space: pre;
+  }
+
+
+/* Aggregator */
+
+#aggregator {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 5px;
+  }
+#aggregator .news-item .date {
+  font-size: 0.84em;
+  }
+#aggregator .news-item .body {
+  font-size: 0.84em;
+  }
+#aggregator .news-item .source {
+  color: #333;
+  font-style: italic;
+  }
+#aggregator .title {
+  font-size: 1em;
+  }
+#aggregator h3 {
+  margin-top: 0;
+  }
+
+/* Tracker */
+
+#tracker th {
+  padding: 3px;
+  }
+#tracker tr.light, #tracker tr.dark {
+  background-color: #fff;
+  }
+#tracker td {
+  vertical-align: top;
+  padding: 3px;
+  border-bottom: 1px solid #bbb;
+  }
+
+/* Forum */
+
+#forum table {
+  width: 100%;
+  }
+#forum td {
+  padding: 0.5em 0.5em 0.5em 0.5em;
+  }
+#forum td.forum, #forum td.posts {
+  background-color: #eee;
+  }
+#forum td.topics, #forum td.last-reply {
+  background-color: #ddd;
+  }
+#forum td.container {
+  background-color: #ccc;
+  }
+#forum td.container a {
+  color: #555;
+  }
+#forum td.statistics, #forum td.settings, #forum td.pager {
+  height: 1.5em;
+  border: 1px solid #bbb;
+  }
+#forum td .name {
+  color: #96c;
+  }
+#forum td .links {
+  padding-top: 0.7em;
+  font-size: 0.9em;
+  }
+.block-forum h3 {
+  margin-bottom: 0.5em;
+  }
+
+/* Calendar */
+
+.calendar td {
+  padding: 0;
+  border-color: #888;
+  }
+.calendar td div {
+  padding: 0.4em 0;
+  }
+.calendar .row-week {
+  color: #aaa;
+  }
+.calendar .row-week td a {
+  padding: 0.4em 0;
+  }
+.calendar .day-today {
+  background-color: #ccc;
+  }
+.calendar .day-today a {
+  font-weight: bold;
+  color: #000;
+  }
+.calendar .day-selected {
+  background-color: #bbb;
+  }
+.calendar .header-month {
+  background-color: #ddd;
+  }
+.calendar .header-week {
+  background-color: #ccc;
+  }
+.calendar .day-blank {
+  background-color: #ddd;
+  }
+.calendar .row-week td a:hover {
+  background-color: #fff; color: #000;
+  }
+
+/*** New Landline Styles - CSS positioning etc. ***/
+
+/* IE6, NS7, Firefox, Op7 */
+/* Needs fixing in opera 6 */
+.extrasrow { width: 573px; }
+.extrabox1 { width: 287px; voice-family: "\"}\""; voice-family: inherit; width: 285px; border-top: 1px solid #9605AC; border-bottom: 1px solid #9605AC; border-left: 1px solid #9605AC; border-right: 1px solid #9605AC; padding: 0; float: left; }
+.extrabox2 { width: 286px; voice-family: "\"}\""; voice-family: inherit; width: 285px; border-top: 1px solid #9605AC; border-bottom: 1px solid #9605AC; border-left: 0 solid #9605AC; border-right: 1px solid #9605AC; padding: 0; float: right; clear:right; }
+.extrabox3 { width: 287px; voice-family: "\"}\""; voice-family: inherit; width: 285px; border-top: 0 solid #9605AC; border-bottom: 1px solid #9605AC; border-left: 1px solid #9605AC; border-right: 1px solid #9605AC; padding: 0; float: left; }
+.extrabox4 { width: 286px; voice-family: "\"}\""; voice-family: inherit; width: 285px; border-top: 0 solid #9605AC; border-bottom: 1px solid #9605AC; border-left: 0 solid #9605AC; border-right: 1px solid #9605AC; padding: 0; float: right; clear:right; }
+.extraheadleft  { width: 160px; voice-family: "\"}\""; voice-family: inherit; width: 149px; background: #9605AC; font-weight: bold; color: #FFF; text-align: left; padding: 2px 5px; border-top: solid 1px #FFF; border-bottom: solid 1px #FFF; border-right: solid 1px #FFF; float: left; }
+.extraheadright { width: 125px; voice-family: "\"}\""; voice-family: inherit; width: 115px; background: #DEB2E5; font-weight: bold; text-align: right; padding: 2px 5px; border-top: solid 1px #FFF; border-bottom: solid 1px #FFF; float: right; }
+
+/* needs widths set for older mozilla  & Op6 */
+.extracontentleft  { padding: 5px; border-top: 1px solid #9605AC; float: left;  }
+.extracontentright { padding: 5px; border-top: 1px solid #9605AC; float: right; }
+
+.topmargin  { margin-top: 8px; }
+.extrabox1, .extrabox2, .extrabox3, .extrabox4 { p\osition: relative; }
+
+/* STRUCTURES */
+
+/* STRUCTURES  - general*/
+.FloatContainer    { width: 590px; voice-family: "\"}\""; voice-family: inherit; width: 573px; }
+html>body .FloatContainer { width: 573px; }
+/* this one is inside content cell ie padded outside */
+.FloatContainerMax { width: 762px; voice-family: "\"}\""; voice-family: inherit; width: 743px; }
+html>body .FloatContainerMax { width: 743px; }
+/* this one is wihtout outer padding */
+.ContainerMax { width: 766px; voice-family: "\"}\""; voice-family: inherit; width: 774px; }
+html>body .ContainerMax { width: 774px; }
+.FloatLeft         { float: left; }
+.FloatRight        { float: right; }
+.Padding3          { padding: 3px; }
+
+.ContactContainer      { padding-left: 10px; }
+.ContactContainerLeft  { width: 315px; margin-bottom: -5px; }
+.ContactContainerRight { width: 275px; margin-left: -1px; margin-bottom: -5px; }
+
+hr.purple { color: #B433A2; margin-left: -10px; margin-right: -10px; width: 100%; height: 1px; }
+caption   { text-align: left; font-size: 11px; }
+img.title { vertical-align: middle; }
+
+
+
+/* STRUCTURES - content grid */
+
+.GridRow { width: 573px; clear: left; }
+.Grid1   { width: 287px; voice-family: "\"}\""; voice-family: inherit; width: 285px; padding: 0; float: left; }
+
+.Grid2   { width: 286px; voice-family: "\"}\""; voice-family: inherit; width: 285px; padding: 0; float: right; clear:right; }
+.Grid3   { width: 287px; voice-family: "\"}\""; voice-family: inherit; width: 285px; padding: 0; float: left; }
+.Grid4   { width: 286px; voice-family: "\"}\""; voice-family: inherit; width: 285px; padding: 0; float: right; clear:right; }
+.grid1Left  { width: 50%; voice-family: "\"}\""; voice-family: inherit; width: 50%; padding: 0; float: left; }
+.grid1Right { width: 50%; voice-family: "\"}\""; voice-family: inherit; width: 50%; padding: 0; float: right; clear:right; }
+.grid35Left  { width: 40%; voice-family: "\"}\""; voice-family: inherit; width: 35%; padding: 0; float: left; }
+.grid65Right { width: 60%; voice-family: "\"}\""; voice-family: inherit; width: 65%; padding: 0; float: right; clear:right; }
+
+.GridHeadLeft  { width: 160px; voice-family: "\"}\""; voice-family: inherit; width: 149px; text-align: left; padding: 2px 5px; float: left; }
+.GridHeadRight { width: 125px; voice-family: "\"}\""; voice-family: inherit; width: 115px; text-align: right; padding: 2px 5px; }
+
+/* needs widths set for older mozilla  & Op6 */
+.GridContentLeft  { float: left; }
+
+.GridContentRight { padding: 5px; float: right; }
+.Grid1, .Grid2, .Grid3, .Grid4 { p\osition: relative; }
+
+/* STYLES */
+.Grid1BorderStyle1 { border-top: 1px solid #9605AC; border-bottom: 1px solid #9605AC; border-left: 1px solid #9605AC; border-right: 1px solid #9605AC; }
+.Grid2BorderStyle1 { border-top: 1px solid #9605AC; border-bottom: 1px solid #9605AC; border-left: 0 solid #9605AC; border-right: 1px solid #9605AC; }
+.Grid3BorderStyle1 { border-top: 0 solid #9605AC; border-bottom: 1px solid #9605AC; border-left: 1px solid #9605AC; border-right: 1px solid #9605AC; }
+.Grid4BorderStyle1 { border-top: 0 solid #9605AC; border-bottom: 1px solid #9605AC; border-left: 0 solid #9605AC; border-right: 1px solid #9605AC; }
+.GridHeaderLeftStyle1  { font-weight: bold; color: #FFF; background: #9605AC; border-top: solid 1px #FFF; border-bottom: solid 1px #FFF; border-right: solid 1px #FFF; }
+.GridHeaderRightStyle1 { font-weight: bold; background: #DEB2E5; border-top: solid 1px #FFF; border-bottom: solid 1px #FFF; float: right; }
+.GridContentStyle1 { border-top: 1px solid #9605AC; padding: 5px; }
+
+/* Landline toolbar */
+.ToolBarStyle1            { padding: 5px; margin-bottom: 10px; border: 0 none; text-align: center; line-height: 1.5em; font-weight: normal; }
+.ToolBarStyle1TopLeft     { background: url(/web/media/img/landline/topleft.gif) top left no-repeat; }
+.ToolBarStyle1TopRight    { background: url(/web/media/img/landline/topright.gif) top right no-repeat; }
+.ToolBarStyle1BottomLeft  { background: url(/web/media/img/landline/bottomleft.gif) bottom left no-repeat; }
+.ToolBarStyle1BottomRight { background: url(/web/media/img/landline/bottomright.gif) bottom right no-repeat; }
+
+.BoxTop     { background: url(/web/media/img/box-top.gif) top left no-repeat; }
+.BoxBottom  { background: url(/web/media/img/box-bottom.gif) bottom left no-repeat; }
+
+
+.LandlinePlanContainer    {  }
+.LandlinePlanHeader       { text-align: right; clear: both; float: right; border-bottom: 1px solid #9605AC;  }
+.LandlinePlanHeaderText   { text-align: left; float: left; font-weight: bold; }
+.LandlinePlanHeaderText a { font-weight: normal; }
+.LandlinePlanHeaderText a.NormalLink  { color: #00F; }
+
+.PlanTitle         { text-align: right; margin: 5px 10px 10px 0; height: 33px; }
+.PlanTitleText     { text-align: left; float: left; font-weight: bold; }
+.PlanTitleText img { display: inline; vertical-align: baseline; padding: 0; margin: 0; }
+
+.AlphaLinks, .AlphaLinks a     {  font-size: 0.90em; text-align: center; clear: both; }
+.NumericLinks, .NumericLinks a {  font-size: 0.90em; text-align: left; clear: both; }
+.NumericLinks img              { margin-left: 20px; font-size: 0.90em; }
+
+/* Rates Table */
+.RatesTable       { width: 100%; border: 1px solid #C0C0C0; margin-top: 5px;  }
+.RatesTableHeader { background: #EFD3EA;  }
+.RatesTableHeader th { text-align: center; vertical-align: middle; }
+.RatesTableRow td { padding: 1px 15px; border-top: 1px solid #C0C0C0; }
+.RateKey          { text-align: left; background: #FFF; font-size: 1em;  }
+.RateValue        { text-align: center; width: 70px; background: #FFF; font-size: 1em; }
+.RateValueSm      { text-align: center; background: #FFF; font-size: 1em;}
+
+/* Guaranteed Savings Page */
+
+.tableheader       { background: #FFF; text-align: center; font-weight: bold; border-top: 1px solid #882392; border-bottom: 1px solid #882392;  }
+.tableheader2      { background: url(/web/media/img/c1.gif) top left no-repeat; text-align: center;   }
+.tableheader3      { background: #FFF; text-align: center; font-weight: bold; border-top: 1px solid #882392; border-bottom: 1px solid #882392; border-right: 1px solid #882392; }
+.tableheader4      { background: #FFF; text-align: left; font-weight: bold; border-top: 1px solid #882392; border-bottom: 1px solid #882392;   }
+.tableleftcell1    { background: #FADEFA; font-weight: bold; text-align: center; border-left: 1px solid #882392;   }
+.tableleftcell     { background: #FADEFA; font-weight: bold; text-align: left; border-left: 1px solid #882392;   }
+.tablesecondcell   { background: #FFF; text-align: center; border-left: 1px solid #882392;   }
+.tablethirdcell    { background: #FADEFA; text-align: center; border-left: 1px solid #882392;   }
+.tablelastcell     { background: #BEE508; font-weight: bold; text-align: center;border-left: 1px solid #882392; border-right: 1px solid #882392;  }
+.tablebottomone1   { background: #FADEFA; font-weight: bold; text-align: center; border-left: 1px solid #882392; border-bottom: 1px solid #882392;   }
+.tablebottomone    { background: #FADEFA; font-weight: bold; text-align: center;  border-bottom: 1px solid #882392;  border-left: 1px solid #882392; }
+.tablebottomtwo    { background: #FFF; text-align: center; border-left: 1px solid #882392; border-bottom: 1px solid #882392; }
+.tablebottomthree  { background: #882392; color: #FFF; text-align: center; font-weight: bold; border-left: 1px solid #882392; border-bottom: 1px solid #882392;   }
+.tablebottomfour   { background: #882392; color: #FFF; font-weight: bold;  text-align: center; border-left: 1px solid #882392; border-bottom: 1px solid #882392; }
+.tablebottomfour2  { background: url(/web/media/img/c2.gif) bottom right no-repeat; }
+.tablefooter       { text-align: right; }
+
+/* Style for b2b table */
+
+.b2btableheader       { background: #882392; text-align: left; color: #FFF; }
+.b2btableheader2      { background: #882392 url(/web/media/img/business/test/c1.gif) top left no-repeat; text-align: left;   padding: 0 0 0 10px;}
+.b2btableheader3      { background: #882392 url(/web/media/img/business/test/c2.gif) top right no-repeat; text-align: left;   padding: 0 0 0 4px; }
+.b2btableheader4      { background: #882392; text-align: left; font-weight: bold; border-top: 1px solid #882392; border-bottom: 1px solid #882392; padding: 0px;  }
+.b2btableleftcell     { background: #FFF; font-weight: bold; text-align: left; border-left: 1px solid #882392; border-bottom: 1px solid #882392; border-right: 1px solid #882392;   padding-left: 10px; }
+.b2btableleftcell1    { background: #FFF; font-weight: bold; text-align: left; border-left: 1px solid #882392;  }
+.b2btablebottomone    { background: #FFF; font-weight: bold; text-align: left; border-bottom: 1px solid #882392;  border-right: 1px solid #882392;  }
+.b2btablebottomone2   { background: #FFF; font-weight: bold; text-align: left; border-bottom: 1px solid #882392;  }
+.b2btablecenter       { text-align: center;  }
+.b2btabletop          { text-align: center;  font-weight: bold; border-bottom: 1px solid #882392; border-right: 1px solid #882392; }
+.b2btabletop1         { text-align: center;  font-weight: bold; border-bottom: 1px solid #882392; }
+.b2btablemid          { text-align: center;  }
+.b2btablemid2         { text-align: left;  border-bottom: 1px solid #882392; border-right: 1px solid #882392; padding: 6px; }
+.b2btablemid3         { text-align: left;  border-right: 1px solid #882392; padding: 6px; }
+.b2btablemid1         { text-align: center;  border-right: 1px solid #882392;  }
+.b2btableend          { text-align: center;  border-bottom: 1px solid #882392; }
+.b2btablerightcell    { background: #FFF; font-weight: bold; text-align: left; border-right: 1px solid #882392; border-bottom: 1px solid #882392;  text-align: center;}
+.b2btablefooter2      { background: url(/web/media/img/business/bottomleft.gif) bottom left no-repeat; font-weight: bold; text-align: left; border-right: 1px solid #882392;  padding-left:10px; }
+.b2btablefooter3      { background: url(/web/media/img/business/bottomright.gif) bottom right no-repeat; font-weight: bold; text-align: left;  text-align: center;}
+
+/* Landline Plans Page Styles */
+
+
+.landplansheader       { width: 493px; }
+.landlineplantable     { border: 1px solid #882392;}
+.landplansheaderleft   {  background: #cc0000; border-left: 1px solid #797B74; border-bottom: 1px solid #797B74; border-top: 1px solid #797B74;  }
+.landplansheaderleft2   {  background: #cc0000; border-left: 1px solid #797B74; border-bottom: 1px solid #797B74; border-top: 1px solid #797B74; }
+.landplansheaderright  {  background: #cc0000; border-left: 1px solid #797B74; border-bottom: 1px solid #797B74; border-top: 1px solid #797B74; }
+.landplansheaderright2 {  background: #cc0000; border-left: 1px solid #797B74; border-right: 1px solid #797B74; border-bottom: 1px solid #797B74; border-top: 1px solid #797B74; }
+
+.landplansleft   {  padding-left: 2px;  border-left: 1px solid #797B74; border-bottom: 1px solid #797B74;  }
+.landplansleft2   { padding-left: 2px;  border-left: 1px solid #797B74; border-bottom: 1px solid #797B74; }
+.landplansright  {   border-left: 1px solid #797B74; border-bottom: 1px solid #797B74; text-align: center; }
+.landplansright2 {  background: #cc0000; border-left: 1px solid #797B74; border-right: 1px solid #797B74; border-bottom: 1px solid #797B74; text-align: center; }
+
+.bottompoints { width: 430px; float: left; } 
+.bottomcredit { width: 150px; float: left;  } 
+.marginr30    { margin-left: 165px; }
+
+
+
+/* Style for Landline HP */
+
+#cleft  { width: 50%; height: 200px; float: left; margin-left: -1px; padding: 10px; text-align: center; }
+#cright { padding: 10px; height: 200px; margin-left: 230px; text-align: center; }
+.spacer         { clear: both; }
+.blacklink      { color: #000; font-weight: bold; text-decoration: underline; }
+
+/* Quick style for the Plan Advisor */
+.advisortable   { border-left: 1px solid #882392; border-right: 1px solid #882392; border-top: 1px solid #882392; border-bottom: 1px solid #882392; background-color: #fff; }
+.extra1 	    { text-align: right; margin: 0 -10px; height: 33px; padding: 5px; }
+.extra2 	    { text-align: left; float: left;  font-weight: bold;  }
+.extra2 img	    { display: inline; vertical-align: middle; padding: 0; margin: 5px; }
+.extra3 	    { text-align: right; margin: 0 -10px; height: 33px; border-top: 0 solid #9605AC; padding: 5px; }
+.advisorend	    { text-align: center; vertical-align: middle; }
+.advisorend img {vertical-align: middle; padding: 5px; }
+.advisortabletd   { background-color: #fff; font-size: 1.2em; }
+
+
+abbr { text-decoration: none; border: 0; }
+
+.purpleShade004 { background-color: #DCAEDB; }
+.purpleShade002 { background-color: #EFD6EE; }
+.purpleShade003 { background-color: #F4DCF4; }
+.purpleShade001 { background-color: #FEFAFE; }
+.purpleShade01  { background-color: #FCF4FC; }
+.purpleShade1   { background-color: #F7E6F7; }
+.purpleShade1b  { background-color: #F9E4FC; }
+.purpleShade1c  { background-color: #F3DAF6; }
+.purpleShade2   { background-color: #EFCDEE; }
+.purpleShade2b  { background-color: #F7DBFF; }
+.purpleShade2c  { background-color: #EFCEF3; }
+.purpleShade3   { background-color: #E7B4E6; }
+.purpleShade3b  { background-color: #F5CEFC; }
+.purpleShade3c  { background-color: #EBC1EF; }
+.purpleShade4   { background-color: #DF9BDE; }
+.purpleShade5   { background-color: #CF6ACD; }
+.whiteText      { color: #FFF; font-weight: bold; }
+
+.center         { text-align: center; }
+.valignTop      { vertical-align: top; }
+.leftalign      { text-align: left; }
+.rightalign     { text-align: right; }
+
+.rightBorderWhite    { border-right: 1px solid #FFF; }
+.topBorderWhite      { border-top: 1px solid #FFF; }
+
+.topBorderPurple     { border-top: 1px solid #8B0983; }
+.leftBorderPurple    { border-left: 1px solid #8B0983; }
+.leftBorderPurple4   { border-left: 1px solid #DF9BDE; }
+.leftBorderBottom1   { vertical-align: top; border-top: 1px solid #DF9BDE; text-align: left; }
+.leftBorderBottom2   { border-top: 1px solid #DF9BDE; text-align: center; }
+.rightBorderPurple   { border-right: 1px solid #8B0983; }
+.bottomBorderPurple  { border-bottom: 1px solid #8B0983; margin: -10px -10px 0; padding: 10px; }
+.bottomBorderPurpleThick  { border-bottom: 2px solid #8B0983; }
+.tableBorderPurple   { width: 100%; border: 1px solid #8B0983; }
+.bottomBorderPurplePale  { border-bottom: 1px solid #E7B4E6; }
+
+.bottomBorderGreen   { border-bottom: 1px solid #9C0; }
+
+.mobileCallrate      { background: #F3D3F4; border-left: 1px solid #8B0983; text-align: center; padding: 0px; font-weight: bold; }
+.mobileCallrate div  { border-bottom: 1px solid #FFF; padding: 2px; }
+
+td.text              { font-size: 11px; }
+th.text              { font-size: 11px; }
+.pageSeparatorPurple { margin: 0 -10px; border-top: 1px solid #9605AC; text-align: left; }
+hr.grey              { margin: -3px 10px; border: 1px solid #CCCCCC; line-height: 0;}
+
+.tableBorderGrey     { width: 100%; border: 1px solid #8A8686; }
+.topBorderGrey       { border-top: 1px solid #8A8686;  }
+.leftBorderGrey      { border-left: 1px solid #8A8686; }
+.rightBorderGrey     { border-right: 1px solid #8A8686; }
+.bottomBorderGrey    { border-bottom: 1px solid #8A8686;  }
+.doubleTop           {  }
+.doubleRight         {  }
+.doubleTopRight      {  }
+
+.nopadding      { padding: 0; margin: 0; }
+.nopadding img  { display: inline; vertical-align: bottom; padding: 0 0 0 5px; margin: 0; }
+.container      { margin: 0 -10px; }
+.headerRight    { padding: 5px 10px; text-align: right; width: 573px; }
+.headerLeft     { text-align: left; float: left;  font-weight: bold; padding: 5px 10px 0 0; }
+
+.pt9bold      { font-weight: bold; }
+.pt10bold     { font-weight: bold; }
+.px11bold     { font-weight: bold; }
+
+ul.plans      { margin-top: 0; margin-bottom: 5px; }
+ul.plans li   { margin-left: -22px; padding: 0; }
+
+h2.homeTitle    {  font-weight: bold; color: #8B0983; margin: 5px 0 0; padding: 3px; }
+.homeLinks      { font-size: 0.95em; color: #000; margin-top: 0; margin-bottom: 5px; list-style: inside url("/web/media/img/purplearrow.gif"); }
+.homeLinks li   { margin-left: -40px; padding: 1px 0; color: #000;  }
+.homeLinks a    { color: #000;  }
+.homeLinksRight .homeLinks li   { margin-left: -45px;  }
+.homeLinksLeft  { float: left; }
+.homeLinksRight { float: right; }
+
+h2.homeTitle {
+        font-size: 0.95em;
+    }
+    
+h2.homeTitle2 {
+        font-size: 0.95em;  margin-top: 0px; }    
+
+/* This is Fragile! Handle with extreme care! */
+.HomePageDiv1            { clear: both; width: 738px; voice-family: "\"}\""; voice-family: inherit; width: 742px; height: 15px; }
+html>body .HomePageDiv1  { width: 742px; }
+.HomePageDiv2            { width: 493px; voice-family: "\"}\""; voice-family: inherit; width: 496px; height: 15px; float: left; }
+html>body .HomePageDiv2  { width: 496px; }
+.HomePageDiv3            { width: 247px; height: 14px; float: right; }
+.HomePageDiv1B           { width: 738px; voice-family: "\"}\""; voice-family: inherit; width: 740px; height: 15px; padding: 0; margin: 0; }
+html>body .HomePageDiv1B { width: 740px; }
+.HomePageDiv2B           { width: 492px; voice-family: "\"}\""; voice-family: inherit; width: 495px; height: 15px; float: left; padding: 0; margin: 0; }
+html>body .HomePageDiv2B { width: 495px; }
+.HomePageDiv3B           { width: 241px; voice-family: "\"}\""; voice-family: inherit; width: 245px; height: 14px; float: left; padding: 0; margin: 0; }
+html>body .HomePageDiv3B { width: 245px; }
+.HomePageDiv3C           { width: 364px; voice-family: "\"}\""; voice-family: inherit; width: 369px; height: 14px; float: left; padding: 0; margin: 0; }
+html>body .HomePageDiv3C { width: 369px; }
+.HomeRightBottomBox { width: 347px; voice-family: "\"}\""; voice-family: inherit; width: 345px;  }
+
+.HomepageImgLeft    { float: left; padding: 0; margin: 0; text-align: left; }
+.HomepageImgMiddle  { padding: 0; margin: 0; text-align: right; }
+.HomepageImgRight   { padding: 0; margin: 0; text-align: right; }
+.HomepageImgMiddle img, .HomepageImgRight img, .HomepageImgLeft img  { padding: 0; margin: 0; display: block; }
+.HomepageImgLeft, .HomepageImgMiddle, .HomepageImgRight, .HomepageLeftPair  { p\osition: relative; display: inline; }
+.HomepageLeftPair   { width: 495px; padding: 0; margin: 0; float: left; }
+
+
+.ProdHomeTopBox { width: 190px; float: left; padding: 0; margin: 0; text-align: center; }
+.ProdHomeContainer { width: 174px; height: 181px; }
+
+.OffersTopBox1 { width: 220px; float: left; padding: 0; margin: 0; text-align: center; }
+.OffersTopBox2 { width: 220px; float: left; padding: 0; margin: 0; text-align: center; }
+.OffersTopBox3 { width: 130px; float: left; padding: 0; margin: 0; text-align: center; }
+.OffersTopBox4 { width: 130px; float: left; padding: 0; margin: 0; text-align: center; }
+.stylebox { width: 210px; float: left; padding: 0; margin: 0; text-align: left; }
+
+.planContainer ul { list-style-type: none; padding: 0px; margin: 0 0 0 20px; }
+
+
+/*  Fixed homepage bullet points for Apple Safari browser - bchovet - 20050425 */
+.bulletsHomepage {
+	width: 50%;
+	float: left;
+}
+
+.homepageImg {
+	width: 252px;
+	float: left;
+	padding: 0px;
+	margin: 0px;
+}
+
+.purpleBox {
+	float: left;
+	width: 250px;
+	height: 80px;
+	border-top: 1px solid #8B0983;
+	border-bottom: 1px solid #8B0983;
+	border-right: 1px solid #8B0983;
+}
+
+.purpleBoxLinks { 
+	font-size: 0.85em; 
+	color: #000; 
+	margin-top: 0px; 
+	margin-bottom: 5px;
+	list-style: inside url("/web/media/img/purplearrow.gif"); 
+}
+
+.purpleBoxLinks li { margin-left: -40px; }
+.purpleBoxLinks a { color: #000000; }
+
+/* ----- Landline plans page /landlineplans ----- */
+.textWhiteBig {
+	font-size: 1.8em; 
+	color: #ffffff; 
+	text-decoration: none
+}
+
+
