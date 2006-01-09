@@ -8,7 +8,7 @@
 body {
   background: #DAE3E5;
 	font-family: Verdana;
-	font-size: 10px;
+	font-size: 14px;
 	font-weight: regular;
 	color: #000000;
   }
@@ -227,7 +227,8 @@ img.topic {
 h1.nodetitle {
   background: #cc0000;
   color: #ffffff;
-  font-size: 1em;
+/*  font-size: 1em;  */
+  font-size: 18px;
   font-weight: bold;
   font-family: Verdana;
   margin: 0;
@@ -501,10 +502,10 @@ a.commenttitle:hover {
 /* Footerbox */
 
 .footerbox {
-  background: #ffffff;
+  background: #DAE3E5;
   padding: 5px;
   margin-top: 1em;
-  border: 1px solid #cc0000;
+ /* border: 1px solid #cc0000;   */
   text-align: center;
   font-size: 0.84em;
   }
