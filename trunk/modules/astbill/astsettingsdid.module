@@ -205,5 +205,64 @@ function astsettingsdid_createdidbatch_form($edit) {
 }
 
 
+function settingsdid_hardware_form($account) {
+	global $user;
+	$edit = $_POST["edit"];
+    $op = $_POST["op"];
+
+
+if (arg(2) == 'addmac'){ // START CHECK IF HARDWARECREATE
+
+	$uid = null;
+	$accountcode = null;
+	$secret = null;
+	$hardwaretype = null;
+	$hardwareid = null;
+	$mac_address = null;
+	$serialnumber = null;
+	$comment = null;
+	$name = null;
+
+} // END CHECK IF HARDWARECREATE
+
+	$sql = db_query("select name, uid from {users}");
+
+	$users = array();
+
+	while ($items = db_fetch_object($sql)) {
+		array_push2($users, $items->uid.' '.$items->name, $items->uid);
+	}
+
+
+	$sql = db_query("select hid, hardware from asthardwareid");
+
+	$hardwareidlist = array();
+
+	while ($item = db_fetch_object($sql)) {
+		array_push2($hardwareidlist, $item->hardware, $item->hid);
+	}
+
+
+	$group .= form_select(t('User/Owner of this hardware'), 'uid', $uid, $users);
+	$group .= form_textfield(t('Accountcode'), 'accountcode', $accountcode, 30, 100);
+	$group .= form_textfield(t('Secret'), 'secret', $secret, 30, 100);
+	$group .= form_textfield(t('Hardwaretype'), 'hardwaretype', $hardwaretype, 30, 100);
+
+	$group .= form_select(t("HardwareID"), "hardwareid", $hardwareid, $hardwareidlist);
+
+	$group .= form_textfield(t('Mac Address'), 'mac_address', $mac_address, 30, 100);
+	$group .= form_textfield(t('Serialnumber'), 'serialnumber', $serialnumber, 30, 100);
+	$group .= form_textfield(t('Comment'), 'comment', $comment, 30, 100);
+	$group .= form_textfield(t('Name'), 'name', $name, 30, 100);
+
+if (arg(2) == 'addmac'){
+	$group .= form_submit(t('Create'));
+} else {
+	$group .= form_submit(t('Change'));
+}
+	$group .= form_submit(t('Back'));
+	//$form = form_group(t('Account details'), $group);
+	return form($group);
+}
 
 
