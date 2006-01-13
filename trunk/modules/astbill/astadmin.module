@@ -586,7 +586,9 @@ function page_astadmin_hardware() {
     array('data' => t('Operations'), 'colspan' => 2)
   );
 
-$sql = db_query("SELECT id, hw.uid, hw.accountcode, hw.secret, hw.hardwaretype, hw.hardwareid, hw.mac_address, hw.serialnumber, hw.comment, hw.name, hw.date_created FROM asthardware hw, astaccount where hw.accountcode = astaccount.accountcode  and db_prefix ='".$db_prefix."'");
+$sql = db_query("SELECT id, ac.uid, hw.accountcode, ac.secret, hw.hardwareid, hwid.hardware,
+concat(hwid.mac1,'-',hwid.mac2,'-',hwid.mac3,'-',hw.mac4,'-',hw.mac5,'-',hw.mac6) mac, hw.serialnumber, hw.comment,  hw.date_created FROM asthardware hw, astaccount ac,asthardwareid hwid, pbx_users where hw.accountcode = ac.accountcode and ac.uid = pbx_users.uid and hw.hardwareid = hwid.hid 
+  and db_prefix ='".$db_prefix."'");
 
  // $result = pager_query($sql, $maxline);
   
@@ -597,8 +599,8 @@ $sql = db_query("SELECT id, hw.uid, hw.accountcode, hw.secret, hw.hardwaretype, 
 		$item->uid.'&nbsp;&nbsp;',
 		$item->accountcode.'&nbsp;&nbsp;',
 		$item->secret.'&nbsp;&nbsp;',
-	    $item->hardwaretype.'&nbsp;&nbsp;',
-		$item->mac_address.'&nbsp;&nbsp;',
+	    $item->hardware.'&nbsp;&nbsp;',
+		$item->mac.'&nbsp;&nbsp;',
 		$item->date_created.'&nbsp;&nbsp;',
 		'<A HREF="'.url('astbilladm/hardware/change/'.$item->id).'">'.t('Details').'</A>',
 		'|<A HREF="'.url('astbilladm/hardware/remove/'.$item->id.'/'.$item->accountcode).'">'.t('Remove').'</A>&nbsp;&nbsp;'
@@ -749,7 +751,7 @@ if (arg(2) == 'create'){ // START CHECK IF HARDWARECREATE
 	$comment = null;
 	$name = null;
 
-db_query("INSERT INTO asthardware (uid, accountcode, secret, hardwaretype, hardwareid, mac_address, serialnumber, comment, name, date_created) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', now())", $edit['uid'], $edit['accountcode'], $edit['secret'], $edit['hardwaretype'], $edit['hardwareid'], $edit['mac_address'], $edit['serialnumber'], $edit['comment'], $edit['name']);
+db_query("INSERT INTO asthardware (accountcode, hardwareid, mac4,mac5,mac6, serialnumber, comment, date_created) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', now())", $edit['accountcode'], $edit['hardwareid'], strtoupper($edit['mac4']), strtoupper($edit['mac5']), strtoupper($edit['mac6']), $edit['serialnumber'], $edit['comment']);
 
 drupal_set_message(t('New hardware added'));
 
@@ -758,7 +760,7 @@ drupal_set_message(t('New hardware added'));
 
 if (arg(2) == 'change'){ // START CHECK IF HARDWARECHANGE
 
-db_query("UPDATE asthardware SET uid = '%s', accountcode = '%s', secret = '%s', hardwaretype = '%s', hardwareid = '%s', mac_address = '%s', serialnumber = '%s', comment = '%s', name = '%s' WHERE id = '%s'", $edit['uid'], $edit['accountcode'], $edit['secret'], $edit['hardwaretype'], $edit['hardwareid'], $edit['mac_address'], $edit['serialnumber'], $edit['comment'], $edit['name'], arg(3));
+db_query("UPDATE asthardware SET accountcode = '%s', hardwareid = '%s',mac4='%s',mac5='%s',mac6='%s', serialnumber = '%s', comment = '%s' WHERE id = '%s'", $edit['accountcode'], $edit['hardwareid'], strtoupper($edit['mac4']), strtoupper($edit['mac5']), strtoupper($edit['mac6']), $edit['serialnumber'], $edit['comment'], arg(3));
 
 drupal_set_message(t('Hardware changed'));
 
@@ -787,9 +789,17 @@ if (arg(2) == 'create'){ // START CHECK IF HARDWARECREATE
 
 } // END CHECK IF HARDWARECREATE
 
+$sql    = db_query("select hid, hardware, mac1,mac2,mac3 from asthardwareid");
+$hardwareidlist = array();
+while ($item = db_fetch_object($sql)) {
+	array_push2($hardwareidlist, $item->hardware." (".$item->mac1.'-'.$item->mac2.'-'.$item->mac3.")", $item->hid);
+}
+
 if (arg(2) == 'change'){ // START CHECK IF HARDWARECHANGE
 
-$sql = db_query("SELECT id, uid, accountcode, secret, hardwaretype, hardwareid, mac_address, serialnumber, comment, name, date_created FROM asthardware WHERE id = '%s'", arg(3));
+$sql = db_query("SELECT id, ac.uid, us.name, hw.accountcode, ac.secret, hw.hardwareid, hw.mac4,hw.mac5,hw.mac6, 
+serialnumber, hw.comment, hw.date_created FROM asthardware hw, pbx_users us, astaccount ac 
+WHERE ac.uid = us.uid and hw.accountcode = ac.accountcode and id = '%s'", arg(3));
 $sqlout = db_fetch_object($sql);
 
 	$uid = $sqlout->uid;
@@ -797,46 +807,38 @@ $sqlout = db_fetch_object($sql);
 	$secret = $sqlout->secret;
 	$hardwaretype = $sqlout->hardwaretype;
 	$hardwareid = $sqlout->hardwareid;
-	$mac_address = $sqlout->mac_address;
+	$mac1 = $sqlout->mac1;
+	$mac2 = $sqlout->mac2;
+	$mac3 = $sqlout->mac3;
+	$mac4 = $sqlout->mac4;
+	$mac5 = $sqlout->mac5;
+	$mac6 = $sqlout->mac6;
 	$serialnumber = $sqlout->serialnumber;
 	$comment = $sqlout->comment;
 	$name = $sqlout->name;
 
+	$sql2 = db_query("select hid, hardware, mac1,mac2,mac3 from asthardwareid where hid = ".$hardwareid);
+	$sqlmac = db_fetch_object($sql2);
+	$group .= "User/Owner of this hardware: <b>".$sqlout->uid." - ".$sqlout->name."</b><br>";
+
 }// END CHECK IF HARDWARECHANGE
 
-	$sql = db_query("select name, uid from {users}");
-
-	$users = array();
-
-	while ($items = db_fetch_object($sql)) {
-		array_push2($users, $items->uid.' '.$items->name, $items->uid);
-	}
-
-
-	$sql = db_query("select hid, hardware from asthardwareid");
-
-	$hardwareidlist = array();
-
-	while ($item = db_fetch_object($sql)) {
-		array_push2($hardwareidlist, $item->hardware, $item->hid);
-	}
-
-
-	$group .= form_select(t('User/Owner of this hardware'), 'uid', $uid, $users);
 	$group .= form_textfield(t('Accountcode'), 'accountcode', $accountcode, 30, 100);
-	$group .= form_textfield(t('Secret'), 'secret', $secret, 30, 100);
-	$group .= form_textfield(t('Hardwaretype'), 'hardwaretype', $hardwaretype, 30, 100);
+//	$group .= form_textfield(t('Secret'), 'secret', $secret, 30, 100);
+//	$group .= form_textfield(t('Hardwaretype'), 'hardwaretype', $hardwaretype, 30, 100);
 
-	$group .= form_select(t("HardwareID"), "hardwareid", $hardwareid, $hardwareidlist);
+	$group .= form_select(t("Hardware"), "hardwareid", $hardwareid, $hardwareidlist);
+	
+$group .= '<div class="form-item">
+<label for="edit-mac">Equipment Mac Address:</label><br>'.$sqlmac->mac1.'-'.$sqlmac->mac2.'-'.$sqlmac->mac3.'
+<input maxlength="2" class="form-text" name="edit[mac4]" id="edit-mac4" size="2" value="'.$mac4.'" type="text">
+<input maxlength="2" class="form-text" name="edit[mac5]" id="edit-mac5" size="2" value="'.$mac5.'" type="text">
+<input maxlength="2" class="form-text" name="edit[mac6]" id="edit-mac6" size="2" value="'.$mac6.'" type="text">
 
-	$group .= form_textfield(t('Mac Address'), 'mac_address', $mac_address, 30, 100);
-	$group .= form_textfield(t('Serialnumber'), 'serialnumber', $serialnumber, 30, 100);
-	$group .= form_textfield(t('Comment'), 'comment', $comment, 30, 100);
-	$group .= form_textfield(t('Name'), 'name', $name, 30, 100);
+</div>';
 
-
-
-
+	$group .= form_textfield(t('Serialnumber'), 'serialnumber', $serialnumber, 50, 100);
+	$group .= form_textfield(t('Comment'), 'comment', $comment, 100, 100);
 
 
 if (arg(2) == 'create'){
@@ -1049,16 +1051,28 @@ function page_astadmin_hardwareidlist_list() {
 	// declares the table header
 	$header = array();
 	$header[] = array('data' => t('Hardware'));
+	$header[] = array('data' => t('Mac Address Start'));
 	$header[] = array('data' => t('Comment'));
 	$header[] = array('data' => t('Operations'));
 
 	$categories = page_astadmin_hardwareidlist_get_categories();
 	$rows = array();
 	foreach ($categories as $key => $value) {
-		$sql = db_fetch_object(db_query("SELECT comment FROM asthardwareid WHERE hid = '%d'", $key));
+		$sql = db_fetch_object(db_query("SELECT hardware,comment, mac1 maca,mac2 macb,mac3 macc FROM asthardwareid WHERE hid = '%d'", $key));
+
+// The Column names mac1 is not working. Have to use maca
+
+$test = $sql->$mac1;
+$group ='<div class="form-item">
+<input maxlength="2" class="form-text" name="edit[mac1]['.$key.']" id="edit-mac1-'.$key.'" size="2" value="'.$sql->maca.'" type="text">
+<input maxlength="2" class="form-text" name="edit[mac2]['.$key.']" id="edit-mac2-'.$key.'" size="2" value="'.$sql->macb.'" type="text">
+<input maxlength="2" class="form-text" name="edit[mac3]['.$key.']" id="edit-mac3-'.$key.'" size="2" value="'.$sql->macc.'" type="text">
+</div>';
+
 		$rows[] = array(
-				form_textfield('', 'hardware]['. $key, $value, 40, 100),
-				form_textfield('', 'comment]['. $key, $sql->comment, 40, 100),
+				form_textfield('', 'hardware]['. $key, $value, 30, 100),
+				$group,
+				form_textfield('', 'comment]['. $key, $sql->comment, 30, 100),
 				l(t('delete'), 'astbilladm/hardware/idlist/delete/'. urlencode($key)));
 	}
 
@@ -1073,7 +1087,7 @@ function page_astadmin_hardwareidlist_get_categories() {
 	global $user;
 	static $contact_dir_categories;
 	if ( !isset($contact_dir_categories) ) {
-		$result = db_query('SELECT hid, hardware, comment FROM asthardwareid ORDER BY hardware');
+		$result = db_query('SELECT hid, hardware, mac1 maca, mac2 macb, mac3 macc FROM asthardwareid ORDER BY hardware');
 		while ($field = db_fetch_object($result)) {
 			$contact_dir_categories[$field->hid] = $field->hardware;
 		}    
@@ -1148,11 +1162,14 @@ function page_astadmin_hardwareidlist_update($edit) {
 		foreach ($categories as $key => $value) {
 			$hardware = $edit['hardware'][$key];
 			$comment = $edit['comment'][$key];
+			$maca = strtoupper($edit['mac1'][$key]);
+			$macb = strtoupper($edit['mac2'][$key]);
+			$macc = strtoupper($edit['mac3'][$key]);
 			if ( empty($hardware) ) {
 				$hardware = $value;
 			}
 			if ( $hardware && $key ) {
-				db_query("UPDATE asthardwareid SET hardware = '%s', comment = '%s' WHERE hid = %d", $hardware, $comment, $key);
+				db_query("UPDATE asthardwareid SET hardware='%s',comment='%s',mac1='%s',mac2='%s',mac3='%s' WHERE hid = %d",$hardware,$comment,$maca,$macb,$macc,$key);
 			}
 		}
 		drupal_set_message(t('The changes have been saved.'));
