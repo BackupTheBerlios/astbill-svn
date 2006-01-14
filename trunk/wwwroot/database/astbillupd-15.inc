@@ -39,6 +39,8 @@ $sql_updates = array(
   "2005-12-31" => "astbill_update_030",
   "2006-01-02" => "astbill_update_031",
   "2006-01-03" => "astbill_update_032",
+  "2006-01-06" => "astbill_update_033",
+  "2006-01-07" => "astbill_update_034",
 );
 
 function update_sql($sql) {
@@ -355,4 +357,54 @@ function astbill_update_032() {
   $ret[] = update_sql("ALTER TABLE `astuser` ADD `ipaddr` varchar(128) NULL default NULL AFTER `comment`");
   return $ret;
 }
+
+function astbill_update_033() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astaccount` CHANGE `restrictcid` `restrictcid` CHAR( 6 ) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL");
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac4` varchar(6) NULL default NULL AFTER `mac3`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac5` varchar(6) NULL default NULL AFTER `mac4`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac6` varchar(6) NULL default NULL AFTER `mac5`");
+
+  $ret[] = update_sql("ALTER TABLE `asthardwareid` ADD `mac1` varchar(6) NULL default NULL AFTER `hardware`");
+  $ret[] = update_sql("ALTER TABLE `asthardwareid` ADD `mac2` varchar(6) NULL default NULL AFTER `mac1`");
+  $ret[] = update_sql("ALTER TABLE `asthardwareid` ADD `mac3` varchar(6) NULL default NULL AFTER `mac2`");
+
+  $ret[] = update_sql("ALTER TABLE `asthardware` DROP `uid`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` DROP `name`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` DROP `mac_address`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` DROP `secret`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` DROP `hardwaretype`");
+
+  return $ret;
+}
+
+function astbill_update_034() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `invid` `invoiceno` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `db_prefix` varchar(40) NOT NULL AFTER `invoiceno`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `invoice_date` datetime NOT NULL AFTER `uid`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `due_date` datetime NOT NULL AFTER `invoice_date`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD INDEX `inv_db_prefix` ( `db_prefix` , `uid` , `invoiceno` )");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `freight` decimal(10,2) NOT NULL default 0 AFTER `currency`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `adminfee` decimal(10,2) NOT NULL default 0 AFTER `freight`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `invoicefee` decimal(10,2) NOT NULL default 0 AFTER `adminfee`");
+
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `phoneno` varchar(40) NULL AFTER `lineno`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `ptype` varchar(40) NULL AFTER `phoneno`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `productcode` varchar(40) NULL AFTER `ptype`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` CHANGE `title` `product` varchar(256) NULL");
+
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` CHANGE `invid` `invoiceno` INT( 11 ) UNSIGNED NOT NULL");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` CHANGE `price` `price` decimal(10,4) NOT NULL default 0");
+
+  $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `invoice_date` `invoice_date` date NOT NULL");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `due_date` `due_date` date NOT NULL");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `kid` varchar(128) NULL AFTER `due_date`");
+
+  return $ret;
+}
+
+
+
+
 ?>
