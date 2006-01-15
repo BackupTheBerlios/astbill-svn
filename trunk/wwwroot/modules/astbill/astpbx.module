@@ -44,22 +44,22 @@ function astpbx_menu($may_cache) {
   $items = array();
   $access = user_access('astpbx voip account');
   $items[] = array('path' => 'astpbx',
-                                  'title' => t('astpbx voip account'),
+                                  'title' => t('My Subscription'),
                                   'callback' => '_astpbx_all',
                                   'access' => $access);
                                  // 'type' => MENU_CALLBACK);
   $items[] = array('path' => 'astpbx/numbers',
-                                  'title' => t('Numbers Dialed'),
+                                  'title' => t('Calls'),
                                   'callback' => '_astpbx_numbers',
                                   'access' => user_access('astpbx numbers dialed'));
                                  // 'type' => MENU_DEFAULT_LOCAL_TASK);
   $items[] = array('path' => 'astpbx/numbers/ext',
-                                  'title' => t('Public Numbers'),
+                                  'title' => t('Telephone Calls'),
                                   //'callback' => '_astpbx_numbers',
                                   'access' => user_access('astpbx numbers dialed'),
                                   'type' => MENU_DEFAULT_LOCAL_TASK);
   $items[] = array('path' => 'astpbx/numbers/local',
-                                  'title' => t('VOIP Numbers'),
+                                  'title' => t('VOIP Calls'),
                                   'callback' => '_astpbx_numbersLocal',
                                   'access' => user_access('astpbx voip numbers dialed'),
                                   'type' => MENU_LOCAL_TASK);
@@ -78,7 +78,7 @@ function astpbx_menu($may_cache) {
     'access' => $access,
     'type' => MENU_CALLBACK);
 
-  $items[] = array('path' => 'astbilladm', 'title' => t('AstBill Admin'),
+  $items[] = array('path' => 'astbilladm', 'title' => t('Site Admin'),
     'callback' => '_astpbx_voipadmin',
     'access' => user_access('can use admin astpbx'),
     );
@@ -153,7 +153,7 @@ function _astpbx_all() {
     array('data' => t('Expenditure'), 'field' => 'sumprice'),
     array('data' => t('Payments'), 'field' => 'sumpaid'),
     array('data' => t('Calls'), 'field' => 'countcalls'),
-    array('data' => t('operations'), 'colspan' => 2)
+    array('data' => t('Operations'), 'colspan' => 2)
 	
   );
   $sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,startingcredit,countcalls FROM asvaccount2 
@@ -176,7 +176,7 @@ function _astpbx_all() {
 		array('data' => $res->countcalls, 'align' => 'right'),
     // '&nbsp;&nbsp;'.l(t('View'), 'astpbx/account/'.$res->accountcode, null),
 	'&nbsp;&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.$sql->value.'"><img border="0" src="files/astar/topup.gif"></a>'
+	'&nbsp;&nbsp;<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>'
 	);
   }
 
@@ -229,16 +229,16 @@ if (!user_access('can use admin astpbx')){
     array('data' => t('Duration hh:mm:ss'), 'field' => 'billtime'),
     array('data' => t('Price Rate/min'), 'field' => 'pricerate'),
     array('data' => t('Charge'), 'field' => 'price')
-    //array('data' => t('operations'), 'colspan' => 2)
+    //array('data' => t('Operations'), 'colspan' => 2)
   );
-  $sql = 'select date_created,datec,callednum,billtime, billtime2,pricerate,price from asvbill where accountcode = '. db_escape_string($account). tablesort_sql($header);
+  $sql = 'select UNIX_TIMESTAMP(date_created) datec,callednum,billtime, billtime2,pricerate,price from asvbill where accountcode = '. db_escape_string($account). tablesort_sql($header);
   $sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
   $result = pager_query($sql, $maxline, 0, $sqlCount);
   //$result = pager_query($sql, 10);
 
   while ($res = db_fetch_object($result)) {
    
-	$rows[] = array($res->datec.'&nbsp;&nbsp;&nbsp;',$res->callednum.'&nbsp;&nbsp;&nbsp;', 
+	$rows[] = array(format_date($res->datec,"custom","Y-m-d H:i:s").'&nbsp;&nbsp;&nbsp;',$res->callednum.'&nbsp;&nbsp;&nbsp;', 
 	array('data' => $res->billtime2, 'align' => 'right'), array('data' => $res->pricerate, 'align' => 'right'), 
 	array('data' => $res->price, 'align' => 'right'));
   }
@@ -335,7 +335,7 @@ function _astpbx_voipadmin_list($value) {
     array('data' => t('Expenditure')),
     array('data' => t('Payments')),
     array('data' => t('Calls')),
-    array('data' => t('operations'), 'colspan' => 4)
+    array('data' => t('Operations'), 'colspan' => 4)
 	
   );
  // $sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,countcalls FROM asvaccount2 
@@ -382,7 +382,7 @@ function _astpbx_voipadmin_list($value) {
 		array('data' => $countcalls->countcalls.'&nbsp;&nbsp;', 'align' => 'right'), // Calls
 	'&nbsp;&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
 	'&nbsp;&nbsp;&nbsp;<a href="'.url('astbilladm/editaccount/'.$res->accountcode).'"><img border="0" src="files/astar/edit.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.$sql->value.'"><img border="0" src="files/astar/topup.gif"></a>',
+	'&nbsp;&nbsp;<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>',
 	'&nbsp;&nbsp;<a href="'.url('astbilladm/removeaccount/'.$res->uid.'/'.$res->accountcode).'">'.t('Remove').'</a>'
 	
 	//	array('data' => $res->accountcode, 'align' => 'right')
@@ -429,7 +429,7 @@ function _admin_astpbx_OLD() {
     array('data' => t('Expenditure'), 'field' => 'sumprice'),
     array('data' => t('Payments'), 'field' => 'sumpaid'),
     array('data' => t('Calls'), 'field' => 'countcalls'),
-    array('data' => t('operations'), 'colspan' => 2)
+    array('data' => t('Operations'), 'colspan' => 2)
 	
   );
   $sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,countcalls FROM asvaccount2 
@@ -452,7 +452,7 @@ function _admin_astpbx_OLD() {
 		array('data' => $res->countcalls, 'align' => 'right'),
     // '&nbsp;&nbsp;'.l(t('View'), 'astpbx/account/'.$res->accountcode, null),
 	'&nbsp;&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.$sql->value.'"><img border="0" src="files/astar/topup.gif"></a>'
+	'&nbsp;&nbsp;<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>'
 	);
   }
 
@@ -590,7 +590,7 @@ function PostCall(callnum)
 	} catch (e) {
 	  // ignore
 	}
-	postq = "q=" + callnum + "/' . $user->uid . '&sec=9dkd8d76dj&tt=" + Math.random();
+	postq = "q=" + callnum + "/' . $user->uid . '/'.$db_prefix.'&sec=9dkd8d76dj&tt=" + Math.random();
 	p.open("GET", "ajax/postcalls.php?" + postq);
 	// postq = "num=" + callnum + "&uid=' . $user->uid . '&sec=9dkd8d76dj&tt=" + Math.random();
 	// p.open("GET", "/cgi2-bin/post2calls.pl?" + postq);
@@ -637,7 +637,7 @@ function rand()
     array('data' => t('No Calls'), 'field' => 'CountOfcallednum', 'sort' => 'asc'),
     array('data' => t('Number Dialed'), 'field' => 'callednum'),
     array('data' => t('Name'), 'field' => 'name'),
-    array('data' => t('operations'), 'colspan' => 2)
+    array('data' => t('Operations'), 'colspan' => 2)
 	
   );
 
@@ -847,7 +847,7 @@ function rand()
     array('data' => t('No Calls'), 'field' => 'CountOfcallednum', 'sort' => 'asc'),
     array('data' => t('Number Dialed'), 'field' => 'callednum'),
     array('data' => t('Name'), 'field' => 'name'),
-    array('data' => t('operations'), 'colspan' => 2)
+    array('data' => t('Operations'), 'colspan' => 2)
 	
   );
 
@@ -1094,7 +1094,7 @@ if (arg(1) == 'editaccount') {
   if (arg(1) == 'createaccount') {
 
 	  if (empty($edit['mailboxemail'])) {
-		  $sql = db_fetch_array(db_query("select mail FROM ".$db_prefix."users WHERE uid = %s", $edit['account']));
+		  $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $edit['account']));
 		  $mailboxemail = $sql->mail;
 	  }
 
@@ -1131,7 +1131,7 @@ if (arg(1) == 'editaccount') {
 
 
   if(empty($edit['mailboxemail'])){
-  $sql = db_fetch_array(db_query("select mail FROM ".$db_prefix."users WHERE uid = %s", $edit['uid']));
+  $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $edit['uid']));
   $mailboxemail = $sql['mail'];
   } else {
 	  $mailboxemail = $edit['mailboxemail'];
@@ -1146,7 +1146,7 @@ if (arg(1) == 'editaccount') {
   if ($edit['nat'] == 'route') {$nat = 3;}
   
   
-  $getastuser = db_fetch_array(db_query("select brand, countryprefix, callbackto FROM astuser WHERE uid = %s", $edit['uid']));
+  $getastuser = db_fetch_array(db_query("select brand, countryprefix, callbackto FROM astuser WHERE uid = %s and db_prefix ='".$db_prefix."'", $edit['uid']));
   
   $accountcode = arg(2);
   
@@ -1171,7 +1171,7 @@ $getastuser['callbackto'] = NULL;
 $accountcode = NULL;
 $mailboxemail = NULL;
 
-$sql2 = db_query("select name, uid from ".$db_prefix."users");
+$sql2 = db_query("select name, uid from {users}");
 
 $users = array();
 
@@ -1200,7 +1200,7 @@ while ($item = db_fetch_object($sql)) {
 }
 
 
-$sql = db_query("select name from astbrand");
+$sql = db_query("select name from astplans");
   
 $brandlist = array();
 
@@ -1239,7 +1239,7 @@ while ($item = db_fetch_object($sql)) {
   $group .= form_textfield(t("Context"), "context", $edit['context'], 30, 30, null, null, false);
   $group .= '<BR>';
   $group .= t('<FONT size=1><B>Note: These are user wide settings:</B></FONT>');
-  $group .= form_select(t("Brand"), 'brand', $getastuser['brand'], $brandlist);
+  $group .= form_select(t("Rate Plan"), 'brand', $getastuser['brand'], $brandlist);
   $group .= form_textfield(t("Country Prefix"), "countryprefix", $getastuser['countryprefix'], 25, 25, null, null, false);
   $group .= form_textfield(t("Call Back To"), "callbackto", $getastuser['callbackto'], 25, 25, null, null, false);
   }
@@ -1295,12 +1295,46 @@ function astpbx_user($type, &$edit, &$user, $category = NULL) {
       return profile_form_profile($edit, $user, $category);
     case 'update':    */
     case 'insert':
-		$sql = db_query ("CALL astCreateAccount(@a,$user->uid,'IAX')");
+
+// This is the section for Default Values.
+//  $start = variable_get("update_start", 0);
+//  variable_set("update_start", $date);
+// INSERT INTO `pbx_variable` (`name`, `value`) VALUES ('AstBill Brand', 's:6:"Norge3";');
+// INSERT INTO `pbx_variable` (`name`, `value`) VALUES ('AstBill CountryPrefix', 'i:49;');
+// INSERT INTO `pbx_variable` (`name`, `value`) VALUES ('AstBill Tech', 's:3:"SIP";');
+
+//	   	variable_set("AstBill CountryPrefix",47)."  ";
+//	    variable_set("AstBill Brand","Future")."  ";
+//	    variable_set("AstBill Tech","SIP");
+
+//		$strtemp = variable_get("AstBill CountryPrefix",0)."  ";
+//	    $strtemp .= variable_get("AstBill Brand",0)."  ";
+//	    $strtemp .= variable_get("AstBill Tech",0);
+	//	$sql = db_query ("insert into test (subject) values ('$strtemp')");
+
+//	    $sql = db_query ("CALL astCreateAccount(@a,$user->uid,'IAX')");
+		
+		db_query("CALL astCreateAcc2(@a,%d,'%s','%s','%s','%d')",$user->uid,variable_get("AstBill Tech", 'SIP'),$db_prefix,variable_get("AstBill Brand", 'default'),variable_get("AstBill CountryPrefix", '44'));
+
 		$sql2 = db_query("select @a accountcode");
 		$result = db_fetch_object($sql2);
 
+$sql = db_fetch_object(db_query("SELECT name FROM {users} WHERE uid = '%s'", $user->uid));
+
+$lastaccount = db_fetch_object(db_query("SELECT lastaccount,comment from astuser WHERE uid='%s' and db_prefix ='".$db_prefix."'", $user->uid));
+$callerid = $sql->name.' <'.$lastaccount->lastaccount.'>';
+
+db_query("UPDATE astaccount SET language = '%s', forwardto = '%s' , callerid = '%s' , accountname = '%s' WHERE accountcode = '%s'",
+$edit['language'], $edit['forwardto'],$callerid,$edit['accountname'],$lastaccount->lastaccount);
+
+db_query("UPDATE astuser SET brand = '%s', ipaddr = '".$_SERVER['REMOTE_ADDR']."' WHERE uid='%s' and db_prefix ='".$db_prefix."'", variable_get("AstBill Brand", 'default'), $user->uid);   
+
 		//   drupal_set_message(t('New Account Created: '. $result->accountcode));
-		astpbx_sendemail("ASTARREG", $user->mail, $result->accountcode);
+// variable_set("AstBill Sendemail",1);
+if (variable_get('AstBill Sendemail', 1)) {
+	// drupal_set_message("astpbx_sendemail");
+	astpbx_sendemail($db_prefix."ASTARREG", $user->mail, $result->accountcode,$user->name,$lastaccount->comment);
+}
 		// $sql = db_query ("insert into test (subject) values ('Drupal $db_prefix  $user->uid')");
 		// $sql = db_query ("insert into test (subject) values ('$item->id')");
 
@@ -1370,7 +1404,7 @@ function page_astpbx_emailme() {
 
 		default:
 			$uid = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", arg(2)));
-			$email = db_fetch_object(db_query("SELECT mail FROM ".$db_prefix."users WHERE uid = '%s'", $uid->uid));
+			$email = db_fetch_object(db_query("SELECT mail FROM {users} WHERE uid = '%s'", $uid->uid));
 			$group .= 'Please check that the email bellow is correct before confirming.<BR>';
 			$group .= form_textfield(t('Email:'), 'email', $email->mail, 30, 100);
 		
@@ -1386,7 +1420,7 @@ function page_astpbx_emailme() {
 	_astentry_printtheme_best($output, $account, $title);	
 }
 
-function astpbx_sendemail($EmailText, $tomail, $accountcode) {
+function astpbx_sendemail($EmailText, $tomail, $accountcode, $wwwuser, $wwwpw) {
    
 	$sql = db_query("select EmailText, Subject, BodyText, SenderEmail, bcc from astemailtext where EmailText = '$EmailText'");
 	$result = db_fetch_object($sql);
@@ -1404,6 +1438,8 @@ function astpbx_sendemail($EmailText, $tomail, $accountcode) {
 
 	$message = str_replace("%username%", $accountcode, $message);
 	$message = str_replace("%password%", $result2->secret, $message);
+	$message = str_replace("%wwwuser%", $wwwuser, $message);
+	$message = str_replace("%wwwpassword%", $wwwpw, $message);
 
 	// In case any of our lines are larger than 70 characters, we should use wordwrap()
 	$message = wordwrap($message, 70);

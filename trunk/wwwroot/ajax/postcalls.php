@@ -37,9 +37,9 @@ mysql_connect($dbhost,$dbuser,$dbpass);
 $pass = 1;
 $accountcode = arg(0); // Number to call
 $uid = arg(1); // User doing the calling
+$dbfix = arg(2); // Database Prefix doing the calling
 
-
-$callbackto = mysql_fetch_object(mysql_query("SELECT callbackto FROM astuser WHERE uid = '".$uid."'"));
+$callbackto = mysql_fetch_object(mysql_query("SELECT callbackto FROM astuser WHERE uid = '".$uid."' and db_prefix ='".$dbfix."'"));
 $tech = mysql_fetch_object(mysql_query("SELECT tech FROM astaccount WHERE accountcode = '".$callbackto->callbackto."'"));
 $callid = mysql_fetch_object(mysql_query("SELECT callerid FROM astaccount WHERE accountcode = '".$callbackto->callbackto."'"));
 
@@ -56,7 +56,10 @@ if (empty($callid->callerid)){
 	$callid->callerid = 'Unknown';
 }
 	
-$channel = $tech->tech.'2/'.$callbackto->callbackto;
+// $channel = $tech->tech.'2/'.$callbackto->callbackto;
+if ($tech->tech == 'IAX') { $tech->tech = 'IAX2'; }
+$channel = $tech->tech.'/'.$callbackto->callbackto;
+
 $callerid = $callid->callerid;
 $maxretries = '5';
 $retrytime = '300';

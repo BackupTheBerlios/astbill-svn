@@ -265,13 +265,13 @@ function _astroute_export() {
 		case t('Export'):
 		
 		
-		$list = 'countrycode,routename,pattern,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk
+		$list = 'countrycode,pattern,routename,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk
 ';
 
-		$sqlout = db_query("SELECT countrycode,routename,pattern,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk FROM astroute");
+		$sqlout = db_query("SELECT countrycode,pattern,routename,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk FROM astroute order by countrycode, pattern");
 		
 		while ($sql = db_fetch_object($sqlout)) {
-			$list .= $sql->countrycode.','.$sql->routename.','.$sql->pattern.','.$sql->costplan.','.$sql->connectcharge.','.$sql->includedseconds.','.$sql->billincrement.','.$sql->minimumcost.','.$sql->cost.','.$sql->trunk.'
+			$list .= $sql->countrycode.','.$sql->pattern.','.$sql->routename.','.$sql->costplan.','.$sql->connectcharge.','.$sql->includedseconds.','.$sql->billincrement.','.$sql->minimumcost.','.$sql->cost.','.$sql->trunk.'
 ';
 		}
 		$filename = 'RouteList_ALL.csv';
@@ -305,7 +305,7 @@ function _astroute_import() {
 	$clear = $_POST["clear"]['0'];
 	
 	$output .= '
-	<form enctype="multipart/form-data" action="astbilladm/route/import" method="POST">
+	<form enctype="multipart/form-data" action='.url("astbilladm/route/import").' method="POST">
     	<input type="hidden" name="MAX_FILE_SIZE" value="0" />
     	Send this file: <input name="import" type="file" /><BR>
 	<BR>
@@ -847,9 +847,9 @@ function _astpriceedit_export() {
 		$list = 'countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand
 ';
 		if ($edit['brand'] == 'ALL') {
-			$sqlout = db_query("SELECT countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand FROM astpricelist");
+			$sqlout = db_query("SELECT countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand FROM astpricelist order by brand,countrycode,pattern");
 		} else {
-			$sqlout = db_query("SELECT countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand FROM astpricelist WHERE brand = '%s'", $edit['brand']);
+			$sqlout = db_query("SELECT countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand FROM astpricelist WHERE brand = '%s'  order by countrycode,pattern", $edit['brand']);
 		}
 		
 		while ($sql = db_fetch_object($sqlout)) {
@@ -868,14 +868,15 @@ function _astpriceedit_export() {
 	break;
 
         default:
-		$sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+		// $sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+		$sql = db_query("SELECT name brand FROM astplans order by name");
 		$brandlist = array('ALL' => 'ALL');
 		
 		while ($fetchit = db_fetch_object($sql)) {
 			array_push2($brandlist, $fetchit->brand, $fetchit->brand);
 		}
 		
-		$group .= form_select(t('Select brand'), "brand", 'ALL', $brandlist);
+		$group .= form_select(t('Select Rate Plan'), "brand", 'ALL', $brandlist);
 		$group .= form_submit(t('Export'));
 
 		$output = form($group);
@@ -894,18 +895,19 @@ function _astpriceedit_import() {
 	$clear = $_POST["clear"]['0'];
 	
 	
-	$sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	// $sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	$sql = db_query("SELECT name brand FROM astplans order by name");
 	$brandlist = array('ALL' => 'ALL');
 	while ($fetchit = db_fetch_object($sql)) {
 	   array_push2($brandlist, $fetchit->brand, $fetchit->brand);
 	}
 	
 	$output .= '
-	<form enctype="multipart/form-data" action="astbilladm/pricelist/import" method="POST">
+	<form enctype="multipart/form-data" action='.url("astbilladm/pricelist/import").' method="POST">
     	<input type="hidden" name="MAX_FILE_SIZE" value="0" />
     	Send this file: <input name="import" type="file" /><BR>
 	<BR>
-	<input name="clear[]" value="1" type="checkbox"> Check this and select what brand you want to delete before importing.<BR>'.
+	<input name="clear[]" value="1" type="checkbox"> Check this and select what Rate Plan you want to delete before importing.<BR>'.
 	form_select(NULL, "brand", 'ALL', $brandlist).'
     	<input type="submit" value="Send File" /><BR>
     	</form>
@@ -1205,7 +1207,7 @@ $maxline = 40;
     
   while ($item = db_fetch_object($sql)) {
 	  
-	  $sql2 = db_fetch_object(db_query("select currency FROM astbrand WHERE name='%s'", $value2));
+	  $sql2 = db_fetch_object(db_query("select currency FROM astplans WHERE name='%s'", $value2));
 	  // $cur = astpricelist_currency($sql2->currency);
    	  $cur = db_fetch_object(db_query("select ratetabledesc FROM astcurrency WHERE currency='%s'", $sql2->currency));
 
@@ -1257,13 +1259,14 @@ if ($where == 'edit') {
 	
 	$valuessql = db_fetch_object(db_query("SELECT id, pattern, name, connectcharge, includedseconds, minimumprice, price, brand FROM astpricelist WHERE id = '%s'", $value));
 
-	$sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	// $sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	$sql = db_query("SELECT name brand FROM astplans order by name");
 	$brandlist = array();
 	while ($model = db_fetch_object($sql)) {
 		array_push2($brandlist, $model->brand, $model->brand);
 	}
 	
-	$group .= form_select(t("Select Brand"), "brand", $valuessql->brand, $brandlist);
+	$group .= form_select(t("Select Rate Plan"), "brand", $valuessql->brand, $brandlist);
 	$group .= form_textfield(t('Pattern'), 'pattern', $valuessql->pattern, 30, 100);
 	$group .= form_textfield(t('Name'), 'name', $valuessql->name, 30, 100);
 	$group .= form_textfield(t('Connection Charge'), 'connectcharge', $valuessql->connectcharge, 30, 100);
@@ -1298,7 +1301,8 @@ if ($where == 'create') {
 		array_push2($countryout, $model->country, $model->countrycode);
 	}
 
-	$sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	// $sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	$sql = db_query("SELECT name brand FROM astplans order by name");
 	$brandlist = array();
 	while ($model = db_fetch_object($sql)) {
 		array_push2($brandlist, $model->brand, $model->brand);
@@ -1313,7 +1317,7 @@ if ($where == 'create') {
 	$cost = '0.0000';
 	
 	$group .= form_select(t("Select Country"), "countrycode", $countrydefault, $countryout);
-	$group .= form_select(t("Select Brand"), "brand", $branddefault, $brandlist);
+	$group .= form_select(t("Select Rate Plan"), "brand", $branddefault, $brandlist);
 	$group .= form_textfield(t('Pattern'), 'pattern', $countrydefault, 30, 100);
 	
 	$group .= form_textfield(t('Name'), 'name', $name->country, 30, 100);
@@ -1344,7 +1348,8 @@ if (empty($where)) {
 		array_push2($countryout, $model->country, $model->countrycode);
 	}
 
-	$brandlist = db_query("SELECT DISTINCT brand FROM astpricelist");
+	// $brandlist = db_query("SELECT DISTINCT brand FROM astpricelist");
+	$brandlist = db_query("SELECT name brand FROM astplans order by name");
 	$brandout = array();
 	
 	while ($model = db_fetch_object($brandlist)) {
@@ -1367,7 +1372,7 @@ if (empty($where)) {
 	}
 	
 	
-	$group .= form_select(t("Select Brand"), "brand", $defaultbrand, $brandout);
+	$group .= form_select(t("Select Rate Plan"), "brand", $defaultbrand, $brandout);
 	$group .= form_select(t("Select Country"), "countrycode", $defaultcountry, $countryout);
 	$group .= form_submit(t('Go'));
 	$group .= form_submit(t('Add'));

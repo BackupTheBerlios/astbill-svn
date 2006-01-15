@@ -36,7 +36,7 @@ function astadmin_help($section='') {
 
 function astadmin_menu($may_cache) {
   $items = array();
-  $access = user_access('can use admin astbill reseller');
+  $access = user_access('can use AstBill Admin');
   $accessrt = user_access('astadmin asterisk');
   $accesspay = user_access('astadmin payment');
   $items[] = array('path' => 'astbilladm',
@@ -136,7 +136,12 @@ function astadmin_menu($may_cache) {
       'access' => $access,
       'type' => MENU_CALLBACK);
 
- 	$items[] = array('path' => 'astbilladm/listcdr', 'title' => t('Call Data Record'),
+	$items[] = array('path' => 'astbilladm/realtime/friends/assign', 'title' => t('Assign DID'),
+      'callback' => 'page_astadmin_friendassign',
+      'access' => user_access('astadmin use Assign DID'),
+      'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astbilladm/listcdr', 'title' => t('Call Data Record'),
       'callback' => 'page_astadmin_listcdr',
       'access' => $access);
      // 'type' => MENU_CALLBACK);
@@ -189,7 +194,7 @@ function astadmin_menu($may_cache) {
 * or administrate the module:
 */
 function astadmin_perm() {
-	return array('can use admin astbill reseller','astadmin asterisk','astadmin accesslog','astadmin payment');
+	return array('can use AstBill Admin','astadmin asterisk','astadmin accesslog','astadmin payment','astadmin use Assign DID');
 } // function astentry_perm()
 
 
@@ -226,7 +231,7 @@ function page_astadmin_friends() {
     array('data' => t('Type')),
     array('data' => t('Publicnumber')),
     array('data' => t('Username')),
-    array('data' => t('Operations'), 'colspan' => 2)	
+    array('data' => t('Operations'), 'colspan' => 3)	
   );
 
 //$result = db_query("SELECT uid, accountcode, username, publicnumber, tech, type, secret, forwardto, fromuser, authuser, fromdomain, nat, qualify, host, port, callerid, context, dtmfmode, insecure, canreinvite, disallow, allow, restrictid, comment, active, trunkpath, date_created, timestamp FROM asv_friend");
@@ -244,7 +249,8 @@ $result = pager_query($sql, $maxline);
 	        $item->publicnumber.'&nbsp;&nbsp;',
 		$item->username.'&nbsp;&nbsp;',
 		'<A HREF="'.url('astbilladm/realtime/friends/change/'.$item->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>&nbsp;&nbsp;',
-		'<A HREF="'.url('astbilladm/realtime/friends/remove/'.$item->accountcode).'/'.$item->accountcode.'">'.t('remove').'</A>'
+		'<A HREF="'.url('astbilladm/realtime/friends/assign/'.$item->accountcode).'">'.t('Assign').'</A>&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/realtime/friends/remove/'.$item->accountcode).'/'.$item->accountcode.'">'.t('Remove').'</A>'
 		);
   }
 
@@ -307,6 +313,43 @@ $account = $user->uid;
 _astadmin_printtheme_best($output, $account, $title);
 }
 
+function page_astadmin_friendassign() {
+  global $user;
+  global $db_prefix; 
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(2))) {
+    case t('Assign'):
+		$sqlout = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'",$edit['assignto']));
+
+		db_query("update astaccount set forwardto = '%s', uid = '%d'  WHERE accountcode = '%s' and db_prefix = '".$db_prefix."'",$edit['assignto'],$sqlout->uid, arg(4));
+
+		db_query("update astaccount set forcecallerid = '%s' WHERE accountcode = '%s' and db_prefix = '".$db_prefix."'",arg(4),$edit['assignto']);
+
+
+// $sqlout->uid
+
+		drupal_set_message(t('Account').' '.arg(4).' '.t('Assigned to').' '.$edit['assignto'].t(' userid: ').$sqlout->uid);
+        // astadmin_friends_save($edit,arg(4));
+        drupal_goto("astbilladm/realtime/friends");
+      break;
+  	// case t('Back'):
+		//drupal_goto("astbilladm/realtime/friends");
+    default:
+		$sql = db_query("SELECT serverid, uid, username, forwardto, fromuser, authuser, fromdomain, host, port, callerid, context, disallow, allow, comment, type, publicnumber, secret, nat, qualify, dtmfmode, insecure, canreinvite, restrictid, active, tech FROM asv_friend WHERE accountcode = '%s' and db_prefix = '".$db_prefix."'", arg(4));
+		$sqlout = db_fetch_object($sql);
+		$sql2 = db_query("select name, uid from {users}");
+
+		$group .= form_textfield(t("Assign to Accountcode"), "assignto", "", 40, 150, null, null, false);
+		$group .= form_submit(t('Assign'));
+		$output = form($group);
+	    $title = t('Assign').arg(4);
+		$account = $user->uid;
+	    _astadmin_printtheme_best($output, $account, $title);
+  }
+}
 
 function page_astadmin_friendscreate() {
   global $user;
@@ -460,6 +503,7 @@ if (arg(3) == 'change'){ // START CHECK IF FRIENDSCHANGE
 
 
 	$group .= form_select(t('User/Owner of this number'), 'account', $sqlout->uid, $users);
+	$group .= form_select(t('Tech'), 'tech', $sqlout->tech, array('IN-SIP' => 'SIP', 'IN-IAX' => 'IAX2', 'IN-ZAP' => 'ZAP'));
 	$group .= form_textfield(t("Publicnumber"), "publicnumber", $sqlout->publicnumber, 40, 150, null, null, false);
 	$group .= form_textfield(t("password"), "secret", $sqlout->secret, 40, 150, null, null, false);
 	$group .= form_textfield(t("Username"), "username", $sqlout->username, 40, 150, null, null, false);
@@ -488,7 +532,6 @@ if (arg(3) == 'change'){ // START CHECK IF FRIENDSCHANGE
 	$group .= form_select(t('Can reinvite'), 'canreinvite', $sqlout->canreinvite, array(null => 'Off', 'yes' => 'Yes', 'no' => 'No'));
 	$group .= form_select(t('RestrictID'), 'restrictid', $sqlout->restrictid, array(null => 'Off', 'yes' => 'Yes'));
 	$group .= form_select(t('Active'), 'active', $sqlout->active, array(0 => 'Not Active', 1 => 'Realtime', 5 => 'Static'));
-	$group .= form_select(t('Tech'), 'tech', $sqlout->tech, array('IN-SIP' => 'SIP', 'IN-IAX' => 'IAX2', 'IN-ZAP' => 'ZAP'));
 
 
 //publicnumber, secret, username, forwardto, fromuser, authuser, fromdomain, host, port, callerid, context, disallow, allow, comment, trunkpath, date_created
@@ -1168,7 +1211,7 @@ function page_astadmin_listcdr_form($value, $edit) {
   $output = '
 <form action="'.url('/astbilladm/listcdr').'" method="post">
 <div class="form-item">
-'.t('<B>Search for Accountcode&nbsp;&nbsp;</B>').'
+<B>'.t('Search for Accountcode').'&nbsp;&nbsp;</B>
 <input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
 <input type="submit" name="op" value="'.t('Go').'" />&#160;&#160;
 </div></form>
@@ -1226,8 +1269,9 @@ if (!empty($value)) {
 		$output .= t('<B>Dialstatus: </B>');
 		$output .= $res->dialstatus.'<BR>';
 		$output .= t('<B>Date Created: </B>');
-		$output .= $res->date_created.'   klj ';
-		$output .= $res->date_created.'jjj<BR>';
+		// $output .= $res->date_created.'<BR>';
+		$output .= format_date($res->dcreat,"custom","Y-m-d H:i:s").'<BR>';
+
 		$output .= '<BR>';
 		$output .= t('<B>Dialed Time: </B>');
 		$output .= $res->dialedtime.'<BR>';
@@ -1690,7 +1734,7 @@ function page_astadmin_payment_form($value, $edit) {
 $output = '
 <form action="'.url('/astbilladm/payment').'" method="post">
 <div class="form-item">
-<B>Search for Accountcode&nbsp;&nbsp;</B>
+<B>'.t('Search for Accountcode').'&nbsp;&nbsp;</B>
 <input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
 <input type="submit" name="op" value="'.('Go').'" />&#160;&#160;
 </div></form>
@@ -1944,7 +1988,7 @@ $sqlout = db_fetch_object($sql);
 
 	$value = db_fetch_object(db_query("SELECT value FROM astsystem WHERE name = 'AccountDropDown' and serverid = 'DEF'"));
 	
-	$sql = db_fetch_object(db_query("SELECT astbrand.currency from astuser, astbrand where astuser.brand = astbrand.name and astuser.uid = '%s'", $user->uid));
+	$sql = db_fetch_object(db_query("SELECT astplans.currency from astuser, astplans where astuser.brand = astplans.name and astuser.uid = '%s'", $user->uid));
   	$currency = $sql->currency;
 	
 	$group .= t('Currency is: ').'<B>'.$currency.'</B><BR><BR>';
@@ -2022,7 +2066,7 @@ function page_astadmin_credit_form($value, $edit) {
 $output = '
 <form action="'.url('/astbilladm/payment/credit').'" method="post">
 <div class="form-item">
-'.t('<B>Search for Accountcode').'&nbsp;&nbsp;</B>
+<B>'.t('Search for Accountcode').'&nbsp;&nbsp;</B>
 <input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
 <input type="submit" name="op" value="'.('Go').'" />&#160;&#160;
 </div></form>

@@ -146,13 +146,13 @@ function _astentry_all() {
   global $db_prefix; 
   $maxline = 40; // This is the number of records to display on a page
 
-  $output = t('<b>Hover over Account to view Accounts Password</b><br><br>');
+  $output = '<b>'.t('Hover over Account to view Accounts Password').'</b><br><br>';
 
   $header = array(
     array('data' => t('Account'), 'field' => 'accountcode', 'sort' => 'asc'),
     array('data' => t('Type'), 'field' => 'tech'),
     array('data' => t('Name')),
-    array('data' => t('<CENTER>Operations</CENTER>'), 'colspan' => 6)
+    array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 6)
 	
   );
 //  $sql = "SELECT accountcode, tech, secret, accountname, active FROM astaccount where uid ='".$user->uid."'". tablesort_sql($header);
@@ -169,7 +169,7 @@ $sql = "SELECT accountcode, tech, secret, accountname, active FROM astaccount wh
 	
 	$res->accountname.'&nbsp;&nbsp;&nbsp;', 
 	'&nbsp;&nbsp;&nbsp;<A HREF="'.url('astentry/swtech/'.$res->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
-	'&nbsp;&nbsp;<a href="'.$sql->value.'"><IMG BORDER="0" SRC="files/astar/topup.gif"></A>',
+	'&nbsp;&nbsp;<a href="'.$sql->value.$res->accountcode.'"><IMG BORDER="0" SRC="files/astar/topup.gif"></A>',
 	'<A HREF="'.url('astentry/voicemailchange/'.$res->accountcode).'">'.t('Voicemail').'</A>',
 	'&nbsp;&nbsp;<A HREF="'.url('astentry/dialplan/'.$res->accountcode).'">'.t('Dialplan').'</A>',
 	'&nbsp;&nbsp;<A HREF="'.url('astentry/emailme/'.$res->accountcode).'">'.t('Email account info').'</A>',
@@ -302,7 +302,7 @@ function astentry_form($edit = null) {
 
 
 // Uncomment this for SIP/IAX/VIR change radio menu ALSO LOOK IN ASTENTRY_SAVE FOR FURTHER UNCOMMENTING
-  $group = form_radios(t('Change account type.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => t('Virtual Account')));
+  $group = form_radios(t('Change account type'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => t('Virtual Account')));
 
  /* Dont Delete - This is in use in some implementations
   $group = form_radios(t('Change account type.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account', 3 => 'H323'));   */
@@ -317,13 +317,13 @@ function astentry_form($edit = null) {
   
   $group .= form_textfield(t("Password"), "secret", $edit['secret'], 30, 30, null, null, false);
 
-  $group .= form_textfield(t("Your Caller ID Example: My Name <9000><BR><FONT SIZE=1>Note: Please select the number you wish to be dialed back on</FONT>"), "callerid", $edit['callerid'], 80, 150, null, null, false);
+  $group .= form_textfield(t("Caller ID - Example: My Name <75000><BR><FONT SIZE=1>Note: Please select the number you wish to be dialed back on</FONT>"), "callerid", $edit['callerid'], 80, 150, null, null, false);
 
   $group .= form_select(t("Your Hardware"), "hardwareid", $edit['hardwareid'], $hardwareidlist);
 
   //$group .= '<B>Enable or Disable low balance warnings:</B>';
   $group .= form_textfield(t("Set warning balance"), "lowbalance", $edit['lowbalance'], 5, 150, null, null, false);
-  $group .= form_select(t("<FONT SIZE=1>Enable or Disable Warning Balance Email</FONT>"), "lowbalanceemail", $edit['lowbalanceemail'], array(0 => t('Disabled'), 1 => t('Activate')));
+  $group .= form_select('<FONT SIZE=1>'.t("Enable or Disable Warning Balance Email").'</FONT>', "lowbalanceemail", $edit['lowbalanceemail'], array(0 => t('Disabled'), 1 => t('Activate')));
 
   if(empty($edit['mailboxemail'])){
   $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $user->uid));
@@ -335,7 +335,7 @@ function astentry_form($edit = null) {
   $group .= form_textfield(t("Set notification email"), "mailboxemail", $mailboxemail, 30, 150, null, null, false);
 
  
-  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => t('Disabled'), 1 => t('Activate')));  
+  $group .= form_select(t("Set Account Status"), "active", $edit['active'], array(0 => t('Disabled'), 1 => t('Activate')));  
 
  /* Dont Delete - This is in use in some implementations
  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI'));   */
@@ -477,7 +477,9 @@ $callerid = $sql->name.' <'.$lastaccount->lastaccount.'>';
 db_query("UPDATE astaccount SET language = '%s', forwardto = '%s' , callerid = '%s' , accountname = '%s', active = '%s' WHERE accountcode = '%s'",
 $edit['language'], $edit['forwardto'],$callerid,$edit['accountname'],$edit['active'],$lastaccount->lastaccount);
 
-  drupal_set_message(t('The Account settings have been updated.'));
+/*  db_query("UPDATE astuser SET brand = '%s' WHERE uid='%s' and db_prefix ='".$db_prefix."'", variable_get("AstBill Brand", 'default'), $user->uid);    */
+
+  drupal_set_message(t('The New Account has been Created.'));
 }
 
 function astpbx_form($edit = null) {
@@ -623,12 +625,12 @@ function page_astentry_emailme() {
 		default:
 			$uid = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", arg(2)));
 			$email = db_fetch_object(db_query("SELECT mail FROM {users} WHERE uid = '%s'", $uid->uid));
-			$group .= 'Please check that the email bellow is correct before confirming.<BR>';
-			$group .= form_textfield(t('Email:'), 'email', $email->mail, 30, 100);
+			$group .= t('Please check that the email bellow is correct before confirming').'<BR>';
+			$group .= form_textfield(t('Email'), 'email', $email->mail, 30, 100);
 		
 			$group .= form_submit(t('Confirm'));
 			$group .= form_submit(t('Back'));
-			$title = 'Confirm';
+			$title = t('Confirm');
 
 	}
 	
@@ -1059,7 +1061,7 @@ function page_astentry_dialplan() {
     array('data' => t('Start Min')),
     array('data' => t('End Hour')),
     array('data' => t('End Min')),
-	array('data' => t('<CENTER>Operations</CENTER>'), 'colspan' => 2)
+	array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 2)
 	
   );
 
@@ -1263,6 +1265,7 @@ db_query("UPDATE astuser SET countryprefix = '%s', callbackto = '%s' WHERE uid =
 
 function astadvset_form($edit) {
   global $user;
+  global $db_prefix; 
   /*$group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'));
 //  $group = form_textfield(t('Title'), 'title', $edit['title'], 60, 128, null, null, true);
   $group .= form_textfield(t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
@@ -1275,32 +1278,34 @@ function astadvset_form($edit) {
   if ($edit['nat'] == 'route') {$nat = 3;}
   
   $uid = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", $edit['accountcode']));
-  $sql = db_fetch_object(db_query("SELECT astbrand.currency from astuser, astbrand where astuser.brand = astbrand.name and astuser.uid = '%s'", $uid->uid));
+  $sql = db_fetch_object(db_query("SELECT astplans.currency from astuser, astplans where astuser.brand = astplans.name and astuser.uid = '%s' and db_prefix ='".$db_prefix."'", $uid->uid));
   $currency = $sql->currency;
 
-  $group = t('Current credit limit for this account is : ').'<B>'.$edit['creditlimit'].'</B><BR>';
-  $group .= t('Currency is: ').'<B>'.$currency.'</B><BR><BR>';
-  $group .= t('<B>WARNING!</B> Do not change these settings unless you know what your doing!<BR><BR>');
-  $group .= t('<B>NAT:<BR></B>');
-  $group .= t('<B><FONT SIZE=1>Note: Might take up to 24hours for change to take effect</FONT></B><BR>');
-  $group .= t('yes = Always ignore info and assume NAT<BR>');
-  $group .= t('no = Use NAT mode only according to RFC3581<BR>');
-  $group .= t('never = Never attempt NAT mode or RFC3581 support<BR>');
-  $group .= t('route = Assume NAT, dont send rport<BR>');
+  $group = t('Current credit limit for this account is').' : <B>'.$edit['creditlimit'].'</B><BR>';
+  $group .= t('Currency is').' : <B>'.$currency.'</B><BR><BR>';
+  $group .= t('<B>WARNING!</B> Do not change these settings unless you know what your doing!').'<BR><BR>';
+  $group .= '<B>'.t('NAT').':<BR></B>';
+  $group .= '<B><FONT SIZE=1>'.t('Note: Might take up to 24hours for change to take effect').'</FONT></B><BR>';
+  $group .= t('yes = Always ignore info and assume NAT').'<BR>';
+  $group .= t('no = Use NAT mode only according to RFC3581').'<BR>';
+  $group .= t('never = Never attempt NAT mode or RFC3581 support').'<BR>';
+  $group .= t('route = Assume NAT, dont send rport').'<BR>';
   $group .= form_select(NULL, 'nat', $nat, array(0 => t('Yes'), 1 => t('No'), 2 => t('Never'), 3 => t('Route')));
   $group .= '<BR>';
 
-  $group .= t('<B>Qualify:<BR></B>');
-  $group .= t('<B><FONT SIZE=1>Note: Might take up to 24hours for change to take effect</FONT></B><BR>');
+  $group .= '<B>'.t('Qualify').':<BR></B>';
+  $group .= '<B><FONT SIZE=1>'.t('Note: Might take up to 24hours for change to take effect').'</FONT></B><BR>';
   $group .= t('Only turn this ON if your phone can dial out, but you can not receive calls ');
   $group .= form_select(NULL, 'qualify', $qualify, array(0 => t('On'), 1 => t('Off')));
 
 
-  $sql = db_fetch_array(db_query("select brand, countryprefix, callbackto FROM astuser WHERE uid = %s", $user->uid));
-//  $item = db_fetch_object($sql);
+  $sql = db_fetch_array(db_query("select brand, countryprefix, callbackto FROM astuser WHERE uid = %s and db_prefix ='".$db_prefix."'", $user->uid));
+
+// $lastaccount = db_fetch_object(db_query("SELECT lastaccount from astuser WHERE uid='%s' and db_prefix 
+// ='".$db_prefix."'", $user->uid));
 
   $group .= '<BR><BR>';
-  $group .= t('Current brand is ').'<B>'.$sql['brand'].'</B><BR>';
+  $group .= t('Current Rate Plan is: ').'<B>'.$sql['brand'].'</B><BR>';
   $group .= form_textfield(t("Country Prefix"), "countryprefix", $sql['countryprefix'], 80, 150, null, null, false);
   $group .= form_textfield(t("Call Back To"), "callbackto", $sql['callbackto'], 80, 150, null, null, false);
 
@@ -1589,8 +1594,8 @@ function astincomingnr_form($edit) {
   $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);*/
 
 
-  $group .= form_textfield(t("Change the number(s) you want to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 50, 150, null, null, false);
-  $group .= form_textfield(t("Change comment"), "comment", $edit['comment'], 20, 150, null, null, false);
+  $group .= form_textfield(t("Enter the number(s) you want to forward to separated by &<BR>(Example: 70500&70501)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 50, 150, null, null, false);
+  $group .= form_textfield(t("Comment"), "comment", $edit['comment'], 50, 150, null, null, false);
 
 
   // $group .= form_hidden('AmiTest', "JustTesting");
@@ -1632,7 +1637,7 @@ function page_astentry_incomingnr() {
 	array('data' => t('Tech')),
     array('data' => t('Forwarded to')),
     array('data' => t('Comment')),
-	array('data' => t('<CENTER>Operations</CENTER>'), 'colspan' => 1)
+	array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 1)
 	
   );
 
@@ -1650,7 +1655,7 @@ $sql = db_query("SELECT accountcode, publicnumber, tech, forwardto, comment FROM
 		'&nbsp;&nbsp;<img border="0" src="files/astar/'.$tech.'.gif">&nbsp;&nbsp;',
 	    	$item->forwardto,
 		'&nbsp;&nbsp;'.$item->comment,
-		'<A HREF="'.url('astentry/incomingnrchange/'.$item->publicnumber).'">Change</A>');
+		'<A HREF="'.url('astentry/incomingnrchange/'.$item->publicnumber).'">'.t('Change').'</A>');
 
 
   }
@@ -1703,7 +1708,7 @@ function page_astentry_incomingnrchange(){
       // $output = astpbx_form($edit);
   }
 
-$title = 'Change';
+$title = t('Change');
 $account = ' - '.arg(2);
 _astentry_printtheme_best($output, $account, $title);
 

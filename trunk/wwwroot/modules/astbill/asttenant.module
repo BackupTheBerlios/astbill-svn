@@ -449,7 +449,7 @@ if (arg(2) == 'changespecific'){ // START CHECK IF TENANTCHANGESPECIFIC
 	   array_push2($companylist, $fetchit->company, $fetchit->tid);
 	}
 	
-	$sql = db_query("select name from astbrand");
+	$sql = db_query("select name from astplans");
 	$brandlist = array();
 	while ($fetchit = db_fetch_object($sql)) {
 	   array_push2($brandlist, $fetchit->name, $fetchit->name);
