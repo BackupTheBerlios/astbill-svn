@@ -400,6 +400,17 @@ function astbill_update_034() {
   $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `invoice_date` `invoice_date` date NOT NULL");
   $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `due_date` `due_date` date NOT NULL");
   $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `kid` varchar(128) NULL AFTER `due_date`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `period` varchar(128) NULL AFTER `kid`");
+
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `sumexvat` decimal(10,2) NOT NULL default 0 AFTER `workflow`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `vat` decimal(10,2) NOT NULL default 0 AFTER `sumexvat`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `fromdate` date NULL AFTER `phoneno`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `todate` date NULL AFTER `fromdate`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `minutes` decimal(10,4) NOT NULL default 0 AFTER `qty`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `amount` decimal(10,2) NOT NULL default 0 AFTER `minutes`");
+
+  $ret[] = update_sql("ALTER TABLE `astcountrycode` ADD `db_prefix` varchar(40) NOT NULL default 'pbx_' FIRST");
+  $ret[] = update_sql("ALTER TABLE `astcountrycode` DROP PRIMARY KEY , ADD PRIMARY KEY ( `db_prefix` , `countrycode` )");
 
   return $ret;
 }
@@ -407,4 +418,4 @@ function astbill_update_034() {
 
 
 
-?>
+ ?>
