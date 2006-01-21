@@ -411,6 +411,8 @@ function astbill_update_034() {
 
   $ret[] = update_sql("ALTER TABLE `astcountrycode` ADD `db_prefix` varchar(40) NOT NULL default 'pbx_' FIRST");
   $ret[] = update_sql("ALTER TABLE `astcountrycode` DROP PRIMARY KEY , ADD PRIMARY KEY ( `db_prefix` , `countrycode` )");
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `ccn` varchar(40) NULL AFTER `pattern`");
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `txtcomment` varchar(256) NULL");
 
   return $ret;
 }
