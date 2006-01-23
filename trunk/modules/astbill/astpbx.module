@@ -1381,12 +1381,14 @@ function page_astpbx_emailme() {
 			$sql = db_fetch_object(db_query("SELECT tech FROM astaccount WHERE accountcode = '%s'", $accountcode));
 			
 			if ($sql->tech == 'IAX') {
-				astpbx_sendemail("ASTARIAX", $edit['email'], $accountcode);
+		//		astpbx_sendemail("ASTARIAX", $edit['email'], $accountcode);
+                 astpbx_sendemail($db_prefix."ASTARIAX", $edit['email'], $accountcode,"","");
 				$group .= 'Sent account information for IAX://'.$accountcode.' to '.$edit['email'].'<BR>';
 			}
 			
 			if ($sql->tech == 'SIP') {
-				astpbx_sendemail("ASTARSIP", $edit['email'], $accountcode);
+			//	astpbx_sendemail("ASTARSIP", $edit['email'], $accountcode);
+				astpbx_sendemail($db_prefix."ASTARSIP", $edit['email'], $accountcode,"","");
 				$group .= 'Sent account information for SIP://'.$accountcode.' to '.$edit['email'].'<BR>';
 			}
 			$group .= form_submit(t('Back'));
