@@ -361,13 +361,14 @@ function astbill_update_032() {
 function astbill_update_033() {
   $ret = array();
   $ret[] = update_sql("ALTER TABLE `astaccount` CHANGE `restrictcid` `restrictcid` CHAR( 6 ) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL");
-  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac4` varchar(6) NULL default NULL AFTER `mac3`");
-  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac5` varchar(6) NULL default NULL AFTER `mac4`");
-  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac6` varchar(6) NULL default NULL AFTER `mac5`");
 
   $ret[] = update_sql("ALTER TABLE `asthardwareid` ADD `mac1` varchar(6) NULL default NULL AFTER `hardware`");
   $ret[] = update_sql("ALTER TABLE `asthardwareid` ADD `mac2` varchar(6) NULL default NULL AFTER `mac1`");
   $ret[] = update_sql("ALTER TABLE `asthardwareid` ADD `mac3` varchar(6) NULL default NULL AFTER `mac2`");
+
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac4` varchar(6) NULL default NULL AFTER `mac3`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac5` varchar(6) NULL default NULL AFTER `mac4`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac6` varchar(6) NULL default NULL AFTER `mac5`");
 
   $ret[] = update_sql("ALTER TABLE `asthardware` DROP `uid`");
   $ret[] = update_sql("ALTER TABLE `asthardware` DROP `name`");
@@ -413,6 +414,8 @@ function astbill_update_034() {
   $ret[] = update_sql("ALTER TABLE `astcountrycode` DROP PRIMARY KEY , ADD PRIMARY KEY ( `db_prefix` , `countrycode` )");
   $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `ccn` varchar(40) NULL AFTER `pattern`");
   $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `txtcomment` varchar(256) NULL");
+
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `companyno` varchar(128) NULL AFTER `birthdate2`");
 
   return $ret;
 }
