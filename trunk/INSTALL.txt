@@ -11,7 +11,7 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
-Installation instructions for AstBill Version 0.9.0.14
+Installation instructions for AstBill Version 0.9.15
 
 Please read INSTALLMYSQL.txt and have your MySQL 5 Server working before you start the instructions in this file.
 
@@ -45,14 +45,14 @@ Drupal - Version 4.6.3 (Included in the wwwroot directory of this AstBill Distri
 
 First of all, make sure you have all the requirements set up properly.
 
-3.1. Extract astbill-0.9.0.14.tar.bz2 to /home
+3.1. Extract astbill-0.9.15.tar.bz2 to /home
 
 cd /home
-tar jxvf astbill-0.9.0.14.tar.bz2 
+tar jxvf astbill-0.9.15.tar.bz2 
 
-rename the directory astbill-0.9.0.14 to astbill
+rename the directory astbill-0.9.15 to astbill
 
-mv astbill-0.9.0.14 astbill
+mv astbill-0.9.15 astbill
 cd /home/astbill
 chmod +x install.sh
 

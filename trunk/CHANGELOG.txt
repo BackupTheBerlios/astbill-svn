@@ -8,9 +8,9 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
-2005.12.18 Version 0.9.15 Testing
+12 Feb 2006 Version 0.9.15 Testing
 
-# Warning - This software may not be stable. If you are in production wait for 
+# Warning - This software may not be stable. If you are in production maybee wait for 
 # Version 0.9.16 before you upgrade. Major system changes in the database and application is done.
 # Please TEST and TEST and report back in http://astbill.com/forum/3
 #
@@ -24,6 +24,7 @@ http://astbill.com/forum/3
 # Have a look at the Settings / System Config 
 # Default password length and voicemail pin length can now be set in Settings / System Config (Bug 199)
 # Added Force Callerid. This is usefull if you want to force any account to use a specific callerid when dialing to PSTN.
+# There are many more changes. We have lost track. Sorry.
 
 2005.11.17 Version 0.9.0.14
 
