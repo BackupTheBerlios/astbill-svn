@@ -1,0 +1,273 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2005.12.26 Version 0.9.0.15
+ * 
+ */
+
+/**
+* Display help and module information
+* @param section which section of the site we're displaying help
+* @return help text for section
+*/
+
+
+function astsettingsdid_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Settings DID");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astsettingsdid_menu($may_cache) {
+  $items = array();
+  $access = user_access('astsettingsdid batch');
+  $items[] = array('path' => 'astbilladm/settings/createdidbatch',
+                                  'title' => t('Generate DIDs'),
+                                  'callback' => 'astsettingsdid_createdidbatch',
+                                  'access' => $access);
+                                 // 'type' => MENU_CALLBACK);
+
+  return $items;
+}
+
+function astsettingsdid_perm() {
+	return array('astsettingsdid batch');
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+// BEGIN CREATE DID BATCH STUFF
+
+function astsettingsdid_createdidbatch() {
+	global $user;
+
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+	switch (($op ? $op : arg(1))) {
+	
+	case t('Generate'):
+		//print_r($edit);
+		if (astsettingsdid_createbatch_validate($edit)) {
+			astsettingsdid_createbatch_save($edit);
+			//drupal_goto("astbilladm/settings/createbatch");
+			$output = astsettingsdid_createdidbatch_form($edit);
+		} else {
+			$output = astsettingsdid_createdidbatch_form($edit);
+		}
+		break;
+
+	default:
+		$output = astsettingsdid_createdidbatch_form($edit);
+	}
+	
+
+	
+	$title = t("Generate DID's");
+
+
+_astsettings_printtheme_best($output, $title);
+}
+
+// FORM STUFF
+function astsettingsdid_createbatch_validate($edit) {
+	global $user;
+    global $db_prefix; 
+	$myerror = 1;
+	$errors = array();
+	
+	if(!is_numeric($edit['fromdid'])) {
+		$errors['fromdid'] = t('Enter a numeric only DID.');
+		$myerror = 0;
+	} else {
+		$sql = db_fetch_object(db_query("select accountcode from astaccount where accountcode = '%s'", $edit['fromdid']));
+		
+		if(!empty($sql->accountcode)) {
+			$errors['fromdid'] = t('DID already exists.');
+			$myerror = 0;
+		}
+	}
+	if(!is_numeric($edit['nodid'])) {
+		$errors['nodid'] = t('Enter a numeric value for number of DIDs.');
+		$myerror = 0;
+	}
+	foreach ($errors as $name => $message) {
+		form_set_error($name, $message);
+	} 
+	return $myerror;
+}
+
+function astsettingsdid_createbatch_save($edit) {
+  global $user;
+  global $db_prefix; 
+
+	$x = 0;
+	while ($x < $edit['nodid']) {
+		
+		$account = $edit['prefix'].($edit['fromdid']+$x);		
+
+		// START CHECK
+		$sql = db_fetch_object(db_query("SELECT accountcode FROM astaccount WHERE accountcode = '%s'", $account));
+			
+		if (empty($sql->accountcode)) {
+
+db_query("INSERT INTO astaccount SET
+accountcode = '".$account."',
+accountname = '".$account."',
+db_prefix = '".$db_prefix."',
+uid = '0',
+type = 'user',
+nat = 'no',
+qualify = 'no',
+active = '1',
+canreinvite = 'no',
+dtmfmode = Null,
+date_created = Now(),
+tech = '".$edit['tech']."',
+acgroup = '".$edit['acgroup']."',
+fromdomain = '".$edit['fromdomain']."',
+host = '".$edit['host']."',
+context = '".$edit['context']."',
+allow = '".$edit['allow']."',
+disallow = '".$edit['disallow']."',
+comment = '".$edit['comment']."'
+");
+
+		}
+		
+		$x++;
+	}
+
+drupal_set_message(t('Created '.$edit['nodid'].' DIDs'));
+//drupal_set_message(t('<BR>'));
+
+/*
+drupal_set_message(t('AccountCode -> '.$accountcodechecked[$y]));
+drupal_set_message(t('Serial -> '.$ccserialno[$y]));
+drupal_set_message(t('Secret -> '.$secret[$y]));
+drupal_set_message('<BR>');
+*/
+
+
+}
+
+function astsettingsdid_createdidbatch_form($edit) {
+	global $user;
+
+	$sql = db_query("select gtype, gname from astacgroup where active = '1' and mastergroup = 'DID' order by gtype ");
+	$didtypelist = array();
+	while ($item = db_fetch_object($sql)) {
+		array_push2($didtypelist, $item->gname, $item->gtype);
+	}
+
+
+	$group .= form_textfield(t("From DID"), "fromdid", $edit['fromdid'], 40, 150, null, null, false);
+	$group .= form_textfield(t("Number of DIDs"), "nodid", $edit['nodid'], 40, 150, null, null, false);
+
+	$group .= form_select(t('Tech'), 'tech', $sqlout->tech, array('IN-SIP' => 'SIP', 'IN-IAX' => 'IAX2', 'IN-ZAP' => 'ZAP'));
+    $group .= form_select(t("DID Group"), "acgroup", $edit['acgroup'], $didtypelist);
+
+	$group .= form_textfield(t("Prefix (0 if Number start with 0207xxxxxx)"), "prefix", $edit['prefix'], 10, 150, null, null, false);
+	$group .= form_textfield(t("From Domain"), "fromdomain", $edit['fromdomain'], 40, 150, null, null, false);
+	$group .= form_textfield(t("Host"), "host", $edit['host'], 40, 150, null, null, false);
+	// $group .= form_textfield(t("Port"), "port", $edit['fromdid'], 40, 150, null, null, false);
+	$group .= form_textfield(t("Context"), "context", "astbill-incoming", 40, 150, null, null, false);
+	$group .= form_textfield(t("Allow Codec (ulaw;alaw)"), "allow", $edit['allow'], 40, 150, null, null, false);
+	$group .= form_textfield(t("Disallow Codec (all)"), "disallow", $edit['disallow'], 40, 150, null, null, false);
+	$group .= form_textfield(t("Comment"), "comment", $edit['comment'], 80, 150, null, null, false);
+
+	$group .= form_submit(t('Generate'));
+
+	//$form = form_group(t('Account details'), $group);
+	return form($group);
+}
+
+
+function settingsdid_hardware_form($account) {
+	global $user;
+	$edit = $_POST["edit"];
+    $op = $_POST["op"];
+
+
+if (arg(2) == 'addmac'){ // START CHECK IF HARDWARECREATE
+
+	$uid = null;
+	$accountcode = null;
+	$secret = null;
+	$hardwaretype = null;
+	$hardwareid = null;
+	$mac_address = null;
+	$serialnumber = null;
+	$comment = null;
+	$name = null;
+
+} // END CHECK IF HARDWARECREATE
+
+	$sql = db_query("select name, uid from {users}");
+
+	$users = array();
+
+	while ($items = db_fetch_object($sql)) {
+		array_push2($users, $items->uid.' '.$items->name, $items->uid);
+	}
+
+
+	$sql = db_query("select hid, hardware from asthardwareid");
+
+	$hardwareidlist = array();
+
+	while ($item = db_fetch_object($sql)) {
+		array_push2($hardwareidlist, $item->hardware, $item->hid);
+	}
+
+
+	$group .= form_select(t('User/Owner of this hardware'), 'uid', $uid, $users);
+	$group .= form_textfield(t('Accountcode'), 'accountcode', $accountcode, 30, 100);
+ // 	$group .= form_textfield(t('Secret'), 'secret', $secret, 30, 100);
+	$group .= form_textfield(t('Hardwaretype'), 'hardwaretype', $hardwaretype, 30, 100);
+
+	$group .= form_select(t("HardwareID"), "hardwareid", $hardwareid, $hardwareidlist);
+
+	$group .= form_textfield(t('Mac1'), 'mac1', $mac1, 5, 5);
+	$group .= form_textfield(t('Mac2'), 'mac2', $mac1, 5, 5);
+	$group .= form_textfield(t('Mac3'), 'mac3', $mac1, 5, 5);
+	$group .= form_textfield(t('Mac4'), 'mac4', $mac1, 5, 5);
+	$group .= form_textfield(t('Mac5'), 'mac5', $mac1, 5, 5);
+	$group .= form_textfield(t('Mac6'), 'mac6', $mac1, 5, 5);
+	$group .= form_textfield(t('Serialnumber'), 'serialnumber', $serialnumber, 30, 100);
+	$group .= form_textfield(t('Comment'), 'comment', $comment, 30, 100);
+//  	$group .= form_textfield(t('Name'), 'name', $name, 30, 100);
+
+if (arg(2) == 'addmac'){
+	$group .= form_submit(t('Create'));
+} else {
+	$group .= form_submit(t('Change'));
+}
+	$group .= form_submit(t('Back'));
+	//$form = form_group(t('Account details'), $group);
+	return form($group);
+}
+
+

@@ -1,0 +1,123 @@
+You can find more examples in the AstBill manual.
+It is still work in progress, but please take a look at
+http://astbill.com/manual
+
+For the latest INSTALL.txt
+http://astbill.com/install
+
+For the latest CHANGELOG.txt
+http://astbill.com/changelog
+
+For Support:
+http://astbill.com/forum/3
+
+
+Preparing MySQL 5 for AstBill.
+
+For more information about MySQL and AstBill:
+http://astbill.com/mysql
+http://wiki.astbill.com/wiki/AstBill_Wiki:MySQL
+
+
+If you are using CentOS LinuX ( Asterisk@home) Have a look at the following URLs.
+http://astbill.com/mysql5centos
+http://astbill.com/node/135
+
+How to install MySQL 5.0.18
+
+mkdir -p /usr/local
+cd /usr/local
+# See http://dev.mysql.com/downloads/mysql/5.0.html for exact download location
+# They sometimes change it.
+wget http://dev.mysql.com/get/Downloads/MySQL-5.0/mysql-standard-5.0.18-linux-i686.tar.gz/from/http://www.mirrorservice.org/sites/ftp.mysql.com/
+
+tar zxvf mysql-standard-5.0.18-linux-i686.tar.gz
+groupadd mysql
+useradd -g mysql mysql
+ln -s /usr/local/mysql-standard-5.0.18-linux-i686 mysql
+cd mysql
+
+scripts/mysql_install_db --user=mysql
+
+chown -R root .
+chown -R mysql data
+chgrp -R mysql .
+
+Copy the correct my.cnf to the /etc/my.cnf for your system.
+cp /usr/local/mysql/support-files/my-medium.cnf /etc/my.cnf
+
+IMPORTANT: You have to change the following in the file: 
+/etc/my.cnf
+
+nano /etc/my.cnf
+
+# Debian              /var/run/mysqld/mysqld.sock
+# Fedora and CentOS   /var/lib/mysql/mysql.sock
+
+[client]
+# socket = /var/run/mysqld/mysqld.sock
+socket = /var/lib/mysql/mysql.sock
+
+[mysqld]
+# socket = /var/run/mysqld/mysqld.sock
+socket = /var/lib/mysql/mysql.sock
+
+# Apache need access to mysql.sock or mysqld.sock
+# Debian              /var/run/mysqld/mysqld.sock
+# Fedora and CentOS   /var/lib/mysql/mysql.sock
+
+mkdir -p /var/run/mysqld
+mkdir -p /var/lib/mysql
+chmod 777 -R /var/run/mysqld
+chmod 777 -R /var/lib/mysql
+
+to start MySQL:
+
+cd /usr/local/mysql
+bin/mysqld_safe --user=mysql &
+
+To change the root Password:
+
+bin/mysqladmin -u root password 'mysql_root_pw' 
+
+
+To start mysqld at boot time you have to copy support-files/mysql.server
+to the right place for your system.
+on debian you can put it in /etc/init.d/ and run update-rc.d mysql.server defaults
+
+Make sure MySQL 5 is running. 
+
+IMPORTANT: If you are installing AstBill for the first time. We strongly recomend you call the database astbill. 
+We also recomend you don't change the database user defined in astbill_proc.sql and /home/astbill/astbill.conf 
+When you have AstBill working you can change it to anything you want. http://wiki.astbill.com/wiki/Change_database
+This will clearly make it easier for you to get AstBill up and running fast and simple.
+We get many support request due to people changing the database/user name and are unable to change it in all locations.
+
+If you control your databases through a web-based control panel,
+check its documentation, as the following instructions are for the
+command line only.
+
+Create the AstBill database:
+./mysqladmin create astbill --user=root -p
+./mysql --user=root -p astbill < /home/astbill/database/astbill.sql
+./mysql --user=root -p astbill < /home/astbill/database/astbill_proc.sql
+
+
+Support
+
+Don't forget that this is free software under development!
+Chances are good there's a crucial step that hasn't made it
+into the documentation. If you have any problems feel free to 
+contact us on the forum http://astbill.com/forum/3
+(please provide enough information to work with, and preferably be aware
+of what you're doing!) and keep track of major changes to the
+software, including performance improvements and security patches.
+
+The best way to get support is by using the forums, this allows other users to learn from your request.
+
+http://astbill.com/forum/3
+
+Andreas Mikkelborg - adoroar [Guess What?] astartelecom.com
+Are Casilla - areast [Guess What?] astartelecom.com
+
+You can now read INSTALL.txt to see how to install AstBill
