@@ -19,6 +19,7 @@
 -- Table structure for table `astaccount`
 --
 
+
 DROP TABLE IF EXISTS `astaccount`;
 CREATE TABLE `astaccount` (
   `uid` int(10) NOT NULL default '1',
