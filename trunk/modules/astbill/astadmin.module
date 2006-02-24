@@ -1063,7 +1063,7 @@ function page_astadmin_hardwareidlist_list() {
 
 // The Column names mac1 is not working. Have to use maca
 
-$test = $sql->$mac1;
+//$test = $sql->$mac1;
 $group ='<div class="form-item">
 <input maxlength="2" class="form-text" name="edit[mac1]['.$key.']" id="edit-mac1-'.$key.'" size="2" value="'.$sql->maca.'" type="text">
 <input maxlength="2" class="form-text" name="edit[mac2]['.$key.']" id="edit-mac2-'.$key.'" size="2" value="'.$sql->macb.'" type="text">
