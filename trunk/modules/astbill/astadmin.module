@@ -76,7 +76,8 @@ function astadmin_menu($may_cache) {
                    'callback' => 'page_astadmin_hardwareidlist',
                    'callback arguments' => 'list',
                    'access' => $access);
-				  // 'weight' => 5);
+	           // 'weight' => 5);
+
 	$items[] = array('path' => 'astbilladm/hardware/idlist/list',
                      'title' => t('List Hardware ID'),
                      'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -91,14 +92,16 @@ function astadmin_menu($may_cache) {
                      'access' => $access,
                      'callback' => 'page_astadmin_hardwareidlist',
                      'callback arguments' => 'add',
-					 'weight' => 7);
+		      'weight' => 7);
+
+	      
         $items[] = array('path' => 'astbilladm/hardware/idlist/delete',
                      'title' => t('Delete Hardware ID'),
                      'type' => MENU_CALLBACK,
                      'access' => $access,
                      'callback' => 'page_astadmin_hardwareidlist',
-		 			 'callback arguments' => 'delete',
-					 'weight' => 7);
+		      'callback arguments' => 'delete',
+		      'weight' => 7);
 
 
 	$items[] = array('path' => 'astbilladm/realtime', 'title' => t('Asterisk'),
@@ -1017,6 +1020,11 @@ function page_astadmin_hardwareidlist($action) {
 	if (empty($op)) {
 		$op = $action;
 	}
+	
+	if (is_numeric($op)) {
+		$op = 'delete';
+		
+	}
 
 	$edit = $_POST['edit'];
 	$output = '';
@@ -1145,7 +1153,7 @@ function page_astadmin_hardwareidlist_delete($edit) {
 	// Creates a confirmation form
 	$categories = page_astadmin_hardwareidlist_get_categories();
 
-	$output = form_item(t("Delete hardware '%name'", array('%name' => $categories[$hid])), '');
+	$output .= form_item(t("Delete hardware '%name'", array('%name' => $categories[$hid])), '');
 	$output .= t('<p>Are you sure you want to delete this hardware from the list?</p>');
 	$output .= form_hidden('cid', $cid);
 	$output .= form_submit(t('Delete'));
