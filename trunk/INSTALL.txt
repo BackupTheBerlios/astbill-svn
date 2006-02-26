@@ -1,4 +1,5 @@
 You can find more examples in the AstBill manual.
+
 It is still work in progress, but please take a look at
 http://astbill.com/manual
 
