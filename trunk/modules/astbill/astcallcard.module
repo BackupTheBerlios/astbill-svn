@@ -182,7 +182,7 @@ $output = '
 		array('data' => t('Firstused&nbsp;&nbsp;'), 'field' => 'ccfirstused'),
 		array('data' => t('Lastused&nbsp;&nbsp;'), 'field' => 'cclastused'),
 		array('data' => t('CardValue&nbsp;&nbsp;'), 'field' => 'cccardvalue'),
-		array('data' => t('CardBalance&nbsp;&nbsp;'), 'field' => 'CardBalance'),
+		array('data' => t('CardBalance&nbsp;&nbsp;'), 'field' => 'creditlimit'),
 		array('data' => t('A&nbsp;&nbsp;'), 'field' => 'active'),
 		array('data' => t('Batchno&nbsp;&nbsp;'), 'field' => 'ccbatchno'),
 		array('data' => t('Operations'))
