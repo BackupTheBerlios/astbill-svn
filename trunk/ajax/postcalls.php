@@ -111,7 +111,7 @@ fclose($handle);
 //mysql_free_result($result);
 mysql_close();
 
-} 
+}
 
 
 function arg($index) {
@@ -125,6 +125,6 @@ function arg($index) {
   if (isset($arguments[$index])) {
     return $arguments[$index];
   }
-} 
+}
 
 ?>
