@@ -1100,9 +1100,9 @@ if (arg(1) == 'editaccount') {
 
 	  $secret = rand(10000, 99999);
 	  
-db_query("INSERT INTO astaccount (secret, language, uid, accountcode, tech, nat, qualify, hardwareid, forwardto, lowbalance, lowbalanceemail, callerid, accountname, mailboxemail, active, date_created)
-VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', now())",
-$secret, $edit['language'], $edit['account'], $edit['accountcode'], $tech, $nat, $qualify, $edit['hardwareid'], $edit['forwardto'], $edit['lowbalance'], $edit['lowbalanceemail'], $edit['callerid'], $edit['accountname'], $mailboxemail, $edit['active']);
+db_query("INSERT INTO astaccount (db_prefix,secret, language, uid, accountcode, tech, nat, qualify, hardwareid, forwardto, lowbalance, lowbalanceemail, callerid, accountname, mailboxemail, active, date_created)
+VALUES ('%s','%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', now())",
+$db_prefix,$secret, $edit['language'], $edit['account'], $edit['accountcode'], $tech, $nat, $qualify, $edit['hardwareid'], $edit['forwardto'], $edit['lowbalance'], $edit['lowbalanceemail'], $edit['callerid'], $edit['accountname'], $mailboxemail, $edit['active']);
 
 //db_query("UPDATE astuser SET brand = '%s', countryprefix = '%s', callbackto = '%s' WHERE uid = '%s'", $edit['brand'], $edit['countryprefix'], $edit['callbackto'], $edit['account']);
 
