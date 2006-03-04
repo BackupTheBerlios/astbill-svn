@@ -41,6 +41,7 @@ $sql_updates = array(
   "2006-01-03" => "astbill_update_032",
   "2006-01-06" => "astbill_update_033",
   "2006-01-07" => "astbill_update_034",
+  "2006-02-14" => "astbill_update_035",
 );
 
 function update_sql($sql) {
@@ -420,6 +421,15 @@ function astbill_update_034() {
   return $ret;
 }
 
+function astbill_update_035() {
+  $ret = array();
+
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac4` varchar(6) NULL default NULL AFTER `serialnumber`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac5` varchar(6) NULL default NULL AFTER `mac4`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac6` varchar(6) NULL default NULL AFTER `mac5`");
+
+  return $ret;
+}
 
 
 
