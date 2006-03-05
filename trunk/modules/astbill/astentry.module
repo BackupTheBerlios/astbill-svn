@@ -1446,6 +1446,7 @@ db_query("UPDATE astaccount SET mailbox = '%s', mailboxpin = '%s', mailboxemail 
 
 function astvoicemail_form($edit) {
   global $user;
+  global $db_prefix; 
   /*$group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'));
 //  $group = form_textfield(t('Title'), 'title', $edit['title'], 60, 128, null, null, true);
   $group .= form_textfield(t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
@@ -1460,7 +1461,7 @@ function astvoicemail_form($edit) {
  
  $account = arg(2);
 
- $sql = db_query("SELECT accountcode FROM astaccount WHERE uid = %s", $user->uid);
+ $sql = db_query("SELECT accountcode FROM astaccount WHERE uid = %s AND db_prefix = '".$db_prefix."'", $user->uid);
 
  $sql_output = array($account => $account);
   
