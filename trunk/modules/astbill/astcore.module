@@ -1,0 +1,125 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2005.01.13 Version 0.9.16
+ * 
+ */
+
+/* FUNCTIONS:
+
+astcore_search($edit, $posturl)
+astcore_printtheme($page_content, $account, $title)
+astcore_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item)
+astcore_list($header, $rows, $maxline, $noresults)
+
+*/
+
+
+function astcore_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Core Functions");
+      break;
+  }
+  return $output;
+}
+
+
+function astcore_search($edit, $posturl) {
+	global $user;
+	global $db_prefix; 
+
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+	$output = '
+<form action="'.$posturl.'" method="post">
+<div class="form-item">
+<B>'.t('Enter a search string').'&nbsp;&nbsp;</B>
+<input type="text" size="20" value="'.$edit['search'].'" name="edit[search]" alt="'.t('Enter a term to search').'" />&#160;
+<input type="submit" name="search" value="'.t('Search').'" />&#160;&#160;
+</div></form>
+';
+/*
+	$group .= form_textfield($title, 'search', $edit['search'], 30, 30, $description = NULL, $attributes = NULL, $required = FALSE);
+	$group .= form_submit('Search');
+	
+	$output = form($group);
+*/	
+	return $output;
+}
+
+
+function astcore_printtheme($page_content, $title) {
+	$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+	$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+
+	print theme("page", $output);
+}
+
+
+function astcore_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item) {
+	global $user;
+	$cid = arg(2);
+	$output = '';
+
+	if ($edit) {
+		db_query($dbquery);
+		//db_query("DELETE FROM {contact_category} WHERE cid = %d and uid = %d", $cid, $user->uid);
+		// db_query("DELETE FROM {contact_category} WHERE cid = % d", $edit['cid']);
+
+		// Redirects the response to the list page
+		drupal_set_message(t($deletedmsg));
+		drupal_goto($goto);
+	}
+
+	// Creates a confirmation form
+	$categories = astcontact_get_categories();
+
+	$output .= t($confirmmsg);
+	$output .= form_hidden('cid', $cid);
+	$output .= form_submit(t('Delete'));
+
+	//return form($output);
+	$group = form($output);
+
+$title = t('Remove ').$item;
+$account = $user->uid;
+astcore_printtheme($group, $account, $title);
+//return $output;
+}
+
+
+function astcore_list($header, $rows, $maxline, $noresults) {
+
+	$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+	if (!empty($pager)) {
+		$rows[] = array(array('data' => $pager, 'colspan' => 8));
+	}
+
+	$output .= (count($rows) == 0) ? $noresults : theme('table', $header, $rows);
+	
+	return $output;
+}
+
+
+?>
