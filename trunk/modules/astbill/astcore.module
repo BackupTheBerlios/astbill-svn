@@ -27,7 +27,7 @@
 astcore_search($edit, $posturl)
 astcore_printtheme($page_content, $account, $title)
 astcore_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item)
-astcore_list($header, $rows, $maxline, $noresults)
+astcore_list($header, $rows, $noresults, $maxline)
 
 */
 
@@ -109,7 +109,7 @@ astcore_printtheme($group, $account, $title);
 }
 
 
-function astcore_list($header, $rows, $maxline, $noresults) {
+function astcore_list($header, $rows, $noresults, $maxline) {
 
 	$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
 	if (!empty($pager)) {
@@ -117,6 +117,28 @@ function astcore_list($header, $rows, $maxline, $noresults) {
 	}
 
 	$output .= (count($rows) == 0) ? $noresults : theme('table', $header, $rows);
+	
+	/* ROWS[] EXAMPLE
+	
+		while ($res = db_fetch_object($result)) {
+		$sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
+		$sqlfetch2 = db_fetch_object(db_query("select name from {users} where uid = '%s'", $sqlfetch1->uid));
+		$rows[] = array(
+		$sqlfetch2->name,
+		$res->id.'&nbsp;&nbsp;',
+		$res->accountcode,
+		$res->callednum,
+		$res->type,
+		$res->trunk,
+		array('data' => $res->date_created, 'align' => 'right'),
+		array('data' => $res->dialstatus, 'align' => 'right'),
+		array('data' => $res->billtime, 'align' => 'right'),
+		'&nbsp;&nbsp;<a href="'.url('astbilladm/listcdr/specific/'.$res->id).'"><img border="0" src="files/astar/view.gif"></a>'
+		);
+	}
+	
+	*/
+	
 	
 	return $output;
 }
