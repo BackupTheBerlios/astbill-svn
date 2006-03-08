@@ -103,7 +103,7 @@ sub getNumber($) {
 sub getLocal($) {
 	my ($callednum) = @_;
 	my $res;
-	$sth = $dbh->prepare("select tech, forwardto, mailbox from astaccount where accountcode = '" . $callednum . "' LIMIT 1");
+	$sth = $dbh->prepare("select tech, ifnull(forwardto,'') forwardto, mailbox from astaccount where accountcode = '" . $callednum . "' LIMIT 1");
 	$sth->execute;
 	$res = $sth->fetchrow_hashref;
 	$sth->finish;
