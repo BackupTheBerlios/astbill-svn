@@ -1325,7 +1325,7 @@ function page_astadmin_listcdr_form($edit) {
 	
 		$value = $edit['search'];
 	
-		$sql = "SELECT id, cdr.accountcode, callednum, cdr.type, cdr.trunk, cdr.date_created, dialstatus, billtime, name FROM astcdr cdr, ".$db_prefix."users, astaccount WHERE cdr.accountcode = astaccount.accountcode AND db_prefix ='".$db_prefix."' AND CONCAT_WS(',', name, id, cdr.accountcode, callednum, cdr.type, cdr.trunk, cdr.date_created, dialstatus, billtime) LIKE '%".$value."%'".tablesort_sql($header);
+		$sql = "SELECT id, cdr.accountcode, callednum, cdr.type, cdr.trunk, cdr.date_created, dialstatus, billtime, name FROM astcdr cdr, ".$db_prefix."users, astaccount WHERE cdr.accountcode = astaccount.accountcode AND db_prefix ='".$db_prefix."' AND CONCAT_WS(',', LOWER(name), id, cdr.accountcode, callednum, LOWER(cdr.type), LOWER(cdr.trunk), cdr.date_created, LOWER(dialstatus), billtime) LIKE LOWER('%".$value."%')".tablesort_sql($header);
 
 		$result = pager_query($sql, $maxline);
   
@@ -1361,114 +1361,112 @@ function page_astadmin_accesslog() {
 	if (arg(2) == 'astlog') {
 	
 		
-  $maxline = 40; // This is the number of records to display on a page
-//  $output = '<b>Hover over Account to view Accounts Password</b><br><br>';
+		$maxline = 40; // This is the number of records to display on a page
+		//  $output = '<b>Hover over Account to view Accounts Password</b><br><br>';
 
-  $header = array(
-    array('data' => t('ID'), 'field' => 'id', 'sort' => 'desc'),
-    array('data' => t('Type'), 'field' => 'type'),
-    array('data' => t('Message'), 'field' => 'message'),
-    array('data' => t('UniqueID'), 'field' => 'uniqueid'),
-    array('data' => t('Called Number'), 'field' => 'callednum'),
-    array('data' => t('Comment'), 'field' => 'comment'),
-    array('data' => t('Active'), 'field' => 'active'),
-    array('data' => t('email'), 'field' => 'email'),
-    array('data' => t('Timestamp'), 'colspan' => 1)
+		$header = array(
+		array('data' => t('ID'), 'field' => 'id', 'sort' => 'desc'),
+		array('data' => t('Type'), 'field' => 'type'),
+		array('data' => t('Message'), 'field' => 'message'),
+		array('data' => t('UniqueID'), 'field' => 'uniqueid'),
+		array('data' => t('Called Number'), 'field' => 'callednum'),
+		array('data' => t('Comment'), 'field' => 'comment'),
+		array('data' => t('Active'), 'field' => 'active'),
+		array('data' => t('email'), 'field' => 'email'),
+		array('data' => t('Timestamp'), 'colspan' => 1)
+		);
+
+		$sql = "select id, type, message, uniqueid, callednum, comment, active, email, timestamp from astlog". tablesort_sql($header);
+
+
+		$result = pager_query($sql, $maxline);
+  
+		while ($res = db_fetch_object($result)) {
+
+			$rows[] = array(
+			$res->id.'&nbsp;&nbsp;',
+			$res->type.'&nbsp;&nbsp;',
+			$res->message.'&nbsp;&nbsp;',
+			$res->uniqueid.'&nbsp;&nbsp;',
+			$res->callednum.'&nbsp;&nbsp;',
+			$res->comment.'&nbsp;&nbsp;',
+			$res->active.'&nbsp;&nbsp;',
+			$res->email.'&nbsp;&nbsp;',
+			$res->timestamp.'&nbsp;&nbsp;'
+			);
+		}
+
+		$title = 'AstBill Log';
+  
+		$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+		if (!empty($pager)) {
+			$rows[] = array(array('data' => $pager, 'colspan' => 10));
+		}
+		$output .= (count($rows) == 0) ? t('No log entries.') : theme('table', $header, $rows);
+
+  
+		} else {
+
+			$ast_messages = '/var/log/asterisk/messages';
+			$agi_err_astar = '/home/astbill/logs/agi_err_astar.log';
+			$agi_err_local = '/home/astbill/logs/agi_err_astlocal.log';
+			$agi_err_dead = '/home/astbill/logs/agi_err_dead.log';
+			$agi_err_voicemail = '/home/astbill/logs/agi_err_voicemail.log';
+
+			$output .= '<BR>';
+			$output .= 'Astbill --><BR>';
+			$output .= '<A HREF="'.url('astbilladm/accesslog/astlog').'">'.t('AstBill System Log').'</A><BR>';
+			$output .= '<BR>';
+			$output .= 'Asterisk --><BR>';
+			$output .= '<A HREF="'.url('astbilladm/accesslog/ast_messages').'">Messages</A><BR>';
+			$output .= '<BR>';
+			$output .= 'Admin/logs --><BR>';
+			$output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_astar').'">agi_err_astar</A><BR>';
+			$output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_local').'">agi_err_local</A><BR>';
+			$output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_dead').'">agi_err_dead</A><BR>';
+			$output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_voicemail').'">agi_err_voicemail</A><BR>';
+
+			if (arg(2) == '') {
+				$title = t('Select log file');
+			}
+			if (arg(2) == 'ast_messages') {
+				$output = output_textfile($ast_messages, $lines);
+				$title = 'ast_messages';
+			}
+			if (arg(2) == 'agi_err_astar') {
+				$output = output_textfile($agi_err_astar, $lines);
+				$title = 'agi_err_astar';
+			}
+			if (arg(2) == 'agi_err_local') {
+				$output = output_textfile($agi_err_local, $lines);
+				$title = 'agi_err_local';
+			}
+			if (arg(2) == 'agi_err_dead') {
+				$output = output_textfile($agi_err_dead, $lines);
+				$title = 'agi_err_dead';
+			}
+			if (arg(2) == 'agi_err_voicemail') {
+				$output = output_textfile($agi_err_voicemail, $lines);
+				$title = 'agi_err_voicemail';
+			}
+
+		}
 	
-  );
-
-  $sql = "select id, type, message, uniqueid, callednum, comment, active, email, timestamp from astlog". tablesort_sql($header);
-
-
-  $result = pager_query($sql, $maxline);
-  
-  while ($res = db_fetch_object($result)) {
-
-	$rows[] = array(
-		$res->id.'&nbsp;&nbsp;',
-		$res->type.'&nbsp;&nbsp;',
-		$res->message.'&nbsp;&nbsp;',
-		$res->uniqueid.'&nbsp;&nbsp;',
-		$res->callednum.'&nbsp;&nbsp;',
-		$res->comment.'&nbsp;&nbsp;',
-		$res->active.'&nbsp;&nbsp;',
-		$res->email.'&nbsp;&nbsp;',
-		$res->timestamp.'&nbsp;&nbsp;'
-
-	);
-  }		
-
-  $title = 'AstBill Log';
-  
-  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
-if (!empty($pager)) {
-  $rows[] = array(array('data' => $pager, 'colspan' => 10));
-}
-$output .= (count($rows) == 0) ? t('No log entries.') : theme('table', $header, $rows);
-
-  
-	} else {
-
-$ast_messages = '/var/log/asterisk/messages';
-$agi_err_astar = '/home/astbill/logs/agi_err_astar.log';
-$agi_err_local = '/home/astbill/logs/agi_err_astlocal.log';
-$agi_err_dead = '/home/astbill/logs/agi_err_dead.log';
-$agi_err_voicemail = '/home/astbill/logs/agi_err_voicemail.log';
-
-$output .= '<BR>';
-$output .= 'Astbill --><BR>';
-$output .= '<A HREF="'.url('astbilladm/accesslog/astlog').'">'.t('AstBill System Log').'</A><BR>';
-$output .= '<BR>';
-$output .= 'Asterisk --><BR>';
-$output .= '<A HREF="'.url('astbilladm/accesslog/ast_messages').'">Messages</A><BR>';
-$output .= '<BR>';
-$output .= 'Admin/logs --><BR>';
-$output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_astar').'">agi_err_astar</A><BR>';
-$output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_local').'">agi_err_local</A><BR>';
-$output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_dead').'">agi_err_dead</A><BR>';
-$output .= '<A HREF="'.url('astbilladm/accesslog/agi_err_voicemail').'">agi_err_voicemail</A><BR>';
-
-if (arg(2) == '') {
-	$title = t('Select log file');
-}
-if (arg(2) == 'ast_messages') {
-$output = output_textfile($ast_messages, $lines);
-$title = 'ast_messages';
-}
-if (arg(2) == 'agi_err_astar') {
-$output = output_textfile($agi_err_astar, $lines);
-$title = 'agi_err_astar';
-}
-if (arg(2) == 'agi_err_local') {
-$output = output_textfile($agi_err_local, $lines);
-$title = 'agi_err_local';
-}
-if (arg(2) == 'agi_err_dead') {
-$output = output_textfile($agi_err_dead, $lines);
-$title = 'agi_err_dead';
-}
-if (arg(2) == 'agi_err_voicemail') {
-$output = output_textfile($agi_err_voicemail, $lines);
-$title = 'agi_err_voicemail';
-}
-
-	}
-	
-_astadmin_printtheme_best($output, $account, $title);
+		_astadmin_printtheme_best($output, $account, $title);
 }
 
 
 function output_textfile($filename, $lines) {
-/*
-$lines = file($filename);
+	/*
+	$lines = file($filename);
+	
+	foreach ($lines as $line_num => $line) {
+		$output .= htmlspecialchars($line) . "<br>\n";
+	}
+	*/
 
-foreach ($lines as $line_num => $line) {
-   $output .= htmlspecialchars($line) . "<br>\n";
-}
-*/
-
-$output = '<PRE>'.shell_exec('/usr/bin/tac '.$filename).'</PRE>';
-return $output;
+	$output = '<PRE>'.shell_exec('/usr/bin/tac '.$filename).'</PRE>';
+	return $output;
 }
 
 
@@ -1478,24 +1476,23 @@ return $output;
 // START PAYMENT STUFF
 
 function page_astadmin_payment() {
-  global $user;
+	global $user;
 
-  $edit = $_POST["edit"];
-  $op = $_POST["op"];
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
 
 
 
-  switch (($op ? $op : arg(1))) {
-    case t('Go'):
-       $value = $edit['filteracc'];
-       drupal_goto("astbilladm/payment/payment/".$edit['filteracc']."/");
-       //page_astadmin_listcdr_form($value, $edit);
-	break;
-    default:
-    	page_astadmin_payment_form($value, $edit);
-	
-  }		
-	
+	switch (($op ? $op : arg(1))) {
+		case t('Go'):
+		$value = $edit['filteracc'];
+		drupal_goto("astbilladm/payment/payment/".$edit['filteracc']."/");
+		//page_astadmin_listcdr_form($value, $edit);
+		break;
+		default:
+		page_astadmin_payment_form($value, $edit);
+	}
+
 }
 
 function page_astadmin_payment_form($value, $edit) {

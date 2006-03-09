@@ -102,10 +102,10 @@ function astcore_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item)
 	//return form($output);
 	$group = form($output);
 
-$title = t('Remove ').$item;
-$account = $user->uid;
-astcore_printtheme($group, $account, $title);
-//return $output;
+	$title = t('Remove ').$item;
+	$account = $user->uid;
+	astcore_printtheme($group, $account, $title);
+	//return $output;
 }
 
 
@@ -119,29 +119,80 @@ function astcore_list($header, $rows, $noresults, $maxline) {
 	$output .= (count($rows) == 0) ? $noresults : theme('table', $header, $rows);
 	
 	/* ROWS[] EXAMPLE
-	
-		while ($res = db_fetch_object($result)) {
-		$sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
-		$sqlfetch2 = db_fetch_object(db_query("select name from {users} where uid = '%s'", $sqlfetch1->uid));
 		$rows[] = array(
-		$sqlfetch2->name,
-		$res->id.'&nbsp;&nbsp;',
-		$res->accountcode,
-		$res->callednum,
-		$res->type,
-		$res->trunk,
 		array('data' => $res->date_created, 'align' => 'right'),
 		array('data' => $res->dialstatus, 'align' => 'right'),
-		array('data' => $res->billtime, 'align' => 'right'),
-		'&nbsp;&nbsp;<a href="'.url('astbilladm/listcdr/specific/'.$res->id).'"><img border="0" src="files/astar/view.gif"></a>'
-		);
-	}
-	
+		array('data' => $res->billtime, 'align' => 'right'));
 	*/
 	
 	
 	return $output;
 }
+
+
+function theme_testtable($header, $rows, $attributes = array(), $caption = NULL) {
+  $output = '<table'. drupal_attributes($attributes) .">\n";
+
+  if (isset($caption)) {
+    $output .= '<caption>'. $caption ."</caption>\n";
+  }
+
+  // Format the table header:
+  if (count($header)) {
+    $ts = tablesort_init($header);
+    $output .= ' <thead><tr>';
+    foreach ($header as $cell) {
+      $cell = tablesort_header($cell, $header, $ts);
+      $output .= _theme_table_cell($cell, 1);
+    }
+    $output .= " </tr></thead>\n";
+  }
+
+  // Format the table rows:
+  $output .= "<tbody>\n";
+  if (count($rows)) {
+    foreach ($rows as $number => $row) {
+      $attributes = array();
+
+      // Check if we're dealing with a simple or complex row
+      if (isset($row['data'])) {
+        foreach ($row as $key => $value) {
+          if ($key == 'data') {
+            $cells = $value;
+          }
+          else {
+            $attributes[$key] = $value;
+          }
+        }
+      }
+      else {
+        $cells = $row;
+      }
+
+      // Add odd/even class
+      $class = ($number % 2 == 1) ? 'even': 'odd';
+      if (isset($attributes['class'])) {
+        $attributes['class'] .= ' '. $class;
+      }
+      else {
+        $attributes['class'] = $class;
+      }
+
+      // Build row
+      $output .= ' <tr'. drupal_attributes($attributes) .'>';
+      $i = 0;
+      foreach ($cells as $cell) {
+        $cell = tablesort_cell($cell, $header, $ts, $i++);
+        $output .= _theme_table_cell($cell, 0);
+      }
+      $output .= " </tr>\n";
+    }
+  }
+
+  $output .= "</tbody></table>\n";
+  return $output;
+}
+
 
 
 ?>
