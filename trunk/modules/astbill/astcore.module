@@ -24,10 +24,11 @@
 
 /* FUNCTIONS:
 
-astcore_search($edit, $posturl)
+astcore_search($edit, $posturl, $value = NULL)
 astcore_printtheme($page_content, $account, $title)
 astcore_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item)
 astcore_list($header, $rows, $noresults, $maxline)
+astcore_flattenArray($array,$keyname='')
 
 */
 
@@ -43,18 +44,22 @@ function astcore_help($section='') {
 }
 
 
-function astcore_search($edit, $posturl) {
+function astcore_search($edit, $posturl, $value = NULL) {
 	global $user;
 	global $db_prefix; 
-
+	
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
-
+	
+	if (empty($value)) {
+		$value = $edit['search'];
+	}
+	
 	$output = '
 <form action="'.$posturl.'" method="post">
 <div class="form-item">
 <B>'.t('Enter a search string').'&nbsp;&nbsp;</B>
-<input type="text" size="20" value="'.$edit['search'].'" name="edit[search]" alt="'.t('Enter a term to search').'" />&#160;
+<input type="text" size="20" value="'.$value.'" name="edit[search]" alt="'.t('Enter a term to search').'" />&#160;
 <input type="submit" name="search" value="'.t('Search').'" />&#160;&#160;
 </div></form>
 ';
@@ -130,69 +135,99 @@ function astcore_list($header, $rows, $noresults, $maxline) {
 }
 
 
-function theme_testtable($header, $rows, $attributes = array(), $caption = NULL) {
-  $output = '<table'. drupal_attributes($attributes) .">\n";
-
-  if (isset($caption)) {
-    $output .= '<caption>'. $caption ."</caption>\n";
-  }
-
-  // Format the table header:
-  if (count($header)) {
-    $ts = tablesort_init($header);
-    $output .= ' <thead><tr>';
-    foreach ($header as $cell) {
-      $cell = tablesort_header($cell, $header, $ts);
-      $output .= _theme_table_cell($cell, 1);
-    }
-    $output .= " </tr></thead>\n";
-  }
-
-  // Format the table rows:
-  $output .= "<tbody>\n";
-  if (count($rows)) {
-    foreach ($rows as $number => $row) {
-      $attributes = array();
-
-      // Check if we're dealing with a simple or complex row
-      if (isset($row['data'])) {
-        foreach ($row as $key => $value) {
-          if ($key == 'data') {
-            $cells = $value;
-          }
-          else {
-            $attributes[$key] = $value;
-          }
-        }
-      }
-      else {
-        $cells = $row;
-      }
-
-      // Add odd/even class
-      $class = ($number % 2 == 1) ? 'even': 'odd';
-      if (isset($attributes['class'])) {
-        $attributes['class'] .= ' '. $class;
-      }
-      else {
-        $attributes['class'] = $class;
-      }
-
-      // Build row
-      $output .= ' <tr'. drupal_attributes($attributes) .'>';
-      $i = 0;
-      foreach ($cells as $cell) {
-        $cell = tablesort_cell($cell, $header, $ts, $i++);
-        $output .= _theme_table_cell($cell, 0);
-      }
-      $output .= " </tr>\n";
-    }
-  }
-
-  $output .= "</tbody></table>\n";
-  return $output;
+function astcore_flattenArray($array,$keyname='')
+{
+   $tmp = array();
+   foreach($array as $key => $value)
+   {
+       if(is_array($value))
+           $tmp = array_merge($tmp,astcore_flattenArray($value,$key));
+       else
+           $tmp[$key.$keyname] = $value;
+   }
+   return $tmp;
 }
 
 
+// DRUPAL CORE MODS
+
+ /**
+ * Recursively construct an URI string from an array.
+ *
+ * The main purpose of this function was to allow search results to be paged
+ * and tablesorted. The only coding change involved for developers is to
+ * use $_REQUEST['edit'] and $_REQUEST['op'] instead of $_POST['edit'] and
+ * $_POST['op'] within your controller function.
+ *
+ * @param $to_uri
+ *   A string or array to convert into an URI querystring. The array can be
+ *   multidimensional.
+ * @param $current_key
+ *   Used internally by the function to store the cumulative key values of
+ *   each successive array.
+ * @return
+ *   A string suitable for passing as an HTTP GET querystring for an URL.
+ */
+function array2uri($to_uri, $current_key = '') {
+  $query_string = '';
+
+  if (!is_array($to_uri)) {
+    return (isset($to_uri) ? '&'. $to_uri : NULL);
+  }
+
+  foreach ($to_uri as $key => $value) {
+    if (is_array($value) && !$current_key) {
+      $key_param = ($current_key) ? "${current_key}[$key]" : $key;
+      $query_string .= array2uri($value, $key_param);
+    }
+    elseif (is_scalar($value)) {
+      if ($current_key) {
+        $key_as_uri = "${current_key}[$key]";
+        $query_string .= '&'. $key_as_uri. '='. urlencode($value);
+      }
+      else {
+        $query_string .= '&'. $key. '='. urlencode($value);
+      }
+    }
+  }
+
+  return $query_string;
+}
+
+/*
+Modification in tablesort.inc line 137:
+function tablesort_get_querystring() {
+  $cgi = $_SERVER['REQUEST_METHOD'] == 'GET' ? $_GET : $_POST;
+  $query_string = '';
+
+  unset($cgi['order'], $cgi['sort'], $cgi['q']);
+  return array2uri($cgi);
+}
+
+Modifcation in pager.inc line 383:
+function pager_link($from_new, $element, $attributes = array()) {
+  $q = $_GET['q'];
+  $from = array_key_exists('from', $_GET) ? $_GET['from'] : '';
+
+//  foreach ($attributes as $key => $value) {
+//    $query[] = $key .'='. $value;
+//  }
+
+  $from_new = pager_load_array($from_new[$element], $element, explode(',', $from));
+
+  
+//  if (count($attributes)) {
+//    $url = url($q, 'from='. implode($from_new, ',') .'&'. implode('&', $query));
+//  }
+//  else {
+//    $url = url($q, 'from='. implode($from_new, ','));
+//  }
+  
+  $query_string = array2uri($attributes);
+  $url = url($q, 'from='. implode($from_new, ',') . $query_string);
+
+  return check_url($url);
+}
+*/
 
 ?>

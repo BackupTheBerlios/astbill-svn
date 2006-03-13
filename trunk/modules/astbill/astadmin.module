@@ -1220,7 +1220,15 @@ function page_astadmin_listcdr() {
 		$output = page_astadmin_listcdr_form($edit);
 		break;
 		default:
-		$output = astcore_search($edit, $posturl = url('/astbilladm/listcdr'));
+		
+		$value = $edit['search'];
+		$tmp = astcore_flattenArray($_GET);
+		
+		if (!empty($tmp['searchedit'])) {
+			$value = $tmp['searchedit'];
+		}
+		
+		$output = astcore_search($edit, $posturl = url('/astbilladm/listcdr'), $value);
 		$output .= page_astadmin_listcdr_form($value, $edit);
 	
 	}
@@ -1230,7 +1238,7 @@ function page_astadmin_listcdr() {
 }
 
 
-function page_astadmin_listcdr_form($edit) {
+function page_astadmin_listcdr_form($value, $edit) {
 	global $user;
 	global $db_prefix;
 	$edit = $_POST["edit"];
@@ -1301,14 +1309,15 @@ function page_astadmin_listcdr_form($edit) {
 		$output .= t('<B>User Agent: </B>');
 		$output .= $res->useragent.'<BR>';
 		$output .= '<BR><BR><FORM><INPUT TYPE="button" VALUE="Back" onClick="history.go(-1);return true;"> </FORM>';
-
+		
 	} // END CHECK IF SPECIFIC RECORD
-
-
+	
+	
 	if ($skipcolumlist == 0) { // START CHECK IF ALL RECORDS
-
+		
 		$maxline = 40;
-
+				
+		
 		$header = array(
 		array('data' => t('User'), 'field' => 'name'),
 		array('data' => t('ID'), 'field' => 'id', 'sort' => 'desc'),
@@ -1321,15 +1330,15 @@ function page_astadmin_listcdr_form($edit) {
 		array('data' => t('Billtime'), 'field' => 'billtime'),
 		array('data' => t('Operations'), 'colspan' => 1)
 		);
-
-	
-		$value = $edit['search'];
-	
+		
+		//print_r($_GET);
+		
 		$sql = "SELECT id, cdr.accountcode, callednum, cdr.type, cdr.trunk, cdr.date_created, dialstatus, billtime, name FROM astcdr cdr, ".$db_prefix."users, astaccount WHERE cdr.accountcode = astaccount.accountcode AND db_prefix ='".$db_prefix."' AND CONCAT_WS(',', LOWER(name), id, cdr.accountcode, callednum, LOWER(cdr.type), LOWER(cdr.trunk), cdr.date_created, LOWER(dialstatus), billtime) LIKE LOWER('%".$value."%')".tablesort_sql($header);
-
+		
+		
 		$result = pager_query($sql, $maxline);
-  
-	
+		
+		
 		while ($res = db_fetch_object($result)) {
 			$rows[] = array(
 			$res->name.'&nbsp;&nbsp;',
@@ -1396,7 +1405,7 @@ function page_astadmin_accesslog() {
 			);
 		}
 
-		$title = 'AstBill Log';
+		$title = t('AstBill Log');
   
 		$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
 		if (!empty($pager)) {
