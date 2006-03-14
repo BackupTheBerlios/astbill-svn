@@ -200,6 +200,14 @@ function tablesort_get_querystring() {
   $cgi = $_SERVER['REQUEST_METHOD'] == 'GET' ? $_GET : $_POST;
   $query_string = '';
 
+// Removed by AstBill
+//  foreach ($cgi as $key => $val) {
+//    if ($key != 'order' && $key != 'sort' && $key != 'q') {
+//      $query_string .= '&'. $key .'='. $val;
+//    }
+//  }
+//  return $query_string;
+// added by AstBill
   unset($cgi['order'], $cgi['sort'], $cgi['q']);
   return array2uri($cgi);
 }

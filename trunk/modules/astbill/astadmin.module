@@ -155,6 +155,37 @@ function astadmin_menu($may_cache) {
       'access' => user_access('astadmin accesslog'));
      // 'type' => MENU_CALLBACK);
      
+    	$items[] = array('path' => 'astbilladm/accesslog/astlog', 'title' => t('View Logs'),
+      'callback' => 'page_astadmin_accesslog',
+      'access' => user_access('astadmin accesslog'),
+      'type' => MENU_CALLBACK);
+      
+        $items[] = array('path' => 'astbilladm/accesslog/ast_messages', 'title' => t('View Logs'),
+      'callback' => 'page_astadmin_accesslog',
+      'access' => user_access('astadmin accesslog'),
+      'type' => MENU_CALLBACK);
+      
+      $items[] = array('path' => 'astbilladm/accesslog/agi_err_astar', 'title' => t('View Logs'),
+      'callback' => 'page_astadmin_accesslog',
+      'access' => user_access('astadmin accesslog'),
+      'type' => MENU_CALLBACK);
+      
+      $items[] = array('path' => 'astbilladm/accesslog/agi_err_local', 'title' => t('View Logs'),
+      'callback' => 'page_astadmin_accesslog',
+      'access' => user_access('astadmin accesslog'),
+      'type' => MENU_CALLBACK);
+      
+      $items[] = array('path' => 'astbilladm/accesslog/agi_err_dead', 'title' => t('View Logs'),
+      'callback' => 'page_astadmin_accesslog',
+      'access' => user_access('astadmin accesslog'),
+      'type' => MENU_CALLBACK);
+      
+      $items[] = array('path' => 'astbilladm/accesslog/agi_err_voicemail', 'title' => t('View Logs'),
+      'callback' => 'page_astadmin_accesslog',
+      'access' => user_access('astadmin accesslog'),
+      'type' => MENU_CALLBACK);
+      
+     
      	$items[] = array('path' => 'astbilladm/payment', 'title' => t('Payments'),
       'callback' => 'page_astadmin_payment',
       'access' => $accesspay);
@@ -1317,7 +1348,6 @@ function page_astadmin_listcdr_form($value, $edit) {
 		
 		$maxline = 40;
 				
-		
 		$header = array(
 		array('data' => t('User'), 'field' => 'name'),
 		array('data' => t('ID'), 'field' => 'id', 'sort' => 'desc'),
@@ -1369,9 +1399,7 @@ function page_astadmin_accesslog() {
 	
 	if (arg(2) == 'astlog') {
 	
-		
-		$maxline = 40; // This is the number of records to display on a page
-		//  $output = '<b>Hover over Account to view Accounts Password</b><br><br>';
+		$maxline = 40;
 
 		$header = array(
 		array('data' => t('ID'), 'field' => 'id', 'sort' => 'desc'),
@@ -1405,13 +1433,9 @@ function page_astadmin_accesslog() {
 			);
 		}
 
-		$title = t('AstBill Log');
-  
-		$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
-		if (!empty($pager)) {
-			$rows[] = array(array('data' => $pager, 'colspan' => 10));
-		}
-		$output .= (count($rows) == 0) ? t('No log entries.') : theme('table', $header, $rows);
+		$title = t('AstBill Logs');
+
+		$output = astcore_list($header, $rows, t('No log entries'), $maxline);
 
   
 		} else {
@@ -1461,7 +1485,7 @@ function page_astadmin_accesslog() {
 
 		}
 	
-		_astadmin_printtheme_best($output, $account, $title);
+		astcore_printtheme($output, $title);
 }
 
 
