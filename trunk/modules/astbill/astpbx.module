@@ -272,134 +272,93 @@ $output = '<div class="node "><table width="100%" border="0" cellpadding="0" cel
 // ##########################################################################################################
 
 function _astpbx_voipadmin() {
-  global $user;
-  global $db_prefix; 
-
-  $edit = $_POST["edit"];
-  $op = $_POST["op"];
-
+	global $user;
+	global $db_prefix; 
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
 
 
-  switch (($op ? $op : arg(1))) {
-
-	case t('Go'):
-		$value = $edit['filteracc'];	
-		$output .= _astpbx_voipadmin_list($value);
-		$title = t('View');
-	break;
-
+	switch ($op) {
+		case t('Search'):
+		$output .= _astpbx_voipadmin_list($value, $edit);
+		break;
+		default:
+		
+		$value = $edit['search'];
+		$tmp = astcore_flattenArray($_GET);
+		
+		if (!empty($tmp['searchedit'])) {
+			$value = $tmp['searchedit'];
+		}
+		
+		$output = astcore_search($edit, $posturl = url('/astbilladm'), $value);
+		$output .= _astpbx_voipadmin_list($value, $edit);
+	}
 	
-    default:
-    $output .= _astpbx_voipadmin_list($value);
-
-  }
-  
-    _astpbx_printtheme($output, $account);
-  
+	$title = 'View';
+	astcore_printtheme($output, $title);
 }
 
-function _astpbx_voipadmin_list($value) {
-  // Used to View All Accounts
-
-  // Make sure you don't trust the URL to be safe! Always check for exploits.
-  //if (!is_numeric($alice) || !is_numeric($bob)) {
-  //if (!is_numeric($account)) {
-    // We will just show a standard "access denied" page in this case.
-  //  drupal_access_denied();
-  //  return;
-  //}
-  global $user;
-  global $db_prefix;
-  $maxline = 40; // This is the number of records to display on a page
-
-  
-  
-  $output = '
-<form action="'.url('/astbilladm').'" method="post">
-<div class="form-item">
-<B>'.t('Search for Accountcode').'&nbsp;&nbsp;</B>
-<input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
-<input type="submit" name="op" value="'.('Go').'" />&#160;&#160;
-</div></form>
-';
-  
-  
-  $output .= '<b>'.t('Hover over Account to view Accounts Password').'</b><br><br>';
-
-  $header = array(
-    array('data' => t('User')),
-    array('data' => t('Account'), 'field' => 'accountcode', 'sort' => 'asc'),
-    array('data' => t('Type'), 'field' => 'tech'),
-    array('data' => t('Name'), 'field' => 'accountname'),
-    array('data' => t('Balance')),
-    array('data' => t('Expenditure')),
-    array('data' => t('Payments')),
-    array('data' => t('Calls')),
-    array('data' => t('Operations'), 'colspan' => 4)
+function _astpbx_voipadmin_list($value, $edit) {
+	global $user;
+	global $db_prefix;
+	$maxline = 40;
+		
+	$header = array(
+	array('data' => t('User'), 'field' => 'name'),
+	array('data' => t('UID'), 'field' => 'uid'),
+	array('data' => t('Account'), 'field' => 'accountcode', 'sort' => 'asc'),
+	array('data' => t('Pass')),
+	array('data' => t('Type'), 'field' => 'tech'),
+	array('data' => t('Name'), 'field' => 'accountname'),
+	array('data' => t('Balance')),
+	array('data' => t('Expenditure')),
+	array('data' => t('Payments')),
+	array('data' => t('Calls')),
+	array('data' => t('Operations'), 'colspan' => 4));
 	
-  );
- // $sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,countcalls FROM asvaccount2 
- // where (tech = 'SIP' or tech = 'IAX' or tech = 'VIR') ". tablesort_sql($header);
-
- if (!empty($value)) {
-  $value = trim($value);
-  //$sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,countcalls FROM asvaccount2 where accountcode LIKE '%".$value."%'". tablesort_sql($header);
-  $sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,15) as accountname FROM astaccount, {users} usr where astaccount.uid = usr.uid and db_prefix ='".$db_prefix."' and tech in (select actype from astactype) AND accountcode LIKE '%".$value."%'". tablesort_sql($header);
-
- } else {
-
-  $sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,15) as accountname FROM astaccount, {users} usr where astaccount.uid = usr.uid and db_prefix ='".$db_prefix."' and tech in (select actype from astactype)". tablesort_sql($header);
- 
- }
- 
- 
-  //$sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
-  //$result = pager_query($sql, $maxline, 0, $sqlCount);
-  $result = pager_query($sql, $maxline);
-  
-  while ($res = db_fetch_object($result)) {
-       
-	   $sumpaid = db_fetch_object(db_query("SELECT round(Sum(astpayment.paidamount), 2) AS sumpaid FROM astpayment WHERE astpayment.accountcode = '%s'", $res->accountcode));
-       
-       $cdrcost = db_fetch_object(db_query("SELECT round((Sum(astcdr.price)/100),2) AS sumprice FROM astcdr where dialstatus like 'ANSWER%%' and answeredtime <> 0 and trunk <> 'Local' AND accountcode = '%s'", $res->accountcode));
-       
-	   $countcalls = db_fetch_object(db_query("SELECT count(*) AS countcalls FROM astcdr where dialstatus like 'ANSWER%%' and answeredtime <> 0 and trunk <> 'Local' AND accountcode = '%s'", $res->accountcode));
-       
-       if (empty($sumpaid->sumpaid)) {$sumpaid->sumpaid = 0;}
-	   if (empty($cdrcost->sumprice)) {$cdrcost->sumprice = 0;}
-	   if (empty($countcalls->countcalls)) {$countcalls->countcalls = 0;}
-
-	   $sumbalance =  number_format(($sumpaid->sumpaid + $res->startingcredit - $cdrcost->sumprice), 2);
-	   $sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
-       $rows[] = array(
-	'<A HREF="'.url('user/'.$res->uid).'">'.$res->name.'</A>',
-	'<a title="Password: '.$res->secret.'"  href="'.url('astpbx/account/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
-	'<img border="0" src="files/astar/'.$res->tech.'.gif">',
-		$res->accountname.'&nbsp;&nbsp;&nbsp;', 
-	        array('data' => '<b>'.$sumbalance.'</b>', 'align' => 'right'), // Balance
+	$sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,5) accountname FROM astaccount, {users} usr WHERE astaccount.uid = usr.uid AND db_prefix ='".$db_prefix."' AND tech IN (select actype from astactype) AND CONCAT_WS(',', accountcode, tech, usr.uid, LOWER('usr.name'), accountname, usr.name) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	
+	$result = pager_query($sql, $maxline);
+	
+	while ($res = db_fetch_object($result)) {
+		$sumpaid = db_fetch_object(db_query("SELECT round(Sum(astpayment.paidamount), 2) AS sumpaid FROM astpayment WHERE astpayment.accountcode = '%s'", $res->accountcode));
+		
+		$cdrcost = db_fetch_object(db_query("SELECT round((Sum(astcdr.price)/100),2) AS sumprice FROM astcdr where dialstatus like 'ANSWER%%' and answeredtime <> 0 and trunk <> 'Local' AND accountcode = '%s'", $res->accountcode));
+		
+		$countcalls = db_fetch_object(db_query("SELECT count(*) AS countcalls FROM astcdr where dialstatus like 'ANSWER%%' and answeredtime <> 0 and trunk <> 'Local' AND accountcode = '%s'", $res->accountcode));
+		
+		if (empty($sumpaid->sumpaid)) {$sumpaid->sumpaid = 0;}
+		if (empty($cdrcost->sumprice)) {$cdrcost->sumprice = 0;}
+		if (empty($countcalls->countcalls)) {$countcalls->countcalls = 0;}
+		
+		$sumbalance =  number_format(($sumpaid->sumpaid + $res->startingcredit - $cdrcost->sumprice), 2);
+		$sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
+		
+		$rows[] = array(
+		'<A HREF="'.url('user/'.$res->uid).'">'.$res->name.'</A>',
+		$res->uid,
+		'<A TITLE="Password: '.$res->secret.'" HREF="'.url('astbilladm/editaccount/'.$res->accountcode).'">'.$res->accountcode.'</B>' . '</A>',
+		$res->secret,
+		'<IMG BORDER="0" SRC="files/astar/'.$res->tech.'.gif">',
+		$res->accountname, 
+		
+	        array('data' => '<B>'.$sumbalance.'</B>', 'align' => 'right'), // Balance
 		array('data' => $cdrcost->sumprice, 'align' => 'right'), // Expenditure
 		array('data' => $sumpaid->sumpaid, 'align' => 'right'), // Payments
 		array('data' => $countcalls->countcalls.'&nbsp;&nbsp;', 'align' => 'right'), // Calls
-	'&nbsp;&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
-	'&nbsp;&nbsp;&nbsp;<a href="'.url('astbilladm/editaccount/'.$res->accountcode).'"><img border="0" src="files/astar/edit.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.url('astbilladm/removeaccount/'.$res->uid.'/'.$res->accountcode).'">'.t('Remove').'</a>'
-	
-	//	array('data' => $res->accountcode, 'align' => 'right')
+		
+		'<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
+		'<a href="'.url('astbilladm/editaccount/'.$res->accountcode).'"><img border="0" src="files/astar/edit.gif"></a>',
+		'<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>',
+		'<a href="'.url('astbilladm/removeaccount/'.$res->uid.'/'.$res->accountcode).'">'.t('Remove').'</a>'
+		);
+	}
 
-	);
-  }
-
-  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
-  if (!empty($pager)) {
-    $rows[] = array(array('data' => $pager, 'colspan' => 8));
-  }
-
-  $output .= (count($rows) == 0) ? t('No Accounts for this User.') : theme('table', $header, $rows);
-
-  return $output;
+  
+	$output = astcore_list($header, $rows, $noresults = t('No Accounts for this User.'), $maxline);
+	return $output;
 }
-
 
 function _admin_astpbx_OLD() {
   // Used to View ALL Accounts

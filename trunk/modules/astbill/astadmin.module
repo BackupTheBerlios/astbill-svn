@@ -1273,8 +1273,7 @@ function page_astadmin_listcdr_form($value, $edit) {
 	global $user;
 	global $db_prefix;
 	$edit = $_POST["edit"];
-
-
+	
 	$skipcolumlist = 0; // set this to not skip the list stuff at bottom per default
 
 	if (arg(2) == 'specific') { // START CHECK IF SPECIFIC RECORD
