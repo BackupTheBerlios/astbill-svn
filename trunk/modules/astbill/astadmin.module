@@ -36,47 +36,41 @@ function astadmin_help($section='') {
 
 
 function astadmin_menu($may_cache) {
-  $items = array();
-  $access = user_access('can use AstBill Admin');
-  $accessrt = user_access('astadmin asterisk');
-  $accesspay = user_access('astadmin payment');
-  $items[] = array('path' => 'astbilladm',
+	$items = array();
+	$access = user_access('can use AstBill Admin');
+	$accessrt = user_access('astadmin asterisk');
+	$accesspay = user_access('astadmin payment');
+	
+	$items[] = array('path' => 'astbilladm',
                                   'title' => t('admin'),
                                   'callback' => '_astadmin_all',
                                   'access' => $access,
                                   'type' => MENU_CALLBACK);
 
-	// By using the MENU_CALLBACK type, we can register the callback for this
-    // path but not have the item show up in the menu; the admin is not allowed
-    // to enable the item in the menu, either.
-
-
  	$items[] = array('path' => 'astbilladm/hardware', 'title' => t('Hardware'),
-      'callback' => 'page_astadmin_hardware',
-      'access' => $access);
-     // 'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_hardware',
+	'access' => $access);
 
 	$items[] = array('path' => 'astbilladm/hardware/create', 'title' => t('Create Hardware'),
-      'callback' => 'page_astadmin_hardwarecreate',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_hardwarecreate',
+  	'access' => $access,
+	'type' => MENU_CALLBACK);
  	
 	$items[] = array('path' => 'astbilladm/hardware/change', 'title' => t('Change Hardware'),
-      'callback' => 'page_astadmin_hardwarechange',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_hardwarechange',
+	'access' => $access,
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astbilladm/hardware/remove', 'title' => t('Remove Hardware'),
-      'callback' => 'page_astadmin_hardwareremove',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_hardwareremove',
+	'access' => $access,
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astbilladm/hardware/idlist',
                    'title' => t('Hardware ID'),
                    'callback' => 'page_astadmin_hardwareidlist',
                    'callback arguments' => 'list',
                    'access' => $access);
-	           // 'weight' => 5);
 
 	$items[] = array('path' => 'astbilladm/hardware/idlist/list',
                      'title' => t('List Hardware ID'),
@@ -93,7 +87,6 @@ function astadmin_menu($may_cache) {
                      'callback' => 'page_astadmin_hardwareidlist',
                      'callback arguments' => 'add',
 		      'weight' => 7);
-
 	      
         $items[] = array('path' => 'astbilladm/hardware/idlist/delete',
                      'title' => t('Delete Hardware ID'),
@@ -103,122 +96,122 @@ function astadmin_menu($may_cache) {
 		      'callback arguments' => 'delete',
 		      'weight' => 7);
 
-
 	$items[] = array('path' => 'astbilladm/realtime', 'title' => t('Asterisk'),
-      'callback' => 'page_astadmin_realtime',
-      'access' => $accessrt);
-      //'type' => MENU_CALLBACK);
+        'callback' => 'page_astadmin_realtime',
+        'access' => $accessrt);
+	//'type' => MENU_CALLBACK);
      	$items[] = array('path' => 'astbilladm/realtime/showpeers', 'title' => t('Show Peers'),
-      'callback' => 'page_astadmin_realtime',
-      'access' => $accessrt);
-     // 'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_realtime',
+	'access' => $accessrt);
+	// 'type' => MENU_CALLBACK);
      	$items[] = array('path' => 'astbilladm/realtime/sip', 'title' => t('Sip Users'),
-      'callback' => 'page_astadmin_realtime',
-      'access' => $accessrt);
-     // 'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_realtime',
+	'access' => $accessrt);
+	// 'type' => MENU_CALLBACK);
      	$items[] = array('path' => 'astbilladm/realtime/iax', 'title' => t('Iax Users'),
-      'callback' => 'page_astadmin_realtime',
-      'access' => $accessrt);
-     // 'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_realtime',
+	'access' => $accessrt);
+	// 'type' => MENU_CALLBACK);
      
 	$items[] = array('path' => 'astbilladm/realtime/friends', 'title' => t('Incoming Friends'),
-      'callback' => 'page_astadmin_friends',
-      'access' => $access);
-     // 'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_friends',
+	'access' => $access);
+	// 'type' => MENU_CALLBACK);
 
  	$items[] = array('path' => 'astbilladm/realtime/friends/change', 'title' => t('Change Friend'),
-      'callback' => 'page_astadmin_friendschange',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_friendschange',
+	'access' => $access,
+	'type' => MENU_CALLBACK);
  	$items[] = array('path' => 'astbilladm/realtime/friends/create', 'title' => t('Create Friend'),
-      'callback' => 'page_astadmin_friendscreate',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_friendscreate',
+	'access' => $access,
+	'type' => MENU_CALLBACK);
 
  	$items[] = array('path' => 'astbilladm/realtime/friends/remove', 'title' => t('Remove Friend'),
-      'callback' => 'page_astadmin_friendsremove',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_friendsremove',
+	'access' => $access,
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astbilladm/realtime/friends/assign', 'title' => t('Assign DID'),
-      'callback' => 'page_astadmin_friendassign',
-      'access' => user_access('astadmin use Assign DID'),
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_friendassign',
+	'access' => user_access('astadmin use Assign DID'),
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astbilladm/listcdr', 'title' => t('Call Data Record'),
-      'callback' => 'page_astadmin_listcdr',
-      'access' => $access);
-     // 'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_listcdr',
+	'callback arguments' => array(),
+	'access' => $access);
+	// 'type' => MENU_CALLBACK);
 
  	$items[] = array('path' => 'astbilladm/accesslog', 'title' => t('View Logs'),
-      'callback' => 'page_astadmin_accesslog',
-      'access' => user_access('astadmin accesslog'));
-     // 'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_accesslog',
+	'access' => user_access('astadmin accesslog'));
+	// 'type' => MENU_CALLBACK);
      
     	$items[] = array('path' => 'astbilladm/accesslog/astlog', 'title' => t('View Logs'),
-      'callback' => 'page_astadmin_accesslog',
-      'access' => user_access('astadmin accesslog'),
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_accesslog',
+	'access' => user_access('astadmin accesslog'),
+	'type' => MENU_CALLBACK);
       
         $items[] = array('path' => 'astbilladm/accesslog/ast_messages', 'title' => t('View Logs'),
-      'callback' => 'page_astadmin_accesslog',
-      'access' => user_access('astadmin accesslog'),
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_accesslog',
+	'access' => user_access('astadmin accesslog'),
+	'type' => MENU_CALLBACK);
       
-      $items[] = array('path' => 'astbilladm/accesslog/agi_err_astar', 'title' => t('View Logs'),
-      'callback' => 'page_astadmin_accesslog',
-      'access' => user_access('astadmin accesslog'),
-      'type' => MENU_CALLBACK);
+	$items[] = array('path' => 'astbilladm/accesslog/agi_err_astar', 'title' => t('View Logs'),
+	'callback' => 'page_astadmin_accesslog',
+	'access' => user_access('astadmin accesslog'),
+	'type' => MENU_CALLBACK);
       
-      $items[] = array('path' => 'astbilladm/accesslog/agi_err_local', 'title' => t('View Logs'),
-      'callback' => 'page_astadmin_accesslog',
-      'access' => user_access('astadmin accesslog'),
-      'type' => MENU_CALLBACK);
+	$items[] = array('path' => 'astbilladm/accesslog/agi_err_local', 'title' => t('View Logs'),
+	'callback' => 'page_astadmin_accesslog',
+	'access' => user_access('astadmin accesslog'),
+	'type' => MENU_CALLBACK);
       
-      $items[] = array('path' => 'astbilladm/accesslog/agi_err_dead', 'title' => t('View Logs'),
-      'callback' => 'page_astadmin_accesslog',
-      'access' => user_access('astadmin accesslog'),
-      'type' => MENU_CALLBACK);
+	$items[] = array('path' => 'astbilladm/accesslog/agi_err_dead', 'title' => t('View Logs'),
+	'callback' => 'page_astadmin_accesslog',
+	'access' => user_access('astadmin accesslog'),
+	'type' => MENU_CALLBACK);
       
-      $items[] = array('path' => 'astbilladm/accesslog/agi_err_voicemail', 'title' => t('View Logs'),
-      'callback' => 'page_astadmin_accesslog',
-      'access' => user_access('astadmin accesslog'),
-      'type' => MENU_CALLBACK);
-      
-     
+	$items[] = array('path' => 'astbilladm/accesslog/agi_err_voicemail', 'title' => t('View Logs'),
+	'callback' => 'page_astadmin_accesslog',
+	'access' => user_access('astadmin accesslog'),
+	'type' => MENU_CALLBACK);
+           
      	$items[] = array('path' => 'astbilladm/payment', 'title' => t('Payments'),
-      'callback' => 'page_astadmin_payment',
-      'access' => $accesspay);
-     // 'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_payment',
+	'access' => $accesspay);
+	// 'type' => MENU_CALLBACK);
 
      	$items[] = array('path' => 'astbilladm/payment/create', 'title' => t('Create Payments'),
-      'callback' => 'page_astadmin_paymentcreate',
-      'access' => $accesspay,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astadmin_paymentcreate',
+	'access' => $accesspay,
+	'type' => MENU_CALLBACK);
  	
 	$items[] = array('path' => 'astbilladm/payment/change', 'title' => t('Change Payments'),
-      'callback' => 'page_astadmin_paymentchange',
-      'access' => $accesspay,
-      'type' => MENU_CALLBACK);
-
+	'callback' => 'page_astadmin_paymentchange',
+	'callback arguments' => array(),
+	'access' => $accesspay,
+	'type' => MENU_CALLBACK);
+	
 	$items[] = array('path' => 'astbilladm/payment/remove', 'title' => t('Remove Payments'),
-      'callback' => 'page_astadmin_paymentremove',
-      'access' => $accesspay,
-      'type' => MENU_CALLBACK);
-      
+	'callback' => 'page_astadmin_paymentremove',
+	'callback arguments' => array(),
+	'access' => $accesspay,
+	'type' => MENU_CALLBACK);
+	
         $items[] = array('path' => 'astbilladm/payment/credit', 'title' => t('Credit'),
-      'callback' => 'page_astadmin_credit',
-      'access' => $accesspay);
-     // 'type' => MENU_CALLBACK);
-     
+	'callback' => 'page_astadmin_credit',
+	'access' => $accesspay);
+	// 'type' => MENU_CALLBACK);
+	
 	$items[] = array('path' => 'astbilladm/payment/credit/change', 'title' => t('Change Credit'),
-      'callback' => 'page_astadmin_creditchange',
-      'access' => $accesspay,
-      'type' => MENU_CALLBACK);
-
-
-
-  return $items;
+	'callback' => 'page_astadmin_creditchange',
+	'callback arguments' => array(),
+	'access' => $accesspay,
+	'type' => MENU_CALLBACK);
+	
+	return $items;
 }
 
 
@@ -1244,8 +1237,7 @@ function page_astadmin_listcdr() {
 	global $user;
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
-
-	
+		
 	switch ($op) {
 		case t('Search'):
 		$output = page_astadmin_listcdr_form($edit);
@@ -1261,9 +1253,8 @@ function page_astadmin_listcdr() {
 		
 		$output = astcore_search($edit, $posturl = url('/astbilladm/listcdr'), $value);
 		$output .= page_astadmin_listcdr_form($value, $edit);
-	
 	}
-
+	
 	$title = 'View';
 	astcore_printtheme($output, $title);
 }
@@ -1509,115 +1500,74 @@ function output_textfile($filename, $lines) {
 
 function page_astadmin_payment() {
 	global $user;
-
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
 
-
-
-	switch (($op ? $op : arg(1))) {
-		case t('Go'):
-		$value = $edit['filteracc'];
-		drupal_goto("astbilladm/payment/payment/".$edit['filteracc']."/");
-		//page_astadmin_listcdr_form($value, $edit);
+	switch ($op) {
+		case t('Search'):
+		$output = page_astadmin_listcdr_form($edit);
 		break;
 		default:
-		page_astadmin_payment_form($value, $edit);
+		
+		$value = $edit['search'];
+		$tmp = astcore_flattenArray($_GET);
+		
+		if (!empty($tmp['searchedit'])) {
+			$value = $tmp['searchedit'];
+		}
+		
+		$output = astcore_search($edit, $posturl = url('astbilladm/payment'), $value);
+		$output .= page_astadmin_payment_form($value, $edit);
 	}
-
+	
+	$title = 'View';
+	
+	$undermenu = array(url('astbilladm/payment/create/').'">'.t('Create New Payment')	);
+	
+	astcore_printtheme($output, $title, $undermenu);
+	
 }
 
 function page_astadmin_payment_form($value, $edit) {
 	global $user;
-	global $db_prefix; 
-
-	$value = arg(3);
+	global $db_prefix;
+	$maxline = 40;
 	
-$output = '
-<form action="'.url('/astbilladm/payment').'" method="post">
-<div class="form-item">
-<B>'.t('Search for Accountcode').'&nbsp;&nbsp;</B>
-<input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
-<input type="submit" name="op" value="'.('Go').'" />&#160;&#160;
-</div></form>
-';
-
-  $maxline = 40; // This is the number of records to display on a page
-
-  $header = array(
-    array('data' => t('User')),
-    array('data' => t('ID'), 'field' => 'paid', 'sort' => 'desc'),
-    array('data' => t('Accountcode'), 'field' => 'accountcode'),
-    array('data' => t('Pay Type'), 'field' => 'paytype'),
-    array('data' => t('Comment'), 'field' => 'comment'),
-    array('data' => t('Paid Amount'), 'field' => 'paidamount'),
-    array('data' => t('Last Paid'), 'field' => 'paiddate'),
-    array('data' => t('Date Created'), 'field' => 'date_created'),
-    array('data' => t('Operations'), 'colspan' => 2)
-                                                                                     
-  );                                                                                 
-         
-  
-  if (!empty($value)) {
-	  $sql = "SELECT paid, pay.accountcode, paytype, pay.comment, paidamount, paiddate, pay.date_created FROM astpayment WHERE pay.accountcode = astaccount.accountcode and db_prefix ='".$db_prefix."' and accountcode LIKE '%".$value."%'". tablesort_sql($header);
-  } else {
-	  $sql = "SELECT paid, pay.accountcode, paytype, pay.comment, paidamount, paiddate, pay.date_created FROM astpayment pay, astaccount where pay.accountcode = astaccount.accountcode and db_prefix ='".$db_prefix."' ". tablesort_sql($header);
-  }                                                                           
-
-  $result = pager_query($sql, $maxline);
-  
-  while ($res = db_fetch_object($result)) {                                          
-    $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
-	$sqlfetch2 = db_fetch_object(db_query("select name from {users} where uid = '%s'", $sqlfetch1->uid));
-	$rows[] = array(
-		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>&nbsp;&nbsp;',
-		$res->paid.'&nbsp;&nbsp;',
-		$res->accountcode,
-		$res->paytype,
-		$res->comment,
-		$res->paidamount,
-		$res->paiddate,
-		$res->date_created,
-		'<A HREF="'.url('astbilladm/payment/change/'.$res->paid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
-		'<A HREF="'.url('astbilladm/payment/remove/'.$res->paid).'">'.t('Remove').'</A>'
+	$header = array(
+	array('data' => t('User'), 'field' => 'name'),
+	array('data' => t('ID'), 'field' => 'paid', 'sort' => 'desc'),
+	array('data' => t('Accountcode'), 'field' => 'accountcode'),
+	array('data' => t('Pay Type'), 'field' => 'paytype'),
+	array('data' => t('Comment'), 'field' => 'comment'),
+	array('data' => t('Paid Amount'), 'field' => 'paidamount'),
+	array('data' => t('Last Paid'), 'field' => 'paiddate'),
+	array('data' => t('Date Created'), 'field' => 'date_created'),
+	array('data' => t('Operations'), 'colspan' => 2)
 	);
-  }
-
-
-
-
-$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
-if (!empty($pager)) {
-  $rows[] = array(array('data' => $pager, 'colspan' => 10));
-}
-
-$output .= (count($rows) == 0) ? t('No records available.') : theme('table', $header, $rows);
-
-
-$title = t('View');
-
-
-_astadmin_printtheme_payment($output, $account, $title);
 	
+	$sql = "SELECT paid, pay.accountcode, paytype, pay.comment, paidamount, paiddate, pay.date_created, users.name, astaccount.uid FROM astpayment pay, astaccount, ".$db_prefix."users users WHERE pay.accountcode = astaccount.accountcode AND astaccount.uid = users.uid AND db_prefix ='".$db_prefix."' AND CONCAT_WS(',', paid, pay.accountcode, LOWER(paytype), LOWER(pay.comment), paidamount, paiddate, pay.date_created, LOWER(users.name), astaccount.uid) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 	
+	$result = pager_query($sql, $maxline);
+	
+	while ($res = db_fetch_object($result)) {                                          
+		$rows[] = array(
+			$res->name.'&nbsp;&nbsp;',
+			$res->paid.'&nbsp;&nbsp;',
+			$res->accountcode,
+			$res->paytype,
+			$res->comment,
+			$res->paidamount,
+			$res->paiddate,
+			$res->date_created,
+			'<A HREF="'.url('astbilladm/payment/change/'.$res->paid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+			'<A HREF="'.url('astbilladm/payment/remove/'.$res->paid).'">'.t('Remove').'</A>'
+			);
+	}
+	
+	$output = astcore_list($header, $rows, $noresults = t('No records available.'), $maxline);
+	
+	return $output;
 }
-
-
-
-
-function _astadmin_printtheme_payment($page_content, $account, $title) {
-	global $user;
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-
-  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-
-$output .= '<div class="nodecontent">';
-$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/payment/create/').'">'.t('Create New Payment').'</A></B><BR>';
-
-  print theme("page", $output);
-}
-
-
 
 function page_astadmin_paymentchange() {
   global $user;
@@ -1839,24 +1789,29 @@ if (arg(2) == 'create'){
 
 
 function page_astadmin_credit() {
-  global $user;
-
-  $edit = $_POST["edit"];
-  $op = $_POST["op"];
-
-
-
-  switch (($op ? $op : arg(1))) {
-    case t('Go'):
-       $value = $edit['filteracc'];
-       drupal_goto("astbilladm/payment/credit/".$edit['filteracc']."/");
-       //page_astadmin_listcdr_form($value, $edit);
-	break;
-    default:
-    	page_astadmin_credit_form($value, $edit);
+	global $user;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+		
+	switch ($op) {
+		case t('Search'):
+		$output = page_astadmin_listcdr_form($edit);
+		break;
+		default:
+		
+		$value = $edit['search'];
+		$tmp = astcore_flattenArray($_GET);
+		
+		if (!empty($tmp['searchedit'])) {
+			$value = $tmp['searchedit'];
+		}
+		
+		$output = astcore_search($edit, $posturl = url('/astbilladm/payment/credit'), $value);
+		$output .= page_astadmin_credit_form($value, $edit);
+	}
 	
-  }
-
+	$title = 'View';
+	astcore_printtheme($output, $title);
 }
 
 function page_astadmin_credit_form($value, $edit) {
@@ -1864,62 +1819,36 @@ function page_astadmin_credit_form($value, $edit) {
 	global $db_prefix; 
 	$edit = $_POST["edit"];
   	$op = $_POST["op"];
-  
-$output = '
-<form action="'.url('/astbilladm/payment/credit').'" method="post">
-<div class="form-item">
-<B>'.t('Search for Accountcode').'&nbsp;&nbsp;</B>
-<input type="text" size="20" value="'.$value.'" name="edit[filteracc]" alt="Enter a term to search" />&#160;
-<input type="submit" name="op" value="'.('Go').'" />&#160;&#160;
-</div></form>
-';
+	
+	$maxline = 40;
 
-  $maxline = 40; // This is the number of records to display on a page
+	$header = array(
+	array('data' => t('User'), 'field' => 'name'),
+	array('data' => t('UID'), 'field' => 'uid'),
+	array('data' => t('Accountcode'), 'field' => 'accountcode', 'sort' => 'asc'),
+	array('data' => t('Credit limit'), 'field' => 'creditlimit'),
+	array('data' => t('Operations'), 'colspan' => 1)                                                                             
+	);
 
-  $header = array(
-    array('data' => t('User'), 'field' => 'uid'),
-    array('data' => t('Accountcode'), 'field' => 'accountcode', 'sort' => 'asc'),
-    array('data' => t('Credit limit'), 'field' => 'creditlimit'),
-    array('data' => t('Operations'), 'colspan' => 1)                                                                             
-  );
-  $value = arg(3);
-  if (!empty($value)) {
-  $value = trim($value);
-  $sql = "SELECT accountcode, creditlimit FROM astaccount where uid <> 0 and db_prefix ='".$db_prefix."' and tech in (select actype from astactype) AND accountcode LIKE '%".$value."%'". tablesort_sql($header);
-  } else {
-  $sql = "SELECT accountcode, creditlimit FROM astaccount where uid <> 0 and db_prefix ='".$db_prefix."' and tech in (select actype from astactype)". tablesort_sql($header);
-  }
-
-  $result = pager_query($sql, $maxline);
-  
-  while ($res = db_fetch_object($result)) {                                          
-    $sqlfetch1 = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'", $res->accountcode));
-	$sqlfetch2 = db_fetch_object(db_query("select name from {users} where uid = '%s'", $sqlfetch1->uid));
-	$rows[] = array(
-		'<A HREF="'.url('astbilladm/listcdr/user/'.$sqlfetch1->uid).'">'.$sqlfetch2->name.'</A>&nbsp;&nbsp;',
+	//$sql = "SELECT astaccount.accountcode, creditlimit, users.name, astaccount.uid FROM astaccount, ".$db_prefix."users users WHERE astaccount.uid <> 0 AND db_prefix ='".$db_prefix."' AND tech in (select actype from astactype) AND CONCAT_WS(',', accountcode, creditlimit, LOWER(users.name)) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	
+	$sql = "SELECT astaccount.accountcode, creditlimit, users.name, astaccount.uid FROM astaccount, ".$db_prefix."users users WHERE astaccount.uid = users.uid and astaccount.uid <> 0 AND astaccount.db_prefix ='".$db_prefix."' AND tech in (select actype from astactype) AND CONCAT_WS(',', accountcode, creditlimit, LOWER(users.name), astaccount.uid) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	
+	$result = pager_query($sql, $maxline);
+	
+	while ($res = db_fetch_object($result)) {                                          
+		$rows[] = array(
+		$res->name.'&nbsp;&nbsp;',
+		$res->uid,
 		$res->accountcode,
 		$res->creditlimit,
-		'<A HREF="'.url('astbilladm/payment/credit/change/'.$res->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>'
-	);
-  }
-
-
-
-
-$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
-if (!empty($pager)) {
-  $rows[] = array(array('data' => $pager, 'colspan' => 10));
-}
-
-$output .= (count($rows) == 0) ? t('No records available.') : theme('table', $header, $rows);
-
-
-$title = t('View');
-
-
-_astadmin_printtheme_best($output, $account, $title);
+		'<A HREF="'.url('astbilladm/payment/credit/change/'.$res->accountcode.'/'.$res->uid).'"><IMG BORDER="0" SRC="files/astar/edit.gif"></A>'
+		);
+	}
 	
+  	$output = astcore_list($header, $rows, $noresults = t('No records available.'), $maxline);
 	
+	return $output;
 }
 
 
@@ -1970,33 +1899,25 @@ function astadmin_credit_validate($edit) {
 
 
 function astadmin_credit_save($edit, $account) {
-  global $user;
-  // Make sure you don't trust the URL to be safe! Always check for exploits.
-  //if (!is_numeric($alice) || !is_numeric($bob)) {
- /*
-  if (!is_numeric($account)) {
-    // We will just show a standard "access denied" page in this case.
-    drupal_access_denied();
-    return;
-  }*/
+	global $user;
+	global $db_prefix;
 
+	db_query("UPDATE astaccount SET creditlimit = '%s' WHERE accountcode = '%s' AND db_prefix = '".$db_prefix."'", $edit['creditlimit'], arg(4));
 
-db_query("UPDATE astaccount SET creditlimit = '%s' WHERE accountcode = '%s'", $edit['creditlimit'], arg(4));
-
-drupal_set_message(t('Credit changed'));
-
-
+	drupal_set_message(t('Credit changed'));
 }
+
 
 function astadmin_credit_form($account) {
 	global $user;
+	global $db_prefix;
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
 
 
 	$group .= 'AccountCode: <B>'.arg(4).'</B>';
 	
-	$sql = db_query("SELECT creditlimit FROM astaccount WHERE accountcode = '%s'", arg(4));
+	$sql = db_query("SELECT creditlimit FROM astaccount WHERE accountcode = '%s' AND db_prefix = '".$db_prefix."'", arg(4));
         $sqlout = db_fetch_object($sql);
 	
 	$group .= form_textfield(t('Credit Limit'), 'creditlimit', $sqlout->creditlimit, 30, 100);

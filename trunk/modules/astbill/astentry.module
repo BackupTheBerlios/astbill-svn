@@ -41,80 +41,88 @@ function astentry_help($section='') {
 
 
 function astentry_menu($may_cache) {
-  $items = array();
-  $access = user_access('astentry account settings');
-  $items[] = array('path' => 'astpbx/settings',
-                                  'title' => t('Settings'),
-                                  'callback' => '_astentry_all',
-                                  'access' => $access);
-                                 // 'type' => MENU_CALLBACK);
-
+	$items = array();
+	$access = user_access('astentry account settings');
+	
+	$items[] = array('path' => 'astpbx/settings',
+        'title' => t('Settings'),
+        'callback' => '_astentry_all',
+	'callback arguments' => array(),
+        'access' => $access);
+        
 	$items[] = array('path' => 'astpbx/incomingnr', 'title' => t('Incoming Numbers'),
-      'callback' => 'astentry_goto_incomming',
-      'access' => user_access('astentry incoming numbers'));
-     // 'type' => MENU_CALLBACK);
-
-	// By using the MENU_CALLBACK type, we can register the callback for this
-    // path but not have the item show up in the menu; the admin is not allowed
-    // to enable the item in the menu, either.
-
+	'callback' => 'astentry_goto_incomming',
+	'callback arguments' => array(),
+	'access' => user_access('astentry incoming numbers'));
+	
 	$items[] = array('path' => 'astentry/swtech', 'title' => t('Account Setup:'),
-      'callback' => 'page_astentry_swtech',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astentry_swtech',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
 
-    $items[] = array('path' => 'astentry/createnr', 'title' => t('Create a new account:'),
-      'callback' => 'page_astentry_createnr',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	$items[] = array('path' => 'astentry/createnr', 'title' => t('Create a new account:'),
+	'callback' => 'page_astentry_createnr',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
       
-    $items[] = array('path' => 'astentry/emailme', 'title' => t('Email account info:'),
-      'callback' => 'page_astentry_emailme',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	$items[] = array('path' => 'astentry/emailme', 'title' => t('Email account info:'),
+	'callback' => 'page_astentry_emailme',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
 
-    $items[] = array('path' => 'astentry/dialplan', 'title' => t('Dialplan:'),
-      'callback' => 'page_astentry_dialplan',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	$items[] = array('path' => 'astentry/dialplan', 'title' => t('Dialplan:'),
+	'callback' => 'page_astentry_dialplan',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
 
-    $items[] = array('path' => 'astentry/dialplancreate', 'title' => t('Create Dialplan:'),
-      'callback' => 'page_astentry_create_dialplan',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	$items[] = array('path' => 'astentry/dialplancreate', 'title' => t('Create Dialplan:'),
+	'callback' => 'page_astentry_create_dialplan',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astentry/dialplanchange', 'title' => t('Change Dialplan:'),
-      'callback' => 'page_astentry_change_dialplan',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astentry_change_dialplan',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astentry/dialplanremove', 'title' => t('Removing Dialplan:'),
-      'callback' => 'page_astentry_remove_dialplan',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astentry_remove_dialplan',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astentry/advset', 'title' => t('Advanced Settings:'),
-      'callback' => 'page_astentry_advset',
-      'access' => user_access('astentry advanced settings'),
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astentry_advset',
+	'callback arguments' => array(),
+	'access' => user_access('astentry advanced settings'),
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astentry/incomingnr', 'title' => t('Incoming Numbers:'),
-      'callback' => 'page_astentry_incomingnr',
-      'access' => user_access('astentry incoming numbers'),
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astentry_incomingnr',
+	'callback arguments' => array(),
+	'access' => user_access('astentry incoming numbers'),
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astentry/voicemailchange', 'title' => t('Voicemail Settings:'),
-      'callback' => 'page_astentry_voicemailchange',
-      'access' => $access,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astentry_voicemailchange',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astentry/incomingnrchange', 'title' => t('Incoming Number Change:'),
-      'callback' => 'page_astentry_incomingnrchange',
-      'access' => user_access('astentry incoming numbers'),
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astentry_incomingnrchange',
+	'callback arguments' => array(),
+	'access' => user_access('astentry incoming numbers'),
+	'type' => MENU_CALLBACK);
 
 
-  return $items;
+	return $items;
 }
 
 

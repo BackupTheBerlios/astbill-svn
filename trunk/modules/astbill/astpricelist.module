@@ -46,6 +46,7 @@ function astpricelist_menu($may_cache) {
   $items[] = array('path' => 'astpbx/pricelist',
                                   'title' => t('Rate Table'),
                                   'callback' => '_astratetable_all',
+				  'callback arguments' => array(),
                                   'access' => $access);
                                  // 'type' => MENU_CALLBACK);
 

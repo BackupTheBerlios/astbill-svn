@@ -75,6 +75,7 @@ function astpbx_menu($may_cache) {
   // to enable the item in the menu, either.
   $items[] = array('path' => 'astpbx/account', 'title' => t('Call Records:'),
     'callback' => 'page_astpbx_param',
+    'callback arguments' => array(),
     'access' => $access,
     'type' => MENU_CALLBACK);
 
@@ -92,11 +93,13 @@ function astpbx_menu($may_cache) {
     
   $items[] = array('path' => 'astbilladm/editaccount', 'title' => t('Account Edit'),
     'callback' => '_astpbx_accounts',
+    'callback arguments' => array(),
     'access' => user_access('can use admin astpbx'),
     'type' => MENU_CALLBACK);
   
   $items[] = array('path' => 'astbilladm/removeaccount', 'title' => t('Account Remove'),
     'callback' => '_astpbx_accounts_remove',
+    'callback arguments' => array(),
     'access' => user_access('can use admin astpbx'),
     'type' => MENU_CALLBACK);
     
@@ -359,77 +362,6 @@ function _astpbx_voipadmin_list($value, $edit) {
 	$output = astcore_list($header, $rows, $noresults = t('No Accounts for this User.'), $maxline);
 	return $output;
 }
-
-function _admin_astpbx_OLD() {
-  // Used to View ALL Accounts
-
-  // Make sure you don't trust the URL to be safe! Always check for exploits.
-  //if (!is_numeric($alice) || !is_numeric($bob)) {
-  //if (!is_numeric($account)) {
-    // We will just show a standard "access denied" page in this case.
-  //  drupal_access_denied();
-  //  return;
-  //}
-  global $user;
-  global $db_prefix; 
-
-  // Do not let anonymous users have access, even if the admin decides this
-  if ($user->uid != 0 && user_access('astpbx voip account')) {
-  
-  $maxline = 40; // This is the number of records to display on a page
-
-  $output = '<b>'.t('Hover over Account to view Accounts Password').'</b><br><br>';
-
-  $header = array(
-    array('data' => t('Account'), 'field' => 'accountcode', 'sort' => 'asc'),
-    array('data' => t('Type'), 'field' => 'tech'),
-    array('data' => t('Name')),
-    array('data' => t('Balance'), 'field' => 'balance'),
-    array('data' => t('Expenditure'), 'field' => 'sumprice'),
-    array('data' => t('Payments'), 'field' => 'sumpaid'),
-    array('data' => t('Calls'), 'field' => 'countcalls'),
-    array('data' => t('Operations'), 'colspan' => 2)
-	
-  );
-  $sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,countcalls FROM asvaccount2 
-  where (tech = 'SIP' or tech = 'IAX' or tech = 'VIR' or tech = 'H323') ". tablesort_sql($header);
-  
-
-  //$sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
-  //$result = pager_query($sql, $maxline, 0, $sqlCount);
-  $result = pager_query($sql, $maxline);
-  
-  while ($res = db_fetch_object($result)) {
-   $sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
-	$rows[] = array('<a title="Password: '.$res->secret.'"  href="'.url('astpbx/account/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
-	//$res->tech.'&nbsp;&nbsp;&nbsp;',
-	'<img border="0" src="files/astar/'.$res->tech.'.gif">',
-		$res->accountname.'&nbsp;&nbsp;&nbsp;', 
-	    array('data' => '<b>'.$res->balance.'</b>', 'align' => 'right'),
-		array('data' => $res->sumprice, 'align' => 'right'),
-		array('data' => $res->sumpaid, 'align' => 'right'),
-		array('data' => $res->countcalls, 'align' => 'right'),
-    // '&nbsp;&nbsp;'.l(t('View'), 'astpbx/account/'.$res->accountcode, null),
-	'&nbsp;&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>'
-	);
-  }
-
-  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
-  if (!empty($pager)) {
-    $rows[] = array(array('data' => $pager, 'colspan' => 8));
-  }
-
-  $output .= (count($rows) == 0) ? t('No Accounts for this User.') : theme('table', $header, $rows);
-  
-  _astpbx_printtheme($output, $account);
-
-  // Not a logged in user or has no rights
-  } else {
-    drupal_access_denied();
-  }
-}
-
 
 function _admin_status() {
 $myjava = '
@@ -913,7 +845,7 @@ _astentry_printtheme_best($output, $account, $title);
 }
 
 function _astpbx_accounts_remove() { // DANGER! REMOVING ACCOUNTS IS NOT WISE :D
-  global $user;
+	global $user;
 
   	$pass = '1';
 	$errors = array();

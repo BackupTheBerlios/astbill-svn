@@ -41,83 +41,79 @@ function astroute_help($section='') {
 
 
 function astroute_menu($may_cache) {
-  $items = array();
-  $access = user_access('can use provider route');
-  $access2 = user_access('can use provider trunks');
-  $items[] = array('path' => 'astbilladm/route',
+	$items = array();
+	$access = user_access('can use provider route');
+	$access2 = user_access('can use provider trunks');
+	$items[] = array('path' => 'astbilladm/route',
                                   'title' => t('Provider Routes'),
                                   'callback' => '_astroute_all',
+				  'callback arguments' => array(),
                                   'access' => $access);
                                  // 'type' => MENU_CALLBACK);
-  $items[] = array('path' => 'astbilladm/route/import',
+	$items[] = array('path' => 'astbilladm/route/import',
                               'title' => t('Import'),
                               'callback' => '_astroute_import',
                               'access' => user_access('astroute route import'));
                              // 'type' => MENU_CALLBACK);
-  $items[] = array('path' => 'astbilladm/route/export',
+        $items[] = array('path' => 'astbilladm/route/export',
                               'title' => t('Export'),
                               'callback' => '_astroute_export',
                               'access' => user_access('astroute route export'));
                              // 'type' => MENU_CALLBACK);
-			     
-				 
-  $items[] = array('path' => 'astbilladm/pricelist',
+			     			 
+        $items[] = array('path' => 'astbilladm/pricelist',
                               'title' => t('Price List'),
                               'callback' => '_astpriceedit_all',
+			      'callback arguments' => array(),
                               'access' => user_access('astroute pricelist edit'));
                              // 'type' => MENU_CALLBACK);
-  $items[] = array('path' => 'astbilladm/pricelist/import',
+        $items[] = array('path' => 'astbilladm/pricelist/import',
                               'title' => t('Import'),
                               'callback' => '_astpriceedit_import',
                               'access' => user_access('astroute pricelist import'));
                              // 'type' => MENU_CALLBACK);
-  $items[] = array('path' => 'astbilladm/pricelist/export',
+        $items[] = array('path' => 'astbilladm/pricelist/export',
                               'title' => t('Export'),
                               'callback' => '_astpriceedit_export',
                               'access' => user_access('astroute pricelist export'));
                              // 'type' => MENU_CALLBACK);
 			     
 			     
-  $items[] = array('path' => 'astbilladm/trunks', 'title' => t('Provider Trunks'),
-      'callback' => 'astroute_trunks',
-      'access' => $access2);
+        $items[] = array('path' => 'astbilladm/trunks', 'title' => t('Provider Trunks'),
+	'callback' => 'astroute_trunks',
+	'access' => $access2);
 
 	$items[] = array('path' => 'astbilladm/trunks/change', 'title' => t('Provider Trunk Details'),
-      'callback' => 'page_astroute_trunkchange',
-      'access' => $access2,
-      'type' => MENU_CALLBACK);
-
-	$items[] = array('path' => 'astbilladm/trunks/advanced', 'title' => t('Provider Trunk Details'),
-      'callback' => 'page_astroute_trunkadvanced',
-      'access' => user_access('astroute advanced provider trunks'),
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astroute_trunkchange',
+	'callback arguments' => array(),
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astbilladm/trunks/dialplan', 'title' => t('Provider Trunk Dialplan'),
-      'callback' => 'page_astroute_trunkdialplan',
-      'access' => $access2,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astroute_trunkdialplan',
+	'callback arguments' => array(),
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astbilladm/trunks/create/rt', 'title' => t('Create Provider Trunk'),
-      'callback' => 'page_astroute_trunkcreate',
-      'access' => $access2,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astroute_trunkcreate',
+	'callback arguments' => array(),
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astbilladm/trunks/create/static', 'title' => t('Create STATIC Provider Trunk'),
-      'callback' => 'page_astroute_trunkcreate',
-      'access' => $access2,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astroute_trunkcreate',
+	'callback arguments' => array(),
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astbilladm/trunks/remove', 'title' => t('Remove Provider Trunk'),
-      'callback' => 'page_astroute_trunkremove',
-      'access' => $access2,
-      'type' => MENU_CALLBACK);
+	'callback' => 'page_astroute_trunkremove',
+	'callback arguments' => array(),
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
 
-
-	// By using the MENU_CALLBACK type, we can register the callback for this
-    // path but not have the item show up in the menu; the admin is not allowed
-    // to enable the item in the menu, either.
-
-  return $items;
+	return $items;
 }
 
 
@@ -2144,11 +2140,6 @@ function astroute_trunk_delete($edit, $deletedmsg, $confirmmsg, $goto, $item, $i
 $title = t('Remove Trunk:').' '.$itemname;
 _astroute_printtheme_best($group, $title);
 //return $output;
-}
-
-function page_astroute_trunkadvanced() {
-  	$checktrunk = db_fetch_object(db_query("select name from asttrunk where tid = '%d'", arg(3)));
-	drupal_goto("astbilladm/friends/change/".$checktrunk->name);
 }
 
 
