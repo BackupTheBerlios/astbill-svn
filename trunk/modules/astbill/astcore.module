@@ -213,6 +213,13 @@ function array2uri($to_uri, $current_key = '') {
 }
 
 /*
+Modification in menu.inc line 351:
+Function menu_execute_active_handler()
+  if (strlen($arg)) {
++   if (!is_array($arguments)) {$arguments = array();}
+    $arguments = array_merge($arguments, explode('/', $arg));
+  }
+  
 Modification in tablesort.inc line 137:
 function tablesort_get_querystring() {
   $cgi = $_SERVER['REQUEST_METHOD'] == 'GET' ? $_GET : $_POST;

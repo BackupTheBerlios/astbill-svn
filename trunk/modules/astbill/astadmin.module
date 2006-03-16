@@ -49,6 +49,7 @@ function astadmin_menu($may_cache) {
 
  	$items[] = array('path' => 'astbilladm/hardware', 'title' => t('Hardware'),
 	'callback' => 'page_astadmin_hardware',
+	'callback arguments' => array(),
 	'access' => $access);
 
 	$items[] = array('path' => 'astbilladm/hardware/create', 'title' => t('Create Hardware'),
@@ -58,11 +59,13 @@ function astadmin_menu($may_cache) {
  	
 	$items[] = array('path' => 'astbilladm/hardware/change', 'title' => t('Change Hardware'),
 	'callback' => 'page_astadmin_hardwarechange',
+	'callback arguments' => array(),
 	'access' => $access,
 	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astbilladm/hardware/remove', 'title' => t('Remove Hardware'),
 	'callback' => 'page_astadmin_hardwareremove',
+	'callback arguments' => array(),
 	'access' => $access,
 	'type' => MENU_CALLBACK);
 
