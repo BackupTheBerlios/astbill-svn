@@ -1353,7 +1353,7 @@ function page_astadmin_listcdr_form($value, $edit) {
 		
 		//print_r($_GET);
 		
-		$sql = "SELECT id, cdr.accountcode, callednum, cdr.type, cdr.trunk, cdr.date_created, dialstatus, billtime, name FROM astcdr cdr, ".$db_prefix."users, astaccount WHERE cdr.accountcode = astaccount.accountcode AND db_prefix ='".$db_prefix."' AND CONCAT_WS(',', LOWER(name), id, cdr.accountcode, callednum, LOWER(cdr.type), LOWER(cdr.trunk), cdr.date_created, LOWER(dialstatus), billtime) LIKE LOWER('%".$value."%')".tablesort_sql($header);
+		$sql = "SELECT id, cdr.accountcode, callednum, cdr.type, cdr.trunk, cdr.date_created, dialstatus, billtime, name FROM astcdr cdr, ".$db_prefix."users users, astaccount WHERE cdr.accountcode = astaccount.accountcode AND db_prefix ='".$db_prefix."' AND astaccount.uid = users.uid AND CONCAT_WS(',', LOWER(name), id, cdr.accountcode, callednum, LOWER(cdr.type), LOWER(cdr.trunk), cdr.date_created, LOWER(dialstatus), billtime) LIKE LOWER('%".$value."%')".tablesort_sql($header);
 		
 		
 		$result = pager_query($sql, $maxline);
