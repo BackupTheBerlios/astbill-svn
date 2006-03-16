@@ -1,0 +1,261 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2005.01.13 Version 0.9.16
+ * 
+ */
+
+/* FUNCTIONS:
+
+astcore_search($edit, $posturl, $value = NULL, $undermenu = 'FALSE')
+**$undermenu = array(url('astbilladm/payment/create/').'">'.t('Create New Payment'));
+
+astcore_printtheme($page_content, $account, $title)
+
+astcore_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item)
+
+astcore_list($header, $rows, $noresults, $maxline)
+
+astcore_flattenArray($array,$keyname='')
+*/
+
+
+function astcore_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Core Functions");
+      break;
+  }
+  return $output;
+}
+
+
+function astcore_search($edit, $posturl, $value = NULL) {
+	global $user;
+	global $db_prefix; 
+	
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	
+	if (empty($value)) {
+		$value = $edit['search'];
+	}
+	
+	$output = '
+<form action="'.$posturl.'" method="post">
+<div class="form-item">
+<B>'.t('Enter a search string').'&nbsp;&nbsp;</B>
+<input type="text" size="20" value="'.$value.'" name="edit[search]" alt="'.t('Enter a term to search').'" />&#160;
+<input type="submit" name="search" value="'.t('Search').'" />&#160;&#160;
+</div></form>
+';
+/*
+	$group .= form_textfield($title, 'search', $edit['search'], 30, 30, $description = NULL, $attributes = NULL, $required = FALSE);
+	$group .= form_submit('Search');
+	
+	$output = form($group);
+*/	
+	return $output;
+}
+
+
+function astcore_printtheme($page_content, $title, $undermenu = 'FALSE') {
+	$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+	$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+	
+	if ($undermenu != 'FALSE') {
+		$output .= '<div class="nodecontent">';
+		
+		foreach ($undermenu as $key => $value) {
+			$output .= '<B><FONT SIZE=1><A HREF="'.$value.'</A></B><BR>';
+		}
+		
+	}
+	
+	print theme("page", $output);
+}
+
+
+function astcore_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item) {
+	global $user;
+	$cid = arg(2);
+	$output = '';
+
+	if ($edit) {
+		db_query($dbquery);
+		//db_query("DELETE FROM {contact_category} WHERE cid = %d and uid = %d", $cid, $user->uid);
+		// db_query("DELETE FROM {contact_category} WHERE cid = % d", $edit['cid']);
+
+		// Redirects the response to the list page
+		drupal_set_message(t($deletedmsg));
+		drupal_goto($goto);
+	}
+
+	// Creates a confirmation form
+	$categories = astcontact_get_categories();
+
+	$output .= t($confirmmsg);
+	$output .= form_hidden('cid', $cid);
+	$output .= form_submit(t('Delete'));
+
+	//return form($output);
+	$group = form($output);
+
+	$title = t('Remove ').$item;
+	$account = $user->uid;
+	astcore_printtheme($group, $account, $title);
+	//return $output;
+}
+
+
+function astcore_list($header, $rows, $noresults, $maxline) {
+
+	$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+	if (!empty($pager)) {
+		$rows[] = array(array('data' => $pager, 'colspan' => 8));
+	}
+
+	$output .= (count($rows) == 0) ? $noresults : theme('table', $header, $rows);
+	
+	/* ROWS[] EXAMPLE
+		$rows[] = array(
+		array('data' => $res->date_created, 'align' => 'right'),
+		array('data' => $res->dialstatus, 'align' => 'right'),
+		array('data' => $res->billtime, 'align' => 'right'));
+	*/
+	
+	
+	return $output;
+}
+
+
+function astcore_flattenArray($array,$keyname='')
+{
+   $tmp = array();
+   foreach($array as $key => $value)
+   {
+       if(is_array($value))
+           $tmp = array_merge($tmp,astcore_flattenArray($value,$key));
+       else
+           $tmp[$key.$keyname] = $value;
+   }
+   return $tmp;
+}
+
+
+// DRUPAL CORE MODS
+
+ /**
+ * Recursively construct an URI string from an array.
+ *
+ * The main purpose of this function was to allow search results to be paged
+ * and tablesorted. The only coding change involved for developers is to
+ * use $_REQUEST['edit'] and $_REQUEST['op'] instead of $_POST['edit'] and
+ * $_POST['op'] within your controller function.
+ *
+ * @param $to_uri
+ *   A string or array to convert into an URI querystring. The array can be
+ *   multidimensional.
+ * @param $current_key
+ *   Used internally by the function to store the cumulative key values of
+ *   each successive array.
+ * @return
+ *   A string suitable for passing as an HTTP GET querystring for an URL.
+ */
+function array2uri($to_uri, $current_key = '') {
+  $query_string = '';
+
+  if (!is_array($to_uri)) {
+    return (isset($to_uri) ? '&'. $to_uri : NULL);
+  }
+
+  foreach ($to_uri as $key => $value) {
+    if (is_array($value) && !$current_key) {
+      $key_param = ($current_key) ? "${current_key}[$key]" : $key;
+      $query_string .= array2uri($value, $key_param);
+    }
+    elseif (is_scalar($value)) {
+      if ($current_key) {
+        $key_as_uri = "${current_key}[$key]";
+        $query_string .= '&'. $key_as_uri. '='. urlencode($value);
+      }
+      else {
+        $query_string .= '&'. $key. '='. urlencode($value);
+      }
+    }
+  }
+
+  return $query_string;
+}
+
+/*
+Modification in menu.inc line 351:
+Function menu_execute_active_handler()
+  if (strlen($arg)) {
++   if (!is_array($arguments)) {$arguments = array();}
+    $arguments = array_merge($arguments, explode('/', $arg));
+  }
+
+Modification in tablesort.inc line 137:
+function tablesort_get_querystring() {
+  $cgi = $_SERVER['REQUEST_METHOD'] == 'GET' ? $_GET : $_POST;
+  $query_string = '';
+
+// Removed by AstBill
+//  foreach ($cgi as $key => $val) {
+//    if ($key != 'order' && $key != 'sort' && $key != 'q') {
+//      $query_string .= '&'. $key .'='. $val;
+//    }
+//  }
+//  return $query_string;
+// added by AstBill
+  unset($cgi['order'], $cgi['sort'], $cgi['q']);
+  return array2uri($cgi);
+}
+
+Modifcation in pager.inc line 383:
+function pager_link($from_new, $element, $attributes = array()) {
+  $q = $_GET['q'];
+  $from = array_key_exists('from', $_GET) ? $_GET['from'] : '';
+
+//  foreach ($attributes as $key => $value) {
+//    $query[] = $key .'='. $value;
+//  }
+
+  $from_new = pager_load_array($from_new[$element], $element, explode(',', $from));
+
+  
+//  if (count($attributes)) {
+//    $url = url($q, 'from='. implode($from_new, ',') .'&'. implode('&', $query));
+//  }
+//  else {
+//    $url = url($q, 'from='. implode($from_new, ','));
+//  }
+  
+  $query_string = array2uri($attributes);
+  $url = url($q, 'from='. implode($from_new, ',') . $query_string);
+
+  return check_url($url);
+}
+*/
+
+?>
