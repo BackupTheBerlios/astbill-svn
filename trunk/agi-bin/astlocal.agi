@@ -63,6 +63,9 @@ else {
 
 my $defmaxminute = &getMaxMinute();
 my $maxminute = $defmaxminute->{value};
+my $defTimeOut = &getTimeOut();
+my $maxTimeOut = $defTimeOut->{value};
+
 
 #### END OF CONFIGURATION #######################################################################################################
 
@@ -79,6 +82,14 @@ sub getAccount($) {
 sub getMaxMinute() {
 	my $res;
 	$sth = $dbh->prepare("select value from astsystem where name = 'MaxMinute' and serverid = 'DEF'");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+sub getTimeOut() {
+	my $res;
+	$sth = $dbh->prepare("select value from astsystem where name = 'DialLocal-Timeout-Parameter' and serverid = 'DEF'");
 	$sth->execute;
 	$res = $sth->fetchrow_hashref;
 	$sth->finish;
@@ -314,7 +325,7 @@ my $acc = &getAccount($cnumber->{accountcode});
 		print EXTEN "getLocal: $clocal->{tech}  $clocal->{forwardto}\n";
 
 		$maxminute = $defmaxminute->{value};  # Normally 60 min on local calls
-		$dialend = "|30|tTL(" . ($maxminute * 60 * 1000) . ":60000:30000)";
+		$dialend = $maxTimeOut . ($maxminute * 60 * 1000) . ":60000:30000)";
 
 		if ($clocal->{tech} eq "IAX") {$clocal->{tech} = "IAX2"	};
         # AstBill-0.9.0.9
@@ -350,11 +361,11 @@ my $acc = &getAccount($cnumber->{accountcode});
 
 
 			if ($cpath->{tech} eq "IAX2") {
-				$dialstr = $dialpath . $cnumber->{callednum} . "|30|tTL(" . ($maxminute * 60 * 1000) . ":60000:30000)";
+				$dialstr = $dialpath . $cnumber->{callednum} . $maxTimeOut . ($maxminute * 60 * 1000) . ":60000:30000)";
 				# print "SET VARIABLE TIMEOUT 3600\n";
 	
 			} elsif ($cpath->{tech} eq "SIP") {
-				$dialstr = "SIP/00" . $cnumber->{callednum} . $dialpath . "|30|tTL(" . ($maxminute * 60 * 1000) . ":60000:30000)";
+				$dialstr = "SIP/00" . $cnumber->{callednum} . $dialpath . $maxTimeOut . ($maxminute * 60 * 1000) . ":60000:30000)";
 				# $dialstr = $dialpath . $cnumber->{callednum} . "|30|HL(" . ($maxminute * 60 * 1000) . ":60000:30000)";
 				# print "SET VARIABLE TIMEOUT 3600\n";
 

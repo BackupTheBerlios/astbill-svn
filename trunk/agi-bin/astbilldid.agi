@@ -52,6 +52,9 @@ else {
 my $defmaxminute = &getMaxMinute();
 my $maxminute = $defmaxminute->{value};
 
+my $strAt = '@';    # Dont work with @ directly in SQL
+
+
 #### END OF CONFIGURATION #######################################################################################################
 
 sub getBalanceani($) {
@@ -200,7 +203,7 @@ sub getForward($) {
 	#	($num, $nide,$sec) = split(/&/, $forward,4);
 	#	($tmp, $num)  = split(/=/, $num,2);
 	#	($tmp, $nide) = split(/=/, $nide,2);
-    $SQL = "select tech, accountcode from astaccount where accountcode in ('" . $sqldial . ") and tech in ('IAX','SIP')";
+    $SQL = "select tech, accountcode, ccbatchno from astaccount where accountcode in ('" . $sqldial . ") and tech in ('IAX','SIP','REM-SIP','REM-IAX')";
 	my $result = $dbh->selectall_arrayref($SQL);
 	unless ($result) {
 		# check for errors after every single database call
@@ -212,13 +215,14 @@ sub getForward($) {
 	if ( $#resSet == -1 ) {          
 		# print LOG "You Currently have no Forwarding Account\n";
 		print LOG "Forward to PSTN\n";
-		return "77074490";
+		return "77070707";
 		exit; }
 	foreach my $row ( @{ $result } ) {
 		my @result = @{ $row };
         # print LOG "$result[0]   $result[1] \n";
 		$tech = $result[0];
 		if ($result[0] eq "IAX") {$tech = "IAX2"; }
+		if ($result[2] eq "30004") {$tech = "IAX2/museum1" . $strAt . "dialmuseum"; }
 		$res .= $tech . "/" . $result[1] . "&"; }          
 
 	chop($res);  # chop removes the last character - very cool
