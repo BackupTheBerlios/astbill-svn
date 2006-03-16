@@ -27,7 +27,7 @@
 astcore_search($edit, $posturl, $value = NULL, $undermenu = 'FALSE')
 **$undermenu = array(url('astbilladm/payment/create/').'">'.t('Create New Payment'));
 
-astcore_printtheme($page_content, $account, $title)
+astcore_printtheme($page_content, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE')
 
 astcore_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item)
 
@@ -77,18 +77,23 @@ function astcore_search($edit, $posturl, $value = NULL) {
 }
 
 
-function astcore_printtheme($page_content, $title, $undermenu = 'FALSE') {
+function astcore_printtheme($page_content, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE') {
 	$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
 
 	$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
 	
+	if ($undermenutitle != 'FALSE' && $undermenu != 'FALSE') {
+		$output .= '<DIV CLASS="nodecontent">';
+	}
+	
+	if ($undermenutitle != 'FALSE') {
+		$output .= '<B>'.$title.'</B><BR>';
+	}
+	
 	if ($undermenu != 'FALSE') {
-		$output .= '<div class="nodecontent">';
-		
 		foreach ($undermenu as $key => $value) {
 			$output .= '<B><FONT SIZE=1><A HREF="'.$value.'</A></B><BR>';
 		}
-		
 	}
 	
 	print theme("page", $output);
@@ -208,13 +213,6 @@ function array2uri($to_uri, $current_key = '') {
 }
 
 /*
-Modification in menu.inc line 351:
-Function menu_execute_active_handler()
-  if (strlen($arg)) {
-+   if (!is_array($arguments)) {$arguments = array();}
-    $arguments = array_merge($arguments, explode('/', $arg));
-  }
-
 Modification in tablesort.inc line 137:
 function tablesort_get_querystring() {
   $cgi = $_SERVER['REQUEST_METHOD'] == 'GET' ? $_GET : $_POST;

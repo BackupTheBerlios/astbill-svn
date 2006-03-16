@@ -133,65 +133,54 @@ function astpbx_perm() {
 // ##########################################################################################################
 
 function _astpbx_all() {
-  // Used to View Valid Accounts
-
-  // Make sure you don't trust the URL to be safe! Always check for exploits.
-  //if (!is_numeric($alice) || !is_numeric($bob)) {
-  //if (!is_numeric($account)) {
-    // We will just show a standard "access denied" page in this case.
-  //  drupal_access_denied();
-  //  return;
-  //}
-  global $user;
-  global $db_prefix;
-  $maxline = 40; // This is the number of records to display on a page
+	global $user;
+	global $db_prefix;
+	$maxline = 40; // This is the number of records to display on a page
   
-  $output = '<b>'.t('Hover over Account to view Accounts Password').'</b><br><br>';
+	$output = '<b>'.t('Hover over Account to view Accounts Password').'</b><br><br>';
 
-  $header = array(
-    array('data' => t('Account'), 'field' => 'accountcode', 'sort' => 'asc'),
-    array('data' => t('Type'), 'field' => 'tech'),
-    array('data' => t('Name')),
-    array('data' => t('Balance'), 'field' => 'balance'),
-    array('data' => t('Expenditure'), 'field' => 'sumprice'),
-    array('data' => t('Payments'), 'field' => 'sumpaid'),
-    array('data' => t('Calls'), 'field' => 'countcalls'),
-    array('data' => t('Operations'), 'colspan' => 2)
+	$header = array(
+	array('data' => t('Account'), 'field' => 'accountcode', 'sort' => 'asc'),
+	array('data' => t('Type'), 'field' => 'tech'),
+	array('data' => t('Name')),
+	array('data' => t('PSTN Number')),
+	array('data' => t('Balance'), 'field' => 'balance'),
+	array('data' => t('Expenditure'), 'field' => 'sumprice'),
+	array('data' => t('Payments'), 'field' => 'sumpaid'),
+	array('data' => t('Calls'), 'field' => 'countcalls'),
+	array('data' => t('Operations'), 'colspan' => 2)
+	);
 	
-  );
-  $sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,startingcredit,countcalls FROM asvaccount2 
-  where tech in (select actype from astactype) and db_prefix ='".$db_prefix."' and uid ='".$user->uid."'". tablesort_sql($header);
-  //$sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
-  //$result = pager_query($sql, $maxline, 0, $sqlCount);
-  $result = pager_query($sql, $maxline);
+	$sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,startingcredit,countcalls, forcecallerid FROM asvaccount2 WHERE tech in (select actype from astactype) and db_prefix ='".$db_prefix."' and uid ='".$user->uid."'". tablesort_sql($header);
+	
+	$result = pager_query($sql, $maxline);
   
-  while ($res = db_fetch_object($result)) {
-
-  $sumbalance = number_format(($res->balance + $res->startingcredit), 2);
-  $sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
-	$rows[] = array('<a title="Password: '.$res->secret.'"  href="'.url('astpbx/account/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
-	//$res->tech.'&nbsp;&nbsp;&nbsp;',
-	'<img border="0" src="files/astar/'.$res->tech.'.gif">',
-		$res->accountname.'&nbsp;&nbsp;&nbsp;', 
-	    array('data' => '<b>'.$sumbalance.'</b>', 'align' => 'right'),
+	while ($res = db_fetch_object($result)) {
+		$sumbalance = number_format(($res->balance + $res->startingcredit), 2);
+		$sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
+		$rows[] = array('<a title="Password: '.$res->secret.'"  href="'.url('astpbx/account/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
+		'<img border="0" src="files/astar/'.$res->tech.'.gif">',
+		$res->accountname.'&nbsp;&nbsp;&nbsp;',
+		$res->forcecallerid,
+		array('data' => '<b>'.$sumbalance.'</b>', 'align' => 'right'),
 		array('data' => $res->sumprice, 'align' => 'right'),
 		array('data' => $res->sumpaid, 'align' => 'right'),
 		array('data' => $res->countcalls, 'align' => 'right'),
-    // '&nbsp;&nbsp;'.l(t('View'), 'astpbx/account/'.$res->accountcode, null),
-	'&nbsp;&nbsp;&nbsp;<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
-	'&nbsp;&nbsp;<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>'
-	);
-  }
+		'<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
+		'<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>'
+		);
+	}
 
-  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
-  if (!empty($pager)) {
-    $rows[] = array(array('data' => $pager, 'colspan' => 8));
-  }
+	$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+	if (!empty($pager)) {
+		$rows[] = array(array('data' => $pager, 'colspan' => 8));
+	}
 
-  $output .= (count($rows) == 0) ? t('No Accounts for this User.') : theme('table', $header, $rows);
+	$output .= (count($rows) == 0) ? t('No Accounts for this User.') : theme('table', $header, $rows);
   
-  _astpbx_printtheme($output, $account);
-
+	$title = t('Account');
+  
+	astcore_printtheme($output, $title);
 }
 
 // ##########################################################################################################
