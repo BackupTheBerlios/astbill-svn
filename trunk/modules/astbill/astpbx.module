@@ -428,19 +428,10 @@ GetXMLH();
 // ##########################################################################################################
 
 function _astpbx_numbers() {
-  // Used to View Valid Accounts
+	global $user;
+	global $db_prefix; 
 
-  // Make sure you don't trust the URL to be safe! Always check for exploits.
-  //if (!is_numeric($alice) || !is_numeric($bob)) {
-  //if (!is_numeric($account)) {
-    // We will just show a standard "access denied" page in this case.
-  //  drupal_access_denied();
-  //  return;
-  //}
-  global $user;
-  global $db_prefix; 
-
-  $myjava = '
+	$myjava = '
 <script type="text/javascript">
 var p;
 var i = 0;
@@ -505,68 +496,66 @@ function rand()
 </script>
 ';
 
-  // Do not let anonymous users have access, even if the admin decides this
-  if ($user->uid != 0 && user_access('astpbx voip account')) {
+	  // Do not let anonymous users have access, even if the admin decides this
+	  if ($user->uid != 0 && user_access('astpbx voip account')) {
   
-  $maxline = 40; // This is the number of records to display on a page
+		  $maxline = 40; // This is the number of records to display on a page
 
-  $output = '<b>'.t('Click on the Call Button to Call').'</b><br>';
-  $output .= $myjava . '<pre id="call">&nbsp;&nbsp;&nbsp;&nbsp;</pre>';
+		  $output = '<b>'.t('Click on the Call Button to Call').'</b><br>';
+		  $output .= $myjava . '<pre id="call">&nbsp;&nbsp;&nbsp;&nbsp;</pre>';
 
-  $header = array(
-    array('data' => t('No Calls'), 'field' => 'CountOfcallednum', 'sort' => 'asc'),
-    array('data' => t('Number Dialed'), 'field' => 'callednum'),
-    array('data' => t('Name'), 'field' => 'name'),
-    array('data' => t('Operations'), 'colspan' => 2)
-	
-  );
+		  $header = array(
+		  array('data' => t('No Calls'), 'field' => 'CountOfcallednum', 'sort' => 'asc'),
+		  array('data' => t('Number Dialed'), 'field' => 'callednum'),
+		  array('data' => t('Name'), 'field' => 'name'),
+		  array('data' => t('Operations'), 'colspan' => 2)
+		  );
 
-	$sql  = "SELECT Count(astcdr.callednum) AS CountOfcallednum, astcdr.callednum, ";
-	$sql .= "LEFT(CONCAT_WS(' ', last_name, first_name),18) AS name ";
-	$sql .= "FROM (astcdr INNER JOIN astaccount ON astcdr.accountcode = astaccount.accountcode) ";
-	$sql .= "LEFT JOIN {contact_directory} cd ON astcdr.callednum = cd.phone ";
-	$sql .= "WHERE (((astaccount.uid)='" . $user->uid . "') and db_prefix ='".$db_prefix."' AND ((astcdr.trunk)<>'Local') AND ((astcdr.dialstatus)='ANSWER')) ";
-	$sql .= "GROUP BY astcdr.callednum, cd.first_name ";
-	$sql .= "ORDER BY Count(astcdr.callednum) DESC ";
+		  $sql  = "SELECT Count(astcdr.callednum) AS CountOfcallednum, astcdr.callednum, ";
+		  $sql .= "LEFT(CONCAT_WS(' ', last_name, first_name),18) AS name ";
+		  $sql .= "FROM (astcdr INNER JOIN astaccount ON astcdr.accountcode = astaccount.accountcode) ";
+		  $sql .= "LEFT JOIN {contact_directory} cd ON astcdr.callednum = cd.phone ";
+		  $sql .= "WHERE (((astaccount.uid)='" . $user->uid . "') and db_prefix ='".$db_prefix."' AND ((astcdr.trunk)<>'Local') AND ((astcdr.dialstatus)='ANSWER')) ";
+		  $sql .= "GROUP BY astcdr.callednum, cd.first_name ";
+		  $sql .= "ORDER BY Count(astcdr.callednum) DESC ";
 
-  //$sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
-  //$result = pager_query($sql, $maxline, 0, $sqlCount);
-  $result = pager_query($sql, $maxline);
+		  //$sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
+		  //$result = pager_query($sql, $maxline, 0, $sqlCount);
+		  $result = pager_query($sql, $maxline);
   
-  while ($res = db_fetch_object($result)) {
+		  while ($res = db_fetch_object($result)) {
    
-	$rows[] = array($res->CountOfcallednum.'&nbsp;&nbsp;&nbsp;',$res->callednum.'&nbsp;&nbsp;&nbsp;',
-		$res->name.'&nbsp;&nbsp;&nbsp;',
-	  '<a title="Click to Call this number" href="javascript:PostCall(' . $res->callednum . ')"><img border="0" id="btncall" src="files/astar/call.gif"></a>', '&nbsp;&nbsp;<a href="'.url('astcontact/astpbx/'.$res->callednum).'">'.t('Edit Contact').'</a>');
+			  $rows[] = array($res->CountOfcallednum.'&nbsp;&nbsp;&nbsp;',$res->callednum.'&nbsp;&nbsp;&nbsp;',
+			  $res->name.'&nbsp;&nbsp;&nbsp;', '<a title="Click to Call this number" href="javascript:PostCall(' . $res->callednum . ')"><img border="0" id="btncall" src="files/astar/call.gif"></a>', '&nbsp;&nbsp;<a href="'.url('astcontact/astpbx/'.$res->callednum).'">'.t('Edit Contact').'</a>');
 
-	//  '<a href="astpbx/numbers" onclick="PostCall();return false;">Call</a>');
-	// '<img border="0" src="files/astar/call.gif" title="Click to Call this number">');
-  }
+			  //  '<a href="astpbx/numbers" onclick="PostCall();return false;">Call</a>');
+			  // '<img border="0" src="files/astar/call.gif" title="Click to Call this number">');
+		  }
 
-  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
-  if (!empty($pager)) {
-    $rows[] = array(array('data' => $pager, 'colspan' => 8));
-  }
+		  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+		  if (!empty($pager)) {
+			  $rows[] = array(array('data' => $pager, 'colspan' => 8));
+		  }
 
-  $output .= (count($rows) == 0) ? t('No Calls for this User.') : theme('table', $header, $rows);
+		  $output .= (count($rows) == 0) ? t('No Calls for this User.') : theme('table', $header, $rows);
   
-  $outputLine = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.t('Last Numbers Dialed').'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+		  $outputLine = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.t('Last Numbers Dialed').'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
 
-  $output = $outputLine . '<div class="nodecontent">' . $output . "</div>\n";
-  // $output .= '<div class="astpbx">' . $page_content . "</div>\n";
-  print theme("page", $output);
+		  $output = $outputLine . '<div class="nodecontent">' . $output . "</div>\n";
+		  // $output .= '<div class="astpbx">' . $page_content . "</div>\n";
+		  print theme("page", $output);
 
   
-  // Not a logged in user or has no rights
-  } else {
-    drupal_access_denied();
-  }
+		  // Not a logged in user or has no rights
+	  } else {
+		  drupal_access_denied();
+	  }
 }
 
 
 function _astpbx_switchboard() {
-  global $user;
-$myjava = '
+	global $user;
+	$myjava = '
 <script type="text/javascript">
 var p;
 
@@ -611,31 +600,30 @@ function LoadSwitch()
 GetSwitch();
 </script>
 ';
-  global $user;
 
-  // Do not let anonymous users have access, even if the admin decides this
-  if ($user->uid != 0 && user_access('user switchboard')) {
+ 	 // Do not let anonymous users have access, even if the admin decides this
+	 if ($user->uid != 0 && user_access('user switchboard')) {
   
 
- // $output = "<pre>Your PABX is: Asterisk 1.0.9 built by root@buzzbud on a i686 running Linux\n</pre>";
- // $output .= "<pre>System uptime: 6 hours, 46 minutes, 31 seconds\n</pre>";
+		 // $output = "<pre>Your PABX is: Asterisk 1.0.9 built by root@buzzbud on a i686 running Linux\n</pre>";
+		 // $output .= "<pre>System uptime: 6 hours, 46 minutes, 31 seconds\n</pre>";
 
 
- $output .= $myjava . "<strong><pre>Caller  Calling Time of Call          Remote Channel</pre></strong>";
+		 $output .= $myjava . "<strong><pre>Caller  Calling Time of Call          Remote Channel</pre></strong>";
  
-// Remote Channel	 Caller  Calling Time of Call
-// SIP/70103-74d1   70103   70108   2005-08-13 14:47:52
-// CLIENT CHANNEL	REMOTE CHANNEL	RECORD	HANGUP	XFER	PARK
+		 // Remote Channel	 Caller  Calling Time of Call
+		 // SIP/70103-74d1   70103   70108   2005-08-13 14:47:52
+		 // CLIENT CHANNEL	REMOTE CHANNEL	RECORD	HANGUP	XFER	PARK
 
 
- $output .= '<pre id="ast22">                                                    </pre>';
+		 $output .= '<pre id="ast22">                                                    </pre>';
 
-  print theme("page", $output);
+		 print theme("page", $output);
 
-  // Not a logged in user or has no rights
-  } else {
-    drupal_access_denied();
-  }
+		 // Not a logged in user or has no rights
+	 } else {
+		 drupal_access_denied();
+	 }
 }
 
 // ##########################################################################################################
