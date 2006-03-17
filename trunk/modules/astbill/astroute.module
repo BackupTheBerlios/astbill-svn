@@ -541,7 +541,7 @@ $maxline = 40;
     array('data' => t('Operations'), 'colspan' => 2)
     );
 
-    $sql = db_query ("SELECT id, pattern, routename, round(cost, 2) cost, billincrement, trunk FROM astroute WHERE (countrycode LIKE '".$value."')". tablesort_sql($header));
+    $sql = db_query ("SELECT id, pattern, routename, cost, billincrement, trunk FROM astroute WHERE (countrycode LIKE '".$value."')". tablesort_sql($header));
     
     
   while ($item = db_fetch_object($sql)) {
@@ -1197,7 +1197,7 @@ $maxline = 40;
     array('data' => t('Operations'), 'colspan' => 3)
     );
 
-    $sql = db_query("SELECT id, pattern, name, round(price, 2) price, brand FROM astpricelist WHERE (countrycode LIKE '".$value."' AND brand LIKE '".$value2."')". tablesort_sql($header));
+    $sql = db_query("SELECT id, pattern, name, price, brand FROM astpricelist WHERE (countrycode LIKE '".$value."' AND brand LIKE '".$value2."')". tablesort_sql($header));
     
     
   while ($item = db_fetch_object($sql)) {
