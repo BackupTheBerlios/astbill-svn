@@ -1,5 +1,26 @@
 #!/usr/bin/perl
 #
+# AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+#
+# www.astbill.com
+#
+# Asterisk -- A telephony toolkit for Linux.
+# Drupal   -- An Open source content management platform.
+#
+# 
+# Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+#
+# Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+# Are Casilla        <areast  [Guess What?] astartelecom.com>
+#
+#
+# This program is free software, distributed under the terms of
+# the GNU General Public License
+#
+# 2006.03.17 Version 0.9.18
+# 
+#
+#
 # Asterisk AGI Dead Application for AstarPBX
 # 
 # Written by: Are <are at mansioncapital dot com>

@@ -14,47 +14,50 @@
 # You have to update the end of this perl script with the right username for Asterisk Manager Interface.
 #
 #
-# * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
-# *
-# * www.astbill.com
-# *
-# * Asterisk -- A telephony toolkit for Linux.
-# * Drupal   -- An Open source content management platform.
-# *
-# * 
-# * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
-# *
-# * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
-# * Are Casilla        <areast  [Guess What?] astartelecom.com>
-# *
-# *
-# * This program is free software, distributed under the terms of
-# * the GNU General Public License
-# *
-# * 2005.10.06 Version 0.9.0.5    
-# * 
-# * 3.7 If you want to use Static configuration of Asterisk. This is needed for Asterisk 1.09 and below
-# * you need to install the Perl Module: Net-Telnet-3.03
-# * Net-Telnet-3.03 is included from AstBill-0.9.0.5 or you can download from
-# * http://search.cpan.org/CPAN/authors/id/J/JR/JROGERS/Net-Telnet-3.03.tar.gz
-# * 
-#*  This Perl Module is only used with the AstBill Perl file 
-# * /admin/astcreateaccount.pl
-# * It is used to connect to the Asterisk Manager Interface and reload Asterisk configuration
-# * when new configuration files are written.
-# * 
-# * cd /home/astbill/astbill-0.9.x.x/Net-Telnet-3.03
-# * 
-# *         Create a makefile by running Makefile.PL using the perl
-# *         program into whose library you want to install and then run
-# *         make three times:
-# * 
-# *             perl Makefile.PL
-# *             make
-# *             make test
-# *             make install
-# * 
-# */
+#
+# AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+#
+# www.astbill.com
+#
+# Asterisk -- A telephony toolkit for Linux.
+# Drupal   -- An Open source content management platform.
+#
+# 
+# Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+#
+# Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+# Are Casilla        <areast  [Guess What?] astartelecom.com>
+#
+#
+# This program is free software, distributed under the terms of
+# the GNU General Public License
+#
+# 2006.03.17 Version 0.9.18
+# 
+#  
+# 
+# 3.7 If you want to use Static configuration of Asterisk. This is needed for Asterisk 1.09 and below
+# you need to install the Perl Module: Net-Telnet-3.03
+# Net-Telnet-3.03 is included from AstBill-0.9.0.5 or you can download from
+# http://search.cpan.org/CPAN/authors/id/J/JR/JROGERS/Net-Telnet-3.03.tar.gz
+# 
+# This Perl Module is only used with the AstBill Perl file 
+# /admin/astcreateaccount.pl
+# It is used to connect to the Asterisk Manager Interface and reload Asterisk configuration
+# when new configuration files are written.
+# 
+# cd /home/astbill/astbill-0.9.x.x/Net-Telnet-3.03
+# 
+#         Create a makefile by running Makefile.PL using the perl
+#         program into whose library you want to install and then run
+#         make three times:
+# 
+#             perl Makefile.PL
+#             make
+#             make test
+#             make install
+# 
+#
 
 # use Net::Telnet ();
 use DBI;

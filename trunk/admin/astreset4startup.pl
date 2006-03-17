@@ -6,27 +6,27 @@
 # It is to be used everytime asterisk starts to ensure trunk and account usage is 0
 # It will also reset the credit reservation table.
 #
-#/*
-# * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
-# *
-# * www.astbill.com
-# *
-# * Asterisk -- A telephony toolkit for Linux.
-# * Drupal   -- An Open source content management platform.
-# *
-# * 
-# * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
-# *
-# * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
-# * Are Casilla        <areast  [Guess What?] astartelecom.com>
-# *
-# *
-# * This program is free software, distributed under the terms of
-# * the GNU General Public License
-# *
-# * 2005.09.26 Version 0.9.0.9    
-# * 
-# */
+#
+# AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+#
+# www.astbill.com
+#
+# Asterisk -- A telephony toolkit for Linux.
+# Drupal   -- An Open source content management platform.
+#
+# 
+# Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+#
+# Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+# Are Casilla        <areast  [Guess What?] astartelecom.com>
+#
+#
+# This program is free software, distributed under the terms of
+# the GNU General Public License
+#
+# 2006.03.17 Version 0.9.18
+# 
+#
 
 
 use DBI;
