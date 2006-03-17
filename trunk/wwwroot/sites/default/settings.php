@@ -78,8 +78,8 @@
  * $db_url = 'mysql://username:password@localhost/database';
  * $db_url = 'pgsql://username:password@localhost/database';
  */
-$db_url = 'mysql://asterisk:cooler@localhost/astbill465';
-$db_prefix = 'cbk_';
+$db_url = 'mysql://astbilluser:astbill419@localhost/astbill';
+$db_prefix = 'pbx_';
 
 /**
  * Base URL:
@@ -87,7 +87,7 @@ $db_prefix = 'cbk_';
  * The URL of your website's main page. It is not allowed to have
  * a trailing slash; Drupal will add it for you.
  */
-$base_url = 'http://localhost/astbill466';
+$base_url = 'http://127.0.0.1/astbill';
 
 /**
  * PHP settings:
