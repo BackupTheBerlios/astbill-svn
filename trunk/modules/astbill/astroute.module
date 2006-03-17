@@ -260,13 +260,13 @@ function _astroute_export() {
 		case t('Export'):
 		
 		
-		$list = 'countrycode,pattern,routename,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk
+		$list = 'countrycode,routename,pattern,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk
 ';
 
-		$sqlout = db_query("SELECT countrycode,pattern,routename,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk FROM astroute order by countrycode, pattern");
+		$sqlout = db_query("SELECT countrycode,routename,pattern,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk FROM astroute order by countrycode, pattern");
 		
 		while ($sql = db_fetch_object($sqlout)) {
-			$list .= $sql->countrycode.','.$sql->pattern.','.$sql->routename.','.$sql->costplan.','.$sql->connectcharge.','.$sql->includedseconds.','.$sql->billincrement.','.$sql->minimumcost.','.$sql->cost.','.$sql->trunk.'
+			$list .= $sql->countrycode.','.$sql->routename.','.$sql->pattern.','.$sql->costplan.','.$sql->connectcharge.','.$sql->includedseconds.','.$sql->billincrement.','.$sql->minimumcost.','.$sql->cost.','.$sql->trunk.'
 ';
 		}
 		$filename = 'RouteList_ALL.csv';
