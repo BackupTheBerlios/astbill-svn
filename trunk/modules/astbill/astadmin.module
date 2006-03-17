@@ -757,12 +757,13 @@ function astadmin_hardware_validate($edit) {
 	  $errors['accountcode'] = t('You must enter a valid accountcode.');
 	  $myerror = 0;	
   }
-  
+  if (arg(2) == 'create') {
   $sql = db_fetch_object(db_query("SELECT accountcode FROM asthardware WHERE accountcode = '%s'", $edit['accountcode']));
   
   if ($sql->accountcode == $edit['accountcode']) {
 	  $errors['accountcode'] = t('This account is already added.');
 	  $myerror = 0;	
+  }
   }
   
   if (empty($edit['accountcode'])) {
