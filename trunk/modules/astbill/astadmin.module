@@ -1255,7 +1255,7 @@ function page_astadmin_listcdr() {
 			$value = $tmp['searchedit'];
 		}
 		
-		$output = astcore_search($edit, $posturl = url('/astbilladm/listcdr'), $value);
+		$output = astcore_search($edit, $posturl = url('astbilladm/listcdr'), $value);
 		$output .= page_astadmin_listcdr_form($value, $edit);
 	}
 	
