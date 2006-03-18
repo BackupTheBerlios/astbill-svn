@@ -154,7 +154,8 @@ function update_info() {
   print "<li>WARNING: Opgrade to AstBill-0.9.0.14 and MySQL 5.0.16 For all the updates to happend MySQL need root. You need to have mysql root to update views. See AstBill forum and Wiki for more info. READ: <a href=\"http://astbill.com/update14\">http://astbill.com/update14</a> <BR>This is an last minute issue!!!!</li>\n<BR>";
   print "<li>Update your AstBill Files. This is normally the files in the modules/astbill directory the ajax directory and the agi-bin directory. Remember there may be more files to upgrade.</li>\n<BR>";
   print "<li><strong>WARNING:</strong> Only Update your AstBill Database when there is a version upgrade or instructed to do so by AstBill support. If your database files and your Module files is out of sync your AstBill installation will stop working.</li>\n<BR>";
-  print "<li><a href=\"astbillupdatehttp.php?op=update\">Run the Database Upgrade Script</a>.</li>\n<BR>";
+
+  print "<li><a href=\"astbillupdatesvn.php?op=update\">Run the Database Upgrade Script</a>.</li>\n<BR>";
   print "<li>Don't upgrade your database twice as it may cause problems.</li>\n<BR>";
   print "<li><a href=\"http://astbill.com/forum/3\">The best way to get AstBill support is the Forum</a>.</li>\n<BR>";
   print "</ol>";
