@@ -17,7 +17,7 @@
  * This program is free software, distributed under the terms of
  * the GNU General Public License
  *
- * 2005.10.03 Version 0.9.0.8
+ * 2006.03.17 Version 0.9.18
  * 
  */
 
@@ -141,79 +141,48 @@ function astentry_perm() {
 // ##########################################################################################################
 
 function _astentry_all() {
-  // Used to View Valid Accounts
+	global $user;
+	global $db_prefix; 
+	$maxline = 40; // This is the number of records to display on a page
 
-  // Make sure you don't trust the URL to be safe! Always check for exploits.
-  //if (!is_numeric($alice) || !is_numeric($bob)) {
-  //if (!is_numeric($account)) {
-    // We will just show a standard "access denied" page in this case.
-  //  drupal_access_denied();
-  //  return;
-  //}
-  global $user;
-  global $db_prefix; 
-  $maxline = 40; // This is the number of records to display on a page
+	$output = '<b>'.t('Hover over Account to view Accounts Password').'</b><br><br>';
 
-  $output = '<b>'.t('Hover over Account to view Accounts Password').'</b><br><br>';
-
-  $header = array(
-    array('data' => t('Account'), 'field' => 'accountcode', 'sort' => 'asc'),
-    array('data' => t('Type'), 'field' => 'tech'),
-    array('data' => t('Name')),
-    array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 6)
-	
-  );
-//  $sql = "SELECT accountcode, tech, secret, accountname, active FROM astaccount where uid ='".$user->uid."'". tablesort_sql($header);
-$sql = "SELECT accountcode, tech, secret, accountname, active FROM astaccount where (tech = 'SIP' or tech = 'IAX' or tech = 'VIR' or tech = 'H323') and db_prefix ='".$db_prefix."' and uid ='".$user->uid."'". tablesort_sql($header);
-  //$sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
-  //$result = pager_query($sql, $maxline, 0, $sqlCount);
-  $result = pager_query($sql, $maxline);
-  
-  while ($res = db_fetch_object($result)) {
-   $sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
-	$rows[] = array('<a title="Password: '.$res->secret.'"  href="'.url('astentry/swtech/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
-	//$res->tech.'&nbsp;&nbsp;&nbsp;',
-	'<img border="0" src="files/astar/'.$res->tech.'.gif"></a>',
-	
-	$res->accountname.'&nbsp;&nbsp;&nbsp;', 
-	'&nbsp;&nbsp;&nbsp;<A HREF="'.url('astentry/swtech/'.$res->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
-	'&nbsp;&nbsp;<a href="'.$sql->value.$res->accountcode.'"><IMG BORDER="0" SRC="files/astar/topup.gif"></A>',
-	'<A HREF="'.url('astentry/voicemailchange/'.$res->accountcode).'">'.t('Voicemail').'</A>',
-	'&nbsp;&nbsp;<A HREF="'.url('astentry/dialplan/'.$res->accountcode).'">'.t('Dialplan').'</A>',
-	'&nbsp;&nbsp;<A HREF="'.url('astentry/emailme/'.$res->accountcode).'">'.t('Email account info').'</A>',
+	$header = array(
+	array('data' => t('Account'), 'field' => 'accountcode', 'sort' => 'asc'),
+	array('data' => t('Type'), 'field' => 'tech'),
+	array('data' => t('Name')),
+	array('data' => t('PSTN Number')),
+	array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 6)
 	);
-  }
 
-  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
-  if (!empty($pager)) {
-    $rows[] = array(array('data' => $pager, 'colspan' => 8));
-  }
+	$sql = "SELECT accountcode, tech, secret, accountname, active, forcecallerid FROM astaccount where (tech = 'SIP' or tech = 'IAX' or tech = 'VIR' or tech = 'H323') and db_prefix ='".$db_prefix."' and uid ='".$user->uid."'". tablesort_sql($header);
 
-  $output .= (count($rows) == 0) ? t('No Accounts for this User.') : theme('table', $header, $rows);
+	$result = pager_query($sql, $maxline);
   
-  //$test = mysql_result($result,1,"accountcode");
-$test = $user->uid;
-$title = t('View');
-$account = '';
-_astpbx_printtheme2($output, $account, $test, $title);
+	while ($res = db_fetch_object($result)) {
+		$sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
+		$rows[] = array('<a title="Password: '.$res->secret.'"  href="'.url('astentry/swtech/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
+		'<img border="0" src="files/astar/'.$res->tech.'.gif"></a>',
+		$res->accountname.'&nbsp;&nbsp;&nbsp;',
+		$res->forcecallerid,
+		'<A HREF="'.url('astentry/swtech/'.$res->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<a href="'.$sql->value.$res->accountcode.'"><IMG BORDER="0" SRC="files/astar/topup.gif"></A>',
+		'<A HREF="'.url('astentry/voicemailchange/'.$res->accountcode).'">'.t('Voicemail').'</A>',
+		'&nbsp;<A HREF="'.url('astentry/dialplan/'.$res->accountcode).'">'.t('Dialplan').'</A>',
+		'&nbsp;<A HREF="'.url('astentry/emailme/'.$res->accountcode).'">'.t('Email account info').'</A>',
+		);
+	}
+
+  	$output .= astcore_list($header, $rows, t('No Accounts for this User.'), $maxline);
+  	
+	$test = $user->uid;
+	$title = t('View');
+	$undermenutitle = t('My account: ');
+	$undermenu[] = url('astentry/createnr/'.$test).'">'.t('Create a new account');
+	$undermenu[] = url('astentry/incomingnr/'.$test).'">'.t('Incoming Numbers');
+	astcore_printtheme($output, $title, $undermenu, $undermenutitle);
 
 }
-
-function _astpbx_printtheme2($page_content, $account, $test, $title) {
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.''.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-  
-$output .= '<div class="nodecontent"><B>'.t('My account: ').'</B><BR>';
-$output .= '<FONT SIZE=1><A HREF="'.url('astentry/createnr/'.$test).'">'.t('Create a new account').'</A><BR>';
-$output .= '<FONT SIZE=1><A HREF="'.url('astentry/incomingnr/'.$test).'">'.t('Incoming Numbers').'</A><BR>';
-
-$output .= '</FONT></DIV>';
-
-  // $output .= '<div class="astpbx">' . $page_content . "</div>\n";
-  print theme("page", $output);
-}
-
-// ##########################################################################################################
 
 // BEGIN EDIT ACCOUNT STUFF
 // BEGIN FORM STUFF

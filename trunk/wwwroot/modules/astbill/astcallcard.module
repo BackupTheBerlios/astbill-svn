@@ -1,12 +1,5 @@
 <?php
 
-/**
-* Display help and module information
-* @param section which section of the site we're displaying help
-* @return help text for section
-*/
-
-
 function astcallcard_help($section='') {
   $output = '';
   switch ($section) {
@@ -15,139 +8,107 @@ function astcallcard_help($section='') {
       break;
   }
   return $output;
-} // function astentry_help
+}
 
 
 function astcallcard_menu($may_cache) {
-  $items = array();
-  $access = user_access('can use callcard');
-  $items[] = array('path' => 'astbilladm/callcard',
+	$items = array();
+	$access = user_access('can use callcard');
+	$items[] = array('path' => 'astbilladm/callcard',
                                   'title' => t('Calling Cards'),
                                   'callback' => '_astcallcard_all',
+				  'callback arguments' => array(),
                                   'access' => $access);
-                                 // 'type' => MENU_CALLBACK);
 
-	// By using the MENU_CALLBACK type, we can register the callback for this
-    // path but not have the item show up in the menu; the admin is not allowed
-    // to enable the item in the menu, either.
-
-
-
-
-// hi
-
-  return $items;
+	return $items;
 }
 
-
-/**
-* Valid permissions for this module
-* @return array An array of valid permissions for the astentry module
-* At this point, we'll give permission to anyone who can access site content 
-* or administrate the module:
-*/
 function astcallcard_perm() {
 	return array('can use callcard');
-  // return array('can use astentry');
-} // function astentry_perm()
-
-
-// ##########################################################################################################
+}
 
 // BEGIN CALLCARD
 function _astcallcard_all() {
-  global $user;
+	global $user;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
 
-  $edit = $_POST["edit"];
-  $op = $_POST["op"];
-
-
-
-  switch (($op ? $op : arg(1))) {
-    case t('Save'):
-      	if (astcallcard_validate($edit)) {
-		astcallcard_save($edit);
-		$where = 'LISTALL';
-		$output = astcallcard_form($where, $value);
-		$title = t('View');
-	}
-      	break;
+	$value = $edit['search'];
+	$tmp = astcore_flattenArray($_GET);
 	
-	case t('Go'):
+	if (!empty($tmp['searchedit'])) {
+		$value = $tmp['searchedit'];
+	}
+	
+	$output = astcore_search($edit, $posturl = url('/astbilladm/callcard'), $value);
+
+	switch ($op) {
+		case t('Save'):
+		if (astcallcard_validate($edit)) {
+			astcallcard_save($edit);
+			$where = 'LISTALL';
+			$output .= astcallcard_form($where, $value);
+			$title = t('View');
+		}
+		break;
+	
+		case t('Search'):
 		$where = 'LISTALL';
-		$value = $edit['filtercard'];	
 		$output .= astcallcard_form($where, $value);
 		$title = t('View');
-	break;
+		break;
 	
-  	case t('Back'):
+		case t('Back'):
 		drupal_goto("astbilladm/callcard/");
-	break;
+		break;
 	
-    default:
-    
-    if (arg(2) == 'edit') {
-	    $where = 'EDIT';
-	    $title = t('Edit');
-    } else {
-	    $where = 'LISTALL';
-	    $title = t('View');
-    }
-    
-
-    if ($where == 'EDIT') {
-	        if (!is_numeric(arg(3))) {
-			drupal_access_denied();
-			return;
+		default:
+		if (arg(2) == 'edit') {
+			$where = 'EDIT';
+			$title = t('Edit');
+		} else {
+			$where = 'LISTALL';
+			$title = t('View');
+			
+			$output .= astcallcard_form($value, $edit);
 		}
-		$value = arg(3);
-    }
+    
 
-    $output .= astcallcard_form($where, $value);
+		if ($where == 'EDIT') {
+			if (!is_numeric(arg(3))) {
+				drupal_access_denied();
+				return;
+			}
+		}
 
-  }
+		$output .= astcallcard_form($where, $value);
+	}
   
 
-  _astcallcard_printtheme_best($output, $title);
+	_astcallcard_printtheme_best($output, $title);
 }
-
-
-
 
 // FORM STUFF
 function astcallcard_validate($edit) {
-  $myerror = 1;
-  $errors = array();
+	$myerror = 1;
+	$errors = array();
 
-
-  foreach ($errors as $name => $message) {
-    form_set_error($name, $message);
-  } 
-  return $myerror;
+	foreach ($errors as $name => $message) {
+		form_set_error($name, $message);
+	} 
+	return $myerror;
 }
 
 function astcallcard_save($edit) {
-  global $user;
-  // Make sure you don't trust the URL to be safe! Always check for exploits.
-  //if (!is_numeric($alice) || !is_numeric($bob)) {
-//  if (!is_numeric($account)) {
-    // We will just show a standard "access denied" page in this case.
-//    drupal_access_denied();
-//    return;
-//  }
-
-if (arg(2) == 'edit') {
-
-
-	db_query("UPDATE astaccount SET active = '%s', secret = '%s', ccserialno = '%s', ccbatchno = '%s', cccardvalue = '%s', startingcredit = '%s', ccfirstused = '%s', cclastused = '%s' WHERE accountcode = '%s'",
-	$edit['active'], $edit['secret'], $edit['ccserialno'], $edit['ccbatchno'], $edit['cccardvalue'], $edit['startingcredit'], $edit['ccfirstused'], $edit['cclastused'], arg(3));
-
-
-	drupal_set_message(t('The Calling Card settings have been updated.'));
-
-
-}
-
+	global $user;
+	
+	if (arg(2) == 'edit') {
+		db_query("UPDATE astaccount SET active = '%s', secret = '%s', ccserialno = '%s', ccbatchno = '%s', cccardvalue = '%s', startingcredit = '%s', ccfirstused = '%s', cclastused = '%s' WHERE accountcode = '%s'",
+		$edit['active'], $edit['secret'], $edit['ccserialno'], $edit['ccbatchno'], $edit['cccardvalue'], $edit['startingcredit'], $edit['ccfirstused'], $edit['cclastused'], arg(3));
+		
+		
+		drupal_set_message(t('The Calling Card settings have been updated.'));
+	}
 }
 
 function astcallcard_form($where, $value) {
@@ -158,71 +119,39 @@ function astcallcard_form($where, $value) {
 	if ($where == 'LISTALL') {
 		
 	$maxline = 40;
-
-/*
-	$group .= form_textfield(t('Filter on card number'), 'filtercard', $value, 30, 100);
-	$group .= form_submit(t('Go'));
-	$output .= form_callcard($group);
-*/ // This is the equivalent of the code bellow, only this looks alot worse..
-
-
-$output = '
-<form action="'.url('/astbilladm/callcard').'" method="post">
-<div class="form-item">
-'.t('<B>Search for Card Number&nbsp;&nbsp;</B>').'
-<input type="text" size="20" value="'.$value.'" name="edit[filtercard]" alt="Enter a term to search" />&#160;
-<input type="submit" name="op" value="'.t('Go').'" />&#160;&#160;
-</div></form>
-';
 	
 	$header = array(
-		array('data' => t('Card Number&nbsp;&nbsp;'), 'field' => 'accountcode'),
-		// array('data' => t('Password&nbsp;&nbsp;'), 'field' => 'secret'),
-		array('data' => t('Serialno&nbsp;&nbsp;'), 'field' => 'ccserialno'),
-		array('data' => t('Firstused&nbsp;&nbsp;'), 'field' => 'ccfirstused'),
-		array('data' => t('Lastused&nbsp;&nbsp;'), 'field' => 'cclastused'),
-		array('data' => t('CardValue&nbsp;&nbsp;'), 'field' => 'cccardvalue'),
-		array('data' => t('CardBalance&nbsp;&nbsp;'), 'field' => 'creditlimit'),
-		array('data' => t('A&nbsp;&nbsp;'), 'field' => 'active'),
-		array('data' => t('Batchno&nbsp;&nbsp;'), 'field' => 'ccbatchno'),
+		array('data' => t('Card Number'), 'field' => 'accountcode'),
+		array('data' => t('Serialno'), 'field' => 'ccserialno'),
+		array('data' => t('Firstused'), 'field' => 'ccfirstused'),
+		array('data' => t('Lastused'), 'field' => 'cclastused'),
+		array('data' => t('CardValue'), 'field' => 'cccardvalue'),
+		array('data' => t('CardBalance'), 'field' => 'creditlimit'),
+		array('data' => t('A'), 'field' => 'active'),
+		array('data' => t('Batchno'), 'field' => 'ccbatchno'),
 		array('data' => t('Operations'))
 		);
 
-		if (!empty($value)) {
 		$value = trim($value);
-		$sql = "SELECT astaccount.accountcode, astaccount.secret, astaccount.ccserialno,
-				date(astaccount.ccfirstused) ccfirstused, date(astaccount.cclastused) cclastused, 
-				round(astaccount.cccardvalue,2) cccardvalue, astaccount.creditlimit, astaccount.startingcredit, astaccount.ccbatchno, astaccount.active FROM astaccount WHERE db_prefix ='".$db_prefix."' and tech in (select actype from astactype) AND accountcode LIKE '%".$value."%'". tablesort_sql($header);		
+		$sql = "SELECT accountcode, secret, ccserialno,date(ccfirstused) ccfirstused, date(cclastused) cclastused, round(cccardvalue,2) cccardvalue, creditlimit, startingcredit, ccbatchno, active FROM astaccount WHERE db_prefix ='".$db_prefix."' and tech in (select actype from astactype) AND CONCAT_WS(',', accountcode, ccserialno, ccfirstused, cclastused) LIKE '%".$value."%'". tablesort_sql($header);		
 		
-		} else {
-		$sql = "SELECT astaccount.accountcode, astaccount.secret, astaccount.ccserialno,
-				date(astaccount.ccfirstused) ccfirstused, date(astaccount.cclastused) cclastused, 
-				round(astaccount.cccardvalue,2) cccardvalue, astaccount.creditlimit, astaccount.startingcredit, astaccount.ccbatchno,
-				astaccount.active
-				FROM astaccount WHERE db_prefix ='".$db_prefix."' and tech in (select actype from astactype)". tablesort_sql($header);
-		}
-				
+		
 		$result = pager_query($sql, $maxline);
 				
     
 		while ($res = db_fetch_object($result)) {
 
-	   $sumpaid = db_fetch_object(db_query("SELECT round(Sum(astpayment.paidamount), 2) AS sumpaid FROM astpayment WHERE astpayment.accountcode = '%s'", $res->accountcode));
+			$sumpaid = db_fetch_object(db_query("SELECT round(Sum(astpayment.paidamount), 2) AS sumpaid FROM astpayment WHERE astpayment.accountcode = '%s'", $res->accountcode));
 	  
-       $cdrcost = db_fetch_object(db_query("SELECT round((Sum(astcdr.price)/100),2) AS sumprice FROM astcdr where dialstatus like 'ANSWER%%' and answeredtime <> 0 and trunk <> 'Local' AND accountcode = '%s'", $res->accountcode));
+			$cdrcost = db_fetch_object(db_query("SELECT round((Sum(astcdr.price)/100),2) AS sumprice FROM astcdr where dialstatus like 'ANSWER%%' and answeredtime <> 0 and trunk <> 'Local' AND accountcode = '%s'", $res->accountcode));
   
 
-	   if (empty($cdrcost->sumprice)) {$cdrcost->sumprice = 0;}
-	   if (empty($sumpaid->sumpaid)) {$sumpaid->sumpaid = 0;}
+			if (empty($cdrcost->sumprice)) {$cdrcost->sumprice = 0;}
+			if (empty($sumpaid->sumpaid)) {$sumpaid->sumpaid = 0;}
 
-       $sumbalance =  number_format(($sumpaid->sumpaid + $res->startingcredit - $cdrcost->sumprice), 2);
-		$rows[] = array(
-			//	$res->accountcode.'&nbsp;&nbsp;',
-
-	'<a title="Password: '.$res->secret.'"  href="'.url('astpbx/account/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
-				
-			//	$res->secret.'&nbsp;&nbsp;',
-
+			$sumbalance =  number_format(($sumpaid->sumpaid + $res->startingcredit - $cdrcost->sumprice), 2);
+			$rows[] = array(
+				'<a title="Password: '.$res->secret.'"  href="'.url('astpbx/account/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
 				$res->ccserialno.'&nbsp;&nbsp;',
 				$res->ccfirstused.'&nbsp;&nbsp;',
 				$res->cclastused.'&nbsp;&nbsp;',
@@ -234,28 +163,24 @@ $output = '
 				);
 		}
 
-	$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
-	if (!empty($pager)) {
-		$rows[] = array(array('data' => $pager, 'colspan' => 8));
-	}
+		$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+		if (!empty($pager)) {
+			$rows[] = array(array('data' => $pager, 'colspan' => 8));
+		}
 
 
-	$output .= (count($rows) == 0) ? t('No records.') : theme('table', $header, $rows);
+		$output .= (count($rows) == 0) ? t('No records.') : theme('table', $header, $rows);
 
-	/*
-	$group .= form_textfield(t('Filter on card number'), 'filtercard', NULL, 30, 100);			
-	$group .= form_submit(t('Go'));
-	$output .= form($group);
-*/
-	return $output;
+
+		return $output;
 	
 	
-	}
+		}
 
 
 	
 	
-	if ($where == 'EDIT') {
+		if ($where == 'EDIT') {
 		
 				$sql = db_fetch_object(db_query("SELECT astaccount.accountcode, astaccount.secret, astaccount.ccserialno, astaccount.ccfirstused, astaccount.cclastused, astaccount.cccardvalue, astaccount.startingcredit, astaccount.ccbatchno, astaccount.active FROM astaccount WHERE accountcode = '%s'", $value));
 				
@@ -276,7 +201,7 @@ $output = '
 	
 				return form($group);
 	
-	}
+		}
 }
 
 // END FORM STUFF
