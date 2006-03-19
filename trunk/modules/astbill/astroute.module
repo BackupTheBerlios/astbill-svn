@@ -1560,9 +1560,9 @@ function astroute_trunk_form() {
 
 	if (arg(2) == 'change'){ // START CHECK IF TRUNKCHANGE
 	
-		$sql = db_query("SELECT asttrunk.addprefix, asttrunk.removeprefix, usstyleprefix, asttrunk.registerstring, asttrunk.isdefault, asttrunk.name, asttrunk.tech, asttrunk.username, asttrunk.path, asttrunk.serverid, asttrunk.comment, asttrunk.vat, asttrunk.vat2, asttrunk.usagecount, asttrunk.maxusage, asttrunk.trunkcost, astaccount.secret password, astaccount.host, asttrunk.tid, astaccount.auth FROM asttrunk LEFT JOIN astaccount ON asttrunk.accountcode = astaccount.accountcode WHERE (((asttrunk.tid)='%s'))", arg(3));
+		$sql = db_query("SELECT asttrunk.addprefix, asttrunk.removeprefix, usstyleprefix, asttrunk.registerstring, asttrunk.isdefault, asttrunk.name, asttrunk.tech, asttrunk.username, asttrunk.path, asttrunk.serverid, asttrunk.comment, asttrunk.vat, asttrunk.vat2, asttrunk.usagecount, asttrunk.maxusage, asttrunk.trunkcost, astaccount.secret password, astaccount.host, asttrunk.tid, astaccount.auth FROM asttrunk LEFT JOIN astaccount ON asttrunk.accountcode = astaccount.accountcode WHERE asttrunk.tid='%s'", arg(3));
 		$sqlout = db_fetch_object($sql);
-
+		
 		if ($sqlout->tech == 'SIP'){$tech = 0;}
 		if ($sqlout->tech == 'IAX2'){$tech = 1;}
 		if ($sqlout->tech == 'H323'){$tech = 2;}
@@ -1604,19 +1604,18 @@ function astroute_trunk_form() {
 
 		$group .= form_textfield(t('Register String:<BR><FONT SIZE=1>Register String Many VoIP providers require your system to REGISTER with theirs. Enter the registration line here. example: username:password@sip.astartelecom.com</FONT>'), 'registerstring', $sqlout->registerstring, 90, 128, null, null, false);
 		
-		$methods['plaintext'] = 'plaintext';
-		$methods['md5'] = 'md5';
-		$methods['rsa'] = 'rsa';
-		/*
-		$authvaluessql = db_query("SELECT auth FROM astaccount WHERE uid = '%s'", arg(3));
-		$authvaluessql = db_fetch_object($authvaluessql);
-
-		$authvalues['plaintext'] = 'plaintext';	
-		$authvalues['md5'] = 'md5';	
-		$authvalues['rsa'] = 'rsa';
+		$authmethods['plaintext'] = 'plaintext';
+		$authmethods['md5'] = 'md5';
+		$authmethods['rsa'] = 'rsa';
 		
-		$group .= form_checkboxes(t('Choose authentication methods'), 'auth', $authvalues, $methods,null ,null ,false);
-		*/
+		list($var1, $var2, $var3) = explode(",", $sqlout->auth);
+		
+		$authvalues[$var1] = $var1;
+		$authvalues[$var2] = $var2;
+		$authvalues[$var3] = $var3;
+		
+		$group .= form_checkboxes(t('Choose authentication methods'), 'auth', $authvalues, $authmethods,null ,null ,false);
+		
 		$group .= form_checkbox(t('<STRONG>Click to make default:<BR><FONT SIZE=1>Only one Provider Trunk can be used as default</FONT></STRONG>'), 'isdefault', 1, $ifchecked ,null ,null ,false);
 
 
@@ -1745,17 +1744,22 @@ function astroute_trunk_save($edit, $account) {
 		if (arg(3) == 'rt'){ 
 			if ($tech == 'SIP'){ $edit['name'] = $edit['username']; } 
 		}
+		
 		$static = 'R';
+		
 		if (arg(3) == 'static'){ 
 			$static = 'S'; 
 		} 
+		
 		$path = "@".$edit['name'];
+		
 		if ($tech == 'IAX2'){ $path = "IAX2/".$edit['username']."@".$edit['name']."/"; } 
 		// For now. select name, username, fromuser from asv_sip;
 		// They must all be = Providers Username
 
 		db_query("INSERT INTO `asttrunk` ( registerstring , addprefix , removeprefix , `name` , `tech` , `path` , `isdefault` , `serverid` , `comment` , `vat` , `vat2` , `maxusage` , `trunkcost`, static, username, usstyleprefix ) VALUES ('".$edit['registerstring']."','".$edit['addprefix']."','".$edit['removeprefix']."','".$edit['name']."', '".$tech."', '".$path."', '".$edit['isdefault']."' , '".$edit['serverid']."', '".$edit['comment']."', '".$edit['vat']."', '".$edit['vat2']."', '".$edit['maxusage']."', '".$edit['trunkcost']."', '".$static."', '".$edit['username']."', '".$edit['usstyleprefix']."')");
 		//registerstring addprefix removeprefix
+		
 		if ($edit['isdefault'] == 1){
 			db_query("UPDATE asttrunk SET isdefault = 0");
 			db_query("UPDATE asttrunk SET isdefault = 1 WHERE name = '%s'", $edit['name']);
@@ -1782,11 +1786,13 @@ function astroute_trunk_save($edit, $account) {
 			
 			$checkacc = db_fetch_object(db_query("select count(*) count from astaccount where accountcode = '%s'", $edit['name']));
 			$Accountcode = $edit['username'];
+			
 			if ($checkacc->count != '0') {
 				$Accountcode = $edit['username'].rand(1, 65535);
 			}
 				
 			$tech = "IN-".$tech;
+			
 			if ($tech == 'IN-IAX2'){ 
 				$tech = "IN-IAX"; 
 				$FromDomain = NULL;
@@ -1802,14 +1808,25 @@ function astroute_trunk_save($edit, $account) {
 			db_query("INSERT INTO astaccount (accountcode, username, fromuser, tech, nat, qualify, type, context, comment,insecure, canreinvite,active,secret,host,fromdomain, uid,dtmfmode,date_created) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', 0,NULL,now())", $Accountcode,$username,$fromuser, $tech, $nat, $qualify,$type,$context,$comment,$insecure,$canreinvite,$active,$password,$Host,$FromDomain);
 
 		}
-
-
+		
+		
 		drupal_set_message(t('A new Trunk has been created.'));
 	} // END CHECK IF TRUNKCREATE
-
-
+	
+	
 	if (arg(2) == 'change'){ // START CHECK IF TRUNKCHANGE
-
+		
+		if (!empty($edit['auth'])) {
+			$x = 0;
+			foreach ($edit['auth'] as $key) {
+				if ($x != 0) {$auth .= ',';}
+				$x++;
+				if($key == 'md5'){$auth .= 'md5';}
+				if($key == 'plaintext'){$auth .= 'plaintext';}
+				if($key == 'rsa'){$auth .= 'rsa';}
+			}
+		}
+		
 		// We Don't allow tech change
 		if ($edit['tech'] == 0){$tech = 'SIP';}
 		if ($edit['tech'] == 1){$tech = 'IAX2';}
@@ -1821,12 +1838,14 @@ function astroute_trunk_save($edit, $account) {
 		}
 
 		$checktrunk = db_fetch_object(db_query("select accountcode, tech from asttrunk where tid = '%d'", arg(3)));
+		
 		if (arg(4) == 'R'){ 
 			if ($checktrunk->tech == 'IAX2'){ $path = "IAX2/".$edit['username']."@".$edit['name']."/"; } 
 			if ($checktrunk->tech == 'SIP'){ $edit['name'] = $checktrunk->accountcode; } 
 			$path = "@".$edit['name'];
 			$static = 'R';
 		}
+		
 		if (arg(4) == 'S'){ 
 			$path = "@".$edit['name'];
 			$static = 'S';
@@ -1850,7 +1869,7 @@ function astroute_trunk_save($edit, $account) {
 				$fromuser = NULL;
 			} 
 
-			db_query("update astaccount set username = '%s', fromuser = '%s', comment = '%s', active = '%s', secret = '%s',host = '%s',fromdomain = '%s' where accountcode = '%s'", $username, $fromuser, $comment, $active, $password, $Host, $FromDomain, $checktrunk->accountcode);
+			db_query("UPDATE astaccount SET username = '%s', fromuser = '%s', comment = '%s', active = '%s', secret = '%s',host = '%s',fromdomain = '%s', auth = '%s' WHERE accountcode = '%s'", $username, $fromuser, $comment, $active, $password, $Host, $FromDomain, $auth, $checktrunk->accountcode);
 		}
 
 		drupal_set_message(t('The Outgoing Trunk settings have been updated.'));
