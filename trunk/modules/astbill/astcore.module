@@ -24,34 +24,37 @@
 
 /* FUNCTIONS:
 
-astcore_search($edit, $posturl, $value = NULL, $undermenu = 'FALSE')
-**$undermenu = array(url('astbilladm/payment/create/').'">'.t('Create New Payment'));
+**$value = $edit['search'];
+**$tmp = astcore_flattenArray($_GET);
+**if (!empty($tmp['searchedit'])) {
+**		$value = $tmp['searchedit'];
+**	}
+**	$output = astcore_search($edit, url('astbilladm/realtime/friends'), $value);
+astcore_search($edit, $posturl, $value = NULL)
 
+**$undermenu = array(url('astbilladm/payment/create/').'">'.t('Create New Payment'));
 astcore_printtheme($page_content, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE')
 
 astcore_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item)
 
 astcore_list($header, $rows, $noresults, $maxline)
 
-astcore_flattenArray($array,$keyname='')
+astcore_flattenArray($array, $keyname='')
 */
 
 
 function astcore_help($section='') {
-  $output = '';
-  switch ($section) {
-    case "admin/modules#description":
-      $output = t("AstBill Core Functions");
-      break;
-  }
-  return $output;
+	$output = '';
+	switch ($section) {
+		case "admin/modules#description":
+		$output = t("AstBill Core Functions");
+		break;
+	}
+	return $output;
 }
 
 
 function astcore_search($edit, $posturl, $value = NULL) {
-	global $user;
-	global $db_prefix; 
-	
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
 	
@@ -68,7 +71,7 @@ function astcore_search($edit, $posturl, $value = NULL) {
 </div></form>
 ';
 /*
-	$group .= form_textfield($title, 'search', $edit['search'], 30, 30, $description = NULL, $attributes = NULL, $required = FALSE);
+	$group .= form_textfield($title, 'search', $value, 30, 30, $description = NULL, $attributes = NULL, $required = FALSE);
 	$group .= form_submit('Search');
 	
 	$output = form($group);
@@ -82,7 +85,7 @@ function astcore_printtheme($page_content, $title, $undermenu = 'FALSE', $underm
 
 	$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
 	
-	if ($undermenutitle != 'FALSE' && $undermenu != 'FALSE') {
+	if ($undermenutitle != 'FALSE' OR $undermenu != 'FALSE') {
 		$output .= '<DIV CLASS="nodecontent">';
 	}
 	
@@ -153,7 +156,7 @@ function astcore_list($header, $rows, $noresults, $maxline) {
 }
 
 
-function astcore_flattenArray($array,$keyname='')
+function astcore_flattenArray($array, $keyname='')
 {
    $tmp = array();
    foreach($array as $key => $value)
