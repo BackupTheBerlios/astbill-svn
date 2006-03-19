@@ -1501,6 +1501,37 @@ function page_astroute_trunk_formrules() {
 	astcore_printtheme($output, $title, $undermenu);
 }
 
+function page_astroute_trunkdialplan() {
+	global $user;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+	switch (($op ? $op : arg(1))) {
+		case t('Change'):
+		$did = arg(1);
+		$title = t('Edit Account');
+		if (astroute_trunk_validate($edit)) {
+			astroute_trunk_save($edit,arg(3));
+			drupal_goto("astbilladm/trunks");
+		} else {
+			drupal_goto("astbilladm/trunks/dialplan/".arg(3));
+		}
+		break;
+		case t('Delete'):
+		db_query("DELETE FROM astdialplan WHERE accountcode = 'trunk".arg(3)."'");
+		drupal_goto("astbilladm/trunks");
+		break;
+		case t('Back'):
+		drupal_goto("astbilladm/trunks");
+		break;
+		default:
+	  	$output = astroute_trunk_form();
+	}
+
+	$title = t('Change');
+	astcore_printtheme($output, $title);
+}
+
 function astroute_trunk_form() {
 	global $user;
 	$edit = $_POST["edit"];
@@ -1936,97 +1967,67 @@ function astroute_trunk_save($edit, $account) {
 
 // TRUNK FORM STUFF
 function astroute_trunk_validate($edit) {
-  global $user;
-  $myerror = 1;
-  $errors = array();
+	global $user;
+	$myerror = 1;
+	$errors = array();
+	
+	if (arg(3) == 'dialplan') {
 
-if($edit['starthour'] > $edit['endhour']){
-	$errors['time'] = t('Start Hour is set after End Hour.');
-	$myerror = 0;		
-}
-
-if(empty($edit['name'])){
-	$errors['uniquename'] = t('Please enter a unique trunk name');
-	$myerror = 0;
-}
-
-if (ereg('[^A-Za-z0-9]', $edit['name'])) {
-  	$errors['alphanum'] = t('Trunk Name can only contain AlphaNumeric characters');
-	$myerror = 0;
-}
-
-if (arg(3) == 'create') {
-$sql = db_query("SELECT name FROM asttrunk");
-
-while ($getname = db_fetch_object($sql)){
-	if ($edit['name'] == $getname->name){
-		$errors['uniquename'] = t('Please enter a unique trunk name');
-		$myerror = 0;
+		if($edit['starthour'] > $edit['endhour']){
+			$errors['time'] = t('Start Hour is set after End Hour.');
+			$myerror = 0;		
+		}
+		
 	}
-}
-}
 
-if (arg(2) == 'create') {
-$sql = db_query("SELECT name FROM asttrunk");
-
-while ($getname = db_fetch_object($sql)){
-	if ($edit['name'] == $getname->name){
-		$errors['uniquename'] = t('Please enter a unique trunk name');
-		$myerror = 0;
-	}
-}
-}
-
-if (arg(2) == 'change') {
-	$sql = db_query("SELECT name FROM asttrunk");
-	$sql2 = db_fetch_object(db_query("SELECT name FROM asttrunk WHERE tid = '%s'", arg(3)));
-
-	while ($getname = db_fetch_object($sql)){
-		if ($edit['name'] != $sql2->name) {
-		if ($edit['name'] == $getname->name){
+	if (arg(2) != 'dialplan') {
+		
+		if(empty($edit['name'])){
 			$errors['uniquename'] = t('Please enter a unique trunk name');
 			$myerror = 0;
 		}
+
+		if (ereg('[^A-Za-z0-9]', $edit['name'])) {
+			$errors['alphanum'] = t('Trunk Name can only contain AlphaNumeric characters');
+			$myerror = 0;
 		}
+
 	}
-}
+	
 
+	if (arg(2) == 'create') {
+		$sql = db_query("SELECT name FROM asttrunk");
 
-  foreach ($errors as $name => $message) {
-    form_set_error($name, $message);
-  }
-  return $myerror;
-}
-
-function page_astroute_trunkdialplan() {
-	global $user;
-	$edit = $_POST["edit"];
-	$op = $_POST["op"];
-
-	switch (($op ? $op : arg(1))) {
-		case t('Change'):
-		$did = arg(1);
-		$title = t('Edit Account');
-		if (astroute_trunk_validate($edit)) {
-			astroute_trunk_save($edit,arg(3));
-			drupal_goto("astbilladm/trunks");
-		} else {
-			drupal_goto("astbilladm/trunks/dialplan/".arg(3));
+		while ($getname = db_fetch_object($sql)){
+			if ($edit['name'] == $getname->name){
+				$errors['uniquename'] = t('Please enter a unique trunk name');
+				$myerror = 0;
+			}
 		}
-		break;
-		case t('Delete'):
-		db_query("DELETE FROM astdialplan WHERE accountcode = 'trunk".arg(3)."'");
-		drupal_goto("astbilladm/trunks");
-		break;
-		case t('Back'):
-		drupal_goto("astbilladm/trunks");
-		break;
-		default:
-	  	$output = astroute_trunk_form();
+		
 	}
 
-	$title = t('Change');
-	astcore_printtheme($output, $title);
+	if (arg(2) == 'change') {
+		$sql = db_query("SELECT name FROM asttrunk");
+		$sql2 = db_fetch_object(db_query("SELECT name FROM asttrunk WHERE tid = '%s'", arg(3)));
+
+		while ($getname = db_fetch_object($sql)){
+			if ($edit['name'] != $sql2->name) {
+				if ($edit['name'] == $getname->name){
+					$errors['uniquename'] = t('Please enter a unique trunk name');
+					$myerror = 0;
+				}
+			}
+		}
+		
+	}
+
+
+	foreach ($errors as $name => $message) {
+		form_set_error($name, $message);
+	}
+	
+	return $myerror;
 }
 
 function page_astroute_trunkremove() {
