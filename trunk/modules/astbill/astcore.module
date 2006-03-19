@@ -35,7 +35,14 @@ astcore_search($edit, $posturl, $value = NULL)
 **$undermenu = array(url('astbilladm/payment/create/').'">'.t('Create New Payment'));
 astcore_printtheme($page_content, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE')
 
-astcore_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item)
+**$title = t('Remove Trunk:').' '.arg(4);
+**$confirmmsg = t('Are you sure you want to delete this trunk?');
+**$deletedmsg = t('Trunk '.arg(4).' was deleted');
+**$donegoto = 'astbilladm/trunks';
+**$dbqueries = array();
+**$dbqueries[] = "DELETE FROM astaccount WHERE accountcode = (select accountcode from asttrunk where tid = ".arg(3).")";
+**$dbqueries[] = "DELETE FROM asttrunk WHERE tid = ".arg(3);
+astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries)
 
 astcore_list($header, $rows, $noresults, $maxline)
 
@@ -102,38 +109,26 @@ function astcore_printtheme($page_content, $title, $undermenu = 'FALSE', $underm
 	print theme("page", $output);
 }
 
+function astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries) {
+	$edit = $_POST['edit'];
 
-function astcore_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item) {
-	global $user;
-	$cid = arg(2);
-	$output = '';
-
-	if ($edit) {
-		db_query($dbquery);
-		//db_query("DELETE FROM {contact_category} WHERE cid = %d and uid = %d", $cid, $user->uid);
-		// db_query("DELETE FROM {contact_category} WHERE cid = % d", $edit['cid']);
-
-		// Redirects the response to the list page
+	if ($edit['verified'] == 'verified') {
+		foreach ($dbqueries as $key) {
+			db_query($key);
+		}
+		
 		drupal_set_message(t($deletedmsg));
-		drupal_goto($goto);
+		drupal_goto($donegoto);
 	}
-
-	// Creates a confirmation form
-	$categories = astcontact_get_categories();
-
-	$output .= t($confirmmsg);
-	$output .= form_hidden('cid', $cid);
+	
+	$output .= '<BR>'.$confirmmsg.'<BR><BR>';
+	$output .= form_hidden('verified', 'verified');
 	$output .= form_submit(t('Delete'));
 
-	//return form($output);
 	$group = form($output);
 
-	$title = t('Remove ').$item;
-	$account = $user->uid;
-	astcore_printtheme($group, $account, $title);
-	//return $output;
+	astcore_printtheme($group, $title);
 }
-
 
 function astcore_list($header, $rows, $noresults, $maxline) {
 

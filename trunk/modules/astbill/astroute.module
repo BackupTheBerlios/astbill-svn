@@ -1967,7 +1967,6 @@ function astroute_trunk_save($edit, $account) {
 
 // TRUNK FORM STUFF
 function astroute_trunk_validate($edit) {
-	global $user;
 	$myerror = 1;
 	$errors = array();
 	
@@ -2031,7 +2030,6 @@ function astroute_trunk_validate($edit) {
 }
 
 function page_astroute_trunkremove() {
-    global $user;
   	$pass = '1';
 	$errors = array();
   	$checktrunk = db_fetch_object(db_query("select isdefault from asttrunk where tid = '%d'", arg(3)));
@@ -2042,55 +2040,23 @@ function page_astroute_trunkremove() {
 	}
 	
 	if ($pass == '1') {
-		$edit = $_POST['edit'];
-		$deletedmsg = 'The trunk was deleted';
-		$confirmmsg = '<P>Are you sure you want to delete this trunk?</P>';
-		// DELETE FROM astaccount WHERE accountcode = (select accountcode from asttrunk where tid = 77;
-		// $dbquery = "DELETE FROM astaccount WHERE accountcode = (select accountcode from asttrunk where tid = ".arg(3).")";
-		// $dbquery = "DELETE FROM astaccount WHERE accountcode = (select accountcode from asttrunk where tid = ".arg(3)."); 
-		// $dbquery = "DELETE FROM asttrunk WHERE tid = '".arg(3)."'";
-		$goto = "astbilladm/trunks";
-		$item = arg(3);
-		$output = astroute_trunk_delete($edit, $deletedmsg, $confirmmsg, $goto, $item, arg(4));
+		$title = t('Remove Trunk:').' '.arg(4);
+		$confirmmsg = t('Are you sure you want to delete this trunk?');
+		$deletedmsg = t('Trunk '.arg(4).' was deleted');
+		$donegoto = 'astbilladm/trunks';
+		$dbqueries = array();
+		$dbqueries[] = "DELETE FROM astaccount WHERE accountcode = (select accountcode from asttrunk where tid = ".arg(3).")";
+		$dbqueries[] = "DELETE FROM asttrunk WHERE tid = ".arg(3);
+		$output = astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries);
+		
 	} else {
-		  foreach ($errors as $name => $message) {
-			  form_set_error($name, $message);
-		  } 
+		foreach ($errors as $name => $message) {
+			form_set_error($name, $message);
+		}
 		drupal_goto("astbilladm/trunks");
 	}
 
 }
-function astroute_trunk_delete($edit, $deletedmsg, $confirmmsg, $goto, $item, $itemname) {
-	global $user;
-	$cid = arg(2);
-	$output = '';
-
-	if ($edit) {
-		$dbquery = "DELETE FROM astaccount WHERE accountcode = (select accountcode from asttrunk where tid = ".$item.")"; 
-		db_query($dbquery);
-		$dbquery = "DELETE FROM asttrunk WHERE tid = ".$item;
-		db_query($dbquery);
-
-		// Redirects the response to the list page
-		drupal_set_message(t($deletedmsg));
-		drupal_goto($goto);
-	}
-
-	// Creates a confirmation form
-	$categories = astcontact_get_categories();
-
-	$output .= t($confirmmsg);
-	$output .= form_hidden('cid', $cid);
-	$output .= form_submit(t('Delete'));
-
-	//return form($output);
-	$group = form($output);
-
-$title = t('Remove Trunk:').' '.$itemname;
-_astroute_printtheme_best($group, $title);
-//return $output;
-}
-
 
 // END TRUNK STUFF
 
