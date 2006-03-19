@@ -83,7 +83,7 @@ function astroute_menu($may_cache) {
 	'access' => $access2);
 
 	$items[] = array('path' => 'astbilladm/trunks/change', 'title' => t('Provider Trunk Details'),
-	'callback' => 'page_astroute_trunkchange',
+	'callback' => 'page_astroute_trunk_formrules',
 	'callback arguments' => array(),
 	'access' => $access2,
 	'type' => MENU_CALLBACK);
@@ -95,13 +95,13 @@ function astroute_menu($may_cache) {
 	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astbilladm/trunks/create/rt', 'title' => t('Create Provider Trunk'),
-	'callback' => 'page_astroute_trunkcreate',
+	'callback' => 'page_astroute_trunk_formrules',
 	'callback arguments' => array(),
 	'access' => $access2,
 	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astbilladm/trunks/create/static', 'title' => t('Create STATIC Provider Trunk'),
-	'callback' => 'page_astroute_trunkcreate',
+	'callback' => 'page_astroute_trunk_formrules',
 	'callback arguments' => array(),
 	'access' => $access2,
 	'type' => MENU_CALLBACK);
@@ -1445,7 +1445,8 @@ function astroute_trunks() {
 }
 
 // **** TRUNK EDIT ******************************************************
-function page_astroute_trunkchange() {
+
+function page_astroute_trunk_formrules() {
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
 
@@ -1460,28 +1461,7 @@ function page_astroute_trunkchange() {
 			drupal_goto("astbilladm/trunks/change/".arg(3).'/'.arg(4));
 		}
 		break;
-		case t('Back'):
-		drupal_goto("astbilladm/trunks");
-		default:
-		$output = astroute_trunk_form();
-	}
-
-	$title = t('You are Editing a Provider Trunk');
-	if (arg(4) == 'S'){ $title = t('You are Editing a STATIC Provider Trunk'); }
-
-	$sql = db_fetch_object(db_query("SELECT accountcode FROM asttrunk WHERE tid = '%s'", arg(3)));
-  
-	$undermenu[] = url('astbilladm/editaccount/'.$sql->accountcode).'">'.t('Advanced Provider Trunk Settings');
-	astcore_printtheme($output, $title, $undermenu);
-}
-
-function page_astroute_trunkcreate() {
-	$edit = $_POST["edit"];
-	$op = $_POST["op"];
-
-	switch ($op) {
 		case t('Create'):
-		$did = arg(1);
 		$title = t('Edit Account');
 		if (astroute_trunk_validate($edit)) {
 			astroute_trunk_save($edit, arg(4));
@@ -1495,10 +1475,30 @@ function page_astroute_trunkcreate() {
 		default:
 		$output = astroute_trunk_form();
 	}
+	
+	$undermenu = 'FALSE';
+	if (arg(2) == 'create') {
+		$title = t('You are creating a new Provider Trunk');
+	}
 
-	$title = t('You are creating a new Provider Trunk');
-	if (arg(3) == 'static'){ $title = t('You are creating a new STATIC Provider Trunk'); }
-	astcore_printtheme($output, $title);
+	if (arg(2) == 'change') {
+		$title = t('You are Editing a Provider Trunk');
+		
+		$sql = db_fetch_object(db_query("SELECT accountcode FROM asttrunk WHERE tid = '%s'", arg(3)));
+		if (!empty($sql->accountcode)) {
+			$undermenu = array();
+			$undermenu[] = url('astbilladm/editaccount/'.$sql->accountcode).'">'.t('Advanced Provider Trunk Settings');
+		}
+	}
+	
+	if (arg(4) == 'S'){
+		$title = t('You are Editing a STATIC Provider Trunk');
+	}
+	
+	if (arg(3) == 'static'){ 
+		$title = t('You are creating a new STATIC Provider Trunk');
+	}
+	astcore_printtheme($output, $title, $undermenu);
 }
 
 function astroute_trunk_form() {
