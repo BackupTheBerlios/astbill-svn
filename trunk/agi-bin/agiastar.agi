@@ -72,13 +72,15 @@ my $defmaxminute = &getMaxMinute();
 my $maxminute = $defmaxminute->{value};
 my $defTimeOut = &getTimeOut();
 my $maxTimeOut = $defTimeOut->{value};
+my $lastCallerid = $AGI{'callerid'};
+
 
 #### END OF CONFIGURATION #######################################################################################################
 
 sub getCallerID($) {
 	my ($callednum) = @_;
 	my $res;
-	$sth = $dbh->prepare("select callerid, forcecallerid, hidecallerid from astaccount where accountcode = '" . $callednum . "' LIMIT 1");
+	$sth = $dbh->prepare("select callerid, forcecallerid, hidecallerid, trustrpid from astaccount where accountcode = '" . $callednum . "' LIMIT 1");
 	$sth->execute;
 	$res = $sth->fetchrow_hashref;
 	$sth->finish;
@@ -437,11 +439,13 @@ my $cost = &getCost($uniqueid);
 		print STDERR "DEBUG: $dialstr\n";
 
 		my $callid = "";
-		my $nocallid = "unknown";
+		# my $nocallid = "unknown";
+		my $nocallid = $AGI{'callerid'};
+		
 		if (defined($cli))  {
 			if (defined($cli->{callerid}))  {
 				$callid = $cli->{callerid};
-		    } else { $callid = $nocallid; }
+		    } else { $callid = $lastCallerid; }    # $AGI{'callerid'};
 			if (defined($cli->{forcecallerid}))  {
 				$callid = "<".$cli->{forcecallerid}.">";
 				#  $callid = $cli->{forcecallerid};
@@ -449,6 +453,9 @@ my $cost = &getCost($uniqueid);
 		} 
 		} else {   
 			$callid = $nocallid;
+		}
+		if ($cli->{trustrpid} eq "yes") {  # Trust Remote Party ID
+			$callid = $lastCallerid;
 		}
 		print "SET VARIABLE ASTCALLERID $callid\n";
 		print STDERR $callid;
