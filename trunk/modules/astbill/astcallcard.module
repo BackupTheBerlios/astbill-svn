@@ -40,7 +40,7 @@ function _astcallcard_all() {
 		$value = $tmp['searchedit'];
 	}
 	
-	$output = astcore_search($edit, $posturl = url('/astbilladm/callcard'), $value);
+	$output = astcore_search($edit, $posturl = url('astbilladm/callcard'), $value);
 
 	switch ($op) {
 		case t('Save'):
