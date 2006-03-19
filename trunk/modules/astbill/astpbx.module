@@ -283,7 +283,7 @@ function _astpbx_voipadmin() {
 			$value = $tmp['searchedit'];
 		}
 		
-		$output = astcore_search($edit, $posturl = url('/astbilladm'), $value);
+		$output = astcore_search($edit, $posturl = url('astbilladm'), $value);
 		$output .= _astpbx_voipadmin_list($value, $edit);
 	}
 	

@@ -1810,7 +1810,7 @@ function page_astadmin_credit() {
 			$value = $tmp['searchedit'];
 		}
 		
-		$output = astcore_search($edit, $posturl = url('/astbilladm/payment/credit'), $value);
+		$output = astcore_search($edit, $posturl = url('astbilladm/payment/credit'), $value);
 		$output .= page_astadmin_credit_form($value, $edit);
 	}
 	
