@@ -1444,16 +1444,12 @@ function astroute_trunks() {
 	astcore_printtheme($output, $title, $undermenu);
 }
 
-// **** TRUNK EDIT ******************************************************
-
 function page_astroute_trunk_formrules() {
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
 
 	switch ($op) {
 		case t('Change'):
-		$did = arg(1);
-		$title = t('Edit Account');
 		if (astroute_trunk_validate($edit)) {
 			astroute_trunk_save($edit,arg(3));
 			drupal_goto("astbilladm/trunks");
@@ -1462,7 +1458,6 @@ function page_astroute_trunk_formrules() {
 		}
 		break;
 		case t('Create'):
-		$title = t('Edit Account');
 		if (astroute_trunk_validate($edit)) {
 			astroute_trunk_save($edit, arg(4));
 			drupal_goto("astbilladm/trunks");
@@ -1502,16 +1497,15 @@ function page_astroute_trunk_formrules() {
 }
 
 function page_astroute_trunkdialplan() {
-	global $user;
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
 
-	switch (($op ? $op : arg(1))) {
+	switch ($op) {
 		case t('Change'):
 		$did = arg(1);
 		$title = t('Edit Account');
 		if (astroute_trunk_validate($edit)) {
-			astroute_trunk_save($edit,arg(3));
+			astroute_trunk_save($edit, arg(3));
 			drupal_goto("astbilladm/trunks");
 		} else {
 			drupal_goto("astbilladm/trunks/dialplan/".arg(3));
@@ -1659,7 +1653,7 @@ function astroute_trunk_form() {
 
 		if (empty($edit)){
 
-			db_query("INSERT INTO `astdialplan` ( `accountcode` , `conditions` , `action` , `mon` , `tue` , `wed` , `thu` , `fri` , `sat` , `sun` , `start_time_hr` , `start_time_min` , `end_time_hr` , `end_time_min` ) VALUES ('trunk".arg(3)."', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0')");
+			//db_query("INSERT INTO `astdialplan` ( `accountcode` , `conditions` , `action` , `mon` , `tue` , `wed` , `thu` , `fri` , `sat` , `sun` , `start_time_hr` , `start_time_min` , `end_time_hr` , `end_time_min` ) VALUES ('trunk".arg(3)."', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0')");
 
 			$edit['wasempty'] = 1;
 
@@ -1957,6 +1951,8 @@ function astroute_trunk_save($edit, $account) {
 		if ($edit['action'] == 0) {$action = 'Voicemail';}
 		if ($edit['action'] == 1) {$action = 'Forward';}
 		if ($edit['action'] == 2) {$action = 'NotAvailable';}
+		
+		db_query("INSERT INTO `astdialplan` ( `accountcode` , `conditions` , `action` , `mon` , `tue` , `wed` , `thu` , `fri` , `sat` , `sun` , `start_time_hr` , `start_time_min` , `end_time_hr` , `end_time_min` ) VALUES ('trunk".$account."', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0')");
 
 		db_query("UPDATE astdialplan SET conditions = '%s', action = '%s', mon = '%s', tue = '%s', wed = '%s', thu = '%s', fri = '%s', sat = '%s', sun = '%s', start_time_hr = '%s', start_time_min = '%s', end_time_hr = '%s', end_time_min = '%s' WHERE accountcode = 'trunk%s'", $conditions, $action, $mon, $tue, $wed, $thu, $fri, $sat, $sun, $edit['starthour'], $edit['startmin'], $edit['endhour'], $edit['endmin'], $account);
 
