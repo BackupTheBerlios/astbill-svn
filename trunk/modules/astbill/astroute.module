@@ -1576,7 +1576,21 @@ function astroute_trunk_form() {
 		$group .= form_textfield(t('AddPrefix<BR><FONT SIZE=1>The outbound dialing prefix is used to prefix a dialing string to all outbound calls placed on this trunk. For example, if this trunk is behind another PBX or is a Centrex line, then you would put 9 here to access an outbound line. Most users should leave this option blank.</FONT>'), 'addprefix', $sqlout->addprefix, 5, 128, null, null, false);
 
 		$group .= form_textfield(t('Register String:<BR><FONT SIZE=1>Register String Many VoIP providers require your system to REGISTER with theirs. Enter the registration line here. example: username:password@sip.astartelecom.com</FONT>'), 'registerstring', $sqlout->registerstring, 90, 128, null, null, false);
-
+		
+		if (arg(3) == 'rt'){
+		
+			$authmethods['plaintext'] = 'plaintext';
+			$authmethods['md5'] = 'md5';
+			$authmethods['rsa'] = 'rsa';
+		
+			list($var1, $var2, $var3) = explode(",", $sqlout->auth);
+		
+			$authvalues[$var1] = $var1;
+			$authvalues[$var2] = $var2;
+			$authvalues[$var3] = $var3;
+		
+			$group .= form_checkboxes(t('Choose authentication methods'), 'auth', $authvalues, $authmethods,null ,null ,false);
+		}
 	
 		$group .= form_checkbox(t('<STRONG>Click to make default:<BR><FONT SIZE=1>If this is your first Provider Trunk you have to click to make it default. You need one default Provider Trunk</FONT></STRONG>'), 'isdefault', 1, $ifchecked ,null ,null ,false);
 
@@ -1629,17 +1643,20 @@ function astroute_trunk_form() {
 
 		$group .= form_textfield(t('Register String:<BR><FONT SIZE=1>Register String Many VoIP providers require your system to REGISTER with theirs. Enter the registration line here. example: username:password@sip.astartelecom.com</FONT>'), 'registerstring', $sqlout->registerstring, 90, 128, null, null, false);
 		
-		$authmethods['plaintext'] = 'plaintext';
-		$authmethods['md5'] = 'md5';
-		$authmethods['rsa'] = 'rsa';
+		if (arg(4) == 'R'){
 		
-		list($var1, $var2, $var3) = explode(",", $sqlout->auth);
+			$authmethods['plaintext'] = 'plaintext';
+			$authmethods['md5'] = 'md5';
+			$authmethods['rsa'] = 'rsa';
 		
-		$authvalues[$var1] = $var1;
-		$authvalues[$var2] = $var2;
-		$authvalues[$var3] = $var3;
+			list($var1, $var2, $var3) = explode(",", $sqlout->auth);
 		
-		$group .= form_checkboxes(t('Choose authentication methods'), 'auth', $authvalues, $authmethods,null ,null ,false);
+			$authvalues[$var1] = $var1;
+			$authvalues[$var2] = $var2;
+			$authvalues[$var3] = $var3;
+		
+			$group .= form_checkboxes(t('Choose authentication methods'), 'auth', $authvalues, $authmethods,null ,null ,false);
+		}
 		
 		$group .= form_checkbox(t('<STRONG>Click to make default:<BR><FONT SIZE=1>Only one Provider Trunk can be used as default</FONT></STRONG>'), 'isdefault', 1, $ifchecked ,null ,null ,false);
 
@@ -1752,6 +1769,16 @@ function astroute_trunk_form() {
 function astroute_trunk_save($edit, $account) {
 	global $user;
 
+	if (!empty($edit['auth'])) {
+		$x = 0;
+		foreach ($edit['auth'] as $key) {
+			if ($x != 0) {$auth .= ',';}
+			$x++;
+			if($key == 'md5'){$auth .= 'md5';}
+			if($key == 'plaintext'){$auth .= 'plaintext';}
+			if($key == 'rsa'){$auth .= 'rsa';}
+		}
+	}
 
 	if (arg(2) == 'create'){ // START CHECK IF TRUNKCREATE
 
@@ -1824,7 +1851,7 @@ function astroute_trunk_save($edit, $account) {
 
 			db_query("update asttrunk set accountcode = '%s' where name = '%s'", $Accountcode,$edit['name']);
 
-			db_query("INSERT INTO astaccount (accountcode, username, fromuser, tech, nat, qualify, type, context, comment,insecure, canreinvite,active,secret,host,fromdomain, uid,dtmfmode,date_created) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', 0,NULL,now())", $Accountcode,$username,$fromuser, $tech, $nat, $qualify,$type,$context,$comment,$insecure,$canreinvite,$active,$password,$Host,$FromDomain);
+			db_query("INSERT INTO astaccount (auth, accountcode, username, fromuser, tech, nat, qualify, type, context, comment,insecure, canreinvite,active,secret,host,fromdomain, uid, dtmfmode, date_created) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', 0, NULL, now())", $auth, $Accountcode,$username,$fromuser, $tech, $nat, $qualify,$type,$context,$comment,$insecure,$canreinvite,$active,$password,$Host,$FromDomain);
 
 		}
 		
@@ -1834,17 +1861,6 @@ function astroute_trunk_save($edit, $account) {
 	
 	
 	if (arg(2) == 'change'){ // START CHECK IF TRUNKCHANGE
-		
-		if (!empty($edit['auth'])) {
-			$x = 0;
-			foreach ($edit['auth'] as $key) {
-				if ($x != 0) {$auth .= ',';}
-				$x++;
-				if($key == 'md5'){$auth .= 'md5';}
-				if($key == 'plaintext'){$auth .= 'plaintext';}
-				if($key == 'rsa'){$auth .= 'rsa';}
-			}
-		}
 		
 		// We Don't allow tech change
 		if ($edit['tech'] == 0){$tech = 'SIP';}
