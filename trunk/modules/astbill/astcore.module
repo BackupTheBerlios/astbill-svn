@@ -42,7 +42,7 @@ astcore_printtheme($page_content, $title, $undermenu = 'FALSE', $undermenutitle 
 **$dbqueries = array();
 **$dbqueries[] = "DELETE FROM astaccount WHERE accountcode = (select accountcode from asttrunk where tid = ".arg(3).")";
 **$dbqueries[] = "DELETE FROM asttrunk WHERE tid = ".arg(3);
-astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries)
+astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries, $backgoto = 'DEFAULT')
 
 astcore_list($header, $rows, $noresults, $maxline)
 
@@ -109,10 +109,10 @@ function astcore_printtheme($page_content, $title, $undermenu = 'FALSE', $underm
 	print theme("page", $output);
 }
 
-function astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries) {
-	$edit = $_POST['edit'];
+function astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries, $backgoto = 'DEFAULT') {
+	$op = $_POST['op'];
 
-	if ($edit['verified'] == 'verified') {
+	if ($op == t('Delete')) {
 		foreach ($dbqueries as $key) {
 			db_query($key);
 		}
@@ -120,10 +120,14 @@ function astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $db
 		drupal_set_message(t($deletedmsg));
 		drupal_goto($donegoto);
 	}
+	if ($op == t('Back')) {
+		if ($backgoto == 'DEFAULT') {$backgoto = $donegoto;}
+		drupal_goto($backgoto);
+	}
 	
 	$output .= '<BR>'.$confirmmsg.'<BR><BR>';
-	$output .= form_hidden('verified', 'verified');
 	$output .= form_submit(t('Delete'));
+	$output .= form_submit(t('Back'));
 
 	$group = form($output);
 
