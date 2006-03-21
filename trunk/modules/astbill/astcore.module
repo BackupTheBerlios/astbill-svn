@@ -264,5 +264,21 @@ function pager_link($from_new, $element, $attributes = array()) {
   return check_url($url);
 }
 */
+/*
+JAVA SCRIPTS:
+
+$javaquestion = '
+	<SCRIPT LANGUAGE="JavaScript">
+	function question() {
+		test=confirm("Did the invoices print ok?");
+		if (test) {
+			window.location.href = "'.url('astbilladm/invoice/yes').'";
+		} else {
+			window.location.href = "'.url('astbilladm/invoice').'";
+		}
+	}
+	question()
+	</SCRIPT>';
+*/
 
 ?>
