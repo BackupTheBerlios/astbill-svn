@@ -27,9 +27,9 @@
 **$value = $edit['search'];
 **$tmp = astcore_flattenArray($_GET);
 **if (!empty($tmp['searchedit'])) {
-**		$value = $tmp['searchedit'];
-**	}
-**	$output = astcore_search($edit, url('astbilladm/realtime/friends'), $value);
+**	$value = $tmp['searchedit'];
+**}
+**$output = astcore_search($edit, url('astbilladm/realtime/friends'), $value);
 astcore_search($edit, $posturl, $value = NULL)
 
 **$undermenu = array(url('astbilladm/payment/create/').'">'.t('Create New Payment'));
@@ -111,8 +111,9 @@ function astcore_printtheme($page_content, $title, $undermenu = 'FALSE', $underm
 
 function astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries, $backgoto = 'DEFAULT') {
 	$op = $_POST['op'];
+	$edit = $_POST['edit'];
 
-	if ($op == t('Delete')) {
+	if ($edit['deleteverified'] == 'deleteverified') {
 		foreach ($dbqueries as $key) {
 			db_query($key);
 		}
@@ -121,17 +122,21 @@ function astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $db
 		drupal_goto($donegoto);
 	}
 	if ($op == t('Back')) {
+		
 		if ($backgoto == 'DEFAULT') {$backgoto = $donegoto;}
 		drupal_goto($backgoto);
 	}
 	
 	$output .= '<BR>'.$confirmmsg.'<BR><BR>';
+	
+	$output .= form_hidden('deleteverified', 'deleteverified');
 	$output .= form_submit(t('Delete'));
 	$output .= form_submit(t('Back'));
 
 	$group = form($output);
 
 	astcore_printtheme($group, $title);
+	exit();
 }
 
 function astcore_list($header, $rows, $noresults, $maxline) {
