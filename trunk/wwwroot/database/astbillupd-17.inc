@@ -46,6 +46,11 @@ $sql_updates = array(
   "2006-03-12" => "astbill_update_037",
   "2006-03-14" => "astbill_update_038",
   "2006-03-15" => "astbill_update_039",
+  "2006-03-17" => "astbill_update_040",
+  "2006-03-18" => "astbill_update_041",
+  "2006-03-25" => "astbill_update_042",
+  "2006-03-26" => "astbill_update_043",
+  "2006-03-26b" => "astbill_update_044",
 );
 
 function update_sql($sql) {
@@ -489,21 +494,179 @@ where (`asvaccount`.`accountcode` = `astaccount`.`accountcode`)");
   return $ret;
 }
 
+function astbill_update_040() {
+  $ret = array();
+    $ret[] = update_sql("CREATE TABLE `astacname` (
+  `accountcode` varchar(40) NOT NULL,
+  `gtype` varchar(40) default NULL,
+  `name` varchar(128) default NULL,
+  `forcecallerid` varchar(80) default NULL,
+  `location` varchar(128) default NULL,
+  `ipaddress` varchar(128) default NULL,
+  `sipport` varchar(40) default NULL,
+  `rtpport` varchar(40) default NULL,
+  `description` varchar(256) default NULL,
+  `rtcp` varchar(40) default NULL,
 
-/*
- CREATE TABLE `astplans` (`name` varchar(40) NOT NULL default '',
- `currency` varchar(3) NOT NULL default 'USD',
-`language` varchar(10) default NULL,`publishednum` varchar(40) default NULL,
-`did` varchar(40) default NULL,
-`markup` decimal(10,2) NOT NULL default '0.00',`billincrement` tinyint(8) NOT NULL default '1',
-`connectcharge` decimal(10,2) NOT NULL default '0.00',
-`status` tinyint(1) NOT NULL default '1',PRIMARY KEY  (`name`))");
+  `equipment` varchar(256) default NULL,
+  `networkpoint` varchar(256) default NULL,
+  `vlan` varchar(256) default NULL,
+  `macaddr` varchar(256) default NULL,
 
 
-  $ret[] = update_sql("INSERT INTO `astplans` SELECT * from astbrand");
-  $ret[] = update_sql("drop table astbrand");
-  $ret[] = update_sql("delete from pbx_cache");
-*/
+  `dateinstalled` varchar(40) default NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`accountcode`)
+);");
+
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `ipaddress` varchar(128) NULL default NULL AFTER `comment`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `subnet` varchar(128) NULL default NULL AFTER `ipaddress`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `port` varchar(128) NULL default NULL AFTER `subnet`");
+    
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `sip2` varchar(128) NULL default NULL AFTER `port`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `ipaddress2` varchar(128) NULL default NULL AFTER `sip2`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `subnet2` varchar(128) NULL default NULL AFTER `ipaddress2`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `port2` varchar(128) NULL default NULL AFTER `subnet2`");
+
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `sip3` varchar(128) NULL default NULL AFTER `port2`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `ipaddress3` varchar(128) NULL default NULL AFTER `sip3`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `subnet3` varchar(128) NULL default NULL AFTER `ipaddress3`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `port3` varchar(128) NULL default NULL AFTER `subnet3`");
+
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `sip4` varchar(128) NULL default NULL AFTER `port3`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `ipaddress4` varchar(128) NULL default NULL AFTER `sip4`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `subnet4` varchar(128) NULL default NULL AFTER `ipaddress4`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `port4` varchar(128) NULL default NULL AFTER `subnet4`");
+
+    $ret[] = update_sql("ALTER TABLE `astaccount` ADD `register` tinyint(1) NOT NULL default '0' AFTER `ccserialno`");
+    $ret[] = update_sql("ALTER TABLE `astaccount` ADD INDEX `tech_account` ( `tech` , `accountcode` )");
+ 
+  return $ret;
+}
+
+function astbill_update_041() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `call-limit` varchar(4) NULL default NULL AFTER `canreinvite`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `trustrpid` varchar(4) NULL default NULL AFTER `hidecallerid`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `sendrpid` varchar(4) NULL default NULL AFTER `trustrpid`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `setvar` varchar(128) NULL default NULL AFTER `rtptimeout`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `notifyringing` varchar(4) NULL default NULL AFTER `setvar`");
+
+  $ret[] = update_sql("DROP VIEW IF EXISTS `asv_sip`");
+  $ret[] = update_sql("CREATE VIEW `asv_sip` AS select `astaccount`.`accountcode` AS `name`,`astaccount`.`accountcode` AS `username`,
+`astaccount`.`type` AS `type`,`astaccount`.`secret` AS `secret`,`astaccount`.`host` AS `host`,
+`astaccount`.`callerid` AS `callerid`,`astaccount`.`context` AS `context`,`astaccount`.`dtmfmode` AS `dtmfmode`,
+`astaccount`.`mailbox` AS `mailbox`,`astaccount`.`nat` AS `nat`,`astaccount`.`qualify` AS `qualify`,
+`astaccount`.`fromuser` AS `fromuser`,`astaccount`.`authuser` AS `authuser`,`astaccount`.`fromdomain` AS `fromdomain`,
+`astaccount`.`fullcontact` AS `fullcontact`,`astaccount`.`insecure` AS `insecure`,`astaccount`.
+`canreinvite` AS `canreinvite`,`astaccount`.`disallow` AS `disallow`,`astaccount`.`allow` AS `allow`,
+`astaccount`.`restrictid` AS `restrictid`,`astaccount`.`ipaddr` AS `ipaddr`,`astaccount`.`port` AS `port`,
+`astaccount`.`regseconds` AS `regseconds`, `call-limit`, `trustrpid`, `sendrpid`, `setvar`, `notifyringing` from `astaccount` 
+where (((`astaccount`.`tech` = _latin1'SIP') or (`astaccount`.`tech` = _latin1'IN-SIP')) and 
+(`astaccount`.`active` = 1))");
 
 
+  return $ret;
+}
+
+function astbill_update_042() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `tenantid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `mastergroup`");
+  $ret[] = update_sql("ALTER TABLE `astacgroup` DROP PRIMARY KEY");
+  $ret[] = update_sql("ALTER TABLE `astacgroup` ADD PRIMARY KEY ( `gtype` , `mastergroup` , `tenantid` )");
+
+  $ret[] = update_sql("CREATE TABLE `astprospect` (
+  `id` int(10) NOT NULL auto_increment,
+  `uid` int(10) NOT NULL default '1',
+  `db_prefix` varchar(40) NOT NULL default 'pbx_',
+  `company` varchar(128) NOT NULL default '',
+  `firstname` varchar(128) default NULL,
+  `lastname` varchar(128) default NULL,
+  `contactperson` varchar(128) default NULL,
+  `sosialsecurityno` varchar(128) NOT NULL default '',
+  `address1` varchar(128) NOT NULL default '',
+  `address2` varchar(128) NOT NULL default '',
+  `zip` varchar(64) NOT NULL default '',
+  `city` varchar(128) NOT NULL default '',
+  `state` varchar(128) default NULL,
+  `country` varchar(128) NOT NULL,
+  `mobile` varchar(128) NOT NULL default '',
+  `phonehome` varchar(128) NOT NULL default '',
+  `phonework` varchar(128) NOT NULL default '',
+  `fax` varchar(128) NOT NULL default '',
+  `email` varchar(128) NOT NULL default '',
+  `status` varchar(128) NOT NULL default '',
+  `customerstatus` varchar(128) NOT NULL default '',
+  `subscriptiontype` varchar(128) NOT NULL default '',
+  `porteringsno` varchar(128) NOT NULL default '',
+  `newno` varchar(128) NOT NULL default '',
+  `voicemail` varchar(128) NOT NULL default '',
+  `date_followup` datetime NOT NULL default '0000-00-00 00:00:00',
+  `comment` varchar(1024) NOT NULL default '',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`id`),
+  KEY `company` (`company`),
+  KEY `contactname` (`lastname`)
+) ");
+  
+  $ret[] = update_sql("ALTER TABLE `astlog` ADD `uid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `message`");
+  $ret[] = update_sql("ALTER TABLE `astlog` ADD `accountcode` varchar(40) DEFAULT NULL NULL AFTER `uid`");
+  $ret[] = update_sql("ALTER TABLE `astlog` ADD `db_prefix` varchar(40) DEFAULT NULL NULL AFTER `uid`");
+
+  return $ret;
+}
+
+function astbill_update_043() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astprospect` ADD `ref` varchar(256) DEFAULT NULL NULL AFTER `comment`");
+
+  return $ret;
+}
+  
+ function astbill_update_044() {
+  $ret = array();
+  $ret[] = update_sql("CREATE TABLE `astlogsms` (
+  `smsid` int(10) NOT NULL auto_increment,
+  `uid` int(10) NOT NULL default '0',
+  `db_prefix` varchar(40) NOT NULL default 'pbx_',
+  `accountcode` varchar(40) default NULL,
+  `txrx` varchar(40) default NULL,
+  `fromnr` varchar(128) default NULL,
+  `destination` varchar(128) default NULL,
+  `product` varchar(128) default NULL,
+  `status` varchar(128) default NULL,
+  `callback` varchar(128) default NULL,
+  `cliid` varchar(128) default NULL,
+  `apimsgid` varchar(128) NULL default NULL,
+  `ourcost` decimal(10,2) NOT NULL default '0',
+  `salesprice` decimal(10,2) NOT NULL default '0',
+  `messagedata` varchar(256) default NULL,
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `date_scheduled` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`smsid`)
+) AUTO_INCREMENT= 20000");
+
+  $ret[] = update_sql("CREATE TABLE `astprospect2` (
+  `id` int(10) NOT NULL auto_increment,
+  `refid` int(10) NOT NULL default '0',
+  `uid` int(10) NOT NULL default '0',
+  `db_prefix` varchar(40) NOT NULL default 'pbx_',
+  `contactperson` varchar(128) default NULL,
+  `mobile` varchar(128) NOT NULL default '',
+  `comment` varchar(1024) NOT NULL default '',
+  `ref` varchar(256) default NULL,
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`id`),
+  KEY `contactperson` (`contactperson`)
+) AUTO_INCREMENT=90000");
+
+  $ret[] = update_sql("ALTER TABLE `astprospect2` ADD `status` varchar(128) NOT NULL default '' AFTER `comment`");
+  $ret[] = update_sql("ALTER TABLE `astprospect2` ADD `date_followup` datetime NOT NULL default '0000-00-00 00:00:00' AFTER `status`");
+  $ret[] = update_sql("ALTER TABLE `astprospect` ADD `prospectid` int(10) NOT NULL default '0' AFTER `id`");
+
+  return $ret;
+}
 ?>

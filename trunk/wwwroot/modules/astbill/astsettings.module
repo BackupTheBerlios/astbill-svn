@@ -274,7 +274,7 @@ function page_astsettings_createbatch() {
 
 
 
-	switch (($op ? $op : arg(1))) {
+	switch ($op) {
 	
 	case t('Generate'):
 		//print_r($edit);
@@ -525,6 +525,7 @@ while ($x <= $edit['nracc']) {
 */
 $x = 1;
 $y = 0;
+$accountcodechecked = array();
 while ($x <= $edit['nracc']) {
 	$account = $accountcode[$y];
 	$allpass = 0;

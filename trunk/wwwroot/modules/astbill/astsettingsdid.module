@@ -66,7 +66,7 @@ function astsettingsdid_createdidbatch() {
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
 
-	switch (($op ? $op : arg(1))) {
+	switch ($op) {
 	
 	case t('Generate'):
 		//print_r($edit);
@@ -94,7 +94,7 @@ _astsettings_printtheme_best($output, $title);
 // FORM STUFF
 function astsettingsdid_createbatch_validate($edit) {
 	global $user;
-    global $db_prefix; 
+	global $db_prefix; 
 	$myerror = 1;
 	$errors = array();
 	
@@ -187,7 +187,7 @@ function astsettingsdid_createdidbatch_form($edit) {
 	$group .= form_textfield(t("Number of DIDs"), "nodid", $edit['nodid'], 40, 150, null, null, false);
 
 	$group .= form_select(t('Tech'), 'tech', $sqlout->tech, array('IN-SIP' => 'SIP', 'IN-IAX' => 'IAX2', 'IN-ZAP' => 'ZAP'));
-    $group .= form_select(t("DID Group"), "acgroup", $edit['acgroup'], $didtypelist);
+	$group .= form_select(t("DID Group"), "acgroup", $edit['acgroup'], $didtypelist);
 
 	$group .= form_textfield(t("Prefix (0 if Number start with 0207xxxxxx)"), "prefix", $edit['prefix'], 10, 150, null, null, false);
 	$group .= form_textfield(t("From Domain"), "fromdomain", $edit['fromdomain'], 40, 150, null, null, false);
@@ -208,7 +208,7 @@ function astsettingsdid_createdidbatch_form($edit) {
 function settingsdid_hardware_form($account) {
 	global $user;
 	$edit = $_POST["edit"];
-    $op = $_POST["op"];
+	$op = $_POST["op"];
 
 
 if (arg(2) == 'addmac'){ // START CHECK IF HARDWARECREATE

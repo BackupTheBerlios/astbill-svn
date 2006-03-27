@@ -283,7 +283,7 @@ function _astpbx_voipadmin() {
 			$value = $tmp['searchedit'];
 		}
 		
-		$output = astcore_search($edit, $posturl = url('/astbilladm'), $value);
+		$output = astcore_search($edit, $posturl = url('astbilladm'), $value);
 		$output .= _astpbx_voipadmin_list($value, $edit);
 	}
 	
@@ -532,6 +532,11 @@ function rand()
 			  // '<img border="0" src="files/astar/call.gif" title="Click to Call this number">');
 		  }
 
+		  
+		  $output .= astcore_list($header, $rows, t('No Calls for this User.'), $maxline);
+		  astcore_printtheme($output, t('Last Numbers Dialed'));
+		  
+		  /*
 		  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
 		  if (!empty($pager)) {
 			  $rows[] = array(array('data' => $pager, 'colspan' => 8));
@@ -544,7 +549,7 @@ function rand()
 		  $output = $outputLine . '<div class="nodecontent">' . $output . "</div>\n";
 		  // $output .= '<div class="astpbx">' . $page_content . "</div>\n";
 		  print theme("page", $output);
-
+		  */
   
 		  // Not a logged in user or has no rights
 	  } else {
@@ -629,18 +634,9 @@ GetSwitch();
 // ##########################################################################################################
 
 function _astpbx_numbersLocal() {
-  // Used to View Valid Accounts
-
-  // Make sure you don't trust the URL to be safe! Always check for exploits.
-  //if (!is_numeric($alice) || !is_numeric($bob)) {
-  //if (!is_numeric($account)) {
-    // We will just show a standard "access denied" page in this case.
-  //  drupal_access_denied();
-  //  return;
-  //}
-  global $user;
-  global $db_prefix; 
-  $myjava = '
+	global $user;
+	global $db_prefix; 
+	$myjava = '
 <script type="text/javascript">
 var p;
 var i = 0;
@@ -703,45 +699,47 @@ function rand()
 </script>
 ';
 
-  // Do not let anonymous users have access, even if the admin decides this
-  if ($user->uid != 0 && user_access('astpbx voip account')) {
+	  // Do not let anonymous users have access, even if the admin decides this
+	  if ($user->uid != 0 && user_access('astpbx voip account')) {
   
-  $maxline = 40; // This is the number of records to display on a page
+		  $maxline = 40; // This is the number of records to display on a page
 
-  $output = '<b>'.t('Click on the Call Button to Call').'</b><br>';
-  $output .= $myjava . '<pre id="call">&nbsp;&nbsp;&nbsp;&nbsp;</pre>';
+		  $output = '<b>'.t('Click on the Call Button to Call').'</b><br>';
+		  $output .= $myjava . '<pre id="call">&nbsp;&nbsp;&nbsp;&nbsp;</pre>';
 
-  $header = array(
-    array('data' => t('No Calls'), 'field' => 'CountOfcallednum', 'sort' => 'asc'),
-    array('data' => t('Number Dialed'), 'field' => 'callednum'),
-    array('data' => t('Name'), 'field' => 'name'),
-    array('data' => t('Operations'), 'colspan' => 2)
-	
-  );
+		  $header = array(
+		  array('data' => t('No Calls'), 'field' => 'CountOfcallednum', 'sort' => 'asc'),
+		  array('data' => t('Number Dialed'), 'field' => 'callednum'),
+		  array('data' => t('Name'), 'field' => 'name'),
+		  array('data' => t('Operations'), 'colspan' => 2)	
+		  );
 
-	$sql  = "SELECT Count(astcdr.callednum) AS CountOfcallednum, astcdr.callednum, ";
-	$sql .= "LEFT(CONCAT_WS(' ', last_name, first_name),18) AS name ";
-	$sql .= "FROM (astcdr INNER JOIN astaccount ON astcdr.accountcode = astaccount.accountcode) ";
-	$sql .= "LEFT JOIN {contact_directory} cd ON astcdr.callednum = cd.phone ";
-	$sql .= "WHERE (((astaccount.uid)='" . $user->uid . "') and db_prefix ='".$db_prefix."' AND ((astcdr.trunk)='Local') AND ((astcdr.dialstatus)='ANSWER')) ";
-	$sql .= "GROUP BY astcdr.callednum, cd.first_name ";
-	$sql .= "ORDER BY Count(astcdr.callednum) DESC ";
+		  $sql  = "SELECT Count(astcdr.callednum) AS CountOfcallednum, astcdr.callednum, ";
+		  $sql .= "LEFT(CONCAT_WS(' ', last_name, first_name),18) AS name ";
+		  $sql .= "FROM (astcdr INNER JOIN astaccount ON astcdr.accountcode = astaccount.accountcode) ";
+		  $sql .= "LEFT JOIN {contact_directory} cd ON astcdr.callednum = cd.phone ";
+		  $sql .= "WHERE (((astaccount.uid)='" . $user->uid . "') and db_prefix ='".$db_prefix."' AND ((astcdr.trunk)='Local') AND ((astcdr.dialstatus)='ANSWER')) ";
+		  $sql .= "GROUP BY astcdr.callednum, cd.first_name ";
+		  $sql .= "ORDER BY Count(astcdr.callednum) DESC ";
 
 
-  //$sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
-  //$result = pager_query($sql, $maxline, 0, $sqlCount);
-  $result = pager_query($sql, $maxline);
+		  //$sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
+		  //$result = pager_query($sql, $maxline, 0, $sqlCount);
+		  $result = pager_query($sql, $maxline);
   
-  while ($res = db_fetch_object($result)) {
-   
-	$rows[] = array($res->CountOfcallednum.'&nbsp;&nbsp;&nbsp;',$res->callednum.'&nbsp;&nbsp;&nbsp;',
-		$res->name.'&nbsp;&nbsp;&nbsp;', 
-	  '<a title="Click to Call this number" href="javascript:PostCall(' . $res->callednum . ')"><img border="0" id="btncall" src="files/astar/call.gif"></a>', '&nbsp;&nbsp;<a href="'.url('astcontact/astpbx/'.$res->callednum).'">'.t('Edit Contact').'</a>');
+		  while ($res = db_fetch_object($result)) {
+			  $rows[] = array($res->CountOfcallednum.'&nbsp;&nbsp;&nbsp;',$res->callednum.'&nbsp;&nbsp;&nbsp;',
+			  $res->name.'&nbsp;&nbsp;&nbsp;',
+			  '<a title="Click to Call this number" href="javascript:PostCall(' . $res->callednum . ')"><img border="0" id="btncall" src="files/astar/call.gif"></a>', '&nbsp;&nbsp;<a href="'.url('astcontact/astpbx/'.$res->callednum).'">'.t('Edit Contact').'</a>');
 
-	//  '<a href="astpbx/numbers" onclick="PostCall();return false;">Call</a>');
-	// '<img border="0" src="files/astar/call.gif" title="Click to Call this number">');
-  }
-
+			  //  '<a href="astpbx/numbers" onclick="PostCall();return false;">Call</a>');
+			  // '<img border="0" src="files/astar/call.gif" title="Click to Call this number">');
+		  }
+  
+  
+		  $output .= astcore_list($header, $rows, t('No Calls for this User.'), $maxline);
+		  astcore_printtheme($output, t('Last Numbers Dialed'));
+/*
   $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
   if (!empty($pager)) {
     $rows[] = array(array('data' => $pager, 'colspan' => 8));
@@ -754,12 +752,12 @@ function rand()
   $output = $outputLine . '<div class="nodecontent">' . $output . "</div>\n";
   // $output .= '<div class="astpbx">' . $page_content . "</div>\n";
   print theme("page", $output);
-
+*/
   
-  // Not a logged in user or has no rights
-  } else {
-    drupal_access_denied();
-  }
+  	// Not a logged in user or has no rights
+	  } else {
+		  drupal_access_denied();
+	  }
 }
 
 // BEGIN ACCOUNTS STUFF
@@ -770,14 +768,6 @@ function _astpbx_accounts() {
   $edit = $_POST["edit"];
   $op = $_POST["op"];
 
-    // Make sure you don't trust the URL to be safe! Always check for exploits.
-  //if (!is_numeric($alice) || !is_numeric($bob)) {
-if (arg(1) == 'editaccount') { 
-  if (!is_numeric(arg(2))) {
-    // We will just show a standard "access denied" page in this case.
-    drupal_access_denied();
-    return;
-}}
 
 $account = arg(2);
 
@@ -926,14 +916,6 @@ function _astpbx_accounts_save($edit, $account) {
 	
 	if (arg(1) == 'editaccount') {
 		
-		// Make sure you don't trust the URL to be safe! Always check for exploits.
-		//if (!is_numeric($alice) || !is_numeric($bob)) {
-		if (!is_numeric($account)) {
-			// We will just show a standard "access denied" page in this case.
-			drupal_access_denied();
-			return;
-		}
-
 
 		$presql = db_fetch_object(db_query("SELECT uid, db_prefix FROM astaccount WHERE accountcode = '%s'", $account));
 		$sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $presql->uid));

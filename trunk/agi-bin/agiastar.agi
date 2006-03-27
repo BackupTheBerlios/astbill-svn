@@ -80,7 +80,17 @@ my $lastCallerid = $AGI{'callerid'};
 sub getCallerID($) {
 	my ($callednum) = @_;
 	my $res;
-	$sth = $dbh->prepare("select callerid, forcecallerid, hidecallerid, trustrpid from astaccount where accountcode = '" . $callednum . "' LIMIT 1");
+	$sth = $dbh->prepare("select callerid, forcecallerid, hidecallerid, trustrpid, master,submaster from astaccount where accountcode = '" . $callednum . "' LIMIT 1");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
+sub getMaster($) {
+	my ($accountcode) = @_;
+	my $res;
+	$sth = $dbh->prepare("select trustrpid, master,submaster from astaccount where accountcode = '" . $accountcode . "' LIMIT 1");
 	$sth->execute;
 	$res = $sth->fetchrow_hashref;
 	$sth->finish;
@@ -456,6 +466,10 @@ my $cost = &getCost($uniqueid);
 		}
 		if ($cli->{trustrpid} eq "yes") {  # Trust Remote Party ID
 			$callid = $lastCallerid;
+			my $mas = &getMaster($callid);
+			my $submaster = $mas->{submaster};
+			my $master = $mas->{master};
+		   $dbh->do("update astcdr set accountcode = '$callid', master = '$master', submaster = '$submaster' where uniqueid = '$uniqueid'");
 		}
 		print "SET VARIABLE ASTCALLERID $callid\n";
 		print STDERR $callid;

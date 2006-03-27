@@ -26,8 +26,9 @@ if (!ini_get("safe_mode")) {
   set_time_limit(180);
 }
 
-// include_once "database/astbillupdates.inc";
+include_once "database/astbillupd-17.inc";
 
+/*
 $buffer = "";
 $filename = "http://update.astbill.com/ud/astbillupd-17.txt";
 $handle = @fopen($filename, "r");
@@ -41,6 +42,7 @@ if ($handle) {
 
 //	echo $buffer;
    eval($buffer);
+*/
 
 /*
    if (!$handlex = fopen("/tmp/astbillconf.inc", 'w')) {

@@ -232,49 +232,75 @@ function astadmin_perm() {
 // ##########################################################################################################
 
 function _astadmin_all() {
-  global $user;
+	global $user;
 
-  $edit = $_POST["edit"];
-  $op = $_POST["op"];
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
 
 
 
-$title = 'UID';
-$account = $user->uid;
-_astadmin_printtheme_best($output, $account, $title);
+	$title = 'UID';
+	$account = $user->uid;
+	_astadmin_printtheme_best($output, $account, $title);
+}
 
+function page_astadmin_friends() {
+	$edit = $_POST['edit'];
+	$op = $_POST['op'];
+	
+	$value = $edit['search'];
+	$tmp = astcore_flattenArray($_GET);
+	
+	if (!empty($tmp['searchedit'])) {
+		$value = $tmp['searchedit'];
+	}
+	
+	$output = astcore_search($edit, url('astbilladm/realtime/friends'), $value);
+	
+	switch($op) {
+		case t('Search');
+		$output .= page_astadmin_friends_list($value);
+		
+		break;
+		default:
+		$output .= page_astadmin_friends_list($value);
+	}
+	
+	
+	$title = t("View Incoming Numbers, Peers, Users and Friends");
+	$undermenu[] = url('astbilladm/realtime/friends/create/').'">'.t('Create new');
+	astcore_printtheme($output, $title, $undermenu);
+	
 }
 
 
+function page_astadmin_friends_list($value) {
+	global $user;
+	global $db_prefix;
 
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
 
-function page_astadmin_friends() {
-  global $user;
+	$maxline = 40;
 
-  $edit = $_POST["edit"];
-  $op = $_POST["op"];
+	$header = array(
+	array('data' => t('User'), 'field' => 'name'),
+	array('data' => t('UID'), 'field' => 'uid'),
+	array('data' => t('Accountcode'), 'field' => 'accountcode', 'sort' => 'desc'),
+	array('data' => t('Type'), 'field' => 'type'),
+	array('data' => t('Publicnumber'), 'field' => 'publicnumber'),
+	array('data' => t('Username'), 'field' => 'username'),
+	array('data' => t('Operations'), 'colspan' => 3)	
+	);
 
-  $maxline = 40;
-
-  $header = array(
-    array('data' => t('User / UID'), 'colspan' => 2),
-    array('data' => t('Accountcode'), 'field' => 'accountcode', 'sort' => 'desc'),
-    array('data' => t('Type')),
-    array('data' => t('Publicnumber')),
-    array('data' => t('Username')),
-    array('data' => t('Operations'), 'colspan' => 3)	
-  );
-
-//$result = db_query("SELECT uid, accountcode, username, publicnumber, tech, type, secret, forwardto, fromuser, authuser, fromdomain, nat, qualify, host, port, callerid, context, dtmfmode, insecure, canreinvite, disallow, allow, restrictid, comment, active, trunkpath, date_created, timestamp FROM asv_friend");
-$sql = "SELECT uid, accountcode, username, publicnumber, tech, type, secret, forwardto, fromuser, authuser, fromdomain, nat, qualify, host, port, callerid, context, dtmfmode, insecure, canreinvite, disallow, allow, restrictid, comment, active, date_created, timestamp FROM asv_friend". tablesort_sql($header);
-$result = pager_query($sql, $maxline);
+	$sql = "SELECT asv_friend.uid, accountcode, username, publicnumber, type, name FROM asv_friend, cbk_users WHERE asv_friend.uid = cbk_users.uid AND db_prefix = 'cbk_' AND CONCAT_WS(',', asv_friend.uid, LOWER(accountcode), LOWER(username), publicnumber, LOWER(type), LOWER(name)) like LOWER('%".$value."%')". tablesort_sql($header);
+	
+	$result = pager_query($sql, $maxline);
 
   
-  while ($item = db_fetch_object($result)) {
-	  $sql2 = db_fetch_object(db_query("select name from {users} where uid='".$item->uid."'"));
-	$account = arg(1);
-	  	$rows[] = array('<A HREF="'.url('user/'.$item->uid).'">'.$sql2->name.'</A>',
-		$item->uid.'&nbsp;&nbsp;',
+	while ($item = db_fetch_object($result)) {
+	  	$rows[] = array('<A HREF="'.url('user/'.$item->uid).'">'.$item->name.'</A>',
+		$item->uid,
 		$item->accountcode.'&nbsp;&nbsp;',
 		$item->type.'&nbsp;&nbsp;',
 	        $item->publicnumber.'&nbsp;&nbsp;',
@@ -283,65 +309,40 @@ $result = pager_query($sql, $maxline);
 		'<A HREF="'.url('astbilladm/realtime/friends/assign/'.$item->accountcode).'">'.t('Assign').'</A>&nbsp;&nbsp;',
 		'<A HREF="'.url('astbilladm/realtime/friends/remove/'.$item->accountcode).'/'.$item->accountcode.'">'.t('Remove').'</A>'
 		);
-  }
+	}
 
-
-
-  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
-  if (!empty($pager)) {
-    $rows[] = array(array('data' => $pager, 'colspan' => 8));
-  }
-
-  $output .= (count($rows) == 0) ? t('No Friend entries.') : theme('table', $header, $rows);
-
-
-
-$title = t("View Incoming Numbers, Peers, Users and Friends");
-$account = $user->uid;
-_astadmin_printtheme_friends($output, $account, $title);
+	$output = astcore_list($header, $rows, t('No Friend entries.'), $maxline);
+	
+	return $output;
 }
-
-
-function _astadmin_printtheme_friends($page_content, $account, $title) {
-	global $user;
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-
-  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-
-$output .= '<div class="nodecontent">';
-$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/realtime/friends/create/').'">'.t('Create new').'</A></B><BR>';
-
-  print theme("page", $output);
-}
-
 
 
 function page_astadmin_friendschange() {
-  global $user;
+	global $user;
 
-  $edit = $_POST["edit"];
-  $op = $_POST["op"];
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
 
-  switch (($op ? $op : arg(2))) {
-    case t('Change'):
-      $title = t('Edit Account');
-      if (astadmin_friends_validate($edit)) {
-        astadmin_friends_save($edit,arg(4));
-        drupal_goto("astbilladm/realtime/friends");
-      } else {
-		drupal_goto("astbilladm/realtime/friends/change/".arg(4));
-	  }
-      break;
-  	case t('Back'):
+	switch ($op) {
+		case t('Change'):
+		$title = t('Edit Account');
+		if (astadmin_friends_validate($edit)) {
+			astadmin_friends_save($edit,arg(4));
+			drupal_goto("astbilladm/realtime/friends");
+		} else {
+			drupal_goto("astbilladm/realtime/friends/change/".arg(4));
+		}
+		break;
+		case t('Back'):
 		drupal_goto("astbilladm/realtime/friends");
-    default:
-	  $output = astadmin_friends_form(arg(4));
-  }
+		default:
+		$output = astadmin_friends_form(arg(4));
+	}
 
 
-$title = 'Change';
-$account = $user->uid;
-_astadmin_printtheme_best($output, $account, $title);
+	$title = 'Change';
+	$account = $user->uid;
+	_astadmin_printtheme_best($output, $account, $title);
 }
 
 function page_astadmin_friendassign() {
@@ -436,62 +437,53 @@ function page_astadmin_friendsremove() {
 
 // FRIENDS FORM STUFF
 function astadmin_friends_validate($edit) {
-  global $user;
-  $myerror = 1;
-  $errors = array();
+	global $user;
+	$myerror = 1;
+	$errors = array();
 
-if (arg(2) == 'create'){
+	if (arg(2) == 'create'){
+		$sql = db_query("SELECT accountcode FROM astaccount");
+
+		while ($getname = db_fetch_object($sql)){
+			if ($edit['accountcode'] == $getname->accountcode){
+				$errors['test'] = t('Please enter a unique name');
+				$myerror = 0;
+			}
+		}
 
 
-$sql = db_query("SELECT accountcode FROM astaccount");
-
-while ($getname = db_fetch_object($sql)){
-	if ($edit['accountcode'] == $getname->accountcode){
-		$errors['test'] = t('Please enter a unique name');
-		$myerror = 0;
 	}
-}
 
-
-}
-
-  foreach ($errors as $name => $message) {
-    form_set_error($name, $message);
-  } 
-  return $myerror;
+	foreach ($errors as $name => $message) {
+		form_set_error($name, $message);
+	} 
+	return $myerror;
 }
 
 function astadmin_friends_save($edit, $account) {
-  global $user;
-  // Make sure you don't trust the URL to be safe! Always check for exploits.
-  //if (!is_numeric($alice) || !is_numeric($bob)) {
- /*
-  if (!is_numeric($account)) {
-    // We will just show a standard "access denied" page in this case.
-    drupal_access_denied();
-    return;
-  }*/
+	global $user;
 
-if (arg(3) == 'create'){ // START CHECK IF FRIENDSCREATE
+	if (arg(3) == 'create'){ // START CHECK IF FRIENDSCREATE
 
-$sql = db_query("INSERT INTO asv_friend (accountcode, tech, type,date_created) VALUES ('%s', 'IN-SIP', 'peer', now())", $edit['accountcode']);
+		$sql = db_query("INSERT INTO asv_friend (accountcode, tech, type,date_created) VALUES ('%s', 'IN-SIP', 'peer', now())", $edit['accountcode']);
 
-  drupal_set_message(t('Please set up your new friend'));
-  return $edit['accountcode'];
-} // END CHECK IF FRIENDSCREATE
+		drupal_set_message(t('Please set up your new friend'));
+		return $edit['accountcode'];
+	} // END CHECK IF FRIENDSCREATE
 
 
-if (arg(3) == 'change'){ // START CHECK IF FRIENDSCHANGE
+	if (arg(3) == 'change'){ // START CHECK IF FRIENDSCHANGE
 
-//db_query("INSERT INTO `astdialplan` ( `accountcode` , `conditions` , `action` , `mon` , `tue` , `wed` , `thu` , `` , `sat` , `sun` , `start_time_hr` , `start_time_min` , `end_time_hr` , `end_time_min` ) VALUES ('trunk".arg(4)."', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0')");
+		//db_query("INSERT INTO `astdialplan` ( `accountcode` , `conditions` , `action` , `mon` , `tue` , `wed` , `thu` , `` , `sat` , `sun` , `start_time_hr` , `start_time_min` , `end_time_hr` , `end_time_min` ) VALUES ('trunk".arg(4)."', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0')");
 
-//publicnumber, secret, username, forwardto, fromuser, authuser, fromdomain, host, port, callerid, context, disallow, allow, comment, trunkpath
+		//publicnumber, secret, username, forwardto, fromuser, authuser, fromdomain, host, port, callerid, context, disallow, allow, comment, trunkpath
 
-$sql = db_query("UPDATE asv_friend SET uid = '%s', type = '%s', nat = '%s', qualify = '%s', dtmfmode = '%s', insecure = '%s', canreinvite = '%s', restrictid = '%s', active = '%s', tech = '%s', publicnumber = '%s', secret = '%s', username = '%s', forwardto = '%s', fromuser = '%s', authuser = '%s', fromdomain = '%s', host = '%s', port = '%s', callerid = '%s', context = '%s', disallow = '%s', allow = '%s', comment = '%s', serverid = '%s' WHERE accountcode = '%s'", $edit['account'], $edit['type'], $edit['nat'], $edit['qualify'], $edit['dtmfmode'], $edit['insecure'], $edit['canreinvite'], $edit['restrictid'], $edit['active'], $edit['tech'], $edit['publicnumber'], $edit['secret'],$edit['username'],$edit['forwardto'],$edit['fromuser'],$edit['authuser'],$edit['fromdomain'],$edit['host'],$edit['port'],$edit['callerid'],$edit['context'],$edit['disallow'],$edit['allow'],$edit['comment'],$edit['serverid'], $account);
+		$sql = db_query("UPDATE asv_friend SET uid = '%s', type = '%s', nat = '%s', qualify = '%s', dtmfmode = '%s', insecure = '%s', canreinvite = '%s', restrictid = '%s', active = '%s', tech = '%s', publicnumber = '%s', secret = '%s', username = '%s', forwardto = '%s', fromuser = '%s', authuser = '%s', fromdomain = '%s', host = '%s', port = '%s', callerid = '%s', context = '%s', disallow = '%s', allow = '%s', comment = '%s', serverid = '%s' WHERE accountcode = '%s'", $edit['account'], $edit['type'], $edit['nat'], $edit['qualify'], $edit['dtmfmode'], $edit['insecure'], $edit['canreinvite'], $edit['restrictid'], $edit['active'], $edit['tech'], $edit['publicnumber'], $edit['secret'],$edit['username'],$edit['forwardto'],$edit['fromuser'],$edit['authuser'],$edit['fromdomain'],$edit['host'],
+		$edit['port'],$edit['callerid'],$edit['context'],$edit['disallow'],$edit['allow'],$edit['comment'],$edit['serverid'], $account);
 
 
-  drupal_set_message(t('The friend settings have been updated.'));
-} // END CHECK IF FRIENDSCHANGE
+		drupal_set_message(t('Friend '.$account.' settings has been updated.'));
+	} // END CHECK IF FRIENDSCHANGE
 
 
 }
@@ -1255,7 +1247,7 @@ function page_astadmin_listcdr() {
 			$value = $tmp['searchedit'];
 		}
 		
-		$output = astcore_search($edit, $posturl = url('/astbilladm/listcdr'), $value);
+		$output = astcore_search($edit, $posturl = url('astbilladm/listcdr'), $value);
 		$output .= page_astadmin_listcdr_form($value, $edit);
 	}
 	
@@ -1357,7 +1349,7 @@ function page_astadmin_listcdr_form($value, $edit) {
 		
 		//print_r($_GET);
 		
-		$sql = "SELECT id, cdr.accountcode, callednum, cdr.type, cdr.trunk, cdr.date_created, dialstatus, billtime, name FROM astcdr cdr, ".$db_prefix."users users, astaccount WHERE cdr.accountcode = astaccount.accountcode AND db_prefix ='".$db_prefix."' AND astaccount.uid = users.uid AND CONCAT_WS(',', LOWER(name), id, cdr.accountcode, callednum, LOWER(cdr.type), LOWER(cdr.trunk), cdr.date_created, LOWER(dialstatus), billtime) LIKE LOWER('%".$value."%')".tablesort_sql($header);
+		$sql = "SELECT id, cdr.accountcode, callednum, cdr.type, cdr.trunk, cdr.date_created, dialstatus, billtime, name, users.mail FROM astcdr cdr, ".$db_prefix."users users, astaccount WHERE cdr.accountcode = astaccount.accountcode AND db_prefix ='".$db_prefix."' AND astaccount.uid = users.uid AND CONCAT_WS(',', LOWER(name), id, cdr.accountcode, callednum, LOWER(cdr.type), LOWER(cdr.trunk), cdr.date_created, LOWER(dialstatus), billtime, LOWER(users.mail)) LIKE LOWER('%".$value."%')".tablesort_sql($header);
 		
 		
 		$result = pager_query($sql, $maxline);
@@ -1810,7 +1802,7 @@ function page_astadmin_credit() {
 			$value = $tmp['searchedit'];
 		}
 		
-		$output = astcore_search($edit, $posturl = url('/astbilladm/payment/credit'), $value);
+		$output = astcore_search($edit, $posturl = url('astbilladm/payment/credit'), $value);
 		$output .= page_astadmin_credit_form($value, $edit);
 	}
 	
