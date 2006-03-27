@@ -97,7 +97,7 @@ function astcore_printtheme($page_content, $title, $undermenu = 'FALSE', $underm
 	}
 	
 	if ($undermenutitle != 'FALSE') {
-		$output .= '<B>'.$title.'</B><BR>';
+		$output .= '<B>'.$undermenutitle.'</B><BR>';
 	}
 	
 	if ($undermenu != 'FALSE') {
