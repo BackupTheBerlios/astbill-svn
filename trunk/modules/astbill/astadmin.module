@@ -1305,7 +1305,7 @@ function page_astadmin_listcdr_form($value, $edit) {
 		$output .= $res->amaflags.'<BR>';
 		$output .= t('<B>Dialstatus: </B>');
 		$output .= $res->dialstatus.'<BR>';
-		$output .= t('<B>Date Created: </B>');
+		$output .= '<B>'.t('Date Created').': </B>';
 		$output .= format_date($res->dcreat,"custom","Y-m-d H:i:s").'<BR>';
 		$output .= '<BR>';
 		$output .= t('<B>Dialed Time: </B>');
