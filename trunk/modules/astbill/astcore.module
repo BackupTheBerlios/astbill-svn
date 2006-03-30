@@ -226,7 +226,7 @@ function astcore_exportsql($sqlout) {
   	$edit = $_POST["edit"];
   	$op = $_POST["op"];
 	
-	$list = 'countrycode, pattern, name, weight, connectcharge, includedseconds, minimumprice, price, brand';
+	$list = 'countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand';
 	
 	while ($sql = db_fetch_object($sqlout)) {
 		$list .= $sql->countrycode.','.$sql->pattern.','.$sql->name.','.$sql->weight.','.$sql->connectcharge.','.$sql->includedseconds.','.$sql->minimumprice.','.$sql->price.','.$sql->brand.'';
