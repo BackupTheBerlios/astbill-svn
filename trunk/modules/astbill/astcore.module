@@ -48,6 +48,8 @@ astcore_list($header, $rows, $noresults, $maxline)
 
 astcore_email($from , $to, $subject, $message, $attachment)
 
+function astcore_exportsql($sqlquery, $columnnames)
+
 astcore_flattenArray($array, $keyname='')
 */
 
@@ -170,7 +172,7 @@ function astcore_list($header, $rows, $noresults, $maxline) {
 	return $output;
 }
 
-function astcore_email($from , $to, $subject, $message, $attachment) {
+function astcore_email($from , $to, $subject, $message, $attachment, $filetype = 'TEXT') {
 	$fileatt = $attachment; // Path to the file                  
 	$fileatt_type = "application/octet-stream"; // File Type 
 	$start = strrpos($attachment, '/') == -1 ? strrpos($attachment, '//') : strrpos($attachment, '/')+1;
@@ -194,13 +196,22 @@ function astcore_email($from , $to, $subject, $message, $attachment) {
             "Content-Type: multipart/mixed;\n" . 
             " boundary=\"{$mime_boundary}\""; 
 
-	
-	$email_message .= "This is a multi-part message in MIME format.\n\n" . 
+	if ($filetype == 'TEXT') {
+		$email_message .= "This is a multi-part message in MIME format.\n\n" . 
                 "--{$mime_boundary}\n" . 
                // "Content-Type:text/html; charset=\"iso-8859-1\"\n" . 
                //"Content-Transfer-Encoding: 7bit\n\n" . 
-	$email_txt . "\n\n"; 
-
+	       $email_txt . "\n\n"; 
+	} else {
+		$email_message .= "This is a multi-part message in MIME format.\n\n" . 
+                "--{$mime_boundary}\n" . 
+                "Content-Type:text/html; charset=\"iso-8859-1\"\n" . 
+                "Content-Transfer-Encoding: 7bit\n\n" . 
+	        $email_txt . "\n\n"; 	
+		
+		
+	}
+	    
 	$data = chunk_split(base64_encode($data)); 
 
 	$email_message .= "--{$mime_boundary}\n" . 
