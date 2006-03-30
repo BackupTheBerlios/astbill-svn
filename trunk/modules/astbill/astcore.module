@@ -221,15 +221,22 @@ function astcore_email($from , $to, $subject, $message, $attachment) {
 	} 
 }
 
-function astcore_exportsql($sqlout) {
+function astcore_exportsql($sqlquery, $columnnames) {
 	global $db_prefix;
   	$edit = $_POST["edit"];
   	$op = $_POST["op"];
 	
-	$list = 'countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand';
+	$list = $columnnames.'
+';
 	
-	while ($sql = db_fetch_object($sqlout)) {
-		$list .= $sql->countrycode.','.$sql->pattern.','.$sql->name.','.$sql->weight.','.$sql->connectcharge.','.$sql->includedseconds.','.$sql->minimumprice.','.$sql->price.','.$sql->brand.'';
+	$columns = explode(",", $columnnames);
+	
+	while ($item = db_fetch_array($sqlquery)) {
+		foreach ($columns as $key) {
+			$list .= $item[$key].',';
+		}
+		$list .= '
+';
 	}
 	
 	$filename = 'Orders.csv';
