@@ -65,7 +65,7 @@ function astcore_help($section='') {
 }
 
 
-function astcore_search($edit, $posturl, $value = NULL) {
+function astcore_search($edit, $posturl, $value = NULL, $endform = 'YES') {
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
 	
@@ -79,8 +79,13 @@ function astcore_search($edit, $posturl, $value = NULL) {
 <B>'.t('Enter a search string').'&nbsp;&nbsp;</B>
 <input type="text" size="20" value="'.$value.'" name="edit[search]" alt="'.t('Enter a term to search').'" />&#160;
 <input type="submit" name="search" value="'.t('Search').'" />&#160;&#160;
-</div></form>
-';
+</div>';
+
+	if ($endform == 'YES') {
+		$output .= '</form>';
+	} else {
+		
+	}
 /*
 	$group .= form_textfield($title, 'search', $value, 30, 30, $description = NULL, $attributes = NULL, $required = FALSE);
 	$group .= form_submit('Search');
