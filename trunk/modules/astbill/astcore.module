@@ -46,6 +46,8 @@ astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries, 
 
 astcore_list($header, $rows, $noresults, $maxline)
 
+astcore_email($from , $to, $subject, $message, $attachment)
+
 astcore_flattenArray($array, $keyname='')
 */
 
@@ -217,6 +219,28 @@ function astcore_email($from , $to, $subject, $message, $attachment) {
 	} else { 
 		die("Sorry but the email could not be sent. Please go back and try again!"); 
 	} 
+}
+
+function astcore_exportsql($sqlout) {
+	global $db_prefix;
+  	$edit = $_POST["edit"];
+  	$op = $_POST["op"];
+	
+	$list = 'countrycode, pattern, name, weight, connectcharge, includedseconds, minimumprice, price, brand';
+	
+	while ($sql = db_fetch_object($sqlout)) {
+		$list .= $sql->countrycode.','.$sql->pattern.','.$sql->name.','.$sql->weight.','.$sql->connectcharge.','.$sql->includedseconds.','.$sql->minimumprice.','.$sql->price.','.$sql->brand.'';
+	}
+	
+	$filename = 'Orders.csv';
+	$size = strlen($list);
+	header("Content-length: ".$size);
+	header("Content-type: text/comma-separated-values");
+	header("Content-Disposition: attachment; filename=".$filename);
+	
+	echo $list;
+	
+	exit;
 }
 
 function astcore_flattenArray($array, $keyname='')
