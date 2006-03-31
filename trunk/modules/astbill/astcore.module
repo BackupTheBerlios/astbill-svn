@@ -237,10 +237,20 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
 	} 
 }
 
-function astcore_exportsql($sqlquery, $columnnames) {
+function astcore_export_sqltocsv($sqlquery) {
 	global $db_prefix;
   	$edit = $_POST["edit"];
   	$op = $_POST["op"];
+
+	$numfields = mysql_num_fields($sqlquery);
+	
+	
+	for ($i = 0; $i  < $numfields; $i++) {
+		$columnnames .= mysql_field_name($sqlquery, $i);
+		if ($i != $numfields-1) {
+			$columnnames .= ',';
+		}
+	}
 	
 	$list = $columnnames.'
 ';
