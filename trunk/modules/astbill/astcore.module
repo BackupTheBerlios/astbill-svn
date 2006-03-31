@@ -48,7 +48,7 @@ astcore_list($header, $rows, $noresults, $maxline)
 
 astcore_email($from , $to, $subject, $message, $attachment)
 
-function astcore_exportsql($sqlquery, $columnnames)
+astcore_export_sqltocsv($sqlquery)
 
 astcore_flattenArray($array, $keyname='')
 */
