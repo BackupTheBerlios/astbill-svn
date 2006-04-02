@@ -51,6 +51,7 @@ $sql_updates = array(
   "2006-03-25" => "astbill_update_042",
   "2006-03-26" => "astbill_update_043",
   "2006-03-26b" => "astbill_update_044",
+  "2006-03-28" => "astbill_update_045",
 );
 
 function update_sql($sql) {
@@ -669,4 +670,30 @@ function astbill_update_043() {
 
   return $ret;
 }
+
+function astbill_update_045() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astprospect2` ADD `email` VARCHAR( 128 ) AFTER `mobile`");
+  $ret[] = update_sql("CREATE TABLE `astlogemail` (
+  `emailid` int(10) NOT NULL auto_increment,
+  `uid` int(10) NOT NULL default '0',
+  `db_prefix` varchar(40) default 'cbk_',
+  `accountcode` varchar(40) default NULL,
+  `txrx` varchar(40) default 'TX',
+  `fromemail` varchar(128) default NULL,
+  `toemail` varchar(128) default NULL,
+  `subject` varchar(128) default NULL,
+  `status` varchar(128) default NULL,
+  `messagedata` varchar(1024),
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `date_scheduled` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`emailid`)
+)");
+
+  return $ret;
+}
+
+
+
 ?>
