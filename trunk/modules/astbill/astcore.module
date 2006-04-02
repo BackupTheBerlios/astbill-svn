@@ -237,6 +237,74 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
 	} 
 }
 
+function astcore_import_csvtosql($gotourl, $sqltable, $endform = 'YES', $maxfilesize = '0') {
+	
+	$output .= '
+	<form enctype="multipart/form-data" action='.$gotourl.' method="POST">
+    	<input type="hidden" name="MAX_FILE_SIZE" value="'.$maxfilesize.'" />
+    	'.t('Send this file').': <input name="import" type="file" /><BR>
+	<input type="submit" value="'.t('Send File').'" /><BR>
+	';
+	
+	if ($endform == 'YES') {
+		$output .= '</form>';
+	}
+	
+	if ($_FILES['import']['error'] == '0') {
+		// $_FILES = Array ( [import] => Array ( [name] => WEB_7454.csv [type] => text/comma-separated-values [tmp_name] => /tmp/phpiuFcyF [error] => 0 [size] => 574550 ) )
+		
+		$csv = file($_FILES['import']['tmp_name']);
+		
+		foreach ($csv as $line_num => $row) {
+			$row = astcore_utf8_to_unicode($row);
+			
+			if ($line_num == '0') {
+				$fields = $row;
+			}
+			
+			if ($line_num != '0') {
+				$lines = explode(',', $row);
+				
+				$x = 0;
+				foreach ($lines as $line) {
+					if ($x == 0) {
+						$values = "'".$line."'";
+					} else {
+						$values .= ",'".$line."'";
+					}
+					
+					$x++;
+				}
+				
+				db_query("INSERT INTO ".$sqltable." (".$fields.") VALUES (".$values.")");
+			}
+			
+		}
+		
+	}
+	
+	if ($_FILES['import']['error'] == '1') {
+		$output .= '<B>'.t('Error: The uploaded file exceeds the upload_max_filesize directive in php.ini').'</B><BR>';
+	}
+	if ($_FILES['import']['error'] == '2') {
+		$output .= '<B>'.t('Error: The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form').'</B><BR>';
+	}
+	if ($_FILES['import']['error'] == '3') {
+		$output .= '<B>'.t('Error: The uploaded file was only partially uploaded!').'</B><BR>';
+	}
+	if ($_FILES['import']['error'] == '4') {
+		$output .= '<B>'.t('Error: No file was uploaded!').'</B><BR>';
+	}
+	if ($_FILES['import']['error'] == '6') {
+		$output .= '<B>'.t('Error: No temporary Folder available!').'</B><BR>';
+	}
+	if ($_FILES['import']['error'] == '7') {
+		$output .= '<B>'.t('Error: Failed to write to disk!').'</B><BR>';
+	}
+	
+	return $output;
+}
+
 function astcore_export_sqltocsv($sqlquery) {
 	global $db_prefix;
   	$edit = $_POST["edit"];
