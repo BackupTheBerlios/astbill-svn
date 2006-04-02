@@ -423,6 +423,10 @@ function array2uri($to_uri, $current_key = '') {
   return $query_string;
 }
 
+function astcore_tenant() {
+	$gettenant = db_fetch_object(db_query("SELECT tid FROM astuser WHERE uid = '%s' AND db_prefix = '".$db_prefix."'", $user->uid));
+    return $gettenant->tid;
+}
 /*
 Modification in menu.inc line 351:
 Function menu_execute_active_handler()
