@@ -238,6 +238,7 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
 }
 
 function astcore_import_csvtosql($gotourl, $sqltable, $endform = 'YES', $maxfilesize = '0') {
+	// $_FILES = Array ( [import] => Array ( [name] => WEB_7454.csv [type] => text/comma-separated-values [tmp_name] => /tmp/phpiuFcyF [error] => 0 [size] => 574550 ) )
 	
 	$output .= '
 	<form enctype="multipart/form-data" action='.$gotourl.' method="POST">
@@ -250,11 +251,10 @@ function astcore_import_csvtosql($gotourl, $sqltable, $endform = 'YES', $maxfile
 		$output .= '</form>';
 	}
 	
+	
 	if ($_FILES['import']['error'] == '0') {
-		// $_FILES = Array ( [import] => Array ( [name] => WEB_7454.csv [type] => text/comma-separated-values [tmp_name] => /tmp/phpiuFcyF [error] => 0 [size] => 574550 ) )
-		
 		$csv = file($_FILES['import']['tmp_name']);
-		
+	
 		foreach ($csv as $line_num => $row) {
 			$row = astcore_utf8_to_unicode($row);
 			
@@ -264,25 +264,21 @@ function astcore_import_csvtosql($gotourl, $sqltable, $endform = 'YES', $maxfile
 			
 			if ($line_num != '0') {
 				$lines = explode(',', $row);
-				
 				$x = 0;
+				
 				foreach ($lines as $line) {
 					if ($x == 0) {
 						$values = "'".$line."'";
 					} else {
 						$values .= ",'".$line."'";
 					}
-					
 					$x++;
 				}
 				
 				db_query("INSERT INTO ".$sqltable." (".$fields.") VALUES (".$values.")");
-			}
-			
+			}	
 		}
-		
 	}
-	
 	if ($_FILES['import']['error'] == '1') {
 		$output .= '<B>'.t('Error: The uploaded file exceeds the upload_max_filesize directive in php.ini').'</B><BR>';
 	}
