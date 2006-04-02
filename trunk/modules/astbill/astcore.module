@@ -276,6 +276,18 @@ function astcore_export_sqltocsv($sqlquery) {
 	exit;
 }
 
+function astcore_utf8_to_unicode($message) {
+	
+	$message = str_replace("Ã¥", "å", $message);
+	$message = str_replace("Ã…", "Å", $message);
+	$message = str_replace("Ã¸", "ø", $message);
+	$message = str_replace("Ã˜", "Ø", $message);
+	$message = str_replace("Ã¦", "æ", $message);
+	$message = str_replace("Ã†", "Æ", $message);
+	
+	return $message;
+}
+
 function astcore_flattenArray($array, $keyname='')
 {
    $tmp = array();
