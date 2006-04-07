@@ -188,7 +188,7 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
 	$email_txt = $message; // Message that the email has in it 
 	$email_to = $to; // Who the email is to
 
-	$headers = "From: ".$email_from . "\r\n" . "X-Mailer: AstBill/Version 0.9.18";
+	$headers = "From: ".$email_from . "\n" . "X-Mailer: AstBill/Version 0.9.18";
 
 	$file = fopen($fileatt,'rb'); 
 	$data = fread($file,filesize($fileatt)); 
@@ -207,7 +207,7 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
                // "Content-Type:text/html; charset=\"iso-8859-1\"\n" . 
                //"Content-Transfer-Encoding: 7bit\n\n" . 
 	       $email_txt . "\n\n"; 
-	} else {
+	} elseif ($filetype == 'HTML') {
 		$email_message .= "This is a multi-part message in MIME format.\n\n" . 
                 "--{$mime_boundary}\n" . 
                 "Content-Type:text/html; charset=\"iso-8859-1\"\n" . 
@@ -234,7 +234,7 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
 	if($ok) { 
 	} else { 
 		die("Sorry but the email could not be sent. Please go back and try again!"); 
-	} 
+	}
 }
 
 function astcore_import_csvtosql($gotourl, $sqltable, $endform = 'YES', $maxfilesize = '0') {
