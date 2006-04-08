@@ -690,10 +690,20 @@ function astbill_update_045() {
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`emailid`)
 )");
+  $ret[] = update_sql("ALTER TABLE `astprospect` ADD `lateporting` varchar(128) default NULL AFTER `porteringsno`");
+  $ret[] = update_sql("ALTER TABLE `astprospect2` ADD `extid` varchar(128) default NULL AFTER `refid`");
+  $ret[] = update_sql("ALTER TABLE `astprospect2` ADD `source` varchar(128) default NULL AFTER `comment`");
+  $ret[] = update_sql("ALTER TABLE `astprospect2` ADD `tid` int(111) NOT NULL default '0' AFTER `extid`");
 
   return $ret;
 }
 
-
+// ALTER TABLE `astlogsms` CHANGE `messagedata` `messagedata` VARCHAR( 1024 ) NULL DEFAULT 'Ja'
+// add felt pdu to `astlogsms`
+// ALTER TABLE `astlogsms` ADD `invoiceno` INT( 11 ) DEFAULT '0' NOT NULL AFTER `date_scheduled` ;
+// astcdr.typenumber   astcdr.numberingplanid
+/* ALTER TABLE `astinvoice` ADD `invfooter` VARCHAR( 1024 ) AFTER `period` ,
+ADD `remarks` VARCHAR( 1024 ) NOT NULL AFTER `invfooter` ;
+*/
 
 ?>

@@ -323,7 +323,7 @@ function astcore_export_sqltocsv($sqlquery) {
 	
 	while ($item = db_fetch_array($sqlquery)) {
 		foreach ($columns as $key) {
-			$list .= $item[$key].',';
+			$list .= astcore_utf8_to_unicode($item[$key],FALSE).',';
 		}
 		$list .= '
 ';
@@ -340,28 +340,25 @@ function astcore_export_sqltocsv($sqlquery) {
 	exit;
 }
 
-function astcore_utf8_to_unicode($message, $reverse = 'FALSE') {
-	
-	if($reverse = 'FALSE') {
-		$message = str_replace("Ã¥", "å", $message);
-		$message = str_replace("Ã…", "Å", $message);
-		$message = str_replace("Ã¸", "ø", $message);
-		$message = str_replace("Ã˜", "Ø", $message);
-		$message = str_replace("Ã¦", "æ", $message);
-		$message = str_replace("Ã†", "Æ", $message);
-	}
-	
-	if($reverse = 'TRUE') {
+function astcore_utf8_to_unicode($message, $reverse = FALSE) {
+	if($reverse == TRUE) {
 		$message = str_replace("å", "Ã¥", $message);
 		$message = str_replace("Å", "Ã…", $message);
 		$message = str_replace("ø", "Ã¸", $message);
 		$message = str_replace("Ø", "Ã˜", $message);
 		$message = str_replace("æ", "Ã¦", $message);
 		$message = str_replace("Æ", "Ã†", $message);	
-	}
-		
-		
-	return $message;
+		$message = str_replace("è", "Ã¨", $message);	
+	} else {
+		$message = str_replace("Ã¥", "å", $message);
+		$message = str_replace("Ã…", "Å", $message);
+		$message = str_replace("Ã¸", "ø", $message);
+		$message = str_replace("Ã˜", "Ø", $message);
+		$message = str_replace("Ã¦", "æ", $message);
+		$message = str_replace("Ã†", "Æ", $message);
+		$message = str_replace("Ã¨", "è", $message);	
+   	}
+ 	return $message;
 }
 
 function astcore_flattenArray($array, $keyname='')
