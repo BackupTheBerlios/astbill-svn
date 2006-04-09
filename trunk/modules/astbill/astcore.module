@@ -323,7 +323,9 @@ function astcore_export_sqltocsv($sqlquery) {
 	
 	while ($item = db_fetch_array($sqlquery)) {
 		foreach ($columns as $key) {
-			$list .= astcore_utf8_to_unicode($item[$key],FALSE).',';
+			// Remove , from data it is messing up , separated csv files
+			$txt = str_replace(",", " ", $item[$key]);
+			$list .= astcore_utf8_to_unicode($txt,FALSE).',';
 		}
 		$list .= '
 ';
