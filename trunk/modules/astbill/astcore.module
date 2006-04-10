@@ -301,7 +301,7 @@ function astcore_import_csvtosql($gotourl, $sqltable, $endform = 'YES', $maxfile
 	return $output;
 }
 
-function astcore_export_sqltocsv($sqlquery) {
+function astcore_export_sqltocsv($sqlquery, $filename = 'astexport.csv') {
 	global $db_prefix;
   	$edit = $_POST["edit"];
   	$op = $_POST["op"];
@@ -331,7 +331,6 @@ function astcore_export_sqltocsv($sqlquery) {
 ';
 	}
 	
-	$filename = 'Orders.csv';
 	$size = strlen($list);
 	header("Content-length: ".$size);
 	header("Content-type: text/comma-separated-values");

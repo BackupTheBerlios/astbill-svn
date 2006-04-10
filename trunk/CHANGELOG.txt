@@ -8,6 +8,15 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
+09 April 2006 Version 0.9.17 
+
+# Added table astpartner
+# Partners are customers, suppliers or prospects. 
+# One partner per company is created but many contact persons (address, email, ...) 
+# can be created for the same partner. Partner is also a department contact of the main company. 
+# The partners are segmented into several categories. 
+# The events history (sales, purchase, help desk, ...) of a partner will be logged.
+
 12 Feb 2006 Version 0.9.15 Testing
 
 # Warning - This software may not be stable. If you are in production maybee wait for 
