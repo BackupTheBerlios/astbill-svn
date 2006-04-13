@@ -492,4 +492,143 @@ $javaquestion = '
 	</SCRIPT>';
 */
 
+////AstBill Form Elements///////////////////////////////////////////////////////////////////////////////////////
+// Are Casilla 13 April 2006
+// AstBill 0.9.17  
+// The target was to use the Drupal Theme Engine. If you know how to do that please contact the AstBill Team.
+// This is just a fast hack to make nice forms fast without coding HTML.
+/**
+ * Return a themed form element.
+ *
+ * @param $title the form element's title
+ * @param $value the form element's data
+ * @param $description the form element's description or explanation
+ * @param $id the form element's ID used by the &lt;label&gt; tag
+ * @param $required a boolean to indicate whether this is a required field or not
+ * @param $error a string with an error message filed against this form element
+ *
+ * @return a string representing the form element
+ */
+function astcore_form_element($title, $value, $description = NULL, $id = NULL, $required = FALSE, $error = FALSE) {
+
+  $output  = "<div class=\"form-item\">\n";
+  $required = $required ? '<span class="form-required">*</span>' : '';
+
+  if ($title) {
+    if ($id) {
+      $output .= " <TH><label for=\"$id\">$title:</label>$required</TH>\n";
+    }
+    else {
+      $output .= " <TH><label>$title:</label>$required</TH>\n";
+    }
+  }
+
+  $output .= " <TD>$value</TD>\n";
+
+  if ($description) {
+    $output .= " <div class=\"description\">$description</div>\n";
+  }
+
+  $output .= "</div><TR>\n";
+
+  return $output;
+}
+
+
+
+/*
+This is what we want
+<div class="form-item">
+  <TH><label for="edit-contactperson">'.t('Contact Person').': </label></TH>
+  <TD><input type="text" maxlength="30" class="form-text" name="edit[contactperson]" id="edit-contactperson" size="30" value="'.$edit['contactperson'].'" /></TD>
+</div><TR>
+
+Below is Drupal Standard
+<div class="form-item">
+ <label for="edit-due_date">Due_date (yyyy-mm-dd):</label><br />
+ <input type="text" maxlength="30" class="form-text" name="edit[due_date]" id="edit-due_date" size="30" value="" />
+</div>
+
+*/
+
+/**
+ * Format a single-line text field.
+ *
+ * @param $title
+ *   The label for the text field.
+ * @param $name
+ *   The internal name used to refer to the field.
+ * @param $value
+ *   The initial value for the field at page load time.
+ * @param $size
+ *   A measure of the visible size of the field (passed directly to HTML).
+ * @param $maxlength
+ *   The maximum number of characters that may be entered in the field.
+ * @param $description
+ *   Explanatory text to display after the form item.
+ * @param $attributes
+ *   An associative array of HTML attributes to add to the form item.
+ * @param $required
+ *   Whether the user must enter some text in the field.
+ * @return
+ *   A themed HTML string representing the field.
+ */
+function astcore_form_textfield($title, $name, $value, $size, $maxlength, $description = NULL, $attributes = NULL, $required = FALSE) {
+  $size = $size ? ' size="'. $size .'"' : '';
+  return astcore_form_element($title, '<input type="text" maxlength="'. $maxlength .'" class="'. _form_get_class('form-text', $required, _form_get_error($name)) .'" name="edit['. $name .']" id="edit-'. $name .'"'. $size .' value="'. check_plain($value) .'"'. drupal_attributes($attributes) .' />', $description, 'edit-'. $name, $required, _form_get_error($name));
+}
+/**
+ * Format a dropdown menu or scrolling selection box.
+ *
+ * @param $title
+ *   The label for the form element.
+ * @param $name
+ *   The internal name used to refer to the form element.
+ * @param $value
+ *   The key of the currently selected item, or a linear array of keys of all the
+ *   currently selected items if multiple selections are allowed.
+ * @param $options
+ *   An associative array of buttons to display. The keys in this array are
+ *   button values, while the values are the labels to display for each button.
+ * @param $description
+ *   Explanatory text to display after the form item.
+ * @param $extra
+ *   Additional HTML to inject into the select element tag.
+ * @param $multiple
+ *   Whether the user may select more than one item.
+ * @param $required
+ *   Whether the user must select a value before submitting the form.
+ * @return
+ *   A themed HTML string representing the form element.
+ *
+ * It is possible to group options together; to do this, change the format of
+ * $options to an associative array in which the keys are group labels, and the
+ * values are associative arrays in the normal $options format.
+ */
+function astcore_form_select($title, $name, $value, $options, $description = NULL, $extra = 0, $multiple = FALSE, $required = FALSE) {
+  $select = '';
+  foreach ($options as $key => $choice) {
+    if (is_array($choice)) {
+      $select .= '<optgroup label="'. check_plain($key) .'">';
+      foreach ($choice as $key => $choice) {
+        $select .= '<option value="'. check_plain($key) .'"'. (is_array($value) ? (in_array($key, $value) ? ' selected="selected"' : '') : ($value == $key ? ' selected="selected"' : '')) .'>'. check_plain($choice) .'</option>';
+      }
+      $select .= '</optgroup>';
+    }
+    else {
+      $select .= '<option value="'. check_plain($key) .'"'. (is_array($value) ? (in_array($key, $value) ? ' selected="selected"' : '') : ($value == $key ? ' selected="selected"' : '')) .'>'. check_plain($choice) .'</option>';
+    }
+  }
+  return astcore_form_element($title, '<select name="edit['. $name .']'. ($multiple ? '[]' : '') .'"'. ($multiple ? ' multiple="multiple" ' : '') . ($extra ? ' '. $extra : '') .' id="edit-'. $name .'">'. $select .'</select>', $description, 'edit-'. $name, $required, _form_get_error($name));
+}
+
+function astcore_form_start() {
+	return '
+<BR><TABLE><TR>
+';
+}
+function astcore_form_end() {
+	return '</TABLE>
+';
+}
 ?>
