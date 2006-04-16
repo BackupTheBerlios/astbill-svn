@@ -1,5 +1,6 @@
 <?php
 // $Id: settings.php,v 1.12.2.2 2005/04/14 18:35:19 dries Exp $
+// Modified for AstBill 16 April 2006 by Are Casilla
 
 /**
  * @file
@@ -88,6 +89,8 @@ $db_prefix = 'pbx_';
  * a trailing slash; Drupal will add it for you.
  */
 $base_url = 'http://127.0.0.1/astbill';
+// AstBill - The below line allows default to work on any URL!
+$base_url = 'http://'.$_SERVER['SERVER_ADDR'].'/astbill';
 
 /**
  * PHP settings:
