@@ -293,7 +293,7 @@ function page_astadmin_friends_list($value) {
 	array('data' => t('Operations'), 'colspan' => 3)	
 	);
 
-	$sql = "SELECT asv_friend.uid, accountcode, username, publicnumber, type, name FROM asv_friend, cbk_users WHERE asv_friend.uid = cbk_users.uid AND db_prefix = 'cbk_' AND CONCAT_WS(',', asv_friend.uid, LOWER(accountcode), LOWER(username), publicnumber, LOWER(type), LOWER(name)) like LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT asv_friend.uid, accountcode, username, publicnumber, type, name FROM asv_friend, ".$db_prefix."users WHERE asv_friend.uid = ".$db_prefix."users.uid AND db_prefix = '".$db_prefix."' AND CONCAT_WS(',', asv_friend.uid, LOWER(accountcode), LOWER(username), publicnumber, LOWER(type), LOWER(name)) like LOWER('%".$value."%')". tablesort_sql($header);
 	
 	$result = pager_query($sql, $maxline);
 
@@ -1305,7 +1305,7 @@ function page_astadmin_listcdr_form($value, $edit) {
 		$output .= $res->amaflags.'<BR>';
 		$output .= t('<B>Dialstatus: </B>');
 		$output .= $res->dialstatus.'<BR>';
-		$output .= t('<B>Date Created: </B>');
+		$output .= '<B>'.t('Date Created').': </B>';
 		$output .= format_date($res->dcreat,"custom","Y-m-d H:i:s").'<BR>';
 		$output .= '<BR>';
 		$output .= t('<B>Dialed Time: </B>');
