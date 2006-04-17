@@ -26,7 +26,7 @@ if (!ini_get("safe_mode")) {
   set_time_limit(180);
 }
 
-include_once "database/astbillupd-17.inc";
+include_once "database/astbillupd-18.inc";
 
 /*
 $buffer = "";
@@ -108,14 +108,17 @@ function update_page() {
   switch ($op) {
     case "Update":
       // make sure we have updates to run.
-
   
 	  print update_page_header("AstBill database update");
       $links[] = "<a href=\"index.php\">main page</a>";
       $links[] = "<a href=\"index.php?q=admin\">administration pages</a>";
       print theme("item_list", $links);
         // NOTE: we can't use l() here because the URL would point to 'astbillupdate.php?q=admin'.
-      if ($edit["start"] == -1) {
+
+
+	  
+	  
+	  if ($edit["start"] == -1) {
         print "No updates to perform.";
       }
       else {
@@ -139,9 +142,28 @@ function update_page() {
       $dates[$i] = "No updates available";
 
       // make update form and output it.
-      $form = form_select("Perform updates from", "start", (isset($selected) ? $selected : -1), $dates, "This defaults to the first available update since the last update you performed.");
+      $form = form_select("Perform AstBill updates from", "start", (isset($selected) ? $selected : -1), $dates, "This defaults to the first available update since the last update you performed.");
       $form .= form_submit("Update");
       print update_page_header("AstBill database update");
+
+////////// DRUPAL UPDATE ///////////////////////////////////////////////////////
+  db_query('DELETE FROM {cache}');
+  $drupalstart = variable_get("update_start", 0);
+  if ($drupalstart == "2005-03-21") {
+	print "\nDRUPAL Update 130 and 131 is Executed\n<BR><BR>";
+	$return = drupal_update_130();
+	print_r ($return);
+	$return = drupal_update_131();
+    print $return[0][1];
+    print $return[0][2];
+//	print_r ($return);
+	variable_set("update_start", "2005-05-07");
+	print "\n<BR>";
+  }
+////////// END DRUPAL UPDATE /////////////////////////////////////////////////////
+
+	  
+
       print form($form);
       print update_page_footer();
       break;
@@ -202,5 +224,20 @@ function astsystem_get($name) {
   return $sql->value;
 }
 
+////// DRUPAL UPDATE //////////////////////////////////////////////////////////////////////
+function drupal_update_130() {
+  $result = db_query("SELECT delta FROM {blocks} WHERE module = 'aggregator'");
+  while ($block = db_fetch_object($result)) {
+    list($type, $id) = explode(':', $block->delta);
+    db_query("UPDATE {blocks} SET delta = '%s' WHERE module = 'aggregator' AND delta = '%s'", $type .'-'. $id, $block->delta);
+  }
+  return array();
+}
+
+function drupal_update_131() {
+  $ret = array();
+    $ret[] = update_sql("ALTER TABLE {locales_source} CHANGE location location varchar(255) NOT NULL default ''");
+  return $ret;
+}
 
 ?>

@@ -10,12 +10,35 @@ http://astbill.com/forum/3
 
 09 April 2006 Version 0.9.17 
 
+# Fatal error: Call to undefined function: array2uri()
+#
+# Problem with modules: There are two new modules astcore.module and astsettingsdid.module
+# If you are upgrading you will have problem loading your application before this modules are activated.
+# You must activate the astcore.module and astsettingsdid.module by going direct to:
+
+http://yoursite.com/astbill/?q=admin/modules
+
 # Added table astpartner
-# Partners are customers, suppliers or prospects. 
-# One partner per company is created but many contact persons (address, email, ...) 
-# can be created for the same partner. Partner is also a department contact of the main company. 
+# Partners are tenants, customers, suppliers or prospects. 
+# We create one record per company but (Not Implemented yet) many contact persons (address, email, ...) 
+# can be created for the same partner. Partner is also a department contact of the main company or even a branch. 
 # The partners are segmented into several categories. 
 # The events history (sales, purchase, help desk, ...) of a partner will be logged.
+# The asttenant and astcompany table will be depriciated. It will all be one astpartner. This will allow us to
+# Develop a powerfull CRM, Purchasing and Call Center application in the future. Any sugestions are welcome.
+# This is only partly implemented in this version of AstBill. 
+#
+# Added SMS Module with SMS logging
+#
+# Perfect Search
+# Astbill now have an exelent search API working extreemly fast even with 100 000 records in the database.
+# The search button will come up on top of the table view and will retain the search results even if you do any type of 
+# sorting or reordering of the data. This simplify searching for information a lot. We had to do some small changes to 
+# Drupal to get this working but it is worth it. You can find it all documented in astcore.module. 
+# Thanks to Andreas for this exelent feature.
+#
+# Remember the Drupal version in wwwroot are now modified code.
+#
 
 12 Feb 2006 Version 0.9.15 Testing
 

@@ -7,6 +7,11 @@
    AstBill-0.9.0.12    www.astbill.com
    Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
    Are Casilla        <areast  [Guess What?] astartelecom.com>
+
+   This is the file where the AstBill team apply database updates. It is not used by users.
+   This file are copied to update.astbill.com and used by astbillupdatesvn.php
+   When a new version of AstBill is released or when the Team needs it the contents of this file
+   is applied to 
 */
 
 /**
@@ -700,12 +705,75 @@ function astbill_update_045() {
 }
 function astbill_update_046() {
   $ret = array();
-  $ret[] = update_sql("ALTER TABLE `astlogsms` CHANGE `messagedata` `messagedata` VARCHAR( 1024 ) NULL DEFAULT 'Ja' add felt pdu to `astlogsms`");
+  $ret[] = update_sql("ALTER TABLE `astlogsms` CHANGE `messagedata` `messagedata` VARCHAR( 1024 ) NULL default NULL");
+  $ret[] = update_sql("ALTER TABLE `astlogsms` ADD `pdu` VARCHAR( 1024 ) NULL default NULL");
+  $ret[] = update_sql("DROP TABLE astcompany");
+  
   $ret[] = update_sql("ALTER TABLE `astcdr` ADD `anitypenumber` tinyint(8) DEFAULT '2' NOT NULL AFTER `type`");
   $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `invfooter` VARCHAR( 1024 ) AFTER `period` , ADD `remarks` VARCHAR( 1024 ) NOT NULL AFTER `invfooter`");
   $ret[] = update_sql("update `astsystem` set comment = 'Local Dial Timeout and Dial Parameters' where serverid = 'DEF' and name = 'DialLocal-Timeout-Parameter'");
 
+/* extid = If you purchase address lists from extern Provider. 
+This records have an id. This allows you to trace where the partner orginated*/
+/* extsource = The Source of this List - ListName*/
 
+$ret[] = update_sql("CREATE TABLE `astpartner` (
+  `pid` int(10) NOT NULL auto_increment,
+  `prospectid` int(10) NOT NULL default '0',
+  `uid` int(10) NOT NULL default '1',
+  `memberof` int(10) NOT NULL default '0',
+  `extid` varchar(128) default NULL,
+  `extsource` varchar(128) default NULL,
+  `db_prefix` varchar(40) NOT NULL default 'pbx_',
+  `iscustomer` tinyint(4) NOT NULL default '0',
+  `isvendor` tinyint(4) NOT NULL default '0',
+  `isprospect` tinyint(4) NOT NULL default '0',
+  `company` varchar(128) NOT NULL default '',
+  `firstname` varchar(128) default NULL,
+  `lastname` varchar(128) default NULL,
+  `contactperson` varchar(128) default NULL,
+  `sosialsecurityno` varchar(128) NOT NULL default '',
+  `birthdate` date NULL default NULL,
+  `address1` varchar(128) NOT NULL default '',
+  `address2` varchar(128) NOT NULL default '',
+  `zip` varchar(64) NOT NULL default '',
+  `city` varchar(128) NOT NULL default '',
+  `state` varchar(128) default NULL,
+  `country` varchar(128) NOT NULL,
+  `mobile` varchar(128) NOT NULL default '',
+  `phonehome` varchar(128) NOT NULL default '',
+  `phonework` varchar(128) NOT NULL default '',
+  `fax` varchar(128) NOT NULL default '',
+  `email` varchar(128) NOT NULL default '',
+  `email2` varchar(128) NOT NULL default '',
+  `email3` varchar(128) NOT NULL default '',
+  `email4` varchar(128) NOT NULL default '',
+  `website` varchar(128) NOT NULL default '',
+  `status` varchar(128) NOT NULL default '',
+  `customerstatus` varchar(128) NOT NULL default '',
+  `subscriptiontype` varchar(128) NOT NULL default '',
+  `industry` varchar(128) NOT NULL default '',
+  `partnertype` varchar(128) NOT NULL default '',
+  `porteringsno` varchar(128) NOT NULL default '',
+  `lateporting` varchar(128) default NULL,
+  `newno` varchar(128) NOT NULL default '',
+  `voicemail` varchar(128) NOT NULL default '',
+  `leadsource` varchar(128) NOT NULL default '',
+  `date_followup` datetime NOT NULL default '0000-00-00 00:00:00',
+  `comment` varchar(1024) NOT NULL default '',
+  `ref` varchar(1024) default NULL,
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`pid`),
+  KEY `company` (`company`),
+  KEY `contactname` (`lastname`),
+  KEY `contactperson` (`contactperson`)
+) AUTO_INCREMENT=130001");
+
+  $ret[] = update_sql("INSERT INTO astpartner ( pid, company, contactperson, address1, address2, zip, city, state, country, mobile, phonework, fax, status, date_created, timestamp )
+SELECT asttenant.tid, asttenant.company, asttenant.contactname, asttenant.address1, asttenant.address2, asttenant.zip, asttenant.city, asttenant.state, asttenant.country, asttenant.phone, asttenant.phone2, asttenant.fax, asttenant.status, asttenant.date_created, asttenant.timestamp
+FROM asttenant");
+    
   return $ret;
 }
  

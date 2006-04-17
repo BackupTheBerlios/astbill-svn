@@ -29,7 +29,7 @@ if (!ini_get("safe_mode")) {
 // include_once "database/astbillupdates.inc";
 
 $buffer = "";
-$filename = "http://update.astbill.com/ud/astbillupd-17.txt";
+$filename = "http://update.astbill.com/ud/astbillupd-18.txt";
 $handle = @fopen($filename, "r");
 
 if ($handle) {
@@ -140,6 +140,23 @@ function update_page() {
       $form = form_select("Perform updates from", "start", (isset($selected) ? $selected : -1), $dates, "This defaults to the first available update since the last update you performed.");
       $form .= form_submit("Update");
       print update_page_header("AstBill database update");
+
+////////// DRUPAL UPDATE ///////////////////////////////////////////////////////
+  db_query('DELETE FROM {cache}');
+  $drupalstart = variable_get("update_start", 0);
+  if ($drupalstart == "2005-03-21") {
+	print "\nDRUPAL Update 130 and 131 is Executed\n<BR><BR>";
+	$return = drupal_update_130();
+	print_r ($return);
+	$return = drupal_update_131();
+    print $return[0][1];
+    print $return[0][2];
+//	print_r ($return);
+	variable_set("update_start", "2005-05-07");
+	print "\n<BR>";
+  }
+////////// END DRUPAL UPDATE /////////////////////////////////////////////////////
+
       print form($form);
       print update_page_footer();
       break;
@@ -201,5 +218,20 @@ function astsystem_get($name) {
   return $sql->value;
 }
 
+////// DRUPAL UPDATE //////////////////////////////////////////////////////////////////////
+function drupal_update_130() {
+  $result = db_query("SELECT delta FROM {blocks} WHERE module = 'aggregator'");
+  while ($block = db_fetch_object($result)) {
+    list($type, $id) = explode(':', $block->delta);
+    db_query("UPDATE {blocks} SET delta = '%s' WHERE module = 'aggregator' AND delta = '%s'", $type .'-'. $id, $block->delta);
+  }
+  return array();
+}
+
+function drupal_update_131() {
+  $ret = array();
+    $ret[] = update_sql("ALTER TABLE {locales_source} CHANGE location location varchar(255) NOT NULL default ''");
+  return $ret;
+}
 
 ?>

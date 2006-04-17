@@ -183,8 +183,8 @@ function astsettingsdid_createdidbatch_form($edit) {
 	}
 
 
-	$group .= form_textfield(t("From DID"), "fromdid", $edit['fromdid'], 40, 150, null, null, false);
-	$group .= form_textfield(t("Number of DIDs"), "nodid", $edit['nodid'], 40, 150, null, null, false);
+	$group .= form_textfield(t("Create From DID Number"), "fromdid", $edit['fromdid'], 40, 150, null, null, false);
+	$group .= form_textfield(t("How many"), "nodid", $edit['nodid'], 40, 150, null, null, false);
 
 	$group .= form_select(t('Tech'), 'tech', $sqlout->tech, array('IN-SIP' => 'SIP', 'IN-IAX' => 'IAX2', 'IN-ZAP' => 'ZAP'));
 	$group .= form_select(t("DID Group"), "acgroup", $edit['acgroup'], $didtypelist);

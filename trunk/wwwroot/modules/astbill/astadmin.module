@@ -293,7 +293,7 @@ function page_astadmin_friends_list($value) {
 	array('data' => t('Operations'), 'colspan' => 3)	
 	);
 
-	$sql = "SELECT asv_friend.uid, accountcode, username, publicnumber, type, name FROM asv_friend, ".$db_prefix."users WHERE asv_friend.uid = ".$db_prefix."users.uid AND db_prefix = '".$db_prefix."' AND CONCAT_WS(',', asv_friend.uid, LOWER(accountcode), LOWER(username), publicnumber, LOWER(type), LOWER(name)) like LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT asv_friend.uid, accountcode, username, publicnumber, type, name FROM asv_friend, {users} users WHERE asv_friend.uid = users.uid AND db_prefix = '".$db_prefix."' AND CONCAT_WS(',', asv_friend.uid, LOWER(accountcode), LOWER(username), publicnumber, LOWER(type), LOWER(name)) like LOWER('%".$value."%')". tablesort_sql($header);
 	
 	$result = pager_query($sql, $maxline);
 
@@ -610,7 +610,7 @@ function page_astadmin_hardware() {
   );
 
 $sql = db_query("SELECT id, ac.uid, hw.accountcode, ac.secret, hw.hardwareid, hwid.hardware,
-concat(hwid.mac1,'-',hwid.mac2,'-',hwid.mac3,'-',hw.mac4,'-',hw.mac5,'-',hw.mac6) mac, hw.serialnumber, hw.comment,  hw.date_created FROM asthardware hw, astaccount ac,asthardwareid hwid, pbx_users where hw.accountcode = ac.accountcode and ac.uid = pbx_users.uid and hw.hardwareid = hwid.hid 
+concat(hwid.mac1,'-',hwid.mac2,'-',hwid.mac3,'-',hw.mac4,'-',hw.mac5,'-',hw.mac6) mac, hw.serialnumber, hw.comment,  hw.date_created FROM asthardware hw, astaccount ac,asthardwareid hwid, {users} users where hw.accountcode = ac.accountcode and ac.uid = users.uid and hw.hardwareid = hwid.hid 
   and db_prefix ='".$db_prefix."'");
 
  // $result = pager_query($sql, $maxline);
@@ -840,7 +840,7 @@ while ($item = db_fetch_object($sql)) {
 if (arg(2) == 'change'){ // START CHECK IF HARDWARECHANGE
 
 $sql = db_query("SELECT id, ac.uid, us.name, hw.accountcode, ac.secret, hw.hardwareid, hw.mac4,hw.mac5,hw.mac6, 
-serialnumber, hw.comment, hw.date_created FROM asthardware hw, pbx_users us, astaccount ac 
+serialnumber, hw.comment, hw.date_created FROM asthardware hw, {users} users us, astaccount ac 
 WHERE ac.uid = us.uid and hw.accountcode = ac.accountcode and id = '%s'", arg(3));
 $sqlout = db_fetch_object($sql);
 
