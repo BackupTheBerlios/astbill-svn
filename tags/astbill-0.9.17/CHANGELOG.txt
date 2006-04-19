@@ -1,0 +1,197 @@
+You can find more examples in the AstBill wiki.
+It is still work in progress, but please take a look at
+http://wiki.astbill.com
+
+For the latest CHANGELOG.txt
+http://astbill.com/changelog
+
+For Support:
+http://astbill.com/forum/3
+
+09 April 2006 Version 0.9.17 
+
+# Fatal error: Call to undefined function: array2uri()
+#
+# Problem with modules: There are two new modules astcore.module and astsettingsdid.module
+# If you are upgrading you will have problem loading your application before this modules are activated.
+# You must activate the astcore.module and astsettingsdid.module by going direct to:
+
+http://yoursite.com/astbill/?q=admin/modules
+
+# Added table astpartner
+# Partners are tenants, customers, suppliers or prospects. 
+# We create one record per company but (Not Implemented yet) many contact persons (address, email, ...) 
+# can be created for the same partner. Partner is also a department contact of the main company or even a branch. 
+# The partners are segmented into several categories. 
+# The events history (sales, purchase, help desk, ...) of a partner will be logged.
+# The asttenant and astcompany table will be depriciated. It will all be one astpartner. This will allow us to
+# Develop a powerfull CRM, Purchasing and Call Center application in the future. Any sugestions are welcome.
+# This is only partly implemented in this version of AstBill. 
+#
+# Added SMS Module with SMS logging
+#
+# Perfect Search
+# Astbill now have an exelent search API working extreemly fast even with 100 000 records in the database.
+# The search button will come up on top of the table view and will retain the search results even if you do any type of 
+# sorting or reordering of the data. This simplify searching for information a lot. We had to do some small changes to 
+# Drupal to get this working but it is worth it. You can find it all documented in astcore.module. 
+# Thanks to Andreas for this exelent feature.
+#
+# Remember the Drupal version in wwwroot are now modified code.
+#
+
+12 Feb 2006 Version 0.9.15 Testing
+
+# Warning - This software may not be stable. If you are in production maybee wait for 
+# Version 0.9.16 before you upgrade. Major system changes in the database and application is done.
+# Please TEST and TEST and report back in http://astbill.com/forum/3
+#
+# Now AstBill is multisite. You can have unlimited Drupal/VOIP sites on one server using one database
+# Changed 
+# Renamed table astbrand to astrates (Bug 249)
+# Renamed Brand to Rate Plans
+# Fixed url error when importing (Bug 254)
+# Fixed Brand only visible when there is price records (Bug 258)
+# You can now have default countryprefix, brand and account type (Bug 227)
+# Have a look at the Settings / System Config 
+# Default password length and voicemail pin length can now be set in Settings / System Config (Bug 199)
+# Added Force Callerid. This is usefull if you want to force any account to use a specific callerid when dialing to PSTN.
+# There are many more changes. We have lost track. Sorry.
+
+2005.11.17 Version 0.9.0.14
+
+# Removed minor bug in REALTIME handeling under certain conditions
+# Improved DID handling using REALTIME
+# Improved DID WEB interface
+# Balance using Sendtext by dialing 197
+# Balance using Voiceprompt by dialing 196
+#
+
+2005.11.17 Version 0.9.0.13
+
+# This version is updated for Asterisk 1.2 Stable
+# Earlier versions of Asterisk may not work. Not tested yet.
+# Added field fullcontact to view asv_sip. This will remove Asterisk Warning using Realtime
+# Updated view asv_iax. This is due to change in Asterisk Realtime
+# Old AGI Variable was: agi_channel: IAX2/70104@80.229.221.228:4569-3
+# New AGI Variable is:  agi_channel: IAX2/80.229.221.228:4569-2
+# The account code is missing from the channel info. We have to bypass by using the accountcode field in Asterisk
+# 
+
+2005.11.05 Version 0.9.0.12
+
+# Minor Update of Perl Agi script agiastar.agi
+# Fixed Sub getNumber($). asttrunk.removeprefix is now working
+# Removed hardcoded 00 appended to SIP trunks. asttrunk.addprefix from the database is now to be used
+# Fixed Error when Creating a new route
+# Fixed Account Password is now allowed to be alfa numberic
+# Automatic password assignment when administrator is creating account.
+# Many other smaal Bug Fixes.
+#
+# If you are upgrading from 0.9.0.10 you only need to replace the module files and the agi script agiastar.agi
+
+2005.11.05 Version 0.9.0.10
+
+# Minor Update of Perl Agi script agiastar.agi
+# Changed Sub getBalance($)
+# Added field astaccount.startingcredit to Credit Control Calculation
+# This allows us to process opening balance on Calling Card without entering Payments.
+# Ensured $MaxMinute is comming from MaxMinute in table astsystem.
+# This is the maximum minutes a call can last. It is now Database configurable.
+# Added field astcurrency.ratetabledesc This field is now used for the Currency text shown in the Rate Table
+# You have to fill in your own currency
+# Major change of Credit Card Module. 
+# Implemented PHP number_format on many output fields.
+#
+
+2005.10.16 Version 0.9.0.9
+
+* Added modules.conf for the /etc/asterisk directory. This is to disable some modules that are not used by AstBill
+* Improved 'Local' call handeling in MySQL Stored Procedure RateGetTrunk. Enforced number length check on 'Local' calls.
+* moved 'local-sip' in extensions.conf to come first. Make adding new local extensions easier.
+* Removed table astpricelistghost. It was  not used by AstBill
+* Added view asvpricecountry and asvpricecountry2
+* Modified table astaccount. Added fields for Calling Card Processing.
+* Default Top-Up Script is stored in Database. astsystem  TopUpURL
+* Added field for next nr when no accounts in astsystem firstaccount
+* Removed all Perl cgi-bin scrips and converted to php. New PHP scrips are now in the ajax folder
+* No Need for cgi-bin. This simplify installations.
+* Improved web based call and click handeling
+
+* To simplify The User Interface you can now disable the account types you are not using by setting astactype.active to 0
+* This apply to IAX, SIP, VIR and H323 Accounts. They can now be disabled in the system if not in use.
+
+* Administrator can now change account context for users.
+* Updated Procedure RateGetTrunk. asttrunk.trunkcost, astroute.costplan is now used correctly to priorities call routing.
+* See: http://wiki.astbill.com/wiki/How_Call_Routing_works
+* Created MySQL view asvaccuser;
+* Modified MySQL view asvaccount;  This generate speed enhancement for large installations
+* There are many other smaal modifications and bug fixes
+
+2005.10.16 Version 0.9.0.7
+
+* Implemented support for H323 as Client, Server and on trunks
+* Added web interface for account status/active. Allows for DISABLED, REALTIME, STATIC and ANI/CLI Accounts
+* Smaal changes to descriptive text in web interface
+* Fixed smaal bug in astbill.sql database file. Semicolon missing on line 2763.
+
+
+2005.10.11 Version 0.9.0.6
+
+* Added 'DEF' record to table asttrunk. This record must be in the AstTrunk Table for CallRouting to work.
+* Improved Debug output on Perl agi script agiastar.agi
+* Added MySQL Table astsystem
+* Added Default data to Table astsystem
+* Updated extensions.conf added the below line mainly used when Asterisk intergrate with SER
+* This also implement stronger security in some installations
+* exten => _0[0-9].,3,GotoIf($["${BILLSTATUS}" = "NOACCOUNT"]?20)
+* Changed `CountryPrefix` in table astuser to int
+* Fixed bug in MySQL Stored Procedure astCreateAcc. Bug related to create account when no accounts exist.
+* Added MySQL coloumn `static` to Table asttrunk
+*
+
+2005.10.11 Version 0.9.0.5
+
+* change name and location of Perl configuration file to /home/astbill/astbill.conf
+* Updated Perl agi scrips and cgi script to new configuration file location
+* Minor Bug fixes
+* Modified MySQL Stored Procedure RateGetTrunk due to issue with MySQL 5.0.13
+* Bug reported to MySQL http://bugs.mysql.com/bug.php?id=13914
+
+* Thanks to 'Norm' for pointing out the next three items.
+* The agi programs did not look for the configuration file with the name /home/astbill/astbill.conf
+* changed conf-astbill.conf to astbill.conf because the new name seems to be more accurate. 
+* Updated INSTALL.txt /var/lib/asterisk/agi-bin are not marked as executable
+* 
+* Included Asterisk 1.2 Beta sample configuration files with AstBill. Make for simpler confguration of AstBill
+* Updated INSTALL.txt Create the agi-bin Log Directory mkdir -p /home/astbill/logs
+*
+
+2005.10.04 Version 0.9.0.4
+
+* Added File res_mysql.conf This is needed for Asterisk RealTime Configuration
+* Changed some Drupal configuration
+
+2005.10.03 Version 0.9.0.3
+
+* Added Missing Stored Procedure astCreateAccount
+* Added Missing Asterisk file extconfig.conf
+* Updated INSTALL.txt 
+* AstBill was written with the Apache2 rewrite_module enabled. Created problems when rewrite_module disabled. Now OK.
+* Added astpayment.paydate to database
+* Added Payment List and Form
+* Added Credit Control Form
+* Added Multi Tenant
+* Added Invoice Number field 'invid' to table astcdr
+* Added Table astinvoice and astinvoiceline
+
+2005.09.26 Version 0.9.0.2
+
+* Added cgi-bin files
+* Added agi-bin files
+* Updated INSTALL.txt to include Asterisk Configuration
+
+2005.09.23 Version 0.9.0.1
+
+* First Public Version of AstBill
+
