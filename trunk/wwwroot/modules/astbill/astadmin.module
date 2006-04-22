@@ -1742,7 +1742,7 @@ $sqlout = db_fetch_object($sql);
 	$group .= t('Currency is: ').'<B>'.$currency.'</B><BR><BR>';
 	if ($value->value == 1) {
 	//$sql = db_query("SELECT accountcode FROM astaccount where tech in ('IAX','SIP','VIR') ORDER BY accountcode");
-	$sql = db_query("SELECT accountcode FROM astaccount where db_prefix ='".$db_prefix."' and tech in (select actype from astactype) ORDER BY accountcode");
+	$sql = db_query("SELECT accountcode FROM astaccount where db_prefix ='".$db_prefix."' and tech in (select actype from astactype where active = '1' ) ORDER BY accountcode");
 	
 	$accountcodelist = array();
 	while ($fetchit = db_fetch_object($sql)) {
@@ -1826,9 +1826,9 @@ function page_astadmin_credit_form($value, $edit) {
 	array('data' => t('Operations'), 'colspan' => 1)                                                                             
 	);
 
-	//$sql = "SELECT astaccount.accountcode, creditlimit, users.name, astaccount.uid FROM astaccount, ".$db_prefix."users users WHERE astaccount.uid <> 0 AND db_prefix ='".$db_prefix."' AND tech in (select actype from astactype) AND CONCAT_WS(',', accountcode, creditlimit, LOWER(users.name)) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	//$sql = "SELECT astaccount.accountcode, creditlimit, users.name, astaccount.uid FROM astaccount, ".$db_prefix."users users WHERE astaccount.uid <> 0 AND db_prefix ='".$db_prefix."' AND tech in (select actype from astactype where active = '1' ) AND CONCAT_WS(',', accountcode, creditlimit, LOWER(users.name)) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 	
-	$sql = "SELECT astaccount.accountcode, creditlimit, users.name, astaccount.uid FROM astaccount, ".$db_prefix."users users WHERE astaccount.uid = users.uid and astaccount.uid <> 0 AND astaccount.db_prefix ='".$db_prefix."' AND tech in (select actype from astactype) AND CONCAT_WS(',', accountcode, creditlimit, LOWER(users.name), astaccount.uid) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT astaccount.accountcode, creditlimit, users.name, astaccount.uid FROM astaccount, ".$db_prefix."users users WHERE astaccount.uid = users.uid and astaccount.uid <> 0 AND astaccount.db_prefix ='".$db_prefix."' AND tech in (select actype from astactype where active = '1' ) AND CONCAT_WS(',', accountcode, creditlimit, LOWER(users.name), astaccount.uid) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 	
 	$result = pager_query($sql, $maxline);
 	

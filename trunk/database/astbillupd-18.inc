@@ -785,7 +785,7 @@ function astbill_update_047() {
   $ret[] = update_sql("ALTER TABLE `astprospect` ADD `date_to_vendor` datetime NULL default NULL AFTER `date_followup`");
   $ret[] = update_sql("ALTER TABLE `astpartner` ADD `date_to_vendor` datetime NULL default NULL AFTER `date_followup`");
   $ret[] = update_sql("CREATE TABLE `astacdid` (
-  `country` int(4) NOT NULL default '0',
+  `countryprefix` int(4) NOT NULL default '0',
   `did` varchar(40) NOT NULL,
   `db_prefix` varchar(40) NOT NULL default 'pbx_',
   `uid` int(10) NOT NULL default '1',
@@ -801,10 +801,121 @@ function astbill_update_047() {
   `batchno` varchar(128) NULL default NULL,
   `remarks` varchar(1024) NULL default NULL,
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  PRIMARY KEY  (`country`,`did`)  )");
-//  $ret[] = update_sql("");
-//  $ret[] = update_sql("");
-//  $ret[] = update_sql("");
+  PRIMARY KEY  (`countryprefix`,`did`)  )");
+
+  $ret[] = update_sql("CREATE TABLE `astparcontact` (
+  `coid` int(10) NOT NULL auto_increment,
+  `pid` int(10) NOT NULL default '0',
+  `uid` int(10) NOT NULL default '1',
+  `leadsource` varchar(128) default NULL,
+  `memberof` int(10) NOT NULL default '0',
+  `extid` varchar(128) default NULL,
+  `extsource` varchar(128) default NULL,
+  `db_prefix` varchar(40) NOT NULL default 'pbx_',
+  `firstname` varchar(128) default NULL,
+  `lastname` varchar(128) default NULL,
+  `sosialsecurityno` varchar(128) NOT NULL default '',
+  `birthdate` date default NULL,
+  `address1` varchar(128) NOT NULL default '',
+  `address2` varchar(128) NOT NULL default '',
+  `zip` varchar(64) NOT NULL default '',
+  `city` varchar(128) NOT NULL default '',
+  `state` varchar(128) default NULL,
+  `country` varchar(128) NOT NULL,
+  `mobile` varchar(128) NOT NULL default '',
+  `phonehome` varchar(128) NOT NULL default '',
+  `phonework` varchar(128) NOT NULL default '',
+  `fax` varchar(128) NOT NULL default '',
+  `email` varchar(128) NOT NULL default '',
+  `email2` varchar(128) NOT NULL default '',
+  `email3` varchar(128) NOT NULL default '',
+  `email4` varchar(128) NOT NULL default '',
+  `website` varchar(128) NOT NULL default '',
+  `title` varchar(128) NOT NULL default '',
+  `department` varchar(128) NOT NULL default '',
+  `assistant` varchar(128) NOT NULL default '',
+  `assistantphone` varchar(128) NOT NULL default '',
+  `reportsto` int(10) NOT NULL default '0',
+  `yahooid` varchar(128) NULL default NULL,
+  `msnid` varchar(128) NULL default NULL,
+  `status` varchar(128) NULL default NULL,
+  `date_followup` datetime NOT NULL default '0000-00-00 00:00:00',
+  `description` varchar(1024) default NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`coid`),
+  KEY `contactname` (`lastname`),
+  KEY `contactperson` (`firstname`)  )");
+
+  $ret[] = update_sql("CREATE TABLE `astorder` (
+  `orderno` int(10) unsigned NOT NULL default '0',
+  `db_prefix` varchar(40) NOT NULL,
+  `uid` int(10) unsigned NOT NULL default '0',
+  `order_date` date NOT NULL,
+  `print_date` date NULL,
+  `closed_date` date NULL,
+  `revisionno` int(10) unsigned NOT NULL default '1',
+  `refperson` varchar(128) default NULL,
+  `refnr` varchar(128) default NULL,
+  `paymentcode` varchar(128) NOT NULL default '',
+  `currency` varchar(3) NOT NULL default 'GBP',
+  `ourref` varchar(128) default NULL,
+  `ourphone` varchar(128) default NULL,
+  `ouremail` varchar(128) default NULL,
+  `freighttype` varchar(128) default NULL,
+  `freightcharge` varchar(128) default NULL,
+  `ordertype` varchar(128) NULL default NULL,
+  `mainservice` varchar(128) NULL default NULL,
+  `servicetype` varchar(128) NULL default NULL,
+  `fromlocation` varchar(128) NULL default '',
+  `email` varchar(128) NOT NULL default '',
+  `email2` varchar(128) NOT NULL default '',
+  `email3` varchar(128) NOT NULL default '',
+  `emailcc` varchar(128) NOT NULL default '',
+  `emailcc2` varchar(128) NOT NULL default '',
+  `emailcc3` varchar(128) NOT NULL default '',
+  `contactphone` varchar(128) NOT NULL default '',
+  `orderfooter` varchar(1024) default NULL,
+  `description` varchar(1024) NOT NULL,
+  `adminfee` decimal(10,2) NOT NULL default '0.00',
+  `frequency` int(4) NOT NULL default '0',
+  `autoinvoice` tinyint(1) NOT NULL default '0',
+  `coupon` varchar(255) default NULL,
+  `workflow` int(10) unsigned NOT NULL default '1',
+  `sumexvat` decimal(10,2) NOT NULL default '0.00',
+  `vat` decimal(10,2) NOT NULL default '0.00',
+  `gross` decimal(10,2) NOT NULL default '0.00',
+  `status` tinyint(1) NOT NULL default '1',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`orderno`),
+  KEY `inv_db_prefix` (`db_prefix`,`uid`,`orderno`)
+) ENGINE=InnoDB ");
+
+  $ret[] = update_sql("CREATE TABLE `astorderline` (
+  `orderno` int(11) unsigned NOT NULL,
+  `lineno` int(10) unsigned NOT NULL,
+  `productcode` varchar(40) default NULL,
+  `qtyinvoiced` decimal(10,4) NOT NULL default '0.0000',
+  `qtyordered` decimal(10,4) NOT NULL default '0.0000',
+  `qtydelivered` decimal(10,4) NOT NULL default '0.0000',
+  `code` varchar(40) NOT NULL default '',
+  `delivery_date` date NULL,
+  `fromlocation` varchar(128) NULL default '',
+  `completed` tinyint(1) NOT NULL default '0',
+  `phoneno` varchar(40) default NULL,
+  `ptype` varchar(40) default NULL,
+  `product` varchar(256) default NULL,
+  `price` decimal(10,4) NOT NULL default '0.0000',
+  `minutes` decimal(10,4) NOT NULL default '0.0000',
+  `amount` decimal(10,2) NOT NULL default '0.00',
+  `unit` varchar(5) NOT NULL default '',
+  `description` varchar(1024) NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`orderno`),
+  UNIQUE KEY `invid` (`orderno`,`lineno`)
+) ENGINE=InnoDB ");
+
+  $ret[] = update_sql("ALTER TABLE `astpartner` ADD `users_roles` varchar(256) NOT NULL default '2' AFTER `customerstatus`");
+
 //  $ret[] = update_sql("");
   return $ret;
 }

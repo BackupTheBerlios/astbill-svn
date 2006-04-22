@@ -133,7 +133,7 @@ function astcallcard_form($where, $value) {
 		);
 
 		$value = trim($value);
-		$sql = "SELECT accountcode, secret, ccserialno,date(ccfirstused) ccfirstused, date(cclastused) cclastused, round(cccardvalue,2) cccardvalue, creditlimit, startingcredit, ccbatchno, active FROM astaccount WHERE db_prefix ='".$db_prefix."' and tech in (select actype from astactype) AND CONCAT_WS(',', accountcode, ccserialno, ccfirstused, cclastused) LIKE '%".$value."%'". tablesort_sql($header);		
+		$sql = "SELECT accountcode, secret, ccserialno,date(ccfirstused) ccfirstused, date(cclastused) cclastused, round(cccardvalue,2) cccardvalue, creditlimit, startingcredit, ccbatchno, active FROM astaccount WHERE db_prefix ='".$db_prefix."' and tech in (select actype from astactype where active = '1' ) AND CONCAT_WS(',', accountcode, ccserialno, ccfirstused, cclastused) LIKE '%".$value."%'". tablesort_sql($header);		
 		
 		
 		$result = pager_query($sql, $maxline);

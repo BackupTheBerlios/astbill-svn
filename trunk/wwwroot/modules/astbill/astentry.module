@@ -1438,7 +1438,7 @@ function astvoicemail_form($edit) {
  
  $account = arg(2);
 
- $sql = db_query("SELECT accountcode FROM astaccount WHERE uid = %s AND tech in (select actype from astactype) AND db_prefix = '".$db_prefix."'", $user->uid);
+ $sql = db_query("SELECT accountcode FROM astaccount WHERE uid = %s AND tech in (select actype from astactype where active = '1' ) AND db_prefix = '".$db_prefix."'", $user->uid);
 
  $sql_output = array($account => $account);
   
