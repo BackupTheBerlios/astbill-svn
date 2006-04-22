@@ -151,7 +151,7 @@ function _astpbx_all() {
 	array('data' => t('Operations'), 'colspan' => 2)
 	);
 	
-	$sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,startingcredit,countcalls, forcecallerid FROM asvaccount2 WHERE tech in (select actype from astactype) and db_prefix ='".$db_prefix."' and uid ='".$user->uid."'". tablesort_sql($header);
+	$sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,startingcredit,countcalls, forcecallerid FROM asvaccount2 WHERE tech in (select actype from astactype where active = '1' ) and db_prefix ='".$db_prefix."' and uid ='".$user->uid."'". tablesort_sql($header);
 	
 	$result = pager_query($sql, $maxline);
   
@@ -309,7 +309,7 @@ function _astpbx_voipadmin_list($value, $edit) {
 	array('data' => t('Calls')),
 	array('data' => t('Operations'), 'colspan' => 4));
 	
-	$sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,5) accountname FROM astaccount, {users} usr WHERE astaccount.uid = usr.uid AND db_prefix ='".$db_prefix."' AND tech IN (select actype from astactype) AND CONCAT_WS(',', accountcode, tech, usr.uid, LOWER('usr.name'), accountname, usr.name) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,5) accountname FROM astaccount, {users} usr WHERE astaccount.uid = usr.uid AND db_prefix ='".$db_prefix."' AND tech IN (select actype from astactype where active = '1' ) AND CONCAT_WS(',', accountcode, tech, usr.uid, LOWER('usr.name'), accountname, usr.name) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 	
 	$result = pager_query($sql, $maxline);
 	

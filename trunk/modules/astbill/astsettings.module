@@ -1524,7 +1524,7 @@ $output .= $iax_conf." was written succesfully<BR><BR>";
 
 // Write Voicemail config
 $output .= "Trying to write Voicemail Config at ".$voicemail_conf."<BR><BR>";
-$sql = db_query("SELECT accountcode, mailboxpin, mailboxemail, IFNULL(callerid,'') callerid, mail, name FROM astaccount a, {users} p where a.uid = p.uid and tech in (select actype from astactype) and active = '". $active . "'");
+$sql = db_query("SELECT accountcode, mailboxpin, mailboxemail, IFNULL(callerid,'') callerid, mail, name FROM astaccount a, {users} p where a.uid = p.uid and tech in (select actype from astactype where active = '1' ) and active = '". $active . "'");
 
    if (!$handle = fopen($voicemail_conf, 'w')) {
          echo "Error, unable to open file";
@@ -1844,7 +1844,7 @@ function page_astsettings_anicli_form($edit) {
 			$output .= form_textfield(t('AccountCode'), 'accountcode', $sql->accountcode, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
 		} else {
 			
-			$accountsql = db_query("SELECT accountcode FROM astaccount WHERE uid <> 0 and db_prefix = '".$db_prefix."' and tech in (select actype from astactype)");
+			$accountsql = db_query("SELECT accountcode FROM astaccount WHERE uid <> 0 and db_prefix = '".$db_prefix."' and tech in (select actype from astactype where active = '1' )");
 			
 			$accountlist = array();
 			while ($item = db_fetch_object($accountsql)) {
