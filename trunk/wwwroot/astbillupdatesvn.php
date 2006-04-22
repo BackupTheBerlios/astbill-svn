@@ -29,7 +29,7 @@ if (!ini_get("safe_mode")) {
 // include_once "database/astbillupdates.inc";
 
 $buffer = "";
-$filename = "http://update.astbill.com/ud/astbillupd-17.txt";
+$filename = "http://update.astbill.com/ud/astbillupd-18.txt";
 $handle = @fopen($filename, "r");
 
 if ($handle) {
@@ -140,6 +140,23 @@ function update_page() {
       $form = form_select("Perform updates from", "start", (isset($selected) ? $selected : -1), $dates, "This defaults to the first available update since the last update you performed.");
       $form .= form_submit("Update");
       print update_page_header("AstBill database update");
+
+////////// DRUPAL UPDATE ///////////////////////////////////////////////////////
+  db_query('DELETE FROM {cache}');
+  $drupalstart = variable_get("update_start", 0);
+  if ($drupalstart == "2005-03-21") {
+	print "\nDRUPAL Update 130 and 131 is Executed\n<BR><BR>";
+	$return = drupal_update_130();
+	print_r ($return);
+	$return = drupal_update_131();
+    print $return[0][1];
+    print $return[0][2];
+//	print_r ($return);
+	variable_set("update_start", "2005-05-07");
+	print "\n<BR>";
+  }
+////////// END DRUPAL UPDATE /////////////////////////////////////////////////////
+
       print form($form);
       print update_page_footer();
       break;
@@ -154,6 +171,7 @@ function update_info() {
   print "<li>WARNING: Opgrade to AstBill-0.9.0.14 and MySQL 5.0.16 For all the updates to happend MySQL need root. You need to have mysql root to update views. See AstBill forum and Wiki for more info. READ: <a href=\"http://astbill.com/update14\">http://astbill.com/update14</a> <BR>This is an last minute issue!!!!</li>\n<BR>";
   print "<li>Update your AstBill Files. This is normally the files in the modules/astbill directory the ajax directory and the agi-bin directory. Remember there may be more files to upgrade.</li>\n<BR>";
   print "<li><strong>WARNING:</strong> Only Update your AstBill Database when there is a version upgrade or instructed to do so by AstBill support. If your database files and your Module files is out of sync your AstBill installation will stop working.</li>\n<BR>";
+
   print "<li><a href=\"astbillupdatesvn.php?op=update\">Run the Database Upgrade Script</a>.</li>\n<BR>";
   print "<li>Don't upgrade your database twice as it may cause problems.</li>\n<BR>";
   print "<li><a href=\"http://astbill.com/forum/3\">The best way to get AstBill support is the Forum</a>.</li>\n<BR>";
@@ -200,5 +218,20 @@ function astsystem_get($name) {
   return $sql->value;
 }
 
+////// DRUPAL UPDATE //////////////////////////////////////////////////////////////////////
+function drupal_update_130() {
+  $result = db_query("SELECT delta FROM {blocks} WHERE module = 'aggregator'");
+  while ($block = db_fetch_object($result)) {
+    list($type, $id) = explode(':', $block->delta);
+    db_query("UPDATE {blocks} SET delta = '%s' WHERE module = 'aggregator' AND delta = '%s'", $type .'-'. $id, $block->delta);
+  }
+  return array();
+}
+
+function drupal_update_131() {
+  $ret = array();
+    $ret[] = update_sql("ALTER TABLE {locales_source} CHANGE location location varchar(255) NOT NULL default ''");
+  return $ret;
+}
 
 ?>

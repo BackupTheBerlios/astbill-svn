@@ -58,6 +58,7 @@ $sql_updates = array(
   "2006-03-26b" => "astbill_update_044",
   "2006-03-28" => "astbill_update_045",
   "2006-04-15" => "astbill_update_046",
+  "2006-04-20" => "astbill_update_047",
 );
 
 function update_sql($sql) {
@@ -776,5 +777,36 @@ FROM asttenant");
     
   return $ret;
 }
- 
+
+// update astprospect set `date_to_vendor` = Now() where customerstatus = 'B';
+function astbill_update_047() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astlogsms` ADD `pid` int(10) NOT NULL default '0' AFTER `uid`");
+  $ret[] = update_sql("ALTER TABLE `astprospect` ADD `date_to_vendor` datetime NULL default NULL AFTER `date_followup`");
+  $ret[] = update_sql("ALTER TABLE `astpartner` ADD `date_to_vendor` datetime NULL default NULL AFTER `date_followup`");
+  $ret[] = update_sql("CREATE TABLE `astacdid` (
+  `country` int(4) NOT NULL default '0',
+  `did` varchar(40) NOT NULL,
+  `db_prefix` varchar(40) NOT NULL default 'pbx_',
+  `uid` int(10) NOT NULL default '1',
+  `master` varchar(40) default NULL,
+  `submaster` varchar(40) default NULL,
+  `acgroup` varchar(40) default NULL,
+  `forwardto` varchar(255) default NULL,
+  `serverid` varchar(40) default NULL,
+  `active` tinyint(1) NOT NULL default '1',
+  `usagecount` int(4) NOT NULL default '0',
+  `portindate` datetime NULL default NULL,
+  `portoutdate` datetime NULL default NULL,
+  `batchno` varchar(128) NULL default NULL,
+  `remarks` varchar(1024) NULL default NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`country`,`did`)  )");
+//  $ret[] = update_sql("");
+//  $ret[] = update_sql("");
+//  $ret[] = update_sql("");
+//  $ret[] = update_sql("");
+  return $ret;
+}
+
 ?>
