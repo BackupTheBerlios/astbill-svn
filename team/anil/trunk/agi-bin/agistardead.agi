@@ -1,0 +1,190 @@
+#!/usr/bin/perl
+#
+# AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+#
+# www.astbill.com
+#
+# Asterisk -- A telephony toolkit for Linux.
+# Drupal   -- An Open source content management platform.
+#
+# 
+# Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+#
+# Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+# Are Casilla        <areast  [Guess What?] astartelecom.com>
+#
+#
+# This program is free software, distributed under the terms of
+# the GNU General Public License
+#
+# 2006.03.17 Version 0.9.18
+# 
+#
+#
+# Asterisk AGI Dead Application for AstarPBX
+# 
+# Written by: Are <are at mansioncapital dot com>
+#
+# Ami 14 Nov 04 Created for Microsoft SQL 2000 (Belive it or not. It is true) :-)
+# Ami 26 June 2005 Converted to MySql
+# Ami 08 July 2005 Converted to MySql Version 5.0.7-beta-standard 
+# Ami 08 July 2005 Used MySql Procedures for data entry
+# Ami 20 Aug  2005 Converted to use STDINN  
+# Install in: 
+# /var/lib/asterisk/agi-bin/
+# Debug: perl C:\data\v023\var\lib\asterisk\agi-bin\agiastar.agi
+
+open(STDERR,">/home/astbill/logs/agi_err_dead.log");
+
+
+$|=1;
+
+# Setup some variables
+my %AGI; my $tests = 0; my $fail = 0; my $pass = 0;
+
+while(<STDIN>) {
+	chomp;
+	last unless length($_);
+	if (/^agi_(\w+)\:\s+(.*)$/) {
+		$AGI{$1} = $2;
+	}
+}
+
+# print STDERR "AGI Environment Dump:\n";
+# foreach my $i (sort keys %AGI) {
+# 	print STDERR " -- $i = $AGI{$i}\n";
+# }
+
+sub checkresult {
+	my ($res) = @_;
+	my $retval;
+	$tests++;
+	chomp $res;
+	if ($res =~ /^200/) {
+		$res =~ /result=(-?\d+)/;
+		if (!length($1)) {
+			print STDERR "FAIL ($res)\n";
+			$fail++;
+		} else {
+			print STDERR "PASS ($1)\n";
+			$pass++;
+		}
+	} else {
+		print STDERR "FAIL (unexpected result '$res')\n";
+		$fail++;
+	}
+}
+
+sub getresult {
+	my ($cmd) = @_;
+	my $retval;
+	print "$cmd\n";
+	my $res = <STDIN>;
+	# $result2 = &getresult($result);
+	# print STDERR "VOICEMAIL: $result2\n";
+
+	chomp $res;
+	if ($res =~ /^200/) {
+		$res =~ /result=(-?\d+)/;
+		if (!length($1)) {
+			print STDERR "FAIL ($res)\n";
+		} else {
+			# print STDERR "PASS ($1)\n";
+			$res =~ s/\(/</;   # Have to convert ( to > and ) to >
+			$res =~ s/\)/>/;
+			$x = "<(.+)>";    # IAX2/5004@5004/2    SIP/5003-130f
+			$res =~/$x/;
+			my $tmp = $1;
+			# print STDERR "getresult: $1\n";
+			$retval = $1;
+			return $retval;
+		}
+	} else {
+		print STDERR "FAIL (unexpected result '$res')\n";
+	}
+}
+
+sub load_config() {
+		$runtime = localtime(time);
+		if (-e "astbill.conf"){
+			open(CFG, "<astbill.conf");
+			
+		} else {
+			open(CFG, "</home/astbill/astbill.conf");
+		}
+		# chdir ('../newdir') || die ("Could not set new directory");
+        while(<CFG>) {
+                chomp;
+                my ($var, $val) = split(/\s*\=\s*/);
+                $config{$var} = $val;
+        }
+        close(CFG);
+		if ($config{odbc} eq "YES") {$jobstr = "XP";} # $ENV{"_"};
+        else {$jobstr = $ENV{"_"};}
+		print STDERR "Executing: $jobstr    $runtime\n";
+		return $config;
+}
+
+use DBI;
+
+################### BEGIN CONFIGURATION ####################
+
+my $config = &load_config();
+
+print STDERR "config.conf loaded. dbhost = $config{dbhost}\n";
+
+if ($config{odbc} eq "YES") {
+	$dbh= DBI->connect("DBI:ODBC:$config{dbdsn}",$config{dbuser},$config{dbpass}) ||   die "Got error $DBI::errstr when connecting to $config{dbdsn}\n";
+}
+else {
+	$dbh = DBI->connect("dbi:mysql:dbname=$config{dbname};server=$config{dbhost}", "$config{dbuser}", "$config{dbpass}"); 
+}
+
+
+# $dbh->do("INSERT INTO test (subject) VALUES ('$tosql')");
+# $dbh->do("INSERT INTO test (subject) VALUES ('DIALSTATUS: $dialstatus')");
+# $dbh->do("INSERT INTO test (subject) VALUES ('answeredtime: $answeredtime')");
+# $dbh->do("INSERT INTO test (subject) VALUES ('hangupcause: $hangupcause')");
+# $dbh->do("INSERT INTO test (subject) VALUES ('causecode: $causecode')");
+# $dbh->do("INSERT INTO test (subject) VALUES ('dialedtime: $dialedtime')");
+# $dbh->do("INSERT INTO test (subject) VALUES ('uniqueid: $uniqueid')");
+
+
+my $uniqueid	 = $AGI{'uniqueid'};
+print STDERR "uniqueid: $uniqueid\n";
+my $dialstatus	 = &getresult("GET VARIABLE DIALSTATUS");
+print STDERR "DIALSTATUS: $dialstatus\n";
+my $answeredtime = &getresult("GET VARIABLE ANSWEREDTIME");
+print STDERR "ANSWEREDTIME: $answeredtime\n";
+my $dialedtime	 = &getresult("GET VARIABLE DIALEDTIME");
+print STDERR "DIALEDTIME: $dialedtime\n";
+my $billstatus	 = &getresult("GET VARIABLE BILLSTATUS");
+print STDERR "BILLSTATUS: $billstatus\n";
+
+
+#  $dnid		 = $AGI{'dnid'};    #  `callednum` in DB
+#  $extension	 = $AGI{'extension'}; 
+#  $causecode    = &getresult("GET VARIABLE CAUSECODE");   
+#  $hangupcause  = &getresult("GET VARIABLE HANGUPCAUSE");  
+
+
+	# $dbh->do("INSERT INTO test (subject) VALUES ('$hangupcause   $dialstatus   $dialedtime   $answeredtime')");
+	# $dbh->do("CALL RateStarDead('1120841457.289','ANSWER','120','140')");
+	# $dbh->do("CALL RateStarDead('$uniqueid','$dialstatus','120','140')");
+
+	if ($billstatus ne 'NOCREDIT') {  
+		$dbh->do("CALL RateStarDead('$uniqueid','$dialstatus','$answeredtime','$dialedtime')");
+	} 
+	else {
+		$dbh->do("CALL RateStarDead('$uniqueid','$billstatus','0','0')");
+	} 
+	if ($billstatus eq 'NOACCOUNT') {  
+		$dbh->do("CALL RateStarDead('$uniqueid','$billstatus','0','0')");
+	} 
+
+
+
+$dbh->disconnect;
+
+exit 0;
+

@@ -1,0 +1,505 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2006.04.17 Version 0.9.17
+ * 
+ */
+
+
+function astpartner_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Partners");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astpartner_menu($may_cache) {
+  $items = array();
+  $access    = user_access('can use astpartner');
+  $accessadm = user_access('can use admin astpartner');
+  $items[] = array('path' => 'astpartner',
+                                  'title' => t('admin'),
+                                  'callback' => '_astpartner_all',
+                                  'access' => $access,
+                                  'type' => MENU_CALLBACK);
+				  
+        $items[] = array('path' => 'astbilladm/partner', 'title' => t('Partners'),
+      'callback' => 'page_astpartner_partner',
+      'access' => $access);
+     // 'type' => MENU_CALLBACK);
+
+     	$items[] = array('path' => 'astbilladm/partner/create', 'title' => t('Create Partners'),
+      'callback' => 'page_astpartner_partnercreate',
+      'access' => $access);
+  //    'type' => MENU_CALLBACK);
+ 	
+	$items[] = array('path' => 'astbilladm/partner/change', 'title' => t('Change Partners'),
+      'callback' => 'page_astpartner_partnerchange',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+      
+      	$items[] = array('path' => 'astbilladm/partner/changespecific', 'title' => t('Change Partners'),
+      'callback' => 'page_astpartner_partnerchange',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+
+      	$items[] = array('path' => 'astbilladm/partner/remove', 'title' => t('Delete Partners'),
+      'callback' => 'page_astpartner_remove',
+      'access' => $access,
+      'type' => MENU_CALLBACK);
+
+
+
+  return $items;
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+function astpartner_perm() {
+	return array('can use astpartner', 'can use admin astpartner');
+  // return array('can use astentry');
+} // function astentry_perm()
+
+
+// ##########################################################################################################
+
+
+function _astpartner_all() {
+  global $user;
+  global $db_prefix; 
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+
+
+$title = 'UID';
+$account = $user->uid;
+	astcore_printtheme($output, $title);	
+
+}
+
+
+
+// START partner STUFF
+
+function page_astpartner_remove() {
+	global $user;
+	global $db_prefix; 
+
+	if ((!is_numeric(arg(3))) or (arg(3) == '')) {
+	  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+    return; }
+  
+	$test = db_fetch_object(db_query("select count(*) count from astuser where db_prefix ='".$db_prefix."' and tid = '%s'", arg(3)));
+	
+	if ($test->count == '0') {
+
+		$edit = $_POST['edit'];
+		$op = $_POST['op'];
+
+		$deletedmsg = t('The Partner was deleted');
+		$confirmmsg = t('Are you sure you want to delete this partner?');
+		$dbqueries = array();
+		$dbqueries[] = "DELETE FROM astpartner WHERE pid = '".arg(3)."'";
+		$goto = "astbilladm/partner";
+		$donegoto = 'astbilladm/partner';
+		$backgoto = 'astbilladm/partner/change/'.arg(3);
+		astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries, $backgoto);
+	}	else {
+			form_set_error("test", "Unable to delete, Partner contains users.");
+			drupal_goto("astbilladm/partner");
+	}
+}
+
+
+function page_astpartner_Partner() {
+	global $user;
+	global $db_prefix; 
+
+if (!is_numeric(arg(2))) {
+	if (arg(2) == '') {
+	} else {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+	}
+  }
+		
+if (arg(2) == '') {
+  $maxline = 40; // This is the number of records to display on a page
+
+  $header = array(
+    array('data' => t('Users')),
+    array('data' => t('id'), 'field' => 'pid', 'sort' => 'asc'),
+    array('data' => t('Company'), 'field' => 'company'),
+    array('data' => t('Contactperson'), 'field' => 'contactperson'),
+    array('data' => t('Operations'), 'colspan' => 2)                                                                                 
+  );                                                                                 
+                                                                                      
+ // $sql = "SELECT astpartner.pid, astpartner.company, astpartner.contactperson, Count(astuser.tid) AS users 
+ // FROM astpartner LEFT JOIN astuser ON astpartner.pid = astuser.tid GROUP BY astpartner.pid". tablesort_sql($header);
+
+ $sql = "SELECT pid, IFNULL(astpartner.company,concat(firstname,' ',lastname)) company, contactperson FROM astpartner where db_prefix ='".$db_prefix."'". tablesort_sql($header);
+
+  $result = pager_query($sql, $maxline);
+  
+  while ($res = db_fetch_object($result)) {
+$getusers = db_fetch_object(db_query("SELECT Count(astuser.tid) AS users FROM astpartner LEFT JOIN astuser ON astpartner.pid = astuser.tid WHERE astuser.db_prefix ='".$db_prefix."' and astpartner.pid = '".$res->pid."' GROUP BY astpartner.pid"));
+
+	$rows[] = array(
+		'<A HREF="'.url('astbilladm/partner/'.$res->pid).'">'.$getusers->users.'</A>',
+		$res->pid."&nbsp;&nbsp;",
+		$res->company,
+		$res->contactperson,
+		'<A HREF="'.url('astbilladm/partner/change/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<A HREF="'.url('astbilladm/partner/remove/'.$res->pid).'">'.t('Remove').'</A>'
+	);
+  }
+  $title = t('View');
+}
+
+
+
+if (is_numeric(arg(2))) {
+  $maxline = 40; // This is the number of records to display on a page
+
+  $header = array(
+    array('data' => t('UID'), 'field' => 'uid', 'sort' => 'asc'),
+    array('data' => t('Name'), 'field' => 'name'),
+    array('data' => t('PID'), 'field' => 'pid'),
+    array('data' => t('Company'), 'field' => 'company'),
+    array('data' => t('Brand'), 'field' => 'brand'),
+    array('data' => t('Prefix'), 'field' => 'CountryPrefix'),
+    array('data' => t('Currency'), 'field' => 'currency'),
+    array('data' => t('CreditLimit'), 'field' => 'creditlimit'),    
+    array('data' => t('Operations'), 'colspan' => 1)
+                                                                                     
+  );                                                                                 
+
+  $sql = "SELECT astpartner.pid, astpartner.company, usr.uid, usr.name, astuser.brand, astuser.CountryPrefix, astuser.currency, astuser.creditlimit FROM (astuser LEFT JOIN astpartner ON astuser.tid = astpartner.pid) INNER JOIN {users} usr ON astuser.uid = usr.uid WHERE astuser.uid <> 0 and astpartner.pid = '".arg(2)."'". tablesort_sql($header);
+
+
+  $result = pager_query($sql, $maxline);
+  
+  while ($res = db_fetch_object($result)) {                                          
+	$rows[] = array(
+		$res->uid,
+		$res->name,
+		$res->pid."&nbsp;&nbsp;",
+		$res->company,
+		$res->brand,
+		$res->CountryPrefix,
+		$res->currency,
+		$res->creditlimit,
+		'<A HREF="'.url('astbilladm/partner/changespecific/'.$res->uid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>'
+	);
+  }
+  $title = 'User list';
+}
+
+
+
+$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+if (!empty($pager)) {
+  $rows[] = array(array('data' => $pager, 'colspan' => 10));
+}
+
+$output .= (count($rows) == 0) ? t('No records available.') : theme('table', $header, $rows);
+
+	astcore_printtheme($output, $title);	
+}
+
+
+
+function page_astpartner_Partnerchange() {
+  global $user;
+  global $db_prefix; 
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(1))) {
+    case t('Change'):
+      $title = t('Edit Account');
+      if (astpartner_Partner_validate($edit)) {
+        astpartner_Partner_save($edit,arg(3));
+        drupal_goto("astbilladm/partner");
+      } else {
+		drupal_goto("astbilladm/partner/change/".arg(3));
+	  }
+      break;
+  	case t('Back'):
+		drupal_goto("astbilladm/partner");
+    default:
+	  $output = astpartner_Partner_form(arg(3));
+  }
+
+
+	$title = t('Change');
+	astcore_printtheme($output, $title);	
+}
+
+
+function page_astpartner_Partnercreate() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(1))) {
+    case t('Create'):
+      $title = t('Edit Account');
+      if (astpartner_Partner_validate($edit)) {
+        astpartner_Partner_save($edit,arg(3));
+        drupal_goto("astbilladm/partner");
+      } else {
+		drupal_goto("astbilladm/partner/create/".arg(3));
+	  }
+      break;
+  	case t('Back'):
+		drupal_goto("astbilladm/partner");
+    default:
+	  $output = astpartner_Partner_form(arg(3));
+  }
+
+$title = t('Create');
+	astcore_printtheme($output, $title);	
+}
+
+
+
+
+// Partner FORM STUFF
+function astpartner_Partner_validate($edit) {
+  global $user;
+  global $db_prefix; 
+  $myerror = 1;
+  $errors = array();
+
+
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+
+function astpartner_Partner_save($edit, $account) {
+  global $user;
+  global $db_prefix; 
+
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+ /*
+  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }*/
+
+if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
+
+	$accountcode = null;
+	$paytype = null;
+	$comment = null;
+	$paidamount = null;
+	$paiddate = null;
+
+
+db_query("INSERT INTO astpartner (db_prefix, company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,customerstatus,status) 
+VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+$db_prefix,$edit['company'], $edit['firstname'],$edit['lastname'],$edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['fax'],$edit['email'], $edit['customerstatus'], $edit['status']);
+
+
+drupal_set_message(t('New Partner added'));
+
+} // END CHECK IF PartnerCREATE
+
+
+if (arg(2) == 'change'){ // START CHECK IF PartnerCHANGE
+  if (!is_numeric(arg(3))) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+// if ($edit['company'] == '') { $edit['company'] = null; }
+
+db_query("UPDATE astpartner SET company = '%s',firstname = '%s',lastname = '%s', contactperson = '%s', address1 = '%s', address2 = '%s', zip = '%s', city = '%s', state = '%s', countrycode = '%s', mobile = '%s', phonework = '%s', email = '%s', fax = '%s',comment = '%s', customerstatus = '%s', status = '%s' WHERE pid = '%s' and db_prefix = '%s'"
+, $edit['company'], $edit['firstname'],$edit['lastname'], $edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['email'],$edit['fax'], $edit['comment'], $edit['customerstatus'], $edit['status'], arg(3), $db_prefix);
+
+
+drupal_set_message(t('Partner changed'));
+
+} // END CHECK IF PartnerCHANGE
+
+if (arg(2) == 'changespecific'){ // START CHECK IF PartnerCHANGESPECIFIC
+
+	db_query("UPDATE astuser SET tid = '%s', brand = '%s', CountryPrefix = '%s', currency = '%s' WHERE uid = '%s' and db_prefix ='".$db_prefix."'", $edit['tid'], $edit['brand'], $edit['country'], $edit['currency'], arg(3));
+	drupal_set_message(t('Partner changed'));
+
+} // END CHECK IF PartnerCHANGE
+
+
+}
+
+function astpartner_Partner_form($account) {
+	global $user;
+	global $db_prefix; 
+	$edit = $_POST["edit"];
+    $op = $_POST["op"];
+
+
+if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
+
+	$resellerid = null;
+	$company = null;
+	$contactperson = null;
+	$address1 = null;
+	$address2 = null;
+	$zip = null;
+	$city = null;
+	$state = null;
+	$country = null;
+	$mobile = null;
+	$phonework = null;
+	$fax = null;
+	$comment = null;
+	$customerstatus = 'C';
+	$status = '1';
+
+
+} // END CHECK IF PartnerCREATE
+
+if (arg(2) == 'change'){ // START CHECK IF PartnerCHANGE
+
+$sql = db_query("SELECT company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,comment,customerstatus,status FROM astpartner WHERE pid = '%s' and db_prefix ='".$db_prefix."'", arg(3));
+$sqlout = db_fetch_object($sql);
+
+	$company = $sqlout->company;
+	$contactperson = $sqlout->contactperson;
+	$address1 = $sqlout->address1;
+	$address2 = $sqlout->address2;
+	$zip = $sqlout->zip;
+	$city = $sqlout->city;
+	$state = $sqlout->state;
+	$country = $sqlout->countrycode;
+	$mobile = $sqlout->mobile;
+	$phonework = $sqlout->phonework;
+	$fax = $sqlout->fax;
+	$comment = $sqlout->comment;
+	$customerstatus = $sqlout->customerstatus;
+	$status = $sqlout->status;
+
+
+}// END CHECK IF PartnerCHANGE
+
+
+if (arg(2) == 'changespecific'){ // START CHECK IF PartnerCHANGESPECIFIC
+
+	$sql = db_query("SELECT astuser.tid, astuser.brand, astuser.CountryPrefix, astuser.currency FROM astuser WHERE uid = '%s' and db_prefix ='".$db_prefix."'", arg(3));
+	$sqlout = db_fetch_object($sql);
+
+	$tid = $sqlout->tid;
+	$currency = $sqlout->currency;
+	$brand = $sqlout->brand;
+	$countryprefix = $sqlout->CountryPrefix;
+
+		
+	$sql = db_query("select company, pid from astpartner where db_prefix ='".$db_prefix."'");
+	$companylist = array();
+	while ($fetchit = db_fetch_object($sql)) {
+	   array_push2($companylist, $fetchit->company, $fetchit->tid);
+	}
+	
+	$sql = db_query("select name from astplans");
+	$brandlist = array();
+	while ($fetchit = db_fetch_object($sql)) {
+	   array_push2($brandlist, $fetchit->name, $fetchit->name);
+	}
+	
+	$sql = db_query("SELECT countrycode, country FROM astcountrycode WHERE usstate is null order by country");
+	$countrylist = array();
+	while ($fetchit = db_fetch_object($sql)) {
+	   array_push2($countrylist, $fetchit->country, $fetchit->countrycode);
+	}
+	
+	$sql = db_query("SELECT currency FROM astcurrency ORDER BY currency");
+	$currencylist = array();
+	while ($fetchit = db_fetch_object($sql)) {
+	   array_push2($currencylist, $fetchit->currency, $fetchit->currency);
+	}
+	
+
+	$group .= astcore_form_start();
+	$group .= astcore_form_select(t("Company"), "tid", $tid, $companylist);
+	$group .= astcore_form_select(t("Brand"), "brand", $brand, $brandlist);
+	$group .= astcore_form_select(t("Country"), "country", $countryprefix, $countrylist);
+	$group .= astcore_form_select(t("Currency"), "currency", $currency, $currencylist);
+    $group .= astcore_form_end();
+	
+	
+	
+} else {
+
+	$group .= astcore_form_start();
+	$group .= astcore_form_textfield(t('Company'), 'company', $company, 30, 100);
+	$group .= astcore_form_textfield(t('Firstname'), 'firstname', $sqlout->firstname, 30, 100);
+	$group .= astcore_form_textfield(t('Lastname'), 'lastname', $sqlout->lastname, 30, 100);
+//	$group .= astcore_form_textfield(t('Contactperson'), 'contactperson', $contactperson, 30, 100);
+	$group .= astcore_form_textfield(t('Address1'), 'address1', $address1, 30, 100);
+	$group .= astcore_form_textfield(t('Address2'), 'address2', $address2, 30, 100);
+	$group .= astcore_form_textfield(t('Zip'), 'zip', $zip, 30, 100);
+	$group .= astcore_form_textfield(t('City'), 'city', $city, 30, 100);
+// 	 $group .= form_textfield(t('State'), 'state', $state, 30, 100);
+	$group .= astcore_form_textfield(t('Country'), 'country', $country, 30, 100);
+	$group .= astcore_form_textfield(t('Mobile'), 'mobile', $mobile, 30, 100);
+	$group .= astcore_form_textfield(t('PhoneWork'), 'phonework', $phonework, 30, 100);
+	$group .= astcore_form_textfield(t('Fax'), 'fax', $fax, 30, 100);
+	$group .= astcore_form_textfield(t('E-Mail'), 'email', $sqlout->email, 30, 100);
+	$group .= astcore_form_textfield(t('Comment'), 'comment', $comment, 30, 1024);
+	$group .= astcore_form_textfield(t('CustomerStatus'), 'customerstatus', $customerstatus, 30, 30);
+	$group .= astcore_form_textfield(t('Status'), 'status', $status, 30, 100);
+	$group .= astcore_form_end();
+
+}
+
+if (arg(2) == 'create'){
+	$group .= form_submit(t('Create'));
+} else {
+	$group .= form_submit(t('Change'));
+}
+	$group .= form_submit(t('Back'));
+	//$form = form_group(t('Account details'), $group);
+	return form($group);
+}
+
+

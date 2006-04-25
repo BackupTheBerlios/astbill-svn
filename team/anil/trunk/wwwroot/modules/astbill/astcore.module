@@ -1,0 +1,634 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2006.03.17 Version 0.9.18
+ * 
+ */
+
+/* FUNCTIONS:
+
+**$value = $edit['search'];
+**$tmp = astcore_flattenArray($_GET);
+**if (!empty($tmp['searchedit'])) {
+**	$value = $tmp['searchedit'];
+**}
+**$output = astcore_search($edit, url('astbilladm/realtime/friends'), $value);
+astcore_search($edit, $posturl, $value = NULL)
+
+**$undermenu = array(url('astbilladm/payment/create/').'">'.t('Create New Payment'));
+astcore_printtheme($page_content, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE')
+
+**$title = t('Remove Trunk:').' '.arg(4);
+**$confirmmsg = t('Are you sure you want to delete this trunk?');
+**$deletedmsg = t('Trunk '.arg(4).' was deleted');
+**$donegoto = 'astbilladm/trunks';
+**$dbqueries = array();
+**$dbqueries[] = "DELETE FROM astaccount WHERE accountcode = (select accountcode from asttrunk where tid = ".arg(3).")";
+**$dbqueries[] = "DELETE FROM asttrunk WHERE tid = ".arg(3);
+astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries, $backgoto = 'DEFAULT')
+
+astcore_list($header, $rows, $noresults, $maxline)
+
+astcore_email($from , $to, $subject, $message, $attachment)
+
+astcore_export_sqltocsv($sqlquery)
+
+astcore_flattenArray($array, $keyname='')
+*/
+
+
+function astcore_help($section='') {
+	$output = '';
+	switch ($section) {
+		case "admin/modules#description":
+		$output = t("AstBill Core Functions");
+		break;
+	}
+	return $output;
+}
+
+
+function astcore_search($edit, $posturl, $value = NULL, $endform = 'YES') {
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	
+	if (empty($value)) {
+		$value = $edit['search'];
+	}
+	
+	$output = '
+<form action="'.$posturl.'" method="post">
+<div class="form-item">
+<B>'.t('Enter a search string').'&nbsp;&nbsp;</B>
+<input type="text" size="20" value="'.$value.'" name="edit[search]" alt="'.t('Enter a term to search').'" />&#160;
+<input type="submit" name="search" value="'.t('Search').'" />&#160;&#160;
+</div>';
+
+	if ($endform == 'YES') {
+		$output .= '</form>';
+	} else {
+		
+	}
+/*
+	$group .= form_textfield($title, 'search', $value, 30, 30, $description = NULL, $attributes = NULL, $required = FALSE);
+	$group .= form_submit('Search');
+	
+	$output = form($group);
+*/	
+	return $output;
+}
+
+
+function astcore_printtheme($page_content, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu = 'FALSE') {
+	$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+		
+	if ($overmenu != 'FALSE') {
+		$output .= '<DIV CLASS="nodecontent">';
+		foreach ($overmenu as $key => $value) {
+			$output .= '<B><FONT SIZE=1><A HREF="'.$value.'</A></B></FONT><BR>';
+		}
+		$output .= '</DIV>';
+	}
+	
+	$output .= '<div class="nodecontent">'. $page_content . "</div>\n";
+	
+	if ($undermenutitle != 'FALSE' OR $undermenu != 'FALSE') {
+		$output .= '<DIV CLASS="nodecontent">';
+	}
+	
+	if ($undermenutitle != 'FALSE') {
+		$output .= '<B>'.$undermenutitle.'</B><BR>';
+	}
+	
+	if ($undermenu != 'FALSE') {
+		foreach ($undermenu as $key => $value) {
+			$output .= '<B><FONT SIZE=1><A HREF="'.$value.'</A></B></FONT><BR>';
+		}
+		$output .= '</DIV>';
+	}
+	
+	print theme("page", $output);
+}
+
+function astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries, $backgoto = 'DEFAULT') {
+	$op = $_POST['op'];
+	$edit = $_POST['edit'];
+
+	if ($edit['deleteverified'] == 'deleteverified') {
+		foreach ($dbqueries as $key) {
+			db_query($key);
+		}
+		
+		drupal_set_message(t($deletedmsg));
+		drupal_goto($donegoto);
+	}
+	if ($op == t('Back')) {
+		
+		if ($backgoto == 'DEFAULT') {$backgoto = $donegoto;}
+		drupal_goto($backgoto);
+	}
+	
+	$output .= '<BR>'.$confirmmsg.'<BR><BR>';
+	
+	$output .= form_hidden('deleteverified', 'deleteverified');
+	$output .= form_submit(t('Delete'));
+	$output .= form_submit(t('Back'));
+
+	$group = form($output);
+
+	astcore_printtheme($group, $title);
+	exit();
+}
+
+function astcore_list($header, $rows, $noresults, $maxline) {
+
+	$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+	if (!empty($pager)) {
+		$rows[] = array(array('data' => $pager, 'colspan' => 8));
+	}
+
+	$output .= (count($rows) == 0) ? $noresults : theme('table', $header, $rows);
+	
+	/* ROWS[] EXAMPLE
+		$rows[] = array(
+		array('data' => $res->date_created, 'align' => 'right'),
+		array('data' => $res->dialstatus, 'align' => 'right'),
+		array('data' => $res->billtime, 'align' => 'right'));
+	*/
+	
+	
+	return $output;
+}
+
+function astcore_email($from , $to, $subject, $message, $attachment, $filetype = 'TEXT') {
+	$fileatt = $attachment; // Path to the file                  
+	$fileatt_type = "application/octet-stream"; // File Type 
+	$start = strrpos($attachment, '/') == -1 ? strrpos($attachment, '//') : strrpos($attachment, '/')+1;
+	$fileatt_name = substr($attachment, $start, strlen($attachment)); // Filename that will be used for the file as the 	attachment 
+
+	$email_from = $from; // Who the email is from 
+	$email_subject =  $subject; // The Subject of the email 
+	$email_txt = $message; // Message that the email has in it 
+	$email_to = $to; // Who the email is to
+
+	$headers = "From: ".$email_from . "\n" . "X-Mailer: AstBill/Version 0.9.18";
+
+	$file = fopen($fileatt,'rb'); 
+	$data = fread($file,filesize($fileatt)); 
+	fclose($file); 
+
+	$semi_rand = md5(time()); 
+	$mime_boundary = "==Multipart_Boundary_x{$semi_rand}x"; 
+    
+	$headers .= "\nMIME-Version: 1.0\n" . 
+            "Content-Type: multipart/mixed;\n" . 
+            " boundary=\"{$mime_boundary}\""; 
+
+	if ($filetype == 'TEXT') {
+		$email_message .= "This is a multi-part message in MIME format.\n\n" . 
+                "--{$mime_boundary}\n" . 
+               // "Content-Type:text/html; charset=\"iso-8859-1\"\n" . 
+               //"Content-Transfer-Encoding: 7bit\n\n" . 
+	       $email_txt . "\n\n"; 
+	} elseif ($filetype == 'HTML') {
+		$email_message .= "This is a multi-part message in MIME format.\n\n" . 
+                "--{$mime_boundary}\n" . 
+                "Content-Type:text/html; charset=\"iso-8859-1\"\n" . 
+                "Content-Transfer-Encoding: 7bit\n\n" . 
+	        $email_txt . "\n\n"; 	
+		
+		
+	}
+	    
+	$data = chunk_split(base64_encode($data)); 
+
+	$email_message .= "--{$mime_boundary}\n" . 
+                  "Content-Type: {$fileatt_type};\n" . 
+                  " name=\"{$fileatt_name}\"\n" . 
+                  //"Content-Disposition: attachment;\n" . 
+                  //" filename=\"{$fileatt_name}\"\n" . 
+                  "Content-Transfer-Encoding: base64\n\n" . 
+                 $data . "\n\n" . 
+                  "--{$mime_boundary}--\n"; 
+
+
+	$ok = @mail($email_to, $email_subject, $email_message, $headers); 
+
+	if($ok) { 
+	} else { 
+		die("Sorry but the email could not be sent. Please go back and try again!"); 
+	}
+}
+
+function astcore_import_csvtosql($gotourl, $sqltable, $endform = 'YES', $maxfilesize = '0') {
+	// $_FILES = Array ( [import] => Array ( [name] => WEB_7454.csv [type] => text/comma-separated-values [tmp_name] => /tmp/phpiuFcyF [error] => 0 [size] => 574550 ) )
+	
+	$output .= '
+	<form enctype="multipart/form-data" action='.$gotourl.' method="POST">
+    	<input type="hidden" name="MAX_FILE_SIZE" value="'.$maxfilesize.'" />
+    	'.t('Send this file').': <input name="import" type="file" /><BR>
+	<input type="submit" value="'.t('Send File').'" /><BR>
+	';
+	
+	if ($endform == 'YES') {
+		$output .= '</form>';
+	}
+	
+	
+	if ($_FILES['import']['error'] == '0') {
+		$csv = file($_FILES['import']['tmp_name']);
+	
+		foreach ($csv as $line_num => $row) {
+			$row = astcore_utf8_to_unicode($row);
+			
+			if ($line_num == '0') {
+				$fields = $row;
+			}
+			
+			if ($line_num != '0') {
+				$lines = explode(',', $row);
+				$x = 0;
+				
+				foreach ($lines as $line) {
+					if ($x == 0) {
+						$values = "'".$line."'";
+					} else {
+						$values .= ",'".$line."'";
+					}
+					$x++;
+				}
+				
+				db_query("INSERT INTO ".$sqltable." (".$fields.") VALUES (".$values.")");
+			}	
+		}
+	}
+	if ($_FILES['import']['error'] == '1') {
+		$output .= '<B>'.t('Error: The uploaded file exceeds the upload_max_filesize directive in php.ini').'</B><BR>';
+	}
+	if ($_FILES['import']['error'] == '2') {
+		$output .= '<B>'.t('Error: The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form').'</B><BR>';
+	}
+	if ($_FILES['import']['error'] == '3') {
+		$output .= '<B>'.t('Error: The uploaded file was only partially uploaded!').'</B><BR>';
+	}
+	if ($_FILES['import']['error'] == '4') {
+		$output .= '<B>'.t('Error: No file was uploaded!').'</B><BR>';
+	}
+	if ($_FILES['import']['error'] == '6') {
+		$output .= '<B>'.t('Error: No temporary Folder available!').'</B><BR>';
+	}
+	if ($_FILES['import']['error'] == '7') {
+		$output .= '<B>'.t('Error: Failed to write to disk!').'</B><BR>';
+	}
+	
+	return $output;
+}
+
+function astcore_export_sqltocsv($sqlquery, $filename = 'astexport.csv') {
+	global $db_prefix;
+  	$edit = $_POST["edit"];
+  	$op = $_POST["op"];
+
+	$numfields = mysql_num_fields($sqlquery);
+	
+	
+	for ($i = 0; $i  < $numfields; $i++) {
+		$columnnames .= mysql_field_name($sqlquery, $i);
+		if ($i != $numfields-1) {
+			$columnnames .= ',';
+		}
+	}
+	
+	$list = $columnnames.'
+';
+	
+	$columns = explode(",", $columnnames);
+	
+	while ($item = db_fetch_array($sqlquery)) {
+		foreach ($columns as $key) {
+			// Remove , from data it is messing up , separated csv files
+			$txt = str_replace(",", " ", $item[$key]);
+			$list .= astcore_utf8_to_unicode($txt,FALSE).',';
+		}
+		$list .= '
+';
+	}
+	
+	$size = strlen($list);
+	header("Content-length: ".$size);
+	header("Content-type: text/comma-separated-values");
+	header("Content-Disposition: attachment; filename=".$filename);
+	
+	echo $list;
+	
+	exit;
+}
+
+function astcore_utf8_to_unicode($message, $reverse = FALSE) {
+	if($reverse == TRUE) {
+		$message = str_replace("å", "Ã¥", $message);
+		$message = str_replace("Å", "Ã…", $message);
+		$message = str_replace("ø", "Ã¸", $message);
+		$message = str_replace("Ø", "Ã˜", $message);
+		$message = str_replace("æ", "Ã¦", $message);
+		$message = str_replace("Æ", "Ã†", $message);	
+		$message = str_replace("è", "Ã¨", $message);	
+	} else {
+		$message = str_replace("Ã¥", "å", $message);
+		$message = str_replace("Ã…", "Å", $message);
+		$message = str_replace("Ã¸", "ø", $message);
+		$message = str_replace("Ã˜", "Ø", $message);
+		$message = str_replace("Ã¦", "æ", $message);
+		$message = str_replace("Ã†", "Æ", $message);
+		$message = str_replace("Ã¨", "è", $message);	
+   	}
+ 	return $message;
+}
+
+function astcore_flattenArray($array, $keyname='')
+{
+   $tmp = array();
+   foreach($array as $key => $value)
+   {
+       if(is_array($value))
+           $tmp = array_merge($tmp,astcore_flattenArray($value,$key));
+       else
+           $tmp[$key.$keyname] = $value;
+   }
+   return $tmp;
+}
+
+
+// DRUPAL CORE MODS
+
+ /**
+ * Recursively construct an URI string from an array.
+ *
+ * The main purpose of this function was to allow search results to be paged
+ * and tablesorted. The only coding change involved for developers is to
+ * use $_REQUEST['edit'] and $_REQUEST['op'] instead of $_POST['edit'] and
+ * $_POST['op'] within your controller function.
+ *
+ * @param $to_uri
+ *   A string or array to convert into an URI querystring. The array can be
+ *   multidimensional.
+ * @param $current_key
+ *   Used internally by the function to store the cumulative key values of
+ *   each successive array.
+ * @return
+ *   A string suitable for passing as an HTTP GET querystring for an URL.
+ */
+function array2uri($to_uri, $current_key = '') {
+  $query_string = '';
+
+  if (!is_array($to_uri)) {
+    return (isset($to_uri) ? '&'. $to_uri : NULL);
+  }
+
+  foreach ($to_uri as $key => $value) {
+    if (is_array($value) && !$current_key) {
+      $key_param = ($current_key) ? "${current_key}[$key]" : $key;
+      $query_string .= array2uri($value, $key_param);
+    }
+    elseif (is_scalar($value)) {
+      if ($current_key) {
+        $key_as_uri = "${current_key}[$key]";
+        $query_string .= '&'. $key_as_uri. '='. urlencode($value);
+      }
+      else {
+        $query_string .= '&'. $key. '='. urlencode($value);
+      }
+    }
+  }
+
+  return $query_string;
+}
+
+function astcore_tenant() {
+	$gettenant = db_fetch_object(db_query("SELECT tid FROM astuser WHERE uid = '%s' AND db_prefix = '".$db_prefix."'", $user->uid));
+    return $gettenant->tid;
+}
+/*
+Modification in menu.inc line 351:
+Function menu_execute_active_handler()
+  if (strlen($arg)) {
++   if (!is_array($arguments)) {$arguments = array();}
+    $arguments = array_merge($arguments, explode('/', $arg));
+  }
+  
+Modification in tablesort.inc line 137:
+function tablesort_get_querystring() {
+  $cgi = $_SERVER['REQUEST_METHOD'] == 'GET' ? $_GET : $_POST;
+  $query_string = '';
+
+// Removed by AstBill
+//  foreach ($cgi as $key => $val) {
+//    if ($key != 'order' && $key != 'sort' && $key != 'q') {
+//      $query_string .= '&'. $key .'='. $val;
+//    }
+//  }
+//  return $query_string;
+// added by AstBill
+  unset($cgi['order'], $cgi['sort'], $cgi['q']);
+  return array2uri($cgi);
+}
+
+Modifcation in pager.inc line 383:
+function pager_link($from_new, $element, $attributes = array()) {
+  $q = $_GET['q'];
+  $from = array_key_exists('from', $_GET) ? $_GET['from'] : '';
+
+//  foreach ($attributes as $key => $value) {
+//    $query[] = $key .'='. $value;
+//  }
+
+  $from_new = pager_load_array($from_new[$element], $element, explode(',', $from));
+
+  
+//  if (count($attributes)) {
+//    $url = url($q, 'from='. implode($from_new, ',') .'&'. implode('&', $query));
+//  }
+//  else {
+//    $url = url($q, 'from='. implode($from_new, ','));
+//  }
+  
+  $query_string = array2uri($attributes);
+  $url = url($q, 'from='. implode($from_new, ',') . $query_string);
+
+  return check_url($url);
+}
+*/
+/*
+JAVA SCRIPTS:
+
+$javaquestion = '
+	<SCRIPT LANGUAGE="JavaScript">
+	function question() {
+		test=confirm("Did the invoices print ok?");
+		if (test) {
+			window.location.href = "'.url('astbilladm/invoice/yes').'";
+		} else {
+			window.location.href = "'.url('astbilladm/invoice').'";
+		}
+	}
+	question()
+	</SCRIPT>';
+*/
+
+////AstBill Form Elements///////////////////////////////////////////////////////////////////////////////////////
+// Are Casilla 13 April 2006
+// AstBill 0.9.17  
+// The target was to use the Drupal Theme Engine. If you know how to do that please contact the AstBill Team.
+// This is just a fast hack to make nice forms fast without coding HTML.
+/**
+ * Return a themed form element.
+ *
+ * @param $title the form element's title
+ * @param $value the form element's data
+ * @param $description the form element's description or explanation
+ * @param $id the form element's ID used by the &lt;label&gt; tag
+ * @param $required a boolean to indicate whether this is a required field or not
+ * @param $error a string with an error message filed against this form element
+ *
+ * @return a string representing the form element
+ */
+function astcore_form_element($title, $value, $description = NULL, $id = NULL, $required = FALSE, $error = FALSE) {
+
+  $output  = "<div class=\"form-item\">\n";
+  $required = $required ? '<span class="form-required">*</span>' : '';
+
+  if ($title) {
+    if ($id) {
+      $output .= " <TH><label for=\"$id\">$title:</label>$required</TH>\n";
+    }
+    else {
+      $output .= " <TH><label>$title:</label>$required</TH>\n";
+    }
+  }
+
+  $output .= " <TD>$value</TD>\n";
+
+  if ($description) {
+    $output .= " <div class=\"description\">$description</div>\n";
+  }
+
+  $output .= "</div><TR>\n";
+
+  return $output;
+}
+
+
+
+/*
+This is what we want
+<div class="form-item">
+  <TH><label for="edit-contactperson">'.t('Contact Person').': </label></TH>
+  <TD><input type="text" maxlength="30" class="form-text" name="edit[contactperson]" id="edit-contactperson" size="30" value="'.$edit['contactperson'].'" /></TD>
+</div><TR>
+
+Below is Drupal Standard
+<div class="form-item">
+ <label for="edit-due_date">Due_date (yyyy-mm-dd):</label><br />
+ <input type="text" maxlength="30" class="form-text" name="edit[due_date]" id="edit-due_date" size="30" value="" />
+</div>
+
+*/
+
+/**
+ * Format a single-line text field.
+ *
+ * @param $title
+ *   The label for the text field.
+ * @param $name
+ *   The internal name used to refer to the field.
+ * @param $value
+ *   The initial value for the field at page load time.
+ * @param $size
+ *   A measure of the visible size of the field (passed directly to HTML).
+ * @param $maxlength
+ *   The maximum number of characters that may be entered in the field.
+ * @param $description
+ *   Explanatory text to display after the form item.
+ * @param $attributes
+ *   An associative array of HTML attributes to add to the form item.
+ * @param $required
+ *   Whether the user must enter some text in the field.
+ * @return
+ *   A themed HTML string representing the field.
+ */
+function astcore_form_textfield($title, $name, $value, $size, $maxlength, $description = NULL, $attributes = NULL, $required = FALSE) {
+  $size = $size ? ' size="'. $size .'"' : '';
+  return astcore_form_element($title, '<input type="text" maxlength="'. $maxlength .'" class="'. _form_get_class('form-text', $required, _form_get_error($name)) .'" name="edit['. $name .']" id="edit-'. $name .'"'. $size .' value="'. check_plain($value) .'"'. drupal_attributes($attributes) .' />', $description, 'edit-'. $name, $required, _form_get_error($name));
+}
+/**
+ * Format a dropdown menu or scrolling selection box.
+ *
+ * @param $title
+ *   The label for the form element.
+ * @param $name
+ *   The internal name used to refer to the form element.
+ * @param $value
+ *   The key of the currently selected item, or a linear array of keys of all the
+ *   currently selected items if multiple selections are allowed.
+ * @param $options
+ *   An associative array of buttons to display. The keys in this array are
+ *   button values, while the values are the labels to display for each button.
+ * @param $description
+ *   Explanatory text to display after the form item.
+ * @param $extra
+ *   Additional HTML to inject into the select element tag.
+ * @param $multiple
+ *   Whether the user may select more than one item.
+ * @param $required
+ *   Whether the user must select a value before submitting the form.
+ * @return
+ *   A themed HTML string representing the form element.
+ *
+ * It is possible to group options together; to do this, change the format of
+ * $options to an associative array in which the keys are group labels, and the
+ * values are associative arrays in the normal $options format.
+ */
+function astcore_form_select($title, $name, $value, $options, $description = NULL, $extra = 0, $multiple = FALSE, $required = FALSE) {
+  $select = '';
+  foreach ($options as $key => $choice) {
+    if (is_array($choice)) {
+      $select .= '<optgroup label="'. check_plain($key) .'">';
+      foreach ($choice as $key => $choice) {
+        $select .= '<option value="'. check_plain($key) .'"'. (is_array($value) ? (in_array($key, $value) ? ' selected="selected"' : '') : ($value == $key ? ' selected="selected"' : '')) .'>'. check_plain($choice) .'</option>';
+      }
+      $select .= '</optgroup>';
+    }
+    else {
+      $select .= '<option value="'. check_plain($key) .'"'. (is_array($value) ? (in_array($key, $value) ? ' selected="selected"' : '') : ($value == $key ? ' selected="selected"' : '')) .'>'. check_plain($choice) .'</option>';
+    }
+  }
+  return astcore_form_element($title, '<select name="edit['. $name .']'. ($multiple ? '[]' : '') .'"'. ($multiple ? ' multiple="multiple" ' : '') . ($extra ? ' '. $extra : '') .' id="edit-'. $name .'">'. $select .'</select>', $description, 'edit-'. $name, $required, _form_get_error($name));
+}
+
+function astcore_form_start() {
+	return '
+<BR><TABLE><TR>
+';
+}
+function astcore_form_end() {
+	return '</TABLE>
+';
+}
+?>

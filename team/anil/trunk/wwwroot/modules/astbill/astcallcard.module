@@ -1,0 +1,230 @@
+<?php
+
+function astcallcard_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Callcard");
+      break;
+  }
+  return $output;
+}
+
+
+function astcallcard_menu($may_cache) {
+	$items = array();
+	$access = user_access('can use callcard');
+	$items[] = array('path' => 'astbilladm/callcard',
+                                  'title' => t('Calling Cards'),
+                                  'callback' => '_astcallcard_all',
+				  'callback arguments' => array(),
+                                  'access' => $access);
+
+	return $items;
+}
+
+function astcallcard_perm() {
+	return array('can use callcard');
+}
+
+// BEGIN CALLCARD
+function _astcallcard_all() {
+	global $user;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+	$value = $edit['search'];
+	$tmp = astcore_flattenArray($_GET);
+	
+	if (!empty($tmp['searchedit'])) {
+		$value = $tmp['searchedit'];
+	}
+	
+	$output = astcore_search($edit, $posturl = url('astbilladm/callcard'), $value);
+
+	switch ($op) {
+		case t('Save'):
+		if (astcallcard_validate($edit)) {
+			astcallcard_save($edit);
+			$where = 'LISTALL';
+			$output .= astcallcard_form($where, $value);
+			$title = t('View');
+		}
+		break;
+	
+		case t('Search'):
+		$where = 'LISTALL';
+		$output .= astcallcard_form($where, $value);
+		$title = t('View');
+		break;
+	
+		case t('Back'):
+		drupal_goto("astbilladm/callcard/");
+		break;
+	
+		default:
+		if (arg(2) == 'edit') {
+			$where = 'EDIT';
+			$title = t('Edit');
+		} else {
+			$where = 'LISTALL';
+			$title = t('View');
+			
+			$output .= astcallcard_form($value, $edit);
+		}
+    
+
+		if ($where == 'EDIT') {
+			if (!is_numeric(arg(3))) {
+				drupal_access_denied();
+				return;
+			}
+		}
+
+		$output .= astcallcard_form($where, $value);
+	}
+  
+
+	_astcallcard_printtheme_best($output, $title);
+}
+
+// FORM STUFF
+function astcallcard_validate($edit) {
+	$myerror = 1;
+	$errors = array();
+
+	foreach ($errors as $name => $message) {
+		form_set_error($name, $message);
+	} 
+	return $myerror;
+}
+
+function astcallcard_save($edit) {
+	global $user;
+	
+	if (arg(2) == 'edit') {
+		db_query("UPDATE astaccount SET active = '%s', secret = '%s', ccserialno = '%s', ccbatchno = '%s', cccardvalue = '%s', startingcredit = '%s', ccfirstused = '%s', cclastused = '%s' WHERE accountcode = '%s'",
+		$edit['active'], $edit['secret'], $edit['ccserialno'], $edit['ccbatchno'], $edit['cccardvalue'], $edit['startingcredit'], $edit['ccfirstused'], $edit['cclastused'], arg(3));
+		
+		
+		drupal_set_message(t('The Calling Card settings have been updated.'));
+	}
+}
+
+function astcallcard_form($where, $value) {
+	global $user;
+	global $db_prefix; 
+
+	
+	if ($where == 'LISTALL') {
+		
+	$maxline = 40;
+	
+	$header = array(
+		array('data' => t('Card Number'), 'field' => 'accountcode'),
+		array('data' => t('Serialno'), 'field' => 'ccserialno'),
+		array('data' => t('Firstused'), 'field' => 'ccfirstused'),
+		array('data' => t('Lastused'), 'field' => 'cclastused'),
+		array('data' => t('CardValue'), 'field' => 'cccardvalue'),
+		array('data' => t('CardBalance'), 'field' => 'creditlimit'),
+		array('data' => t('A'), 'field' => 'active'),
+		array('data' => t('Batchno'), 'field' => 'ccbatchno'),
+		array('data' => t('Operations'))
+		);
+
+		$value = trim($value);
+		$sql = "SELECT accountcode, secret, ccserialno,date(ccfirstused) ccfirstused, date(cclastused) cclastused, round(cccardvalue,2) cccardvalue, creditlimit, startingcredit, ccbatchno, active FROM astaccount WHERE db_prefix ='".$db_prefix."' and tech in (select actype from astactype where active = '1' ) AND CONCAT_WS(',', accountcode, ccserialno, ccfirstused, cclastused) LIKE '%".$value."%'". tablesort_sql($header);		
+		
+		
+		$result = pager_query($sql, $maxline);
+				
+    
+		while ($res = db_fetch_object($result)) {
+
+			$sumpaid = db_fetch_object(db_query("SELECT round(Sum(astpayment.paidamount), 2) AS sumpaid FROM astpayment WHERE astpayment.accountcode = '%s'", $res->accountcode));
+	  
+			$cdrcost = db_fetch_object(db_query("SELECT round((Sum(astcdr.price)/100),2) AS sumprice FROM astcdr where dialstatus like 'ANSWER%%' and answeredtime <> 0 and trunk <> 'Local' AND accountcode = '%s'", $res->accountcode));
+  
+
+			if (empty($cdrcost->sumprice)) {$cdrcost->sumprice = 0;}
+			if (empty($sumpaid->sumpaid)) {$sumpaid->sumpaid = 0;}
+
+			$sumbalance =  number_format(($sumpaid->sumpaid + $res->startingcredit - $cdrcost->sumprice), 2);
+			$rows[] = array(
+				'<a title="Password: '.$res->secret.'"  href="'.url('astpbx/account/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
+				$res->ccserialno.'&nbsp;&nbsp;',
+				$res->ccfirstused.'&nbsp;&nbsp;',
+				$res->cclastused.'&nbsp;&nbsp;',
+				array('data' => $res->cccardvalue.'&nbsp;&nbsp;', 'align' => 'right'),
+				array('data' => $sumbalance.'&nbsp;&nbsp;', 'align' => 'right'),
+				$res->active.'&nbsp;&nbsp;',
+				$res->ccbatchno.'&nbsp;&nbsp;',
+				'<A HREF="'.url('astbilladm/callcard/edit/'.$res->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>'
+				);
+		}
+
+		$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+		if (!empty($pager)) {
+			$rows[] = array(array('data' => $pager, 'colspan' => 8));
+		}
+
+
+		$output .= (count($rows) == 0) ? t('No records.') : theme('table', $header, $rows);
+
+
+		return $output;
+	
+	
+		}
+
+
+	
+	
+		if ($where == 'EDIT') {
+		
+				$sql = db_fetch_object(db_query("SELECT astaccount.accountcode, astaccount.secret, astaccount.ccserialno, astaccount.ccfirstused, astaccount.cclastused, astaccount.cccardvalue, astaccount.startingcredit, astaccount.ccbatchno, astaccount.active FROM astaccount WHERE accountcode = '%s'", $value));
+				
+				$group .= t('<B>Accountcode:</B>').' '.$sql->accountcode;
+				
+				$group .= form_select(t("Enabled:<BR><FONT size=1>Enabled - Account is allowed to place calls. Disabled - Account is not allowed to place calls</FONT>"), "active", $sql->active, array(1 => t('Enabled'), 0 => t('Disabled')));
+				$group .= form_textfield(t('Password:<BR><FONT size=1>Set password for Web and VOIP Access of the system</FONT>'), 'secret', $sql->secret, 30, 100);
+				$group .= form_textfield(t('Card Value'), 'cccardvalue', $sql->cccardvalue, 30, 100);
+				$group .= form_textfield(t('Starting Credit:<BR><FONT size=1>Amount of funds granted to account at the moment of account creation. Should be used as an initial value for Prepaid Cards</FONT>'), 'startingcredit', $sql->startingcredit, 30, 100);
+				$group .= form_textfield(t('SerialNo'), 'ccserialno', $sql->ccserialno, 30, 100);
+				$group .= form_textfield(t('Batch Number'), 'ccbatchno', $sql->ccbatchno, 30, 100);
+				$group .= '<BR>';
+				$group .= form_textfield(t('First Used'), 'ccfirstused', $sql->ccfirstused, 30, 100);
+				$group .= form_textfield(t('Last Used'), 'cclastused', $sql->cclastused, 30, 100);
+				
+				$group .= form_submit(t('Save'));
+				$group .= form_submit(t('Back'));
+	
+				return form($group);
+	
+		}
+}
+
+// END FORM STUFF
+// END CALLCARD
+
+// ##########################################################################################################
+
+
+function _astcallcard_printtheme_best($page_content, $title) {
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+  // $output .= '<div class="astentry">' . $page_content . "</div>\n";
+  print theme("page", $output);
+}
+
+function form_callcard($form, $method = 'post', $action = NULL, $attributes = NULL) {
+  if (!$action) {
+    $action = request_uri();
+  }
+  // Anonymous div to satisfy XHTML compliancy.
+  return '<form action="'. check_url($action) .'" method="'. $method .'"'. drupal_attributes($attributes) .">". $form;
+} 
+
+
+// ##########################################################################################################
