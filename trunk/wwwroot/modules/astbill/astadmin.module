@@ -1496,6 +1496,7 @@ function output_textfile($filename, $lines) {
 
 function page_astadmin_payment() {
 	global $user;
+	global $db_prefix;
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
 
@@ -1541,7 +1542,7 @@ function page_astadmin_payment_form($value, $edit) {
 	array('data' => t('Operations'), 'colspan' => 2)
 	);
 	
-	$sql = "SELECT paid, pay.accountcode, paytype, pay.comment, paidamount, paiddate, pay.date_created, users.name, astaccount.uid FROM astpayment pay, astaccount, ".$db_prefix."users users WHERE pay.accountcode = astaccount.accountcode AND astaccount.uid = users.uid AND db_prefix ='".$db_prefix."' AND CONCAT_WS(',', paid, pay.accountcode, LOWER(paytype), LOWER(pay.comment), paidamount, paiddate, pay.date_created, LOWER(users.name), astaccount.uid) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT paid, pay.accountcode, paytype, pay.comment, paidamount, date(paiddate) paiddate, date(pay.date_created) date_created, users.name, astaccount.uid FROM astpayment pay, astaccount, {users} users WHERE pay.accountcode = astaccount.accountcode AND astaccount.uid = users.uid AND db_prefix ='".$db_prefix."' AND CONCAT_WS(',', paid, pay.accountcode, LOWER(paytype), LOWER(pay.comment), paidamount, paiddate, pay.date_created, LOWER(users.name), astaccount.uid) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 	
 	$result = pager_query($sql, $maxline);
 	
@@ -1549,11 +1550,11 @@ function page_astadmin_payment_form($value, $edit) {
 		$rows[] = array(
 			$res->name.'&nbsp;&nbsp;',
 			$res->paid.'&nbsp;&nbsp;',
-			$res->accountcode,
-			$res->paytype,
+			array('data' => $res->accountcode, 'align' => 'right'),
+			'&nbsp;&nbsp;'.$res->paytype,
 			$res->comment,
-			$res->paidamount,
-			$res->paiddate,
+			array('data' => $res->paidamount, 'align' => 'right'),
+		    '&nbsp;&nbsp;'.$res->paiddate,
 			$res->date_created,
 			'<A HREF="'.url('astbilladm/payment/change/'.$res->paid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
 			'<A HREF="'.url('astbilladm/payment/remove/'.$res->paid).'">'.t('Remove').'</A>'
@@ -1826,19 +1827,17 @@ function page_astadmin_credit_form($value, $edit) {
 	array('data' => t('Operations'), 'colspan' => 1)                                                                             
 	);
 
-	//$sql = "SELECT astaccount.accountcode, creditlimit, users.name, astaccount.uid FROM astaccount, ".$db_prefix."users users WHERE astaccount.uid <> 0 AND db_prefix ='".$db_prefix."' AND tech in (select actype from astactype where active = '1' ) AND CONCAT_WS(',', accountcode, creditlimit, LOWER(users.name)) LIKE LOWER('%".$value."%')". tablesort_sql($header);
-	
-	$sql = "SELECT astaccount.accountcode, creditlimit, users.name, astaccount.uid FROM astaccount, ".$db_prefix."users users WHERE astaccount.uid = users.uid and astaccount.uid <> 0 AND astaccount.db_prefix ='".$db_prefix."' AND tech in (select actype from astactype where active = '1' ) AND CONCAT_WS(',', accountcode, creditlimit, LOWER(users.name), astaccount.uid) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT astaccount.accountcode, creditlimit, users.name, astaccount.uid FROM astaccount, {users} users WHERE astaccount.uid = users.uid and astaccount.uid <> 0 AND astaccount.db_prefix ='".$db_prefix."' AND tech in (select actype from astactype where active = '1' ) AND CONCAT_WS(',', accountcode, creditlimit, LOWER(users.name), astaccount.uid) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 	
 	$result = pager_query($sql, $maxline);
 	
 	while ($res = db_fetch_object($result)) {                                          
 		$rows[] = array(
 		$res->name.'&nbsp;&nbsp;',
-		$res->uid,
-		$res->accountcode,
-		$res->creditlimit,
-		'<A HREF="'.url('astbilladm/payment/credit/change/'.$res->accountcode.'/'.$res->uid).'"><IMG BORDER="0" SRC="files/astar/edit.gif"></A>'
+		array('data' => $res->uid, 'align' => 'right'),
+		array('data' => $res->accountcode, 'align' => 'right'),
+		array('data' => $res->creditlimit, 'align' => 'right'),
+		array('data' => '<A HREF="'.url('astbilladm/payment/credit/change/'.$res->accountcode.'/'.$res->uid).'"><IMG BORDER="0" SRC="files/astar/edit.gif"></A>', 'align' => 'right')
 		);
 	}
 	

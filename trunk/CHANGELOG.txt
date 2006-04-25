@@ -39,6 +39,9 @@ http://yoursite.com/astbill/?q=admin/modules
 #
 # Remember the Drupal version in wwwroot are now modified code.
 #
+# The Dial Timeout and Dial Parameters are now in Settings / System config. This allows you Easy to Configure how the DIAL 
+# command in extensions.conf works. By Default we are using "|60|tTL("
+# The agi scrips will now collect this parameters from the astsystem table.
 
 12 Feb 2006 Version 0.9.15 Testing
 

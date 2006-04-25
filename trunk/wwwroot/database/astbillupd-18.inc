@@ -740,7 +740,7 @@ $ret[] = update_sql("CREATE TABLE `astpartner` (
   `zip` varchar(64) NOT NULL default '',
   `city` varchar(128) NOT NULL default '',
   `state` varchar(128) default NULL,
-  `country` varchar(128) NOT NULL,
+  `countrycode` int(6) NOT NULL DEFAULT '0',
   `mobile` varchar(128) NOT NULL default '',
   `phonehome` varchar(128) NOT NULL default '',
   `phonework` varchar(128) NOT NULL default '',
@@ -867,6 +867,27 @@ function astbill_update_047() {
   `mainservice` varchar(128) NULL default NULL,
   `servicetype` varchar(128) NULL default NULL,
   `fromlocation` varchar(128) NULL default '',
+  `shipping_buyername` varchar(128) NOT NULL default '',
+  `shipping_address1` varchar(128) NOT NULL default '',
+  `shipping_address2` varchar(128) NOT NULL default '',
+  `shipping_zip` varchar(64) NOT NULL default '',
+  `shipping_city` varchar(128) NOT NULL default '',
+  `shipping_state` varchar(128) NOT NULL default '',
+  `shipping_countrycode` int(6) NOT NULL default '0',
+  `invoice_buyername` varchar(128) NOT NULL default '',
+  `invoice_address1` varchar(128) NOT NULL default '',
+  `invoice_address2` varchar(128) NOT NULL default '',
+  `invoice_zip` varchar(64) NOT NULL default '',
+  `invoice_city` varchar(128) NOT NULL default '',
+  `invoice_state` varchar(128) NOT NULL default '',
+  `invoice_countrycode` int(6) NOT NULL default '0',
+  `orderby_buyername` varchar(128) NOT NULL default '',
+  `orderby_address1` varchar(128) NOT NULL default '',
+  `orderby_address2` varchar(128) NOT NULL default '',
+  `orderby_zip` varchar(64) NOT NULL default '',
+  `orderby_city` varchar(128) NOT NULL default '',
+  `orderby_state` varchar(128) NOT NULL default '',
+  `orderby_countrycode` int(6) NOT NULL default '0',
   `email` varchar(128) NOT NULL default '',
   `email2` varchar(128) NOT NULL default '',
   `email3` varchar(128) NOT NULL default '',
@@ -888,7 +909,7 @@ function astbill_update_047() {
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`orderno`),
   KEY `inv_db_prefix` (`db_prefix`,`uid`,`orderno`)
-) ENGINE=InnoDB ");
+) ENGINE=InnoDB   ");
 
   $ret[] = update_sql("CREATE TABLE `astorderline` (
   `orderno` int(11) unsigned NOT NULL,
@@ -920,4 +941,53 @@ function astbill_update_047() {
   return $ret;
 }
 
-?>
+// ALTER TABLE `astlogsms` CHANGE `invoiceno` `invoiceno` int(11) UNSIGNED NULL DEFAULT NULL 
+// ALTER TABLE `astcdr` ADD `invoiceno` int(11) UNSIGNED DEFAULT NULL AFTER `extension` ;
+// change name of invid to invoiceno = change 0 to NULL
+// ALTER TABLE `astplans` ADD `addseconds` INT( 10 ) DEFAULT '0' NOT NULL AFTER `connectcharge` ;
+// ALTER TABLE `astcdr` ADD INDEX `invoiceno_id` ( `invoiceno` , `id` ) 
+
+/*
+
+
+
+
+DROP VIEW IF EXISTS `asvcall`;
+
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcall` AS select `astcdr`.`uniqueid`,
+`astcdr`.`accountcode`,`astcdr`.`callednum`,`astuser`.`uid`,`astuser`.`brand`,`astuser`.`CountryPrefix`,
+`astplans`.`markup`,`astplans`.`billincrement` 
+from `astcdr`, `astaccount`, `astuser`, `astplans`
+where `astcdr`.`accountcode` = `astaccount`.`accountcode` and `astaccount`.`uid` = `astuser`.`uid` and 
+`astaccount`.`db_prefix` = `astuser`.`db_prefix` and `astcdr`.`brand` = `astplans`.`name`;
+
+select * from asvcall where `uniqueid` = '1135182346.302';
+select * from asvcall limit 40;
+
+DROP VIEW IF EXISTS `asvcallrate`;
+
+/* Return 1 = Daytime, 2 = Evening, 3 = Weekend  */
+/* CASE statement will return the first value that is true /*
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcallrate` AS 
+select id, `uniqueid`, invoiceno,callednum, date_created date, dayofweek(date_created) day, CASE 
+WHEN callednum not like '47%'  
+THEN 4 /* This is not Norway */
+WHEN (dayofweek(date_created) in (1,7))  /* Day 1 and 7 is weekend */
+THEN 3  /* This is weekend */
+WHEN (time(date_created) < '07:00:00' or time(date_created) > '16:00:00' )  /* This is evening - Remember time differences*/
+THEN 2 /* This is evening */
+ELSE 1 /* This is daytime */
+END callrate
+from astcdr;
+
+
+select * from `asvcallrate` where `uniqueid` = '1135182346.302';
+
+
+DROP VIEW IF EXISTS asvbill;
+
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW asvbill as
+select accountcode, date_created, DATE_FORMAT(date_created,'%d %b %Y %H:%i:%S') as datec, callednum, answeredtime, billtime, SEC_TO_TIME(billtime) as billtime2, pricerate, 
+price from astcdr where dialstatus like 'ANSWER%' and answeredtime <> 0 and trunk <> 'Local' order by date_created desc;
+
+/*?>
