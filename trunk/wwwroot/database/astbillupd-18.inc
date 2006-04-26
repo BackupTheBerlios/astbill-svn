@@ -946,7 +946,9 @@ function astbill_update_047() {
 // change name of invid to invoiceno = change 0 to NULL
 // ALTER TABLE `astplans` ADD `addseconds` INT( 10 ) DEFAULT '0' NOT NULL AFTER `connectcharge` ;
 // ALTER TABLE `astcdr` ADD INDEX `invoiceno_id` ( `invoiceno` , `id` ) 
-
+// ALTER TABLE `astcdr` ADD `priceid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `status` ;
+// ALTER TABLE `astcdr` ADD `countrycode` INT( 6 ) DEFAULT '0' NOT NULL AFTER `priceid` , ADD `productcode` VARCHAR( 40 ) AFTER `countrycode` ;
+// ALTER TABLE `astpricelist` CHANGE `productcode` `productcode` VARCHAR( 40 ) NULL DEFAULT '950'
 /*
 
 
@@ -962,6 +964,8 @@ where `astcdr`.`accountcode` = `astaccount`.`accountcode` and `astaccount`.`uid`
 `astaccount`.`db_prefix` = `astuser`.`db_prefix` and `astcdr`.`brand` = `astplans`.`name`;
 
 select * from asvcall where `uniqueid` = '1135182346.302';
+select * from asvcall where `uniqueid` = '1145541220.17284';
+
 select * from asvcall limit 40;
 
 DROP VIEW IF EXISTS `asvcallrate`;
@@ -989,5 +993,41 @@ DROP VIEW IF EXISTS asvbill;
 CREATE OR REPLACE SQL SECURITY INVOKER VIEW asvbill as
 select accountcode, date_created, DATE_FORMAT(date_created,'%d %b %Y %H:%i:%S') as datec, callednum, answeredtime, billtime, SEC_TO_TIME(billtime) as billtime2, pricerate, 
 price from astcdr where dialstatus like 'ANSWER%' and answeredtime <> 0 and trunk <> 'Local' order by date_created desc;
+
+
+CREATE TABLE `astproduct` (
+  `productcode` varchar(40) NOT NULL,
+  `categoryid` varchar(6) NOT NULL default '',
+  `description` varchar(50) NOT NULL default '',
+  `longdescription` text NOT NULL,
+  `units` varchar(20) NOT NULL default 'each',
+  `mbflag` char(1) NOT NULL default 'B',
+  `lastcurcostdate` date NOT NULL default '1800-01-01',
+  `actualcost` decimal(20,4) NOT NULL default '0.0000',
+  `lastcost` decimal(20,4) NOT NULL default '0.0000',
+  `materialcost` decimal(20,4) NOT NULL default '0.0000',
+  `labourcost` decimal(20,4) NOT NULL default '0.0000',
+  `overheadcost` decimal(20,4) NOT NULL default '0.0000',
+  `lowestlevel` smallint(6) NOT NULL default '0',
+  `discontinued` tinyint(4) NOT NULL default '0',
+  `controlled` tinyint(4) NOT NULL default '0',
+  `eoq` double NOT NULL default '0',
+  `volume` decimal(20,4) NOT NULL default '0.0000',
+  `kgs` decimal(20,4) NOT NULL default '0.0000',
+  `barcode` varchar(50) NOT NULL default '',
+  `discountcategory` char(2) NOT NULL default '',
+  `taxcatid` tinyint(4) NOT NULL default '1',
+  `serialised` tinyint(4) NOT NULL default '0',
+  `decimalplaces` tinyint(4) NOT NULL default '0',
+  PRIMARY KEY  (`productcode`),
+  KEY `CategoryID` (`categoryid`),
+  KEY `Description` (`description`),
+  KEY `LastCurCostDate` (`lastcurcostdate`),
+  KEY `MBflag` (`mbflag`),
+  KEY `productcode` (`productcode`,`categoryid`),
+  KEY `Controlled` (`controlled`),
+  KEY `DiscountCategory` (`discountcategory`),
+  KEY `taxcatid` (`taxcatid`)
+) ENGINE=InnoDB;
 
 /*?>
