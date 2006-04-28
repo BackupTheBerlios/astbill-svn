@@ -23,6 +23,7 @@
  */
 
 
+
 function astpartner_help($section='') {
   $output = '';
   switch ($section) {
