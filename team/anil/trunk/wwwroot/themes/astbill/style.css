@@ -6,15 +6,13 @@
 /* HTML elements */
 
 body {
-  background: #FFFFFF;
+  background: #dddddd;
   color: #000000;
-  font-family: verdana, arial, helvetica, sans-serif;
-
+  font-family: Verdana, Helvetica, Arial, sans-serif;
   }
 
 h1, h2 {
-    font-size: 1.1em;
-    padding: 0.5em;
+  font-family: Helvetica, Arial, sans-serif;
   }
 
 h3, h4 {
@@ -23,7 +21,6 @@ h3, h4 {
 
 h1, h2, h3, h4 {
   margin-top: 1em;
-  font-size: 1em;
   }
 
 h2.title {
@@ -127,7 +124,7 @@ th img {
 
 .site-slogan {
   font-size: 1em;
-  color: #808080;
+  color: #eee;
   display: block;
   margin: 0;
   font-style: italic;
@@ -158,12 +155,11 @@ th img {
   font-size: 1em;
   }
 .menu li a.active {
-  /*  #006666 = Rusty Reed   #000000 = Black   Ami */ 
-  color: #0000ff;
+  color: #006666;
   text-decoration: underline;
   }
 .menu li a:hover {
-  color: purple;
+  color: #006666;
   text-decoration: underline;
   }
 
@@ -171,33 +167,31 @@ th img {
 /* Links */
 
 a:link {
-/*  #006666 = Rusty Reed   #000000 = Black   Ami */ 
-  color: #0000ff;
+  color: #000066;
   text-decoration: none;
   }
 a:visited {
-  color: #0000ff;
+  color: #000066;
   text-decoration: none;
   }
 a:hover {
-  color: purple;
+  color: #006666;
   text-decoration: underline;
   }
 a:active {
-  color: #0000ff;
+  color: #ff0000;
   text-decoration: underline;
   }
 
 
 /* Theme images */
-/* Old Background =  #660000 New Astar Background = #cc0000  #FFFFFF = White   Ami*/
-/* astbill Background = #eaeaea   Ami   */
+
 .top_bg {
-  background: #FFFFFF;
+  background: #000066;
   }
 
 .corner_img_l {
-  background: #eaeaea url(cl.png) no-repeat top left;
+  background: #000066 url(cl.png) no-repeat top left;
   width: 7px;
   font-size: 0.75em;
   font-weight: bold;
@@ -205,7 +199,7 @@ a:active {
   }
 
 .corner_img_r {
-  background: #eaeaea url(cr.png) no-repeat top right;
+  background: #000066 url(cr.png) no-repeat top right;
   width: 7px;
   text-align: right;
   font-size: 0.75em;
@@ -219,11 +213,12 @@ img.topic {
   border: 0;
   }
 
+
 /* Node styles */
 
 h1.nodetitle {
-  background: #eaeaea;
-  color: #000000;
+  background: #000066;
+  color: #ffffff;
   font-size: 1em;
   font-weight: bold;
   font-family: Verdana, Helvetica, Arial, sans-serif;
@@ -233,7 +228,7 @@ h1.nodetitle {
 
 a.nodetitle {
   background: transparent;
-  color: #000000;
+  color: #ffffff;
   text-decoration: none;
   }
 
@@ -244,8 +239,8 @@ a.nodetitle:hover {
 .nodeinfo {
   background: #e6e6e6;
   padding: 4px 10px 4px 10px;
-  border-left: 1px solid #eaeaea;
-  border-right: 1px solid #eaeaea;
+  border-left: 1px solid #000066;
+  border-right: 1px solid #000066;
   border-bottom: 1px solid #006666;
   color: #666666;
   font-size: 0.75em;
@@ -260,46 +255,12 @@ a.taxonomy-term:hover {
   text-decoration: underline;
   }
 
-.astpbx {
-  background: #ffffff;
-  color: #0000ff;
-  padding: 5px 10px 5px 10px;
-  border-left: 1px solid #eaeaea;
-  border-right: 1px solid #eaeaea;
-  border-bottom: 1px solid #eaeaea;
-  font-size: 0.84em;
-  }
-
-.astpbx:after {
-  content: ".";  
-  display: block;  
-  height: 0;  
-  clear: both;  
-  visibility: hidden;
-  }
-.astpbx a:link {
-  color: #0000ff;
-  text-decoration: underline;
-  }
-.astpbx a:visited {
-  color: #0000ff;
-  text-decoration: underline;
-  }
-.astpbx a:hover {
-  color: purple;
-  text-decoration: underline;
-  }
-.astpbx a:active {
-  color: #0000ff;
-  text-decoration: underline;
-  }
-
 .nodecontent {
   background: #ffffff;
   padding: 5px 10px 5px 10px;
-  border-left: 1px solid #eaeaea;
-  border-right: 1px solid #eaeaea;
-  border-bottom: 1px solid #eaeaea;
+  border-left: 1px solid #000066;
+  border-right: 1px solid #000066;
+  border-bottom: 1px solid #000066;
   font-size: 0.84em;
   }
 
@@ -315,26 +276,26 @@ a.taxonomy-term:hover {
   background: #cccccc;
   padding: 4px 10px 4px 10px;
   margin-bottom: 1em;
-  border-left: 1px solid #eaeaea;
-  border-right: 1px solid #eaeaea;
-  border-bottom: 1px solid #eaeaea;
+  border-left: 1px solid #000066;
+  border-right: 1px solid #000066;
+  border-bottom: 1px solid #000066;
   font-size: 0.84em;
   }
 
 .nodecontent a:link {
-  color: #0000ff;
+  color: #000066;
   text-decoration: underline;
   }
 .nodecontent a:visited {
-  color: #0000ff;
+  color: #333333;
   text-decoration: underline;
   }
 .nodecontent a:hover {
-  color: purple;
+  color: #006666;
   text-decoration: underline;
   }
 .nodecontent a:active {
-  color: #0000ff;
+  color: #ff0000;
   text-decoration: underline;
   }
 
@@ -387,19 +348,19 @@ a.commenttitle:hover {
   }
 
 .commentcontent a:link {
-  color: #0000ff;
+  color: #000066;
   text-decoration: underline;
   }
 .commentcontent a:visited {
-  color: #0000ff;
+  color: #333333;
   text-decoration: underline;
   }
 .commentcontent a:hover {
-  color: purple;
+  color: #006666;
   text-decoration: underline;
   }
 .commentcontent a:active {
-  color: #0000ff;
+  color: #ff0000;
   text-decoration: underline;
   }
 
@@ -407,14 +368,14 @@ a.commenttitle:hover {
 /* Block styles */
 
 .blockcorner_l {
-  background: #FFFFFF;
+  background: #dddddd;
   width: 5px;
   font-size: 0.75em;
   font-weight: bold;
   }
 
 .blockcorner_r {
-  background: #FFFFFF;
+  background: #dddddd;
   width: 10px;
   text-align: right;
   font-size: 0.75em;
@@ -422,9 +383,8 @@ a.commenttitle:hover {
   }
 
 .blocktitle {
-  /* #808080 = Gray 80% and #000000 = Black    Ami  */
-  color: #000000;
-  background: #eaeaea;
+  color: #ffffff;
+  background: #000066;
   width: 121px;
   font-size: 0.75em;
   font-weight: bold;
@@ -434,43 +394,20 @@ a.commenttitle:hover {
   background: #ffffff;
   padding: 5px;
   margin-bottom: 1em;
-  border: 1px solid #eaeaea;
+  border: 1px solid #000066;
   font-size: 0.75em;
   }
 
 
-/* Headerbox (Where the Primary and Secundary Menu Links is displayed Ami*/
+/* Headerbox */
 
 .headerbox {
- /*  #ffffff = White   #000000 = Black      #808080 = Gray 80%         Ami  */
-  color: #808080;
-  background: #eaeaea;
+  background: #ffffff;
   padding: 5px;
   margin-bottom: 1em;
-  border: 1px solid #eaeaea;
+  border: 1px solid #000066;
   text-align: center;
   font-size: 0.84em;
-  font-weight: bold;
-  }
-
-.headerbox a:active {
-  color: #808080;
-  font-weight: bold;
-  }
-
-.headerbox a:link {
-  color: #808080;
-  font-weight: bold;
-  }
-
-.headerbox a:visited {
-  color: #808080;
-  font-weight: bold;
-  text-decoration: none;
-  }
-.headerbox a:hover {
-  color: #808080;
-  text-decoration: underline;
   }
 
 
@@ -479,7 +416,7 @@ a.commenttitle:hover {
 .breadcrumb {
   padding-bottom: 0.5em;
   margin-bottom: 0.5em;
-  border-bottom: 1px solid #eaeaea;
+  border-bottom: 1px solid #000066;
   text-align: left;
   font-size: 0.84em;
   }
@@ -488,10 +425,10 @@ a.commenttitle:hover {
 /* Missionbox */
 
 .missionbox {
-  background: #808080;
+  background: #ffffff;
   padding: 5px;
   margin-bottom: 1em;
-  border: 1px solid #eaeaea;
+  border: 1px solid #000066;
   text-align: left;
   font-size: 0.84em;
   }
@@ -503,7 +440,7 @@ a.commenttitle:hover {
   background: #ffffff;
   padding: 5px;
   margin-top: 1em;
-  border: 1px solid #eaeaea;
+  border: 1px solid #000066;
   text-align: center;
   font-size: 0.84em;
   }

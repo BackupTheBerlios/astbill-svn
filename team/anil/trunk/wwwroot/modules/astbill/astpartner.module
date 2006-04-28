@@ -179,7 +179,7 @@ $getusers = db_fetch_object(db_query("SELECT Count(astuser.tid) AS users FROM as
 		$res->pid."&nbsp;&nbsp;",
 		$res->company,
 		$res->contactperson,
-		'<A HREF="'.url('astbilladm/partner/change/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<A HREF="'.url('astbilladm/partner/change/'.$res->pid).'"><IMG BORDER="0" src="images/edit.gif"></A>',
 		'<A HREF="'.url('astbilladm/partner/remove/'.$res->pid).'">'.t('Remove').'</A>'
 	);
   }
@@ -219,7 +219,7 @@ if (is_numeric(arg(2))) {
 		$res->CountryPrefix,
 		$res->currency,
 		$res->creditlimit,
-		'<A HREF="'.url('astbilladm/partner/changespecific/'.$res->uid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>'
+		'<A HREF="'.url('astbilladm/partner/changespecific/'.$res->uid).'"><IMG BORDER="0" src="images/edit.gif"></A>'
 	);
   }
   $title = 'User list';

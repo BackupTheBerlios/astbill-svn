@@ -551,7 +551,7 @@ $maxline = 40;
 		$item->trunk.'&nbsp;&nbsp;',
 		$item->cost.'&nbsp;&nbsp;',
 		$item->billincrement.'&nbsp;&nbsp;',
-		'<A HREF="'.url('astbilladm/route/edit/'.$item->id).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<A HREF="'.url('astbilladm/route/edit/'.$item->id).'"><IMG BORDER="0" src="images/edit.gif"></A>',
 		'<A HREF="'.url('astbilladm/route/remove/'.$item->id).'">'.t('Remove').'</A>'
 		);
   }
@@ -1211,7 +1211,7 @@ $maxline = 40;
 		$item->name.'&nbsp;&nbsp;',
 		$cur->ratetabledesc.'&nbsp;',
 		array('data' => $item->price.'&nbsp;', 'align' => 'right'),
-		'<A HREF="'.url('astbilladm/pricelist/edit/'.$item->id).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<A HREF="'.url('astbilladm/pricelist/edit/'.$item->id).'"><IMG BORDER="0" src="images/edit.gif"></A>',
 		'<A HREF="'.url('astbilladm/pricelist/remove/'.$item->id).'">'.t('Remove').'</A>'
 		);
   }
@@ -1430,7 +1430,7 @@ function astroute_trunks() {
 		$item->static,
 		$isdefault,
 		$dialplandef,
-		'<A HREF="'.url('astbilladm/trunks/change/'.$item->tid.'/'.$item->static).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/trunks/change/'.$item->tid.'/'.$item->static).'"><IMG BORDER="0" src="images/edit.gif"></A>&nbsp;&nbsp;',
 		'<A HREF="'.url('astbilladm/trunks/dialplan/'.$item->tid).'">Dialplan</A>',
 		'|<A HREF="'.url('astbilladm/trunks/remove/'.$item->tid).'/'.$item->name.'">'.t('Remove').'</A>'
 		);

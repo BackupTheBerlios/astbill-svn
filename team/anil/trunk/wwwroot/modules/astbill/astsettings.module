@@ -1190,7 +1190,7 @@ $result = pager_query($sql, $maxline);
 		$item->billincrement.'&nbsp;&nbsp;',
 		$item->connectcharge.'&nbsp;&nbsp;',
 		$item->status.'&nbsp;&nbsp;',
-		'<A HREF="'.url("astbilladm/settings/plans/edit/".$item->name).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>'
+		'<A HREF="'.url("astbilladm/settings/plans/edit/".$item->name).'"><IMG BORDER="0" src="images/edit.gif"></A>'
 		);
   }
 
@@ -1817,7 +1817,7 @@ function page_astsettings_anicli_form($edit) {
 			$item->anicli.'&nbsp;&nbsp;',
 			$item->comment.'&nbsp;&nbsp;',
 			$item->timestamp.'&nbsp;&nbsp;',
-			'<A HREF="'.url("astbilladm/settings/anicli/edit/".$item->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+			'<A HREF="'.url("astbilladm/settings/anicli/edit/".$item->accountcode).'"><IMG BORDER="0" src="images/edit.gif"></A>',
 			'<A HREF="'.url("astbilladm/settings/anicli/delete/".$item->accountcode).'">Remove</A>'
 			);
 		}

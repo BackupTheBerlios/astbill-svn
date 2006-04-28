@@ -21,7 +21,7 @@
  * 
  */
 
-$filename = "/home/astbill/astbill.conf";
+$filename = "../astbill.conf";
 $handle = @fopen($filename, "r");
 
 if ($handle) {

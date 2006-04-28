@@ -159,7 +159,7 @@ function astcallcard_form($where, $value) {
 				array('data' => $sumbalance.'&nbsp;&nbsp;', 'align' => 'right'),
 				$res->active.'&nbsp;&nbsp;',
 				$res->ccbatchno.'&nbsp;&nbsp;',
-				'<A HREF="'.url('astbilladm/callcard/edit/'.$res->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>'
+				'<A HREF="'.url('astbilladm/callcard/edit/'.$res->accountcode).'"><IMG BORDER="0" src="images/edit.gif"></A>'
 				);
 		}
 

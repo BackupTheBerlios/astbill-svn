@@ -162,11 +162,11 @@ function _astentry_all() {
 	while ($res = db_fetch_object($result)) {
 		$sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
 		$rows[] = array('<a title="Password: '.$res->secret.'"  href="'.url('astentry/swtech/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
-		'<img border="0" src="files/astar/'.$res->tech.'.gif"></a>',
+		'<img border="0" src="images/'.$res->tech.'.gif"></a>',
 		$res->accountname.'&nbsp;&nbsp;&nbsp;',
 		$res->forcecallerid,
-		'<A HREF="'.url('astentry/swtech/'.$res->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
-		'<a href="'.$sql->value.$res->accountcode.'"><IMG BORDER="0" SRC="files/astar/topup.gif"></A>',
+		'<A HREF="'.url('astentry/swtech/'.$res->accountcode).'"><IMG BORDER="0" src="images/edit.gif"></A>',
+		'<a href="'.$sql->value.$res->accountcode.'"><IMG BORDER="0" SRC="images/topup.gif"></A>',
 		'<A HREF="'.url('astentry/voicemailchange/'.$res->accountcode).'">'.t('Voicemail').'</A>',
 		'&nbsp;<A HREF="'.url('astentry/dialplan/'.$res->accountcode).'">'.t('Dialplan').'</A>',
 		'&nbsp;<A HREF="'.url('astentry/emailme/'.$res->accountcode).'">'.t('Email account info').'</A>',
@@ -1632,7 +1632,7 @@ $sql = db_query("SELECT accountcode, publicnumber, tech, forwardto, comment FROM
 	$account = arg(2);
 	  	$rows[] = array($item->accountcode,
 		$item->publicnumber,
-		'&nbsp;&nbsp;<img border="0" src="files/astar/'.$tech.'.gif">&nbsp;&nbsp;',
+		'&nbsp;&nbsp;<img border="0" src="images/'.$tech.'.gif">&nbsp;&nbsp;',
 	    	$item->forwardto,
 		'&nbsp;&nbsp;'.$item->comment,
 		'<A HREF="'.url('astentry/incomingnrchange/'.$item->publicnumber).'">'.t('Change').'</A>');

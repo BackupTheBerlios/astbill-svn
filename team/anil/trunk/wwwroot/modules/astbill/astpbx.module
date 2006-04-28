@@ -159,15 +159,15 @@ function _astpbx_all() {
 		$sumbalance = number_format(($res->balance + $res->startingcredit), 2);
 		$sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
 		$rows[] = array('<a title="Password: '.$res->secret.'"  href="'.url('astpbx/account/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
-		'<img border="0" src="files/astar/'.$res->tech.'.gif">',
+		'<img border="0" src="images/'.$res->tech.'.gif">',
 		$res->accountname.'&nbsp;&nbsp;&nbsp;',
 		$res->forcecallerid,
 		array('data' => '<b>'.$sumbalance.'</b>', 'align' => 'right'),
 		array('data' => $res->sumprice, 'align' => 'right'),
 		array('data' => $res->sumpaid, 'align' => 'right'),
 		array('data' => $res->countcalls, 'align' => 'right'),
-		'<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
-		'<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>'
+		'<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="images/view.gif"></a>',
+		'<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="images/topup.gif"></a>'
 		);
 	}
 
@@ -332,7 +332,7 @@ function _astpbx_voipadmin_list($value, $edit) {
 		$res->uid,
 		'<A TITLE="Password: '.$res->secret.'" HREF="'.url('astbilladm/editaccount/'.$res->accountcode).'">'.$res->accountcode.'</B>' . '</A>',
 		$res->secret,
-		'<IMG BORDER="0" SRC="files/astar/'.$res->tech.'.gif">',
+		'<IMG BORDER="0" SRC="images/'.$res->tech.'.gif">',
 		$res->accountname, 
 		
 	        array('data' => '<B>'.$sumbalance.'</B>', 'align' => 'right'), // Balance
@@ -340,9 +340,9 @@ function _astpbx_voipadmin_list($value, $edit) {
 		array('data' => $sumpaid->sumpaid, 'align' => 'right'), // Payments
 		array('data' => $countcalls->countcalls.'&nbsp;&nbsp;', 'align' => 'right'), // Calls
 		
-		'<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
-		'<a href="'.url('astbilladm/editaccount/'.$res->accountcode).'"><img border="0" src="files/astar/edit.gif"></a>',
-		'<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>',
+		'<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="images/view.gif"></a>',
+		'<a href="'.url('astbilladm/editaccount/'.$res->accountcode).'"><img border="0" src="images/edit.gif"></a>',
+		'<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="images/topup.gif"></a>',
 		'<a href="'.url('astbilladm/removeaccount/'.$res->uid.'/'.$res->accountcode).'">'.t('Remove').'</a>'
 		);
 	}
@@ -526,10 +526,10 @@ function rand()
 		  while ($res = db_fetch_object($result)) {
    
 			  $rows[] = array($res->CountOfcallednum.'&nbsp;&nbsp;&nbsp;',$res->callednum.'&nbsp;&nbsp;&nbsp;',
-			  $res->name.'&nbsp;&nbsp;&nbsp;', '<a title="Click to Call this number" href="javascript:PostCall(' . $res->callednum . ')"><img border="0" id="btncall" src="files/astar/call.gif"></a>', '&nbsp;&nbsp;<a href="'.url('astcontact/astpbx/'.$res->callednum).'">'.t('Edit Contact').'</a>');
+			  $res->name.'&nbsp;&nbsp;&nbsp;', '<a title="Click to Call this number" href="javascript:PostCall(' . $res->callednum . ')"><img border="0" id="btncall" src="images/call.gif"></a>', '&nbsp;&nbsp;<a href="'.url('astcontact/astpbx/'.$res->callednum).'">'.t('Edit Contact').'</a>');
 
 			  //  '<a href="astpbx/numbers" onclick="PostCall();return false;">Call</a>');
-			  // '<img border="0" src="files/astar/call.gif" title="Click to Call this number">');
+			  // '<img border="0" src="images/call.gif" title="Click to Call this number">');
 		  }
 
 		  
@@ -730,10 +730,10 @@ function rand()
 		  while ($res = db_fetch_object($result)) {
 			  $rows[] = array($res->CountOfcallednum.'&nbsp;&nbsp;&nbsp;',$res->callednum.'&nbsp;&nbsp;&nbsp;',
 			  $res->name.'&nbsp;&nbsp;&nbsp;',
-			  '<a title="Click to Call this number" href="javascript:PostCall(' . $res->callednum . ')"><img border="0" id="btncall" src="files/astar/call.gif"></a>', '&nbsp;&nbsp;<a href="'.url('astcontact/astpbx/'.$res->callednum).'">'.t('Edit Contact').'</a>');
+			  '<a title="Click to Call this number" href="javascript:PostCall(' . $res->callednum . ')"><img border="0" id="btncall" src="images/call.gif"></a>', '&nbsp;&nbsp;<a href="'.url('astcontact/astpbx/'.$res->callednum).'">'.t('Edit Contact').'</a>');
 
 			  //  '<a href="astpbx/numbers" onclick="PostCall();return false;">Call</a>');
-			  // '<img border="0" src="files/astar/call.gif" title="Click to Call this number">');
+			  // '<img border="0" src="images/call.gif" title="Click to Call this number">');
 		  }
   
   

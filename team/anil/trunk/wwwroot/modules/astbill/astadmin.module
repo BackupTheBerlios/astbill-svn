@@ -305,7 +305,7 @@ function page_astadmin_friends_list($value) {
 		$item->type.'&nbsp;&nbsp;',
 	        $item->publicnumber.'&nbsp;&nbsp;',
 		$item->username.'&nbsp;&nbsp;',
-		'<A HREF="'.url('astbilladm/realtime/friends/change/'.$item->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/realtime/friends/change/'.$item->accountcode).'"><IMG BORDER="0" src="images/edit.gif"></A>&nbsp;&nbsp;',
 		'<A HREF="'.url('astbilladm/realtime/friends/assign/'.$item->accountcode).'">'.t('Assign').'</A>&nbsp;&nbsp;',
 		'<A HREF="'.url('astbilladm/realtime/friends/remove/'.$item->accountcode).'/'.$item->accountcode.'">'.t('Remove').'</A>'
 		);
@@ -1366,7 +1366,7 @@ function page_astadmin_listcdr_form($value, $edit) {
 			$res->date_created,
 			$res->dialstatus,
 			$res->billtime,
-			'&nbsp;&nbsp;<a href="'.url('astbilladm/listcdr/specific/'.$res->id).'"><img border="0" src="files/astar/view.gif"></a>'
+			'&nbsp;&nbsp;<a href="'.url('astbilladm/listcdr/specific/'.$res->id).'"><img border="0" src="images/view.gif"></a>'
 			);
 		}
 	
@@ -1556,7 +1556,7 @@ function page_astadmin_payment_form($value, $edit) {
 			array('data' => $res->paidamount, 'align' => 'right'),
 		    '&nbsp;&nbsp;'.$res->paiddate,
 			$res->date_created,
-			'<A HREF="'.url('astbilladm/payment/change/'.$res->paid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+			'<A HREF="'.url('astbilladm/payment/change/'.$res->paid).'"><IMG BORDER="0" src="images/edit.gif"></A>',
 			'<A HREF="'.url('astbilladm/payment/remove/'.$res->paid).'">'.t('Remove').'</A>'
 			);
 	}
@@ -1837,7 +1837,7 @@ function page_astadmin_credit_form($value, $edit) {
 		array('data' => $res->uid, 'align' => 'right'),
 		array('data' => $res->accountcode, 'align' => 'right'),
 		array('data' => $res->creditlimit, 'align' => 'right'),
-		array('data' => '<A HREF="'.url('astbilladm/payment/credit/change/'.$res->accountcode.'/'.$res->uid).'"><IMG BORDER="0" SRC="files/astar/edit.gif"></A>', 'align' => 'right')
+		array('data' => '<A HREF="'.url('astbilladm/payment/credit/change/'.$res->accountcode.'/'.$res->uid).'"><IMG BORDER="0" SRC="images/edit.gif"></A>', 'align' => 'right')
 		);
 	}
 	
