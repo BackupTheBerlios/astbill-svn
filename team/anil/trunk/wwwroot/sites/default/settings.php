@@ -89,7 +89,7 @@ $db_prefix = 'pbx_';
  * a trailing slash; Drupal will add it for you.
  */
 
-$base_url = 'http://localhost';
+$base_url = 'http://localhost/astbill';
 
 // AstBill - The below line allows default to work on any URL!
 //$base_url = 'http://'.$_SERVER['SERVER_ADDR'].'/astbill';
