@@ -152,8 +152,7 @@ END
 delimiter ;
 
 DROP PROCEDURE IF EXISTS RateAddcdr;
-delimiter ;;
-
+delimiter |
 
 CREATE PROCEDURE RateAddcdr (saccountcode varchar(255),schannel varchar(255),
                     scallednum varchar(255),stype varchar(255),suniqueid varchar(255))
@@ -226,12 +225,12 @@ BEGIN
   END IF;
  
 END
-;;
+|
 delimiter ;
 
 
 DROP PROCEDURE IF EXISTS RateCost;
-delimiter //
+delimiter |
 
 CREATE PROCEDURE RateCost (uid varchar(255))
 BEGIN  
@@ -276,9 +275,9 @@ IF mytrunk <> 'Local' THEN
   select answeredtime  INTO myatime     from astcdr   where uniqueid = uid;
   select dialstatus    INTO mydialst    from astcdr   where uniqueid = uid;
   
-  select brand         INTO mybrand     from asvcall  where uniqueid = uid;
-  select billincrement INTO myincrement from asvcall  where uniqueid = uid;   
-  select markup        INTO mymarkup    from asvcall  where uniqueid = uid;
+  select brand         INTO mybrand     from astcdr  where uniqueid = uid;
+  select billincrement INTO myincrement from asvcall  where uniqueid = uid;    
+  select markup        INTO mymarkup    from asvcall  where uniqueid = uid; 
   select vat           INTO myvat       from asttrunk where asttrunk.name = mytrunk;
 
   
@@ -349,11 +348,10 @@ IF mytrunk <> 'Local' THEN
    select callcost as callcost, mycost as minuteco, myconnect as conn,       myincluded as inc, minimum as min,      adjtime,    myatime as time,  concat(phone,mytrunk) as tru;
  */
    
-   CALL RateSale(@psales,@prate,@pbilltime,uid);
+   CALL RateSale(@psales,@prate,@pbilltime,@priceid,uid);
 
    update astcdr
-   set ourcost = callcost, price = @psales,
-   pricerate = @prate, billtime = @pbilltime
+   set ourcost=callcost,price=@psales,pricerate=@prate,billtime=@pbilltime,priceid=@priceid
    where uniqueid = uid and
    dialstatus like 'ANSWER%';
 
@@ -361,8 +359,9 @@ END IF;
 /* LABEL theend;      */
 
 END
-//
+|
 delimiter ;
+
 
 DROP PROCEDURE IF EXISTS RateGetTrunk;
 delimiter |
@@ -413,8 +412,7 @@ BEGIN
   SELECT maxminute INTO maxmin FROM aststatus WHERE serverid = server;
   SELECT accountcode INTO saccountcode FROM astcdr WHERE uniqueid = suniqueid;
    
-  
-  CALL RateSale(@sales,@rate,@billtime,suniqueid);
+  CALL RateSale(@sales,@rate,@billtime,@priceid,suniqueid);
   /*  SELECT @sales,@rate,@billtime; */
   SET sreservedamount = @sales + (@rate * maxmin);
    
@@ -429,19 +427,23 @@ END
 delimiter ;
 
 DROP PROCEDURE IF EXISTS RateSale;
-delimiter //
+delimiter |
 
-CREATE PROCEDURE RateSale (OUT psales decimal(10,2),OUT prate decimal(10,2),OUT pbilltime int(11), uid varchar(255))
+CREATE PROCEDURE RateSale (OUT psales decimal(10,2),OUT prate decimal(10,2),OUT pbilltime int(11),OUT ppriceid int(11),uid varchar(255))
 BEGIN  
   /* Version 1.0.4 */
   /* Written By Are at astartelecom.com */
-  /* TABLE as.troute is used to select our outgoing Dialing rute in PROCEDURE RateAddcdr  
-     This table will also be the basis for our cost from our vendor. So we load all our outgoing rutes and vendor cost in to this table.*/
+  /* TABLE astroute is used to select our outgoing Dialing rute in PROCEDURE RateAddcdr  
+     This table will also be the basis for our cost from our vendor. So we load all our outgoing rutes and 
+     vendor cost in to this table.*/
      
-  /*  TABLE astpricelist is our price list to the customer. This can be totally different from the price list we have from our vendors. */ 
+  /*  TABLE astpricelist is our price list to the customer. This can be totally different from the price list we have 
+      from our vendors. */ 
   
   /*  TABLE astplans contain values for billincrement, connectioncharge and markup = (our margin/profit)  
       Each customer will be assigned a brand. That brand will determine the sales price to the customer.   */  
+  /* Modified By Are Casilla 23 April 2006  */    
+  /* Version 1.0.5 */
   
   DECLARE phone       varchar(255);   
   DECLARE mydialst    varchar(255);   
@@ -451,6 +453,10 @@ BEGIN
   DECLARE myincrement tinyint(8);
   DECLARE astrouteid  int(11);
   DECLARE priceid     int(11);
+  DECLARE myaddsec    int(10);
+  DECLARE mycallrate tinyint(4);
+  
+  
   
   /* SALES */
   DECLARE myprice         decimal(10,2);
@@ -459,6 +465,7 @@ BEGIN
   DECLARE minimum         decimal(10,2);
   DECLARE mybillincrement decimal(10,2);
   DECLARE mytrunk         varchar(128);
+  DECLARE myproduct       varchar(40);
 
       
   DECLARE adjtime     int(11);  
@@ -469,16 +476,22 @@ IF mytrunk <> 'Local' THEN
 
   select callednum     INTO phone       from astcdr   where uniqueid = uid;
   select answeredtime  INTO myatime     from astcdr   where uniqueid = uid;
-  select brand         INTO mybrand     from asvcall  where uniqueid = uid;
+  select brand         INTO mybrand     from astcdr  where uniqueid = uid;
   select billincrement INTO mybillincrement from asvcall where uniqueid = uid;   
   select markup        INTO mymarkup    from asvcall  where uniqueid = uid;
   select dialstatus    INTO mydialst    from astcdr   where uniqueid = uid;
-   
+  select addseconds    INTO myaddsec    from astplans where name = mybrand;
+
  
   /* CALCULATE SALES  */
   /* To save time first get id of TABLE astpricelist. REGEXP Lookup is SLOW  */
   SELECT id              INTO priceid    FROM astpricelist WHERE phone REGEXP CONCAT("^",pattern,".*") and brand = mybrand ORDER BY LENGTH( pattern ) DESC LIMIT 1;
   SELECT price           INTO myprice    FROM astpricelist WHERE id = priceid;
+  SELECT callrate        INTO mycallrate FROM asvcallrate WHERE uniqueid = uid;
+  
+  select CASE mycallrate WHEN 1 THEN price WHEN 2 THEN priceevening WHEN 3 THEN priceweekend ELSE price END mychoice
+         INTO myprice  from astpricelist where id = priceid;
+    
   SELECT connectcharge   INTO myconnect  FROM astpricelist WHERE id = priceid;
   SELECT includedseconds INTO myincluded FROM astpricelist WHERE id = priceid;
   SELECT minimumprice    INTO minimum    FROM astpricelist WHERE id = priceid;
@@ -505,7 +518,7 @@ IF mytrunk <> 'Local' THEN
     
   /* #### Calculating Our COST of phone call  ###################################### */
   IF (mybillincrement = 0 or mybillincrement = 1) THEN /* Billing Increment can't be 0 */
-       SET adjtime = myatime;                          /* Adjust time up if we are getting incremented billing */
+       SET adjtime = myatime;          /* answeredtime - Adjust time up if we are getting incremented billing */
   ELSE                                                 /* (billsecounds / Incremen period) * Incremen period   */
        SET adjtime = (round((myatime / mybillincrement))+1) * mybillincrement; /* Incremented Billing = Billing in 30 secounds */
        IF mybillincrement >= myatime THEN
@@ -514,10 +527,14 @@ IF mytrunk <> 'Local' THEN
        IF (mybillincrement * 2) >= myatime THEN
            SET adjtime = (round((myatime / mybillincrement))) * mybillincrement; /* Incremented Billing = Billing in 30 secounds */
        END IF;     
+       IF (adjtime < myatime) THEN
+           SET adjtime = adjtime + mybillincrement; /* This will happen in rare cases Are Casilla 23 April 2006 */
+       END IF;     
        if adjtime = 0 THEN SET adjtime = mybillincrement; END IF;
   END IF;                                              /* or 10 secounds or 60 secounds periods */
   
      SET adjtime = adjtime - myincluded;   /* If there is time included in connection charge we have to deduct it   */
+     SET adjtime = adjtime + myaddsec;   
 
      SET sales = round(myprice * adjtime / 60,2);    /* The cost of the call
         
@@ -545,6 +562,7 @@ END IF;
 SET pbilltime = adjtime; 
 SET psales = sales;
 SET prate = round(myprice + (myprice * mymarkup / 100),2);
+SET ppriceid = priceid; 
 
 
 /*                        minute Charges     Connection fee included in conectionfee    Minimum cost   Adjusted time  answeredtime                        */   
@@ -552,38 +570,7 @@ SET prate = round(myprice + (myprice * mymarkup / 100),2);
  /*  select sales, myprice as price, minimum as min, mybillincrement as binc, myconnect as con,adjtime,    myatime as time, mymarkup as markup, concat(phone,mybrand) as brand;    
    */
 END
-//
-delimiter ;
-
-DROP PROCEDURE IF EXISTS RateStarDead;
-delimiter //
-
- /* $dbh->do("UPDATE `astcdragi` SET `dialstatus` = '$dialstatus',`answeredtime` = '$answeredtime',`dialedtime` = '$dialedtime',`date_ended` = '$runtime', `ourcost` = '$ourcost',  `price` = '$ourprice'  WHERE `uniqueid` = '$uniqueid' LIMIT 1 ;"); */
-
-CREATE PROCEDURE RateStarDead (suniqueid varchar(255), sdialstatus varchar(255),sansweredtime int(11),sdialedtime int(11))
-  NOT DETERMINISTIC
-BEGIN
-  DECLARE phone    varchar(255); 
-  DECLARE Prefix   tinyint(3); /* CountryPrefix   */
-  DECLARE strunk  varchar(128); /* The Trunk used for outgoing Dialing */
-
-  
- UPDATE astcdr SET dialstatus = sdialstatus, answeredtime = sansweredtime, billtime = sansweredtime, dialedtime = sdialedtime WHERE uniqueid = suniqueid LIMIT 1;
-      
-    UPDATE astaccount
-    set usagecount = usagecount - 1
-    where accountcode = (select accountcode from astcdr where uniqueid = suniqueid  LIMIT 1);
-
-    UPDATE asttrunk
-    set usagecount = usagecount - 1
-    where name = (select trunk from astcdr where uniqueid = suniqueid LIMIT 1);
-    
-    delete from astcreditres where uniqueid = suniqueid;
-    
- CALL RateCost(suniqueid);  
-
-END
-//
+|
 delimiter ;
 
 
