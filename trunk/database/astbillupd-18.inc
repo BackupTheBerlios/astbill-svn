@@ -949,6 +949,15 @@ function astbill_update_047() {
 // ALTER TABLE `astcdr` ADD `priceid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `status` ;
 // ALTER TABLE `astcdr` ADD `countrycode` INT( 6 ) DEFAULT '0' NOT NULL AFTER `priceid` , ADD `productcode` VARCHAR( 40 ) AFTER `countrycode` ;
 // ALTER TABLE `astpricelist` CHANGE `productcode` `productcode` VARCHAR( 40 ) NULL DEFAULT '950'
+// ALTER TABLE `astprospect` ADD `lateportingdate` DATE AFTER `lateporting` ;
+// ALTER TABLE `astinvoice` DROP `freight`, DROP `adminfee`;
+
+// Make Index and Primary key - Add data to AstBill - Still work to be done.
+CREATE TABLE `astpricelistcountry` (
+  `countrycode` int(11) default NULL,
+  `name` varchar(128) default NULL
+) ENGINE=InnoDB;
+  
 /*
 
 
