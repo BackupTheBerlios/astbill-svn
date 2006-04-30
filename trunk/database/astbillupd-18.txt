@@ -950,6 +950,7 @@ function astbill_update_047() {
 // ALTER TABLE `astprospect` ADD `lateportingdate` DATE AFTER `lateporting` ;
 // ALTER TABLE `astinvoice` DROP `freight`, DROP `adminfee`;
 // ALTER TABLE `astcdr` ADD `context` VARCHAR( 80 ) AFTER `extension`,ADD `rdnis` VARCHAR( 80 ) AFTER `context`,ADD `blindtransfer` VARCHAR( 255 ) AFTER `rdnis`;
+// ALTER TABLE `astcdr` ADD `dnid` VARCHAR( 80 ) AFTER `rdnis` ;
 
 
 // Make Index and Primary key - Add data to AstBill - Still work to be done.

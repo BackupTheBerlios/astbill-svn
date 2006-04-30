@@ -322,6 +322,19 @@ my $acc = &getAccount($cnumber->{accountcode});
 			useragent = '$useragent'
 			where uniqueid = '$uniqueid'");
 		}
+
+		$blindtrans = &getresult("get variable BLINDTRANSFER");
+		print STDERR "BLINDTRANSFER: $blindtrans\n";
+        $cdrcontext = $AGI{'context'};
+        $cdrrdnis = $AGI{'rdnis'};
+        $cdrdnid = $AGI{'dnid'};
+
+		if ($AGI{'rdnis'} ne "unknown") {
+		   $dbh->do("update astcdr set context = '$cdrcontext', rdnis = '$cdrrdnis', blindtransfer = '$blindtrans', dnid = '$cdrdnid' where uniqueid = '$uniqueid'");
+		} else {
+		   $dbh->do("update astcdr set context = '$cdrcontext', blindtransfer = '$blindtrans', dnid = '$cdrdnid' where uniqueid = '$uniqueid'");
+		} 
+
     }
 	if ($cnumber->{trunk} eq "Local") {
 		my $clocal = &getLocal($cnumber->{callednum});

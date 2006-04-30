@@ -474,6 +474,17 @@ my $cost = &getCost($uniqueid);
 		print "SET VARIABLE ASTCALLERID $callid\n";
 		print STDERR $callid;
 
+		$blindtrans = &getresult("get variable BLINDTRANSFER");
+		print STDERR "BLINDTRANSFER: $blindtrans\n";
+        $cdrcontext = $AGI{'context'};
+        $cdrrdnis = $AGI{'rdnis'};
+		$cdrdnid = $AGI{'dnid'};
+
+		if ($AGI{'rdnis'} ne "unknown") {
+		   $dbh->do("update astcdr set context = '$cdrcontext', rdnis = '$cdrrdnis', blindtransfer = '$blindtrans', dnid = '$cdrdnid'  where uniqueid = '$uniqueid'");
+		} else {
+		   $dbh->do("update astcdr set context = '$cdrcontext', blindtransfer = '$blindtrans', dnid = '$cdrdnid'  where uniqueid = '$uniqueid'");
+		} 
 
 	} else {
 	    print STDERR "Warning: NO ACCOUNT - NO CREDIT\n";
