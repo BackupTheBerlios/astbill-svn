@@ -224,7 +224,11 @@ sub getForward($) {
 	#	($num, $nide,$sec) = split(/&/, $forward,4);
 	#	($tmp, $num)  = split(/=/, $num,2);
 	#	($tmp, $nide) = split(/=/, $nide,2);
-    $SQL = "select tech, accountcode, ccbatchno from astaccount where accountcode in ('" . $sqldial . ") and tech in ('IAX','SIP')";
+    #     $SQL = "select tech, accountcode, ccbatchno from astaccount where accountcode in ('" . $sqldial . ") and tech in ('IAX','SIP')";
+    $SQL = "SELECT astaccount.tech, astaccount.accountcode, astaccount.ccbatchno, aststatus.servertech
+FROM astaccount LEFT JOIN aststatus ON astaccount.serverid = aststatus.serverid
+WHERE (((astaccount.tech) In ('IAX','SIP')) AND ((astaccount.accountcode) In ('" . $sqldial . ")))";
+
 	my $result = $dbh->selectall_arrayref($SQL);
 	unless ($result) {
 		# check for errors after every single database call
@@ -243,7 +247,8 @@ sub getForward($) {
         # print LOG "$result[0]   $result[1] \n";
 		$tech = $result[0];
 		if ($result[0] eq "IAX") {$tech = "IAX2"; }
-		if (defined($result[2])) { if ($result[2] eq "30004") {$tech = "IAX2/museum1" . $strAt . "dialmuseum"; }}
+		#  if (defined($result[2])) { if ($result[2] eq "30004") {$tech = "IAX2/museum1" . $strAt . "dialmuseum"; }}
+		if (defined($result[3])) { $tech = $result[3]; }
 		$res .= $tech . "/" . $result[1] . "&"; }          
 
 	chop($res);  # chop removes the last character - very cool
