@@ -1,0 +1,46 @@
+Porting Instructions:
+
+UPGRADE of Existing astbill installations is NOT recommended and also MAY not be possible.
+
+There is lot of information at www.drupal.org regarding porting to 4.7 version.
+Most importantly is the information relating to Form API.
+
+
+Mysql charset:
+
+drupal 4.7 now uses utf8 charset.
+converted astbill to use utf8  charset.
+This charset may break existing installations.
+
+
+
+
+Porting notes:
+
+1) removed table sort function references.
+2) object2array in astcontact.module needs to be changed to array ??? maybe a new port allready exists on drupal.
+3) Convert all form_* to new API format. (run it in the form updater)
+4) Fieldset seems to be not compatible in drupal 4.7. (this is out of my league, any one able to help ??)
+5) 
+
+
+
+To DO LIST:
+
+
+1) drupal 4.1 mysql db ported
+2) astbill.sql ported
+3) Astbill modules as given below:
+4) astbill theme = needs re-working from slash blue phptemplate
+5) astadmin.module
+6) astcallcard.module = ported
+7) astcontact.module
+8) astcore.module
+9) astentry.module = in progress
+10) astpartner.module
+11) astpbx.module
+12) astpricelist.module = ported
+13) astroute.module
+14) astsettings.module = ported
+15) astsettingsdid.module
+16) front_page.module

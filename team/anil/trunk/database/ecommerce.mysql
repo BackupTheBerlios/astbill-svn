@@ -1,0 +1,276 @@
+--
+-- This is the database dump for all the store-related modules and includes
+--    address
+--    parcel_product
+--    payment
+--    paypal
+--    product
+--    shipping
+--    shopping_cart
+--    store (no tables needed)
+--    tangible_product
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ec_address`
+--
+
+CREATE TABLE pbx_ec_address (
+  aid int(11) NOT NULL auto_increment,
+  uid int(11) NOT NULL default '0',
+  firstname varchar(32) NOT NULL default '',
+  lastname varchar(32) NOT NULL default '',
+  street1 varchar(64) NOT NULL default '',
+  street2 varchar(64) NOT NULL default '',
+  zip varchar(10) NOT NULL default '',
+  city varchar(32) NOT NULL default '',
+  state varchar(32) default NULL,
+  country varchar(2) NOT NULL default '',
+  phone varchar(64) NOT NULL default '',
+  PRIMARY KEY  (aid)
+) TYPE=MyISAM;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ec_cart`
+--
+
+CREATE TABLE pbx_ec_cart (
+  cookie_id varchar(32) NOT NULL default '0',
+  nid int(10) NOT NULL default '0',
+  qty int(10) NOT NULL default '0',
+  changed int(11) NOT NULL default '0',
+  data text,
+  KEY cookie_id (cookie_id)
+) TYPE=MyISAM;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ec_payment_adjust`
+--
+
+CREATE TABLE pbx_ec_payment_adjust (
+  rid int(5) unsigned NOT NULL default '0',
+  operator enum('+','-','*') NOT NULL default '+',
+  operand decimal(10,2) unsigned NOT NULL default '0.00',
+  PRIMARY KEY  (rid)
+) TYPE=MyISAM;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ec_paypal`
+--
+
+CREATE TABLE pbx_ec_paypal (
+  txnid int(11) NOT NULL default '0',
+  ppid varchar(30) NOT NULL default '0',
+  fee decimal(10,2) NOT NULL default '0.00',
+  PRIMARY KEY  (ppid)
+) TYPE=MyISAM;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ec_product`
+--
+
+CREATE TABLE pbx_ec_product (
+  nid int(10) unsigned NOT NULL default '0',
+  sku varchar(75) default NULL,
+  price decimal(10,2) NOT NULL default '0.00',
+  is_recurring tinyint(3) unsigned NOT NULL default '0',
+  price_interval tinyint(3) unsigned NOT NULL default '0',
+  price_unit varchar(5) NOT NULL default '',
+  price_cycle int(11) NOT NULL default '0',
+  auto_charge tinyint(3) unsigned NOT NULL default '0',
+  ptype varchar(75) NOT NULL default '',
+  hide_cart_link int(2) unsigned NOT NULL default '0',
+  UNIQUE KEY nid (nid),
+  KEY ptype (ptype)
+) TYPE=MyISAM;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ec_product_file`
+--
+
+CREATE TABLE pbx_ec_product_file (
+  nid int(10) unsigned NOT NULL default '0',
+  fpath varchar(128) NOT NULL default '',
+  size int(11) NOT NULL default '0',
+  UNIQUE KEY nid (nid)
+) TYPE=MyISAM;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ec_product_parcel`
+--
+
+CREATE TABLE pbx_ec_product_parcel (
+  nid int(10) unsigned NOT NULL default '0',
+  mnid int(10) unsigned NOT NULL default '0',
+  UNIQUE KEY nid (nid,mnid)
+) TYPE=MyISAM;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ec_product_tangible`
+--
+
+CREATE TABLE pbx_ec_product_tangible (
+  nid int(10) unsigned NOT NULL default '0',
+  stock int(10) NOT NULL default '0',
+  manage_stock int(2) unsigned NOT NULL default '0',
+  availability int(10) NOT NULL default '0',
+  UNIQUE KEY nid (nid)
+) TYPE=MyISAM;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ec_renewal`
+--
+
+CREATE TABLE pbx_ec_renewal (
+  txnid int(10) unsigned NOT NULL default '0',
+  rtxnid int(10) unsigned NOT NULL default '0',
+  rnid int(10) unsigned NOT NULL default '0',
+  KEY txnid (txnid)
+) TYPE=MyISAM;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ec_shipping_shipping`
+--
+
+CREATE TABLE pbx_ec_shipping_shipping (
+  item_slot varchar(25) NOT NULL default '0',
+  price_slot varchar(25) NOT NULL default '0',
+  KEY item_slot (item_slot),
+  KEY price_slot (price_slot)
+) TYPE=MyISAM;
+
+INSERT INTO pbx_ec_shipping_shipping VALUES ('1', '0.00');
+INSERT INTO pbx_ec_shipping_shipping VALUES ('2-4', '0.00');
+INSERT INTO pbx_ec_shipping_shipping VALUES ('5', '0.00');
+INSERT INTO pbx_ec_shipping_shipping VALUES ('6-10', '0.00');
+INSERT INTO pbx_ec_shipping_shipping VALUES ('10-1000', '0.00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ec_subtotal_shipping`
+--
+
+CREATE TABLE pbx_ec_subtotal_shipping (
+  item_slot varchar(25) NOT NULL default '0',
+  price_slot varchar(25) NOT NULL default '0',
+  KEY item_slot (item_slot),
+  KEY price_slot (price_slot)
+) TYPE=MyISAM;
+
+INSERT INTO pbx_ec_subtotal_shipping VALUES ('0-0.99', '0.00');
+INSERT INTO pbx_ec_subtotal_shipping VALUES ('1.00-10.99', '0.00');
+INSERT INTO pbx_ec_subtotal_shipping VALUES ('11.00-50.00', '0.00');
+INSERT INTO pbx_ec_subtotal_shipping VALUES ('50.00-10000', '0.00');
+
+CREATE TABLE pbx_ec_per_product_shipping (
+  nid int(10) unsigned NOT NULL default '0',
+  shipping_fee decimal(10,2) unsigned NOT NULL default '0.00',
+  PRIMARY KEY  (nid)
+) TYPE=MyISAM;
+
+-- --------------------------------------------------------
+-- 
+-- Table structure for table `ec_tax`
+-- 
+
+CREATE TABLE pbx_ec_tax (
+  taxid int(11) unsigned NOT NULL default '0',
+  realm varchar(255) NOT NULL default '',
+  realm_value varchar(255) NOT NULL default '',
+  ptype varchar(128) NOT NULL default '',
+  operator decimal(10,2) NOT NULL default '0.00',
+  operand varchar(10) NOT NULL default '',
+  PRIMARY KEY  (taxid)
+);
+
+--
+-- Table structure for table `ec_tmp`
+--
+
+CREATE TABLE pbx_ec_tmp (
+  sid varchar(32) NOT NULL default '',
+  tmp text NOT NULL,
+  PRIMARY KEY  (sid)
+);
+
+--
+-- Table structure for table `ec_transaction`
+--
+
+CREATE TABLE pbx_ec_transaction (
+  txnid int(10) unsigned NOT NULL default '0',
+  uid int(10) unsigned NOT NULL default '0',
+  mail varchar(64) NOT NULL default '',
+  shipping_firstname varchar(32) NOT NULL default '',
+  shipping_lastname varchar(32) NOT NULL default '',
+  shipping_street1 varchar(64) NOT NULL default '',
+  shipping_street2 varchar(64) NOT NULL default '',
+  shipping_zip varchar(10) NOT NULL default '',
+  shipping_city varchar(32) NOT NULL default '',
+  shipping_state varchar(32) NOT NULL default '',
+  shipping_cost decimal(10,2) NOT NULL default '0.00',
+  shipping_country varchar(2) NOT NULL default '',
+  billing_firstname varchar(32) NOT NULL default '',
+  billing_lastname varchar(32) NOT NULL default '',
+  billing_street1 varchar(64) NOT NULL default '',
+  billing_street2 varchar(64) NOT NULL default '',
+  billing_zip varchar(10) NOT NULL default '',
+  billing_city varchar(32) NOT NULL default '',
+  billing_state varchar(32) NOT NULL default '',
+  billing_country varchar(2) NOT NULL default '',
+  payment_method varchar(32) NOT NULL default '',
+  payment_status varchar(32) NOT NULL default '1',
+  coupon int(10) unsigned NOT NULL default '0',
+  workflow int(10) unsigned NOT NULL default '1',
+  gross decimal(10,2) NOT NULL default '0.00',
+  expires int(11) NOT NULL default '0',
+  created int(11) NOT NULL default '0',
+  changed int(11) NOT NULL default '0',
+  PRIMARY KEY  (txnid)
+) TYPE=MyISAM;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ec_transaction_product`
+--
+
+CREATE TABLE pbx_ec_transaction_product (
+  txnid int(10) unsigned NOT NULL default '0',
+  nid int(10) unsigned NOT NULL default '0',
+  title varchar(128) default NULL,
+  price decimal(10,2) NOT NULL default '0.00',
+  qty int(10) unsigned NOT NULL default '0',
+  expires int(11) unsigned NOT NULL default '0',
+  data text,
+  is_recurring tinyint(3) unsigned NOT NULL default '0',
+  price_interval tinyint(3) unsigned NOT NULL default '0',
+  price_unit varchar(5) NOT NULL default '',
+  price_cycle int(11) NOT NULL default '0',
+  auto_charge tinyint(3) unsigned NOT NULL default '0',
+  last_notify int(11) unsigned NOT NULL default '0',
+  UNIQUE KEY txnid (txnid,nid),
+  KEY txnid_2 (txnid)
+) TYPE=MyISAM;
+
+REPLACE pbx_variable SET name='ecommerce_update_start', value='s:10:"2005-04-11";';
