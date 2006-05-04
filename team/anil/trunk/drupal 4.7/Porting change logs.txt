@@ -32,11 +32,11 @@ To DO LIST:
 2) astbill.sql ported
 3) Astbill modules as given below:
 4) astbill theme = needs re-working from slash blue phptemplate
-5) astadmin.module
+5) astadmin.module = ported
 6) astcallcard.module = ported
 7) astcontact.module
 8) astcore.module
-9) astentry.module = in progress
+9) astentry.module = ported
 10) astpartner.module
 11) astpbx.module
 12) astpricelist.module = ported

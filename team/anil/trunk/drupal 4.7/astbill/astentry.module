@@ -299,8 +299,8 @@ function astentry_form($edit = null) {
   $group .= $form["hardwareid"] = array( '#type' => 'select', '#title' => t("Your Hardware"), '#default_value' => $edit['hardwareid'], '#options' => $hardwareidlist, );
 
   //$group .= '<B>Enable or Disable low balance warnings:</B>';
-  $group .= form_textfield(t("Set warning balance"), "lowbalance", $edit['lowbalance'], 5, 150, null, null, false);
-  $group .= form_select('<FONT SIZE=1>'.t("Enable or Disable Warning Balance Email").'</FONT>', "lowbalanceemail", $edit['lowbalanceemail'], array(0 => t('Disabled'), 1 => t('Activate')));
+  $group .= $form["lowbalance"] = array( '#type' => 'textfield', '#title' => t("Set warning balance"), '#default_value' => $edit['lowbalance'], '#size' => 5, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+  $group .= $form["lowbalanceemail"] = array( '#type' => 'select', '#title' => '<FONT SIZE=1>'.t("Enable or Disable Warning Balance Email").'</FONT>', '#default_value' => $edit['lowbalanceemail'], '#options' => array(0 => t('Disabled'), 1 => t('Activate')),);
 
   if(empty($edit['mailboxemail'])){
   $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $user->uid));
@@ -309,21 +309,21 @@ function astentry_form($edit = null) {
 	  $mailboxemail = $edit['mailboxemail'];
   }
 
-  $group .= form_textfield(t("Set notification email"), "mailboxemail", $mailboxemail, 30, 150, null, null, false);
+  $group .= $form["mailboxemail"] = array( '#type' => 'textfield', '#title' => t("Set notification email"), '#default_value' => $mailboxemail, '#size' => 30, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
 
  
-  $group .= form_select(t("Set Account Status"), "active", $edit['active'], array(0 => t('Disabled'), 1 => t('Activate')));  
+  $group .= $form["active"] = array( '#type' => 'select', '#title' => t("Set Account Status"), '#default_value' => $edit['active'], '#options' => array(0 => t('Disabled'), 1 => t('Activate')),);
 
  /* Dont Delete - This is in use in some implementations
- $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI'));   */
+ $group .= $form["active"] = array( '#type' => 'select', '#title' => t("Set the Account Status:"), '#default_value' => $edit['active'], '#options' => array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI'),); */
 
 
-  // $group .= form_hidden('AmiTest', "JustTesting");
-  $group .= form_submit(t('Save'));
-  $group .= form_submit(t('Back'));
+  // $group .= $form['AmiTest'] = array( '#type' => 'hidden', '#value' => "JustTesting",);
+  $group .= $form[] = array( '#type' => 'submit', '#value' => t('Save'),);
+  $group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
 
-  //$form = form_group(t('Account details'), $group);
-  return form($group);
+  //$form = $form[] = array( '#type' => 'fieldset', '#title' => t('Account details'),);
+  return $output = drupal_get_form('1', $form);
 }
 
 function astentry_load($account) {
@@ -479,31 +479,31 @@ function astpbx_form($edit = null) {
 	
   $callerid = $sql->name.' <>';
 	
-  $group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => t('Virtual Account')));
+  $group = $form['tech'] = array( '#type' => 'radios', '#title' => t('Select type for your account.'), '#default_value' => $tech, '#options' => array(0 => 'SIP' , 1 => 'IAX2', 2 => t('Virtual Account')),);
 
 /* Dont Delete - This is in use in some implementations
-  $group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account', 3 => 'H323'));   */
+  $group = $form['tech'] = array( '#type' => 'radios', '#title' => t('Select type for your account.'), '#default_value' => $tech, '#options' => array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account', 3 => 'H323'),); */
 
-//  $group = form_textfield(t('Title'), 'title', $edit['title'], 60, 128, null, null, true);
+//  $group = $form['title'] = array( '#type' => 'textfield', '#title' => t('Title'), '#default_value' => $edit['title'], '#size' => 60, '#maxlength' => 128, '#description' => null, '#attributes' => null, '#required' => true,);
 
-  $group .= form_textfield(t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
-  $group .= form_select(t("Language"), "language", 'enbr', $languagelist);
-  $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);
-//  $group .= form_textfield(t("Change your Caller ID Example: My Name <9000><BR><FONT SIZE=1>Note: Please select a number you wish to be dialed back on</FONT>"), "callerid", $callerid, 80, 150, null, null, false);
+  $group .= $form["forwardto"] = array( '#type' => 'textfield', '#title' => t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), '#default_value' => $edit['forwardto'], '#size' => 80, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+  $group .= $form["language"] = array( '#type' => 'select', '#title' => t("Language"), '#default_value' => 'enbr', '#options' => $languagelist,);
+  $group .= $form["accountname"] = array( '#type' => 'textfield', '#title' => t("Set the name of your account."), '#default_value' => $edit['accountname'], '#size' => 80, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+//  $group .= $form["callerid"] = array( '#type' => 'textfield', '#title' => t("Change your Caller ID Example: My Name <9000><BR><FONT SIZE=1>Note: Please select a number you wish to be dialed back on</FONT>"), '#default_value' => $callerid, '#size' => 80, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
 
-/*  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(1 => t('Activate'), 0 => t('Disabled')));   */
+/*  $group .= $form["active"] = array( '#type' => 'select', '#title' => t("Set the Account Status:"), '#default_value' => $edit['active'], '#options' => array(1 => t('Activate'), 0 => t('Disabled')),); */
 
- $group .= form_select(t("Set the Account Status:"), "active", 1, array(1 => t('Activate'), 0 => t('Disabled')));  
+ $group .= $form["active"] = array( '#type' => 'select', '#title' => t("Set the Account Status:"), '#default_value' => 1, '#options' => array(1 => t('Activate'), 0 => t('Disabled')),);
 
  /* Dont Delete - This is in use in some implementations
- $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI'));   */
+ $group .= $form["active"] = array( '#type' => 'select', '#title' => t("Set the Account Status:"), '#default_value' => $edit['active'], '#options' => array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI'),); */
 
 
-  // $group .= form_hidden('AmiTest', "JustTesting");
-  $group .= form_submit(t('Create'));
-  $group .= form_submit(t('Back'));
- // $form = form_group(t('Account details'), $group);
-  return form($group);
+  // $group .= $form['AmiTest'] = array( '#type' => 'hidden', '#value' => "JustTesting",);
+  $group .= $form[] = array( '#type' => 'submit', '#value' => t('Create'),);
+  $group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
+ // $form = $form[] = array( '#type' => 'fieldset', '#title' => t('Account details'),);
+  return $output = drupal_get_form('1', $form);
 }
 
 function astpbx_load($account) {
@@ -593,7 +593,7 @@ function page_astentry_emailme() {
 				astpbx_sendemail($db_prefix."ASTARSIP", $edit['email'], $accountcode,"","");
 				$group .= 'Sent account information for SIP://'.$accountcode.' to '.$edit['email'].'<BR>';
 			}
-			$group .= form_submit(t('Back'));
+			$group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
 			$title = 'Email sent';
 		break;
 		
@@ -605,15 +605,15 @@ function page_astentry_emailme() {
 			$uid = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", arg(2)));
 			$email = db_fetch_object(db_query("SELECT mail FROM {users} WHERE uid = '%s'", $uid->uid));
 			$group .= t('Please check that the email bellow is correct before confirming').'<BR>';
-			$group .= form_textfield(t('Email'), 'email', $email->mail, 30, 100);
+			$group .= $form['email'] = array( '#type' => 'textfield', '#title' => t('Email'), '#default_value' => $email->mail, '#size' => 30, '#maxlength' => 100,);
 		
-			$group .= form_submit(t('Confirm'));
-			$group .= form_submit(t('Back'));
+			$group .= $form[] = array( '#type' => 'submit', '#value' => t('Confirm'),);
+			$group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
 			$title = t('Confirm');
 
 	}
 	
-	$output = form($group);
+	$output = $output = drupal_get_form('1', $form);
 	
 	$account = '';
 	_astentry_printtheme_best($output, $account, $title);	
@@ -936,9 +936,9 @@ if ($edit['action'] == 'Voicemail') {$action = 0;}
 if ($edit['action'] == 'Forward') {$action = 1;}
 if ($edit['action'] == 'NotAvailable') {$action = 2;}
 
-  $group = form_select(t("Action"), "action", $action, array(0 => t('Voicemail'), 1 => t('Forward Call'), 2 => t('Give Not Available Message')));
-  $group .= form_select(t('conditions'),'dropdown', $conditions, array(0 => t('Offline'), 1 => t('No Answer'), 2 => t('Busy')));
-  $group .= form_checkboxes(t('Days of the week.'), 'days', $days, $weekdays,null ,null ,false);
+  $group = $form["action"] = array( '#type' => 'select', '#title' => t("Action"), '#default_value' => $action, '#options' => array(0 => t('Voicemail'), 1 => t('Forward Call'), 2 => t('Give Not Available Message')),);
+  $group .= $form['dropdown'] = array( '#type' => 'select', '#title' => t('conditions'), '#default_value' => $conditions, '#options' => array(0 => t('Offline'), 1 => t('No Answer'), 2 => t('Busy')),);
+  $group .= $form['days'] = array( '#type' => 'checkboxes', '#title' => t('Days of the week.'), '#default_value' => $days, '#options' => $weekdays, '#description' => null, '#attributes' => null, '#required' => false,);
 
 
  $sttimehr = array(0 => 0);
@@ -974,27 +974,27 @@ if ($edit['action'] == 'NotAvailable') {$action = 2;}
   }
 
   $group .= t('<B>Start Time:</B><BR>');
-  $group .= form_select(t("Hour"), "starthour", $edit['start_time_hr'], $sttimehr);
-  $group .= form_select(t("Min"), "startmin", $edit['start_time_min'], $sttimemin);
+  $group .= $form["starthour"] = array( '#type' => 'select', '#title' => t("Hour"), '#default_value' => $edit['start_time_hr'], '#options' => $sttimehr,);
+  $group .= $form["startmin"] = array( '#type' => 'select', '#title' => t("Min"), '#default_value' => $edit['start_time_min'], '#options' => $sttimemin,);
   $group .= t('<B>End Time:</B><BR>');
-  $group .= form_select(t("Hour"), "endhour", $edit['end_time_hr'], $endtimehr);
-  $group .= form_select(t("Min"), "endmin", $edit['end_time_min'], $endtimemin);
-  //$group .= form_textfield(t("Hour"), "starthour", $edit['start_time_hr'], 5, 150, null, null, false);
-  //$group .= form_textfield(t("Min"), "startmin", $edit['start_time_min'], 5, 150, null, null, false);
-  //$group .= form_textfield(t("End Time:<BR>Hour"), "endhour", $edit['end_time_hr'], 5, 150, null, null, false);
-  //$group .= form_textfield(t("Min"), "endmin", $edit['end_time_min'], 5, 150, null, null, false);
+  $group .= $form["endhour"] = array( '#type' => 'select', '#title' => t("Hour"), '#default_value' => $edit['end_time_hr'], '#options' => $endtimehr,);
+  $group .= $form["endmin"] = array( '#type' => 'select', '#title' => t("Min"), '#default_value' => $edit['end_time_min'], '#options' => $endtimemin,);
+  //$group .= $form["starthour"] = array( '#type' => 'textfield', '#title' => t("Hour"), '#default_value' => $edit['start_time_hr'], '#size' => 5, '#maxlength' => 150, '#description' => null, '#attributes' => null,  '#required' => false,);
+  //$group .= $form["startmin"] = array( '#type' => 'textfield', '#title' => t("Min"), '#default_value' => $edit['start_time_min'], '#size' => 5, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+  //$group .= $form["endhour"] = array( '#type' => 'textfield', '#title' => t("End Time:<BR>Hour"), '#default_value' => $edit['end_time_hr'], '#size' => 5, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+  //$group .= $form["endmin"] = array( '#type' => 'textfield', '#title' => t("Min"), '#default_value' => $edit['end_time_min'], '#size' => 5, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
 
 
-  // $group .= form_hidden('AmiTest', "JustTesting");
+  // $group .= $form['AmiTest'] = array( '#type' => 'hidden', '#value' => "JustTesting",);
   if (arg(1) == 'dialplancreate'){
-	$group .= form_submit(t('Create'));
-    $group .= form_submit(t('Back'));
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Create'),);
+    $group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
 	}
   if (arg(1) == 'dialplanchange'){
-	$group .= form_submit(t('Change'));
-	$group .= form_submit(t('Back'));
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Change'),);
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
 	}
- // $form = form_group(t('Dialplan Settings'), $group);
+ // $form = $form[] = array( '#type' => 'fieldset', '#title' => t('Dialplan Settings'),);
    $form = $group;
 
 /*  if (arg(1) == 'dialplan'){
@@ -1003,7 +1003,7 @@ if ($edit['action'] == 'NotAvailable') {$action = 2;}
 	  return $output;
   }*/
 
-  return form($form);
+  return $output = drupal_get_form('1', $form);
 }
 
 function astdialplan_load($account) {
@@ -1245,10 +1245,10 @@ db_query("UPDATE astuser SET countryprefix = '%s', callbackto = '%s' WHERE uid =
 function astadvset_form($edit) {
   global $user;
   global $db_prefix; 
-  /*$group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'));
-//  $group = form_textfield(t('Title'), 'title', $edit['title'], 60, 128, null, null, true);
-  $group .= form_textfield(t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
-  $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);*/
+  /*$group = $form['tech'] = array( '#type' => 'radios', '#title' => t('Select type for your account.'), '#default_value' => $tech, '#options' => array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'),);
+//  $group = $form['title'] = array( '#type' => 'textfield', '#title' => t('Title'), '#default_value' => $edit['title'], '#size' => 60, '#maxlength' => 128, '#description' => null, '#attributes' => null, '#required' => true,);
+  $group .= $form["forwardto"] = array( '#type' => 'textfield', '#title' => t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), '#default_value' => $edit['forwardto'], '#size' => 80, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+  $group .= $form["accountname"] = array( '#type' => 'textfield', '#title' => t("Set the name of your account."), '#default_value' => $edit['accountname'], '#size' => 80, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,); */
   if ($edit['qualify'] == 'yes') {$qualify = 0;}
   if ($edit['qualify'] == 'no') {$qualify = 1;}
   if ($edit['nat'] == 'yes') {$nat = 0;}
@@ -1269,13 +1269,13 @@ function astadvset_form($edit) {
   $group .= t('no = Use NAT mode only according to RFC3581').'<BR>';
   $group .= t('never = Never attempt NAT mode or RFC3581 support').'<BR>';
   $group .= t('route = Assume NAT, dont send rport').'<BR>';
-  $group .= form_select(NULL, 'nat', $nat, array(0 => t('Yes'), 1 => t('No'), 2 => t('Never'), 3 => t('Route')));
+  $group .= $form['nat'] = array( '#type' => 'select', '#title' => NULL, '#default_value' => $nat, '#options' => array(0 => t('Yes'), 1 => t('No'), 2 => t('Never'), 3 => t('Route')),);
   $group .= '<BR>';
 
   $group .= '<B>'.t('Qualify').':<BR></B>';
   $group .= '<B><FONT SIZE=1>'.t('Note: Might take up to 24hours for change to take effect').'</FONT></B><BR>';
   $group .= t('Only turn this ON if your phone can dial out, but you can not receive calls ');
-  $group .= form_select(NULL, 'qualify', $qualify, array(0 => t('On'), 1 => t('Off')));
+  $group .= $form['qualify'] = array( '#type' => 'select', '#title' => NULL, '#default_value' => $qualify, '#options' => array(0 => t('On'), 1 => t('Off')),);
 
 
   $sql = db_fetch_array(db_query("select brand, countryprefix, callbackto FROM astuser WHERE uid = %s and db_prefix ='".$db_prefix."'", $user->uid));
@@ -1285,14 +1285,14 @@ function astadvset_form($edit) {
 
   $group .= '<BR><BR>';
   $group .= t('Current Rate Plan is: ').'<B>'.$sql['brand'].'</B><BR>';
-  $group .= form_textfield(t("Country Prefix"), "countryprefix", $sql['countryprefix'], 80, 150, null, null, false);
-  $group .= form_textfield(t("Call Back To"), "callbackto", $sql['callbackto'], 80, 150, null, null, false);
+  $group .= $form["countryprefix"] = array( '#type' => 'textfield', '#title' => t("Country Prefix"), '#default_value' => $sql['countryprefix'], '#size' => 80, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+  $group .= $form["callbackto"] = array( '#type' => 'textfield', '#title' => t("Call Back To"), '#default_value' => $sql['callbackto'], '#size' => 80, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
 
-  // $group .= form_hidden('AmiTest', "JustTesting");
-  $group .= form_submit(t('Save'));
-  $group .= form_submit(t('Back'));
-  //$form = form_group(t('Account details'), $group);
-  return form($group);
+  // $group .= $form['AmiTest'] = array( '#type' => 'hidden', '#value' => "JustTesting",);
+  $group .= $form[] = array( '#type' => 'submit', '#value' => t('Save'),);
+  $group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
+  //$form = $form[] = array( '#type' => 'fieldset', '#title' => t('Account details'),);
+  return $output = drupal_get_form('1', $form);
 }
 
 function astadvset_load($account) {
@@ -1424,10 +1424,10 @@ db_query("UPDATE astaccount SET mailbox = '%s', mailboxpin = '%s', mailboxemail 
 function astvoicemail_form($edit) {
   global $user;
   global $db_prefix; 
-  /*$group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'));
-//  $group = form_textfield(t('Title'), 'title', $edit['title'], 60, 128, null, null, true);
-  $group .= form_textfield(t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
-  $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);*/
+  /*$group = $form['tech'] = array( '#type' => 'radios', '#title' => t('Select type for your account.'), '#default_value' => $tech, '#options' => array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'),);
+//  $group = $form['title'] = array( '#type' => 'textfield', '#title' => t('Title'), '#default_value' => $edit['title'], '#size' => 60, '#maxlength' => 128, '#description' => null, '#attributes' => null, '#required' => true,);
+  $group .= $form["forwardto"] = array( '#type' => 'textfield', '#title' => t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), '#default_value' => $edit['forwardto'], '#size' => 80, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+  $group .= $form["accountname"] = array( '#type' => 'textfield', '#title' => t("Set the name of your account."), '#default_value' => $edit['accountname'], '#size' => 80, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,); */
 
   if(empty($edit['mailboxemail'])){
   $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $user->uid));
@@ -1451,17 +1451,17 @@ function astvoicemail_form($edit) {
   }*/
   
 
-  $group = form_select(t("Route to Mailbox"), "mailbox", $edit['mailbox'], $sql_output);
-  $group .= form_textfield(t("Change your pin"), "mailboxpin", $edit['mailboxpin'], 4, 150, null, null, false);
+  $group = $form["mailbox"] = array( '#type' => 'select', '#title' => t("Route to Mailbox"), '#default_value' => $edit['mailbox'], '#options' => $sql_output,);
+  $group .= $form["mailboxpin"] = array( '#type' => 'textfield', '#title' => t("Change your pin"), '#default_value' => $edit['mailboxpin'], '#size' => 4, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
   $group .= '<BR><BR>';
-  $group .= form_textfield(t("Set notification email"), "mailboxemail", $mailboxemail, 30, 150, null, null, false);
+  $group .= $form["mailboxemail"] = array( '#type' => 'textfield', '#title' => t("Set notification email"), '#default_value' => $mailboxemail, '#size' => 30, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
 
 
-  // $group .= form_hidden('AmiTest', "JustTesting");
-  $group .= form_submit(t('Save'));
-  $group .= form_submit(t('Back'));
-  //$form = form_group(t('Account details'), $group);
-  return form($group);
+  // $group .= $form['AmiTest'] = array( '#type' => 'hidden', '#value' => "JustTesting",);
+  $group .= $form[] = array( '#type' => 'submit', '#value' => t('Save'),);
+  $group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
+  //$form = $form[] = array( '#type' => 'fieldset', '#title' => t('Account details'),);
+  return $output = drupal_get_form('1', $form);
 }
 
 function astvoicemail_load($account) {
@@ -1568,21 +1568,21 @@ db_query("UPDATE asv_friend SET forwardto = '%s', comment = '%s' WHERE publicnum
 function astincomingnr_form($edit) {
   global $user;
   
-  /*$group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'));
-//  $group = form_textfield(t('Title'), 'title', $edit['title'], 60, 128, null, null, true);
-  $group .= form_textfield(t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
-  $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);*/
+  /*$group = $form['tech'] = array( '#type' => 'radios', '#title' => t('Select type for your account.'), '#default_value' => $tech, '#options' => array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'),);
+//  $group = $form['title'] = array( '#type' => 'textfield', '#title' => t('Title'), '#default_value' => $edit['title'], '#size' => 60, '#maxlength' => 128, '#description' => null, '#attributes' => null, '#required' => true,);
+  $group .= $form["forwardto"] = array( '#type' => 'textfield', '#title' => t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), '#default_value' => $edit['forwardto'], '#size' => 80,  '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+  $group .= $form["accountname"] = array( '#type' => 'textfield', '#title' => t("Set the name of your account."), '#default_value' => $edit['accountname'], '#size' => 80, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,); */
 
 
-  $group .= form_textfield(t("Enter the number(s) you want to forward to separated by &<BR>(Example: 70500&70501)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 50, 150, null, null, false);
-  $group .= form_textfield(t("Comment"), "comment", $edit['comment'], 50, 150, null, null, false);
+  $group .= $form["forwardto"] = array( '#type' => 'textfield', '#title' => t("Enter the number(s) you want to forward to separated by &<BR>(Example: 70500&70501)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), '#default_value' => $edit['forwardto'], '#size' => 50,  '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+  $group .= $form["comment"] = array( '#type' => 'textfield', '#title' => t("Comment"), '#default_value' => $edit['comment'], '#size' => 50, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
 
 
-  // $group .= form_hidden('AmiTest', "JustTesting");
-  $group .= form_submit(t('Save'));
-  $group .= form_submit(t('Back'));
-  //$form = form_group(t('Account details'), $group);
-  return form($group);
+  // $group .= $form['AmiTest'] = array( '#type' => 'hidden', '#value' => "JustTesting",);
+  $group .= $form[] = array( '#type' => 'submit', '#value' => t('Save'),);
+  $group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
+  //$form = $form[] = array( '#type' => 'fieldset', '#title' => t('Account details'),);
+  return $output = drupal_get_form('1', $form);
 }
 
 function astincomingnr_load($account) {

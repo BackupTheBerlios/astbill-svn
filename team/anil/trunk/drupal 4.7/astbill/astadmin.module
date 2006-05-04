@@ -374,9 +374,9 @@ function page_astadmin_friendassign() {
 		$sqlout = db_fetch_object($sql);
 		$sql2 = db_query("select name, uid from {users}");
 
-		$group .= form_textfield(t("Assign to Accountcode"), "assignto", "", 40, 150, null, null, false);
-		$group .= form_submit(t('Assign'));
-		$output = form($group);
+		$group .= $form["assignto"] = array( '#type' => 'textfield', '#title' => t("Assign to Accountcode"), '#default_value' => "", '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+		$group .= $form[] = array( '#type' => 'submit', '#value' => t('Assign'),);
+		$output = $output = drupal_get_form('1', $form);
 	    $title = t('Assign').arg(4);
 		$account = $user->uid;
 	    _astadmin_printtheme_best($output, $account, $title);
@@ -496,7 +496,7 @@ function astadmin_friends_form($account) {
 
 if (arg(3) == 'create'){ // START CHECK IF FRIENDSCREATE
 
-$group = form_textfield(t("Select a unique name for your new friend"), "accountcode", null, 80, 150, null, null, false);
+$group = $form["accountcode"] = array( '#type' => 'textfield', '#title' => t("Select a unique name for your new friend"), '#default_value' => null, '#size' => 80, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
 
 } // END CHECK IF FRIENDSCREATE
 
@@ -525,36 +525,36 @@ if (arg(3) == 'change'){ // START CHECK IF FRIENDSCHANGE
 	if (empty($sqlout->nat)) {$sqlout->nat = 'no';}
 
 
-	$group .= form_select(t('User/Owner of this number'), 'account', $sqlout->uid, $users);
-	$group .= form_select(t('Tech'), 'tech', $sqlout->tech, array('IN-SIP' => 'SIP', 'IN-IAX' => 'IAX2', 'IN-ZAP' => 'ZAP'));
-	$group .= form_textfield(t("Publicnumber"), "publicnumber", $sqlout->publicnumber, 40, 150, null, null, false);
-	$group .= form_textfield(t("password"), "secret", $sqlout->secret, 40, 150, null, null, false);
-	$group .= form_textfield(t("Username"), "username", $sqlout->username, 40, 150, null, null, false);
-	$group .= form_textfield(t("Forward to"), "forwardto", $sqlout->forwardto, 40, 150, null, null, false);
-	$group .= form_textfield(t("From User"), "fromuser", $sqlout->fromuser, 40, 150, null, null, false);
-	$group .= form_textfield(t("Auth User"), "authuser", $sqlout->authuser, 40, 150, null, null, false);
-	$group .= form_textfield(t("From Domain"), "fromdomain", $sqlout->fromdomain, 40, 150, null, null, false);
-	$group .= form_textfield(t("Host"), "host", $sqlout->host, 40, 150, null, null, false);
-	$group .= form_textfield(t("Port"), "port", $sqlout->port, 40, 150, null, null, false);
-	$group .= form_textfield(t("Callerid"), "callerid", $sqlout->callerid, 40, 150, null, null, false);
-	$group .= form_textfield(t("Context"), "context", $sqlout->context, 40, 150, null, null, false);
-	$group .= form_textfield(t("Disallow"), "disallow", $sqlout->disallow, 40, 150, null, null, false);
-	$group .= form_textfield(t("Allow"), "allow", $sqlout->allow, 40, 150, null, null, false);
-	$group .= form_textfield(t("Comment"), "comment", $sqlout->comment, 80, 150, null, null, false);
-	$group .= form_radios(t('Change friend type'), 'type', $sqlout->type, array('user' => 'User' , 'peer' => 'Peer', 'friend' => 'Friend'));
+	$group .= $form['account'] = array( '#type' => 'select', '#title' => t('User/Owner of this number'), '#default_value' => $sqlout->uid, '#options' => $users,);
+	$group .= $form['tech'] = array( '#type' => 'select', '#title' => t('Tech'), '#default_value' => $sqlout->tech, '#options' => array('IN-SIP' => 'SIP', 'IN-IAX' => 'IAX2', 'IN-ZAP' => 'ZAP'),);
+	$group .= $form["publicnumber"] = array( '#type' => 'textfield', '#title' => t("Publicnumber"), '#default_value' => $sqlout->publicnumber, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["secret"] = array( '#type' => 'textfield', '#title' => t("password"), '#default_value' => $sqlout->secret, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["username"] = array( '#type' => 'textfield', '#title' => t("Username"), '#default_value' => $sqlout->username, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["forwardto"] = array( '#type' => 'textfield', '#title' => t("Forward to"), '#default_value' => $sqlout->forwardto, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["fromuser"] = array( '#type' => 'textfield', '#title' => t("From User"), '#default_value' => $sqlout->fromuser, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["authuser"] = array( '#type' => 'textfield', '#title' => t("Auth User"), '#default_value' => $sqlout->authuser, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["fromdomain"] = array( '#type' => 'textfield', '#title' => t("From Domain"), '#default_value' => $sqlout->fromdomain, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["host"] = array( '#type' => 'textfield', '#title' => t("Host"), '#default_value' => $sqlout->host, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["port"] = array( '#type' => 'textfield', '#title' => t("Port"), '#default_value' => $sqlout->port, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["callerid"] = array( '#type' => 'textfield', '#title' => t("Callerid"), '#default_value' => $sqlout->callerid, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["context"] = array( '#type' => 'textfield', '#title' => t("Context"), '#default_value' => $sqlout->context, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["disallow"] = array( '#type' => 'textfield', '#title' => t("Disallow"), '#default_value' => $sqlout->disallow, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["allow"] = array( '#type' => 'textfield', '#title' => t("Allow"), '#default_value' => $sqlout->allow, '#size' => 40, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form["comment"] = array( '#type' => 'textfield', '#title' => t("Comment"), '#default_value' => $sqlout->comment, '#size' => 80, '#maxlength' => 150, '#description' => null, '#attributes' => null, '#required' => false,);
+	$group .= $form['type'] = array( '#type' => 'radios', '#title' => t('Change friend type'), '#default_value' => $sqlout->type, '#options' => array('user' => 'User' , 'peer' => 'Peer', 'friend' => 'Friend'),);
 	$group .= '<B>NAT:<BR></B>';
 	$group .= 'yes = Always ignore info and assume NAT<BR>';
 	$group .= 'no = Use NAT mode only according to RFC3581<BR>';
 	$group .= 'never = Never attempt NAT mode or RFC3581 support<BR>';
 	$group .= 'route = Assume NAT, dont send rport  (work around more UNIDEN bugs)<BR>';
-	$group .= form_select(NULL, 'nat', $sqlout->nat, array('yes' => 'Yes', 'no' => 'No', 'never' => 'Never', 'route' => 'Route'));
-	$group .= form_select(t('ServerID'), 'serverid', $sqlout->serverid, $getserverid);
-	$group .= form_select(t('Qualify'), 'qualify', $sqlout->qualify, array('no' => 'Off', 'yes' => 'On'));
-	$group .= form_select(t('DTMF Mode'), 'dtmfmode', $sqlout->dtmfmode, array(null => 'Off', 'info' => 'Info', 'rfc2833' => 'rfc2833'));
-	$group .= form_select(t('Insecure'), 'insecure', $sqlout->insecure, array(null => 'Off', 'very' => 'Very'));
-	$group .= form_select(t('Can reinvite'), 'canreinvite', $sqlout->canreinvite, array(null => 'Off', 'yes' => 'Yes', 'no' => 'No'));
-	$group .= form_select(t('RestrictID'), 'restrictid', $sqlout->restrictid, array(null => 'Off', 'yes' => 'Yes'));
-	$group .= form_select(t('Active'), 'active', $sqlout->active, array(0 => 'Not Active', 1 => 'Realtime', 5 => 'Static'));
+	$group .= $form['nat'] = array( '#type' => 'select', '#title' => NULL, '#default_value' => $sqlout->nat, '#options' => array('yes' => 'Yes', 'no' => 'No', 'never' => 'Never', 'route' => 'Route'),);
+	$group .= $form['serverid'] = array( '#type' => 'select', '#title' => t('ServerID'), '#default_value' => $sqlout->serverid, '#options' => $getserverid,);
+	$group .= $form['qualify'] = array( '#type' => 'select', '#title' => t('Qualify'), '#default_value' => $sqlout->qualify, '#options' => array('no' => 'Off', 'yes' => 'On'),);
+	$group .= $form['dtmfmode'] = array( '#type' => 'select', '#title' => t('DTMF Mode'), '#default_value' => $sqlout->dtmfmode, '#options' => array(null => 'Off', 'info' => 'Info', 'rfc2833' => 'rfc2833'),);
+	$group .= $form['insecure'] = array( '#type' => 'select', '#title' => t('Insecure'), '#default_value' => $sqlout->insecure, '#options' => array(null => 'Off', 'very' => 'Very'),);
+	$group .= $form['canreinvite'] = array( '#type' => 'select', '#title' => t('Can reinvite'), '#default_value' => $sqlout->canreinvite, '#options' => array(null => 'Off', 'yes' => 'Yes', 'no' => 'No'),);
+	$group .= $form['restrictid'] = array( '#type' => 'select', '#title' => t('RestrictID'), '#default_value' => $sqlout->restrictid, '#options' => array(null => 'Off', 'yes' => 'Yes'),);
+	$group .= $form['active'] = array( '#type' => 'select', '#title' => t('Active'), '#default_value' => $sqlout->active, '#options' => array(0 => 'Not Active', 1 => 'Realtime', 5 => 'Static'),);
 
 
 //publicnumber, secret, username, forwardto, fromuser, authuser, fromdomain, host, port, callerid, context, disallow, allow, comment, trunkpath, date_created
@@ -564,13 +564,13 @@ if (arg(3) == 'change'){ // START CHECK IF FRIENDSCHANGE
 
 
 if (arg(3) == 'create'){
-	$group .= form_submit(t('Create'));
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Create'),);
 } else {
-	$group .= form_submit(t('Change'));
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Change'),);
 }
-	$group .= form_submit(t('Back'));
-	//$form = form_group(t('Account details'), $group);
-	return form($group);
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
+	//$form = $form[] = array( '#type' => 'fieldset', '#title' => t('Account details'),);
+	return $output = drupal_get_form('1', $form);
 }
 
 /*
@@ -865,11 +865,11 @@ $sqlout = db_fetch_object($sql);
 
 }// END CHECK IF HARDWARECHANGE
 
-	$group .= form_textfield(t('Accountcode'), 'accountcode', $accountcode, 30, 100);
-//	$group .= form_textfield(t('Secret'), 'secret', $secret, 30, 100);
-//	$group .= form_textfield(t('Hardwaretype'), 'hardwaretype', $hardwaretype, 30, 100);
+	$group .= $form['accountcode'] = array( '#type' => 'textfield', '#title' => t('Accountcode'), '#default_value' => $accountcode, '#size' => 30, '#maxlength' => 100,);
+//	$group .= $form['secret'] = array( '#type' => 'textfield', '#title' => t('Secret'), '#default_value' => $secret, '#size' => 30, '#maxlength' => 100,);
+//	$group .= $form['hardwaretype'] = array( '#type' => 'textfield', '#title' => t('Hardwaretype'), '#default_value' => $hardwaretype, '#size' => 30, '#maxlength' => 100,);
 
-	$group .= form_select(t("Hardware"), "hardwareid", $hardwareid, $hardwareidlist);
+	$group .= $form["hardwareid"] = array( '#type' => 'select', '#title' => t("Hardware"), '#default_value' => $hardwareid, '#options' => $hardwareidlist,);
 	
 $group .= '<div class="form-item">
 <label for="edit-mac">Equipment Mac Address:</label><br>'.$sqlmac->mac1.'-'.$sqlmac->mac2.'-'.$sqlmac->mac3.'
@@ -879,18 +879,18 @@ $group .= '<div class="form-item">
 
 </div>';
 
-	$group .= form_textfield(t('Serialnumber'), 'serialnumber', $serialnumber, 50, 100);
-	$group .= form_textfield(t('Comment'), 'comment', $comment, 100, 100);
+	$group .= $form['serialnumber'] = array( '#type' => 'textfield', '#title' => t('Serialnumber'), '#default_value' => $serialnumber, '#size' => 50, '#maxlength' => 100,);
+	$group .= $form['comment'] = array( '#type' => 'textfield', '#title' => t('Comment'), '#default_value' => $comment, '#size' => 100, '#maxlength' => 100,);
 
 
 if (arg(2) == 'create'){
-	$group .= form_submit(t('Create'));
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Create'),);
 } else {
-	$group .= form_submit(t('Change'));
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Change'),);
 }
-	$group .= form_submit(t('Back'));
-	//$form = form_group(t('Account details'), $group);
-	return form($group);
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
+	//$form = $form[] = array( '#type' => 'fieldset', '#title' => t('Account details'),);
+	return $output = drupal_get_form('1', $form);
 }
 
 function astadmin_hardware_load($account) {
@@ -1124,8 +1124,8 @@ $group ='<div class="form-item">
 	}
 
 	$output = theme('table', $header, $rows);
-	$output .= form_submit(t('Save Hardware'));
-	return form($output);
+	$output .= $form[] = array( '#type' => 'submit', '#value' => t('Save Hardware'),);
+	return $output = drupal_get_form('1', $form);
 }
 /**
  * Returns an array with all the records in the table contact_dir_category
@@ -1165,11 +1165,11 @@ function page_astadmin_hardwareidlist_add($edit) {
 	}
 
 	// Display the input form
-	$output = form_textfield(t('Hardware'), 'category_hardware', $edit['category_hardware'], 30, 100);
-	$output .= form_textfield(t('Comment'), 'category_comment', $edit['category_comment'], 30, 100);
-	$output = form_group(t('Category'), $output);
-	$output .= form_submit(t('Create Hardware'));
-	return form($output);
+	$output = $form['category_hardware'] = array( '#type' => 'textfield', '#title' => t('Hardware'), '#default_value' => $edit['category_hardware'], '#size' => 30, '#maxlength' => 100,);
+	$output .= $form['category_comment'] = array( '#type' => 'textfield', '#title' => t('Comment'), '#default_value' => $edit['category_comment'], '#size' => 30, '#maxlength' => 100,);
+	$output = $form[] = array( '#type' => 'fieldset', '#title' => t('Category'),);
+	$output .= $form[] = array( '#type' => 'submit', '#value' => t('Create Hardware'),);
+	return $output = drupal_get_form('1', $form);
 }
 /**
  * Creates a form for delete a category
@@ -1191,12 +1191,12 @@ function page_astadmin_hardwareidlist_delete($edit) {
 	// Creates a confirmation form
 	$categories = page_astadmin_hardwareidlist_get_categories();
 
-	$output .= form_item(t("Delete hardware '%name'", array('%name' => $categories[$hid])), '');
+	$output .= $form[] = array( '#type' => 'item', '#title' => t("Delete hardware '%name'", array('%name' => $categories[$hid])), '#default_value' => '',);
 	$output .= t('<p>Are you sure you want to delete this hardware from the list?</p>');
-	$output .= form_hidden('cid', $cid);
-	$output .= form_submit(t('Delete'));
+	$output .= $form['cid'] = array( '#type' => 'hidden', '#value' => $cid,);
+	$output .= $form[] = array( '#type' => 'submit', '#value' => t('Delete'),);
 
-	return form($output);
+	return $output = drupal_get_form('1', $form);
 }
 
 /**
@@ -1750,26 +1750,26 @@ $sqlout = db_fetch_object($sql);
 	   array_push2($accountcodelist, $fetchit->accountcode, $fetchit->accountcode);
 	}
 
-	$group .= form_select(t("Accountcode"), "accountcode", $accountcode, $accountcodelist);
+	$group .= $form["accountcode"] = array( '#type' => 'select', '#title' => t("Accountcode"), '#default_value' => $accountcode, '#options' => $accountcodelist,);
 	} else {
 		
-		$group .= form_textfield(t('Accountcode'), 'accountcode', $accountcode, 30, 100);
+		$group .= $form['accountcode'] = array( '#type' => 'textfield', '#title' => t('Accountcode'), '#default_value' => $accountcode, '#size' => 30, '#maxlength' => 100,);
 	}
 	
-	$group .= form_textfield(t('Pay Type'), 'paytype', $paytype, 30, 100);
-	$group .= form_textfield(t('Comment'), 'comment', $comment, 30, 100);
-	$group .= form_textfield(t('Paid Amount'), 'paidamount', $paidamount, 30, 100);
-	$group .= form_textfield(t('Paid Date'), 'paiddate', $paiddate, 30, 100);
+	$group .= $form['paytype'] = array( '#type' => 'textfield', '#title' => t('Pay Type'), '#default_value' => $paytype, '#size' => 30, '#maxlength' => 100,);
+	$group .= $form['comment'] = array( '#type' => 'textfield', '#title' => t('Comment'), '#default_value' => $comment, '#size' => 30, '#maxlength' => 100,);
+	$group .= $form['paidamount'] = array( '#type' => 'textfield', '#title' => t('Paid Amount'), '#default_value' => $paidamount, '#size' => 30, '#maxlength' => 100,);
+	$group .= $form['paiddate'] = array( '#type' => 'textfield', '#title' => t('Paid Date'), '#default_value' => $paiddate, '#size' => 30, '#maxlength' => 100,);
 
 
 if (arg(2) == 'create'){
-	$group .= form_submit(t('Create'));
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Create'),);
 } else {
-	$group .= form_submit(t('Change'));
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Change'),);
 }
-	$group .= form_submit(t('Back'));
-	//$form = form_group(t('Account details'), $group);
-	return form($group);
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
+	//$form = $form[] = array( '#type' => 'fieldset', '#title' => t('Account details'),);
+	return $output = drupal_get_form('1', $form);
 }
 
 
@@ -1915,13 +1915,13 @@ function astadmin_credit_form($account) {
 	$sql = db_query("SELECT creditlimit FROM astaccount WHERE accountcode = '%s' AND db_prefix = '".$db_prefix."'", arg(4));
         $sqlout = db_fetch_object($sql);
 	
-	$group .= form_textfield(t('Credit Limit'), 'creditlimit', $sqlout->creditlimit, 30, 100);
+	$group .= $form['creditlimit'] = array( '#type' => 'textfield', '#title' => t('Credit Limit'), '#default_value' => $sqlout->creditlimit, '#size' => 30, '#maxlength' => 100,);
 
 
-	$group .= form_submit(t('Save'));
-	$group .= form_submit(t('Back'));
-	//$form = form_group(t('Account details'), $group);
-	return form($group);
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Save'),);
+	$group .= $form[] = array( '#type' => 'submit', '#value' => t('Back'),);
+	//$form = $form[] = array( '#type' => 'fieldset', '#title' => t('Account details'),);
+	return $output = drupal_get_form('1', $form);
 }
 
 
@@ -1968,11 +1968,11 @@ function astadmin_confirm_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $got
 	$categories = astcontact_get_categories();
 
 	$output .= t($confirmmsg);
-	$output .= form_hidden('cid', $cid);
-	$output .= form_submit(t('Delete'));
+	$output .= $form['cid'] = array( '#type' => 'hidden', '#value' => $cid,);
+	$output .= $form[] = array( '#type' => 'submit', '#value' => t('Delete'),);
 
-	//return form($output);
-	$group = form($output);
+	//return $output = drupal_get_form('1', $form);
+	$group = $output = drupal_get_form('1', $form);
 
 $title = t('Remove ').$item;
 $account = $user->uid;
