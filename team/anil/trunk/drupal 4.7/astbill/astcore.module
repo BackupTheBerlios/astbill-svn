@@ -87,10 +87,10 @@ function astcore_search($edit, $posturl, $value = NULL, $endform = 'YES') {
 		
 	}
 /*
-	$group .= form_textfield($title, 'search', $value, 30, 30, $description = NULL, $attributes = NULL, $required = FALSE);
-	$group .= form_submit('Search');
+	$group .= $form['search'] = array(  '#type' => 'textfield',  '#title' => $title,  '#default_value' => $value,  '#size' => 30,  '#maxlength' => 30,  '#description' => $description = NULL,  '#attributes' => $attributes = NULL,  '#required' => $required = FALSE,);
+	$group .= $form[] = array(  '#type' => 'submit',  '#value' => 'Search',);
 	
-	$output = form($group);
+	$output = $output = drupal_get_form('1', $form);
 */	
 	return $output;
 }
@@ -147,11 +147,11 @@ function astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $db
 	
 	$output .= '<BR>'.$confirmmsg.'<BR><BR>';
 	
-	$output .= form_hidden('deleteverified', 'deleteverified');
-	$output .= form_submit(t('Delete'));
-	$output .= form_submit(t('Back'));
+	$output .= $form['deleteverified'] = array(  '#type' => 'hidden',  '#value' => 'deleteverified',);
+	$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Delete'),);
+	$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
 
-	$group = form($output);
+	$group = $output = drupal_get_form('1', $form);
 
 	astcore_printtheme($group, $title);
 	exit();

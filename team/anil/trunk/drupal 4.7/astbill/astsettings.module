@@ -218,10 +218,10 @@ function page_astsettings_countrylist_form($where,$edit) {
 		$selcountry = $edit['country'];
 	}
 	
-	$output .= form_select(t('Select Country'), 'country', $selcountry, $countrylist, $description = NULL, $extra = 0, $multiple = FALSE, $required = FALSE);
+	$output .= $form['country'] = array(  '#type' => 'select',  '#title' => t('Select Country'),  '#default_value' => $selcountry,  '#options' => $countrylist,  '#description' => $description = NULL,  '#extra' => $extra = 0,  '#multiple' => $multiple = FALSE,  '#required' => $required = FALSE,);
 	
-	$output .= form_submit(t('Edit'));
-	$output .= form_submit(t('Add'));
+	$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Edit'),);
+	$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Add'),);
 
 	
 	if ($where == 'edit' or $where == 'add') {
@@ -235,27 +235,27 @@ function page_astsettings_countrylist_form($where,$edit) {
 			$idd = $sql->idd;
 			$output .= '<BR><BR>'.t('Edit CountryCode :').'<B>'.$sql->countrycode.'</B>';
 		} else {
-			$output .= form_textfield(t('Country Code'), 'savecountrycode', $countrycode, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
+			$output .= $form['savecountrycode'] = array(  '#type' => 'textfield',  '#title' => t('Country Code'),  '#default_value' => $countrycode,  '#size' => 30,  '#maxlength' => 128,  '#description' => $description = NULL,  '#attributes' => $attributes = NULL,  '#required' => $required = FALSE,);
 
 		}
 		
-		$output .= form_textfield(t('Country'), 'savecountry', $country, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
-		$output .= form_textfield(t('USA State'), 'saveusstate', $usstate, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
-		$output .= form_textfield(t('Idd'), 'saveidd', $idd, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
+		$output .= $form['savecountry'] = array(  '#type' => 'textfield',  '#title' => t('Country'),  '#default_value' => $country,  '#size' => 30,  '#maxlength' => 128,  '#description' => $description = NULL,  '#attributes' => $attributes = NULL, '#required' => $required = FALSE,);
+		$output .= $form['saveusstate'] = array(  '#type' => 'textfield',  '#title' => t('USA State'),  '#default_value' => $usstate,  '#size' => 30,  '#maxlength' => 128,  '#description' => $description = NULL,  '#attributes' => $attributes = NULL,  '#required' => $required = FALSE,);
+		$output .= $form['saveidd'] = array(  '#type' => 'textfield',  '#title' => t('Idd'),  '#default_value' => $idd,  '#size' => 30,  '#maxlength' => 128,  '#description' => $description = NULL,  '#attributes' => $attributes = NULL,  '#required' => $required = FALSE,);
 		
 		
 		if ($where == 'edit') {
-			$output .= form_submit(t('Save'));
+			$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Save'),);
 		}
 		if ($where == 'add') {
-			$output .= form_submit(t('Create'));
+			$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Create'),);
 		}
 		
 	}	
 	
 
 
-	$group = form($output);
+	$group = $output = drupal_get_form('1', $form);
 	return $group;	
 	
 }
@@ -770,27 +770,26 @@ function page_astsettings_createbatch_form($edit) {
 	$batchno = $sql->ccbatchno;	
 	*/
 	/*
-	$group .= form_textfield(t('Batch Number'), 'batchno', $batchno, 30, 128, null, null, true);
-	$group .= form_textfield(t('From Account Number'), 'fromacc', NULL, 30, 128, null, null, true);
-	$group .= form_textfield(t('Number of accounts'), 'nracc', NULL, 15, 128, null, null, true);
-	$group .= form_checkbox(t('Random Account'), 'randcheck', 0, FALSE, NULL, NULL, FALSE);
-	$group .= form_select(t("Number of account digits"), "accountlength", NULL, array(9 => 9, 10 => 10, 11 => 11, 12 => 12, 13 => 13, 14 => 14, 15 => 15, 16 => 16, 17 => 17, 18 => 18, 19 => 19, 20 => 20));
-	$group .= form_textfield(t('Credit Amount'), 'credit', NULL, 15, 128, null, null, true);
-	$group .= form_textfield(t('Expiration Days'), 'expdays', NULL, 15, 128, null, null, true);
+	$group .= $form['batchno'] = array(  '#type' => 'textfield',  '#title' => t('Batch Number'),  '#default_value' => $batchno,  '#size' => 30,  '#maxlength' => 128,  '#description' => null,  '#attributes' => null,  '#required' => true,);
+	$group .= $form['fromacc'] = array(  '#type' => 'textfield',  '#title' => t('From Account Number'),  '#default_value' => NULL,  '#size' => 30,  '#maxlength' => 128,  '#description' => null,  '#attributes' => null,  '#required' => true,);
+	$group .= $form['nracc'] = array(  '#type' => 'textfield',  '#title' => t('Number of accounts'),  '#default_value' => NULL,  '#size' => 15,  '#maxlength' => 128,  '#description' => null,  '#attributes' => null,  '#required' => true,);
+	$group .= $form['randcheck'] = array(  '#type' => 'checkbox',  '#title' => t('Random Account'),  '#return_value' => 0,  '#default_value' => FALSE,  '#description' => NULL,  '#attributes' => NULL,  '#required' => FALSE,);
+	$group .= $form["accountlength"] = array(  '#type' => 'select',  '#title' => t("Number of account digits"),  '#default_value' => NULL,  '#options' => array(9 => 9, 10 => 10, 11 => 11, 12 => 12, 13 => 13, 14 => 14, 15 => 15, 16 => 16, 17 => 17, 18 => 18, 19 => 19, 20 => 20),);
+	$group .= $form['credit'] = array(  '#type' => 'textfield',  '#title' => t('Credit Amount'),  '#default_value' => NULL,  '#size' => 15,  '#maxlength' => 128,  '#description' => null,  '#attributes' => null,  '#required' => true,);
+	$group .= $form['expdays'] = array(  '#type' => 'textfield',  '#title' => t('Expiration Days'),  '#default_value' => NULL,  '#size' => 15,  '#maxlength' => 128,  '#description' => null,  '#attributes' => null,  '#required' => true,);
 	$group .= t("Expiration Date:");
-	$group .= form_select(NULL, "day", date(j), $daylist);
-	$group .= form_select(NULL, "month", date(F), $monthlist);
-	$group .= form_select(NULL, "year", date(Y)+5, $yearlist);
-	$group .= form_textfield(t('From serial number'), 'fromserial', $fromserial, 30, 128, null, null, true);
+	$group .= $form["day"] = array(  '#type' => 'select',  '#title' => NULL,  '#default_value' => date(j),  '#options' => $daylist,);
+	$group .= $form["month"] = array(  '#type' => 'select',  '#title' => NULL,  '#default_value' => date(F),  '#options' => $monthlist,);
+	$group .= $form["year"] = array(  '#type' => 'select',  '#title' => NULL,  '#default_value' => date(Y)+5,  '#options' => $yearlist,);
+	$group .= $form['fromserial'] = array(  '#type' => 'textfield',  '#title' => t('From serial number'),  '#default_value' => $fromserial,  '#size' => 30,  '#maxlength' => 128,  '#description' => null,  '#attributes' => null,  '#required' => true,);
+	$group .= $form['password'] = array(  '#type' => 'radios',  '#title' => t('Password.'),  '#default_value' => 0,  '#options' => array(0 => 'Same as ID' , 1 => 'Random', 2 => 'Fixed Value'),);
+	$group .= $form["passrand"] = array(  '#type' => 'select',  '#title' => t("Random digits"),  '#default_value' => NULL,  '#options' => array(4 => 4, 5 => 5, 6 => 6, 7 => 7, 8 => 8, 9 => 9, 10 => 10, 11 => 11, 12 => 12, 13 => 13, 14 => 14, 15 => 15, 16 => 16, 17 => 17, 18 => 18, 19 => 19, 20 => 20),);
+	$group .= $form['fixedpass'] = array(  '#type' => 'textfield',  '#title' => t('Fixed'),  '#default_value' => NULL,  '#size' => 30,  '#maxlength' => 128,  '#description' => null,  '#attributes' => null,  '#required' => true,);
 	
-	$group .= form_radios(t('Password.'), 'password', 0, array(0 => 'Same as ID' , 1 => 'Random', 2 => 'Fixed Value'));
-	$group .= form_select(t("Random digits"), "passrand", NULL, array(4 => 4, 5 => 5, 6 => 6, 7 => 7, 8 => 8, 9 => 9, 10 => 10, 11 => 11, 12 => 12, 13 => 13, 14 => 14, 15 => 15, 16 => 16, 17 => 17, 18 => 18, 19 => 19, 20 => 20));
-	$group .= form_textfield(t('Fixed'), 'fixedpass', NULL, 30, 128, null, null, true);
-	
-	$group .= form_submit(t('Generate'));
+	$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Generate'),);
 
 
-	return form($group);
+	return $output = drupal_get_form('1', $form);
 */
 
 	$x = date(Y);
@@ -1091,14 +1090,14 @@ function page_astsettings_batch() {
 		}
 	}
 	if (!empty($debatchlist)) {
-	$group .= form_select(t("Activate Batch Number"), "batch", NULL, $debatchlist);
-	$group .= form_submit(t('Activate'));
+	$group .= $form["batch"] = array(  '#type' => 'select',  '#title' => t("Activate Batch Number"),  '#default_value' => NULL,  '#options' => $debatchlist,);
+	$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Activate'),);
 	}
 	if (!empty($batchlist)) {
-	$group .= form_select(t("Deactivate Batch Number"), "debatch", NULL, $batchlist);
-	$group .= form_submit(t('Deactivate'));
+	$group .= $form["debatch"] = array(  '#type' => 'select',  '#title' => t("Deactivate Batch Number"),  '#default_value' => NULL,  '#options' => $batchlist,);
+	$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Deactivate'),);
 	}
-	$output = form($group);
+	$output = $output = drupal_get_form('1', $form);
 
 
 
@@ -1329,29 +1328,29 @@ function astsettings_form($name) {
 	}
 	
 	if (arg(3) == 'create') {
-	$group .= form_textfield(t('Name'), 'name', $valuesql->name, 30, 100);
+	$group .= $form['name'] = array(  '#type' => 'textfield',  '#title' => t('Name'),  '#default_value' => $valuesql->name,  '#size' => 30,  '#maxlength' => 100,);
 	}
 	
-	$group .= form_select(t("Select Currency"), "currency", $valuesql->currency, $currency);
-	$group .= form_textfield(t('Language'), 'language', $valuesql->language, 30, 100);
-	$group .= form_textfield(t('Published Number'), 'publishednum', $valuesql->publishednum, 30, 100);
-	$group .= form_textfield(t('Did'), 'did', $valuesql->did, 30, 100);
-	$group .= form_textfield(t('Markup'), 'markup', $valuesql->markup, 30, 100);
-	$group .= form_textfield(t('Billing Increment'), 'billincrement', $valuesql->billincrement, 30, 100);
-	$group .= form_textfield(t('Connection Charge'), 'connectcharge', $valuesql->connectcharge, 30, 100);
-	$group .= form_textfield(t('Status'), 'status', $valuesql->status, 30, 100);
+	$group .= $form["currency"] = array(  '#type' => 'select',  '#title' => t("Select Currency"),  '#default_value' => $valuesql->currency,  '#options' => $currency,);
+	$group .= $form['language'] = array(  '#type' => 'textfield',  '#title' => t('Language'),  '#default_value' => $valuesql->language,  '#size' => 30,  '#maxlength' => 100,);
+	$group .= $form['publishednum'] = array(  '#type' => 'textfield',  '#title' => t('Published Number'),  '#default_value' => $valuesql->publishednum,  '#size' => 30,  '#maxlength' => 100,);
+	$group .= $form['did'] = array(  '#type' => 'textfield',  '#title' => t('Did'),  '#default_value' => $valuesql->did,  '#size' => 30,  '#maxlength' => 100,);
+	$group .= $form['markup'] = array(  '#type' => 'textfield',  '#title' => t('Markup'),  '#default_value' => $valuesql->markup,  '#size' => 30,  '#maxlength' => 100,);
+	$group .= $form['billincrement'] = array(  '#type' => 'textfield',  '#title' => t('Billing Increment'),  '#default_value' => $valuesql->billincrement,  '#size' => 30,  '#maxlength' => 100,);
+	$group .= $form['connectcharge'] = array(  '#type' => 'textfield',  '#title' => t('Connection Charge'),  '#default_value' => $valuesql->connectcharge,  '#size' => 30,  '#maxlength' => 100,);
+	$group .= $form['status'] = array(  '#type' => 'textfield',  '#title' => t('Status'),  '#default_value' => $valuesql->status,  '#size' => 30,  '#maxlength' => 100,);
 
 
 	if (arg(3) == 'edit') {
-	$group .= form_submit(t('Save'));
+	$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Save'),);
 	}
 	
 	if (arg(3) == 'create') {
-	$group .= form_submit(t('Create'));
+	$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Create'),);
 	}
 		
-	$group .= form_submit(t('Back'));
-	return form($group);
+	$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
+	return $output = drupal_get_form('1', $form);
 }
 
 // END FORM STUFF
@@ -1368,11 +1367,11 @@ function page_astsettings_manager() {
 	switch (($op ? $op : arg(1))) {
 		  case t('Reload'):
 		  	$group .= page_astsettings_manager_reload();
-			$group .= form_submit(t('Back'));
+			$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
 		  break;
 		  case t('Write'):
 		  	$group = page_astsettings_manager_writeconf();
-			$group .= form_submit(t('Back'));
+			$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
 		  break;
 		  case t('Back'):
 		  	drupal_goto("astbilladm/realtime/manager");
@@ -1384,14 +1383,14 @@ function page_astsettings_manager() {
 		  $group .= '/etc/asterisk/iax_additional.conf<BR>';
 		  $group .= '/etc/asterisk/voicemail_additional.conf<BR>';
 		  $group .= '<BR><BR>';
-		  $group .= form_submit(t('Write'));
+		  $group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Write'),);
 		  $group .= '<BR><BR><BR>';
 		  $group .= t('Click here to Reload  Asterisk: ');
 		  $group .= '<BR><BR>';
-		  $group .= form_submit(t('Reload'));
+		  $group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Reload'),);
 	  }
 	  
-	  $output = form($group);
+	  $output = $output = drupal_get_form('1', $form);
 	
 
 
@@ -1660,25 +1659,24 @@ function page_astsettings_system_list() {
 	foreach ($categories as $key => $value) {
 		$sql = db_fetch_object(db_query("SELECT comment FROM astsystem WHERE name = '%s' and serverid = 'DEF'", $key));
 		$rows[] = array(
-				form_textfield('', 'value]['. $key, $value, 20, 100),
-				'&nbsp;&nbsp;'.$sql->comment);
-				//form_textfield('', 'comment]['. $key, $sql->comment, 80, 150));
+				$form['value'][''. $key] = array(  '#type' => 'textfield',  '#title' => '',  '#default_value' => $value,  '#size' => 20,  '#maxlength' => 100),  '#description' => '&nbsp;&nbsp;'.$sql->comment,);
+				// $form['comment'][''. $key] = array(  '#type' => 'textfield',  '#title' => '',  '#default_value' => $sql->comment,  '#size' => 80,  '#maxlength' => 150),);
 	}
 
-    $group .= form_textfield(t('Language'), 'language', $valuesql->language, 30, 100);
+    $group .= $form['language'] = array(  '#type' => 'textfield',  '#title' => t('Language'),  '#default_value' => $valuesql->language,  '#size' => 30,  '#maxlength' => 100,);
 // form_textfield('', 'value]['. $key, $value, 20, 100),
-//	$group .= form_select(t("Select Currency"), "currency", $valuesql->currency, $currency);
-//	$group .= form_textfield(t('Language'), 'language', $valuesql->language, 30, 100);
+//	$group .= $form['value'][''. $key] = array(  '#type' => 'textfield',  '#title' => '',  '#default_value' => $value,  '#size' => 20,  '#maxlength' => 100),  '#description' => //	$group .= form_select(t("Select Currency"),  '#attributes' => "currency",  '#required' => $valuesql->currency,);
+//	$group .= $form['language'] = array(  '#type' => 'textfield',  '#title' => t('Language'),  '#default_value' => $valuesql->language,  '#size' => 30,  '#maxlength' => 100,);
 
 	$output = theme('table', $header, $rows);
 	$output .= "<BR>";
-    $output .= form_textfield(t('<FONT SIZE=2>The default CountryPrefix to use when creating new accounts</FONT>'), 'countryprefix', variable_get("AstBill CountryPrefix",44), 30, 100);
-    $output .= form_textfield(t('<FONT SIZE=2>The default Rate Plan to use when creating new accounts</FONT>'), 'brand', variable_get("AstBill Brand",'default'), 30, 100);
-    $output .= form_textfield(t('<FONT SIZE=2>The default Channel type to use when creating new accounts (SIP or IAX)</FONT>'), 'tech', variable_get("AstBill Tech",'SIP'), 30, 100);
+    $output .= $form['countryprefix'] = array(  '#type' => 'textfield',  '#title' => t('<FONT SIZE=2>The default CountryPrefix to use when creating new accounts</FONT>'),  '#default_value' => variable_get("AstBill CountryPrefix",44),  '#size' => 30,  '#maxlength' => 100,);
+    $output .= $form['brand'] = array(  '#type' => 'textfield',  '#title' => t('<FONT SIZE=2>The default Rate Plan to use when creating new accounts</FONT>'),  '#default_value' => variable_get("AstBill Brand",'default'),  '#size' => 30,  '#maxlength' => 100,);
+    $output .= $form['tech'] = array(  '#type' => 'textfield',  '#title' => t('<FONT SIZE=2>The default Channel type to use when creating new accounts (SIP or IAX)</FONT>'),  '#default_value' => variable_get("AstBill Tech",'SIP'),  '#size' => 30,  '#maxlength' => 100,);
 
 	
-	$output .= form_submit(t('Save Settings'));
-	return form($output);
+	$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Save Settings'),);
+	return $output = drupal_get_form('1', $form);
 }
 
 
@@ -1841,7 +1839,7 @@ function page_astsettings_anicli_form($edit) {
 		$dropdowncheck = db_fetch_object(db_query("select value from astsystem where name = 'AccountDropDown'"));
 		
 		if ($dropdowncheck->value == 0) {
-			$output .= form_textfield(t('AccountCode'), 'accountcode', $sql->accountcode, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
+			$output .= $form['accountcode'] = array(  '#type' => 'textfield',  '#title' => t('AccountCode'),  '#default_value' => $sql->accountcode,  '#size' => 30,  '#maxlength' => 128,  '#description' => $description = NULL,  '#attributes' => $attributes = NULL,  '#required' => $required = FALSE,);
 		} else {
 			
 			$accountsql = db_query("SELECT accountcode FROM astaccount WHERE uid <> 0 and db_prefix = '".$db_prefix."' and tech in (select actype from astactype where active = '1' )");
@@ -1853,22 +1851,22 @@ function page_astsettings_anicli_form($edit) {
 				}
 			}
 			
-			$output .= form_select(t("AccountCode"), "accountcode", $sql->accountcode, $accountlist);
+			$output .= $form["accountcode"] = array(  '#type' => 'select',  '#title' => t("AccountCode"),  '#default_value' => $sql->accountcode,  '#options' => $accountlist,);
 		}
 		
-		$output .= form_textfield(t('ANI/CLI'), 'anicli', $sql->anicli, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
-		$output .= form_textfield(t('Comment'), 'comment', $sql->comment, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
+		$output .= $form['anicli'] = array(  '#type' => 'textfield',  '#title' => t('ANI/CLI'),  '#default_value' => $sql->anicli,  '#size' => 30,  '#maxlength' => 128,  '#description' => $description = NULL,  '#attributes' => $attributes = NULL,  '#required' => $required = FALSE,);
+		$output .= $form['comment'] = array(  '#type' => 'textfield',  '#title' => t('Comment'),  '#default_value' => $sql->comment,  '#size' => 30,  '#maxlength' => 128,  '#description' => $description = NULL,  '#attributes' => $attributes = NULL,  '#required' => $required = FALSE,);
 		
 		if ($arg3 == 'edit') {
-			$output .= form_submit(t('Save'));
+			$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Save'),);
 		}
 		
 		if ($arg3 == 'create') {
-			$output .= form_submit(t('Create'));
+			$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Create'),);
 		}
 		
-		$output .= form_submit(t('Back'));
-		$group = form($output);
+		$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
+		$group = $output = drupal_get_form('1', $form);
 		return $group;	
 		
 	}
@@ -1876,9 +1874,9 @@ function page_astsettings_anicli_form($edit) {
 	if ($arg3 == 'delete') {
 		$output .= t('Are you sure you want to delete ANI/CLI for accountcode').' '.$arg4.'?';
 		$output .= '<BR>';
-		$output .= form_submit(t('Confirm'));
+		$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Confirm'),);
 		
-		$group = form($output);
+		$group = $output = drupal_get_form('1', $form);
 		return $group;	
 	}
 	

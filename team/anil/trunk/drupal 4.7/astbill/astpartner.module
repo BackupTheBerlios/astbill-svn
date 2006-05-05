@@ -480,7 +480,7 @@ if (arg(2) == 'changespecific'){ // START CHECK IF PartnerCHANGESPECIFIC
 	$group .= astcore_form_textfield(t('Address2'), 'address2', $address2, 30, 100);
 	$group .= astcore_form_textfield(t('Zip'), 'zip', $zip, 30, 100);
 	$group .= astcore_form_textfield(t('City'), 'city', $city, 30, 100);
-// 	 $group .= form_textfield(t('State'), 'state', $state, 30, 100);
+// 	 $group .= $form['state'] = array(  '#type' => 'textfield',  '#title' => t('State'),  '#default_value' => $state,  '#size' => 30,  '#maxlength' => 100,);
 	$group .= astcore_form_textfield(t('Country'), 'country', $country, 30, 100);
 	$group .= astcore_form_textfield(t('Mobile'), 'mobile', $mobile, 30, 100);
 	$group .= astcore_form_textfield(t('PhoneWork'), 'phonework', $phonework, 30, 100);
@@ -494,13 +494,13 @@ if (arg(2) == 'changespecific'){ // START CHECK IF PartnerCHANGESPECIFIC
 }
 
 if (arg(2) == 'create'){
-	$group .= form_submit(t('Create'));
+	$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Create'),);
 } else {
-	$group .= form_submit(t('Change'));
+	$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Change'),);
 }
-	$group .= form_submit(t('Back'));
-	//$form = form_group(t('Account details'), $group);
-	return form($group);
+	$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
+	//$form = $form[] = array(  '#type' => 'fieldset',  '#title' => t('Account details'),);
+	return $output = drupal_get_form('1', $form);
 }
 
 

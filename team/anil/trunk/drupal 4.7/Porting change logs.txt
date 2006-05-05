@@ -34,13 +34,13 @@ To DO LIST:
 4) astbill theme = needs re-working from slash blue phptemplate
 5) astadmin.module = ported
 6) astcallcard.module = ported
-7) astcontact.module
-8) astcore.module
+7) astcontact.module =  more work needed
+8) astcore.module = ported
 9) astentry.module = ported
-10) astpartner.module
-11) astpbx.module
+10) astpartner.module = some progress, needs crosschecking with ARE/AMI on usage of astcore_form_* which needs porting
+11) astpbx.module = ported
 12) astpricelist.module = ported
-13) astroute.module
+13) astroute.module = inprogress
 14) astsettings.module = ported
 15) astsettingsdid.module
 16) front_page.module

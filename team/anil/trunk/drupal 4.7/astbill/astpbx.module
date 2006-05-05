@@ -1024,8 +1024,8 @@ function _astpbx_accounts_form($edit = null) {
 			array_push2($users, $items->uid.' '.$items->name, $items->uid);
 		}
 
-		$group = form_select(t('User/Owner of this account'), 'account', $edit['uid'], $users);
-		$group .= form_textfield(t("Account code"), "accountcode", $accountcode, 30, 30, null, null, false);
+		$group = $form['account'] = array(  '#type' => 'select',  '#title' => t('User/Owner of this account'),  '#default_value' => $edit['uid'],  '#options' => $users,);
+		$group .= $form["accountcode"] = array(  '#type' => 'textfield',  '#title' => t("Account code"),  '#default_value' => $accountcode,  '#size' => 30,  '#maxlength' => 30,  '#description' => null,  '#attributes' => null,  '#required' => false,);
 	}
 
 	$sql = db_query("select language, languagename from astlanguage");
@@ -1055,24 +1055,24 @@ function _astpbx_accounts_form($edit = null) {
 	if (arg(1) == 'editaccount') {
 		$group .= '<A HREF="'.url('astbilladm/emailme/'.$edit['accountcode']).'">'.t('Send account info to user').'</A><BR>';
 	}
-	$group .= form_radios(t('Change account type.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account', 3 => 'H323'));   
-	$group .= form_textfield(t("Change the number(s) you want to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
+	$group .= $form['tech'] = array(  '#type' => 'radios',  '#title' => t('Change account type.'),  '#default_value' => $tech,  '#options' => array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account', 3 => 'H323'),);
+	$group .= $form["forwardto"] = array(  '#type' => 'textfield',  '#title' => t("Change the number(s) you want to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"),  '#default_value' => $edit['forwardto'],  '#size' => 80,  '#maxlength' => 150,  '#description' => null,  '#attributes' => null,  '#required' => false,);
   
-	$group .= form_textfield(t("Allow codec(s) sepparated by ; no selection = ALL<BR>Available codecs: g723.1 g729 h263 slinear gsm<BR>alaw adpcm g726 h261 lpc10 speex ilbc ulaw<BR>(Example: g723.1;gsm;g726;h261)"), "allow", $edit['allow'], 80, 150, null, null, false);
+	$group .= $form["allow"] = array(  '#type' => 'textfield',  '#title' => t("Allow codec(s) sepparated by ; no selection = ALL<BR>Available codecs: g723.1 g729 h263 slinear gsm<BR>alaw adpcm g726 h261 lpc10 speex ilbc ulaw<BR>(Example: g723.1;gsm;g726;h261)"),  '#default_value' => $edit['allow'],  '#size' => 80,  '#maxlength' => 150,  '#description' => null,  '#attributes' => null,  '#required' => false,);
   
-	$group .= form_textfield(t("Disallow codec(s) sepparated by ; no selection = None<BR>Available codecs: g723.1 g729 h263 slinear gsm<BR>alaw adpcm g726 h261 lpc10 speex ilbc ulaw<BR>(Example: g723.1;gsm;g726;h261)"), "disallow", $edit['disallow'], 80, 150, null, null, false);
+	$group .= $form["disallow"] = array(  '#type' => 'textfield',  '#title' => t("Disallow codec(s) sepparated by ; no selection = None<BR>Available codecs: g723.1 g729 h263 slinear gsm<BR>alaw adpcm g726 h261 lpc10 speex ilbc ulaw<BR>(Example: g723.1;gsm;g726;h261)"),  '#default_value' => $edit['disallow'],  '#size' => 80,  '#maxlength' => 150,  '#description' => null,  '#attributes' => null,  '#required' => false,);
   
-	$group .= form_select(t("Language"), "language", $edit['language'], $languagelist);
-	$group .= form_textfield(t("Change the name of your account"), "accountname", $edit['accountname'], 80, 150, null, null, false);
+	$group .= $form["language"] = array(  '#type' => 'select',  '#title' => t("Language"),  '#default_value' => $edit['language'],  '#options' => $languagelist,);
+	$group .= $form["accountname"] = array(  '#type' => 'textfield',  '#title' => t("Change the name of your account"),  '#default_value' => $edit['accountname'],  '#size' => 80,  '#maxlength' => 150,  '#description' => null,  '#attributes' => null,  '#required' => false,);
 	if (arg(1) == 'editaccount') {
-		$group .= form_textfield(t("Password"), "secret", $edit['secret'], 30, 30, null, null, false);
+		$group .= $form["secret"] = array(  '#type' => 'textfield',  '#title' => t("Password"),  '#default_value' => $edit['secret'],  '#size' => 30,  '#maxlength' => 30,  '#description' => null,  '#attributes' => null,  '#required' => false,);
 	}
-	$group .= form_textfield(t("Change your Caller ID Example: My Name <9000><BR><FONT SIZE=1>Note: Please select a number you wish to be dialed back on</FONT>"), "callerid", $edit['callerid'], 80, 150, null, null, false);
-	$group .= form_select(t("Your Hardware"), "hardwareid", $edit['hardwareid'], $hardwareidlist);
-	$group .= form_textfield(t("Set warning balance"), "lowbalance", $edit['lowbalance'], 5, 150, null, null, false);
-	$group .= form_select(t("<FONT SIZE=1>Activate or Disable Warning Balance Email</FONT>"), "lowbalanceemail", $edit['lowbalanceemail'], array(0 => 'Disabled', 1 => 'Activate'));
-	$group .= form_textfield(t("Set notification email"), "mailboxemail", $mailboxemail, 30, 150, null, null, false);
-	$group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI')); 
+	$group .= $form["callerid"] = array(  '#type' => 'textfield',  '#title' => t("Change your Caller ID Example: My Name <9000><BR><FONT SIZE=1>Note: Please select a number you wish to be dialed back on</FONT>"),  '#default_value' => $edit['callerid'],  '#size' => 80,  '#maxlength' => 150,  '#description' => null,  '#attributes' => null,  '#required' => false,);
+	$group .= $form["hardwareid"] = array(  '#type' => 'select',  '#title' => t("Your Hardware"),  '#default_value' => $edit['hardwareid'],  '#options' => $hardwareidlist,);
+	$group .= $form["lowbalance"] = array(  '#type' => 'textfield',  '#title' => t("Set warning balance"),  '#default_value' => $edit['lowbalance'],  '#size' => 5,  '#maxlength' => 150,  '#description' => null,  '#attributes' => null,  '#required' => false,);
+	$group .= $form["lowbalanceemail"] = array(  '#type' => 'select',  '#title' => t("<FONT SIZE=1>Activate or Disable Warning Balance Email</FONT>"),  '#default_value' => $edit['lowbalanceemail'],  '#options' => array(0 => 'Disabled', 1 => 'Activate'),);
+	$group .= $form["mailboxemail"] = array(  '#type' => 'textfield',  '#title' => t("Set notification email"),  '#default_value' => $mailboxemail,  '#size' => 30,  '#maxlength' => 150,  '#description' => null,  '#attributes' => null,  '#required' => false,);
+	$group .= $form["active"] = array(  '#type' => 'select',  '#title' => t("Set the Account Status:"),  '#default_value' => $edit['active'],  '#options' => array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI'),);
 	$group .= '<BR>';
 	$group .= t('ADVANCED SETTINGS: <BR>');
 	$group .= '<BR>';
@@ -1081,32 +1081,32 @@ function _astpbx_accounts_form($edit = null) {
 	$group .= t('no = Use NAT mode only according to RFC3581<BR>');
 	$group .= t('never = Never attempt NAT mode or RFC3581 support<BR>');
 	$group .= t('route = Assume NAT, dont send rport<BR>');
-	$group .= form_select(NULL, 'nat', $nat, array(0 => t('Yes'), 1 => t('No'), 2 => t('Never'), 3 => t('Route')));
-	$group .= form_select(t("Qualify"), 'qualify', $qualify, array(0 => 'On', 1 => 'Off'));
+	$group .= $form['nat'] = array(  '#type' => 'select',  '#title' => NULL,  '#default_value' => $nat,  '#options' => array(0 => t('Yes'), 1 => t('No'), 2 => t('Never'), 3 => t('Route')),);
+	$group .= $form['qualify'] = array(  '#type' => 'select',  '#title' => t("Qualify"),  '#default_value' => $qualify,  '#options' => array(0 => 'On', 1 => 'Off'),);
 
 	if (arg(1) == 'editaccount') {
 	  
-		$group .= form_textfield(t("Context"), "context", $edit['context'], 30, 30, null, null, false);
+		$group .= $form["context"] = array(  '#type' => 'textfield',  '#title' => t("Context"),  '#default_value' => $edit['context'],  '#size' => 30,  '#maxlength' => 30,  '#description' => null,  '#attributes' => null,  '#required' => false,);
 		$group .= '<BR>';
 		$group .= t('<FONT size=1><B>Note: These are user wide settings:</B></FONT>');
-		$group .= form_select(t("Rate Plan"), 'brand', $getastuser['brand'], $brandlist);
-		$group .= form_textfield(t("Country Prefix"), "countryprefix", $getastuser['countryprefix'], 25, 25, null, null, false);
-		$group .= form_textfield(t("Call Back To"), "callbackto", $getastuser['callbackto'], 25, 25, null, null, false);
+		$group .= $form['brand'] = array(  '#type' => 'select',  '#title' => t("Rate Plan"),  '#default_value' => $getastuser['brand'],  '#options' => $brandlist,);
+		$group .= $form["countryprefix"] = array(  '#type' => 'textfield',  '#title' => t("Country Prefix"),  '#default_value' => $getastuser['countryprefix'],  '#size' => 25,  '#maxlength' => 25,  '#description' => null,  '#attributes' => null,  '#required' => false,);
+		$group .= $form["callbackto"] = array(  '#type' => 'textfield',  '#title' => t("Call Back To"),  '#default_value' => $getastuser['callbackto'],  '#size' => 25,  '#maxlength' => 25,  '#description' => null,  '#attributes' => null,  '#required' => false,);
 	}
   
   
-	// $group .= form_hidden('AmiTest', "JustTesting");
+	// $group .= $form['AmiTest'] = array(  '#type' => 'hidden',  '#value' => "JustTesting",);
   
 	if (arg(1) == 'createaccount') {
-		$group .= form_submit(t('Create'));
+		$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Create'),);
 	}
 	if (arg(1) == 'editaccount') {
-		$group .= form_submit(t('Save'));
+		$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Save'),);
 	}
-	$group .= form_submit(t('Back'));
+	$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
 
-	//$form = form_group(t('Account details'), $group);
-	return form($group);
+	//$form = $form[] = array(  '#type' => 'fieldset',  '#title' => t('Account details'),);
+	return $output = drupal_get_form('1', $form);
 }
 
 function _astpbx_accounts_load($account) {
@@ -1241,8 +1241,8 @@ function page_astpbx_emailme() {
 				astpbx_sendemail($db_prefix."ASTARSIP", $edit['email'], $accountcode,"","");
 				$group .= 'Sent account information for SIP://'.$accountcode.' to '.$edit['email'].'<BR>';
 			}
-			$group .= form_submit(t('Back'));
-			$group .= form_submit(t('Return to account list'));
+			$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
+			$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Return to account list'),);
 			$title = 'Email sent';
 		break;
 		
@@ -1258,15 +1258,15 @@ function page_astpbx_emailme() {
 			$uid = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", arg(2)));
 			$email = db_fetch_object(db_query("SELECT mail FROM {users} WHERE uid = '%s'", $uid->uid));
 			$group .= 'Please check that the email bellow is correct before confirming.<BR>';
-			$group .= form_textfield(t('Email:'), 'email', $email->mail, 30, 100);
+			$group .= $form['email'] = array(  '#type' => 'textfield',  '#title' => t('Email:'),  '#default_value' => $email->mail,  '#size' => 30,  '#maxlength' => 100,);
 		
-			$group .= form_submit(t('Confirm'));
-			$group .= form_submit(t('Back'));
+			$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Confirm'),);
+			$group .= $form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
 			$title = 'Confirm';
 
 	}
 	
-	$output = form($group);
+	$output = $output = drupal_get_form('1', $form);
 	
 	$account = '';
 	_astentry_printtheme_best($output, $account, $title);	

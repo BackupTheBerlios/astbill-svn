@@ -265,7 +265,7 @@ function astcontact_view($cid) {
 	// $result = db_query("SELECT category, name  FROM {contact_directory} cd, {contact_category} WHERE cd.cid = %d", 18);
 
 	$result2 = db_fetch_object($result);
-	//$output = form_select(t("Category"), "category", $result2->category, contact_dir_getcategory());
+	//$output = $form["category"] = array( '#type' => 'select', '#title' => t("Category"), '#default_value' => $result2->category, '#options' => contact_dir_getcategory(),);
     
 
 	$fields = astcontact_get_fields();
@@ -290,12 +290,12 @@ function astcontact_view($cid) {
 		if ($view[0] && !empty($value)) {
 			// $output .= ".".$value.".".strlen(trim($value));
 			if ($name != 'Url') {
-				$output .= form_item($name, $value);
+				$output .= $form[] = array( '#type' => 'item', '#title' => $name, '#default_value' => $value,);
 			} else {
-				if (strlen(trim($value)) != 38) { $output .= form_item($name, $value); }
-   				//if ( empty(trim($value)) ) { $output .= form_item($name, $value); }
-				// if (is_null($value)) { $output .= form_item($name, $value); }
-				//if (strlen(trim($value)) > 2) { $output .= form_item($name, $value); }
+				if (strlen(trim($value)) != 38) { $output .= $form[] = array( '#type' => 'item', '#title' => $name, '#default_value' => $value,); }
+   				//if ( empty(trim($value)) ) { $output .= $form[] = array( '#type' => 'item', '#title' => $name, '#default_value' => $value,); }
+				// if (is_null($value)) { $output .= $form[] = array( '#type' => 'item', '#title' => $name, '#default_value' => $value,); }
+				//if (strlen(trim($value)) > 2) { $output .= $form[] = array( '#type' => 'item', '#title' => $name, '#default_value' => $value,); }
 			}
 		}
 	}
@@ -356,19 +356,19 @@ if ($cid == 0) { $edit['phone'] = arg(2); }
  	$output = astcontact_edit_form($edit);
 	if ($cid) {
 		// Edit contact
-		$output .= form_submit(t('Save contact'));
+		$output .= $form[] = array( '#type' => 'submit', '#value' => t('Save contact'),);
 		// if ( _contact_dir_is_contact_accessible($cid) ) {
-			$output .= form_submit(t('Delete contact'));
+			$output .= $form[] = array( '#type' => 'submit', '#value' => t('Delete contact'),);
 		// }
 	} else {
-		$output .= form_submit(t('Add contact'));
+		$output .= $form[] = array( '#type' => 'submit', '#value' => t('Add contact'),);
 		// test if user can adda a contact
 	//	if ( !_contact_dir_validate_contact_creation($user->uid) ) {
 	//		return t('<p>You can not add a new contact.</p>');
 	//	}
 	}
 
-	return form($output);
+	return $output = drupal_get_form('1', $form);
 }
 
 function astcontact_load_contact($cid) {
@@ -395,7 +395,7 @@ function astcontact_edit_form($edit) {
 
 	$result = db_query("SELECT category FROM {contact_directory} WHERE cid = %d", $cid);
 	$result2 = db_fetch_object($result);
-	$output = form_select(t("Category"), "category", $result2->category, astcontact_getcategory());
+	$output = $form["category"] = array( '#type' => 'select', '#title' => t("Category"), '#default_value' => $result2->category, '#options' => astcontact_getcategory(),);
     // $output .= $result2->category;
 
 
@@ -423,7 +423,7 @@ function astcontact_edit_form($edit) {
 		}
 	}
 	if (user_access('administer contacts')) {
-		$output .= form_weight(t('Rating'), 'rating', $edit['rating'], 10, t('contact\'s rating'));
+		$output .= $form['rating'] = array( '#type' => 'weight', '#title' => t('Rating'), '#default_value' => $edit['rating'], '#delta' => 10, '#description' => t('contact\'s rating'),);
 	}
 	return $output;
 }
@@ -555,12 +555,11 @@ function astcontact_category_list() {
 	if (!empty($categories)) {
 	foreach ($categories as $key => $value) {
 		$rows[] = array(
-				form_textfield('', 'name]['. $key, $value, 40, 100),
-				l(t('delete'), 'astcontact/category/delete/'. urlencode($key)));
+				$form['name'][''. $key] = array( '#type' => 'textfield', '#title' => '', '#default_value' => $value, '#size' => 40, '#maxlength' => 100), '#description' => l(t('delete'),  '#attributes' => 'astcontact/category/delete/'. urlencode($key)),);
 	}}
 	$output = theme('table', $header, $rows);
-	$output .= form_submit(t('Save categories'));
-	return form($output);
+	$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Save categories'),);
+	return $output = drupal_get_form('1', $form);
 }
 /**
  * Returns an array with all the records in the table contact_dir_category
@@ -600,10 +599,10 @@ function astcontact_category_add($edit) {
 	}
 
 	// Display the input form
-	$output = form_textfield(t('Name'), 'category_name', $edit['category_name'], 30, 100);
-	$output = form_group(t('Category'), $output);
-	$output .= form_submit(t('Create category'));
-	return form($output);
+	$output = $form['category_name'] = array(  '#type' => 'textfield',  '#title' => t('Name'),  '#default_value' => $edit['category_name'],  '#size' => 30,  '#maxlength' => 100,);
+	$output = $form[] = array(  '#type' => 'fieldset',  '#title' => t('Category'),);
+	$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Create category'),);
+	return $output = drupal_get_form('1', $form);
 }
 /**
  * Creates a form for delete a category
@@ -625,12 +624,12 @@ function astcontact_cat_delete($edit) {
 	// Creates a confirmation form
 	$categories = astcontact_get_categories();
 
-	$output = form_item(t("Delete category '%name'", array('%name' => $categories[$cid])), '');
+	$output = $form[] = array(  '#type' => 'item',  '#title' => t("Delete category '%name'", array('%name' => $categories[$cid])),  '#default_value' => '',);
 	$output .= t('<p>Are you sure you want to delete the category and all data associated with it?</p>');
-	$output .= form_hidden('cid', $cid);
-	$output .= form_submit(t('Delete'));
+	$output .= $form['cid'] = array(  '#type' => 'hidden',  '#value' => $cid,);
+	$output .= $form[] = array(  '#type' => 'submit',  '#value' => t('Delete'),);
 
-	return form($output);
+	return $output = drupal_get_form('1', $form);
 }
 
 /**
