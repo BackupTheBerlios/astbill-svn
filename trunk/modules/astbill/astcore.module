@@ -157,6 +157,13 @@ function astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $db
 	exit();
 }
 
+function astcore_confirm_msg($confirmmsg) {
+	drupal_set_message(t($confirmmsg));
+	$group .= form_submit(t('OK'));
+	$group .= form_submit(t('Back'));
+	return form($group);
+}
+
 function astcore_list($header, $rows, $noresults, $maxline) {
 
 	$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 

@@ -953,6 +953,7 @@ function astbill_update_047() {
 // ALTER TABLE `astcdr` ADD `dnid` VARCHAR( 80 ) AFTER `rdnis` ;
 // ALTER TABLE `aststatus` ADD `pid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `serverid` ;
 // ALTER TABLE `aststatus` ADD `servertech` VARCHAR( 128 ) AFTER `lansshport` ;
+// drop table astsyslog;
 
 
 // Make Index and Primary key - Add data to AstBill - Still work to be done.
