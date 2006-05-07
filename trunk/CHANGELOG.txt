@@ -8,7 +8,12 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
-09 April 2006 Version 0.9.17 
+09 April 2006 Version 0.9.18
+# New Partner Admin Module
+# This allow you to see accounts and users linked to this Partner (Tenant if you prefeer) :-)
+# 
+
+09 April 2006 Version 0.9.17  (Not Published as bz2 - SVN only)
 
 # Fatal error: Call to undefined function: array2uri()
 #

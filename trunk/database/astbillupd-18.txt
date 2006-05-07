@@ -954,7 +954,8 @@ function astbill_update_047() {
 // ALTER TABLE `aststatus` ADD `pid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `serverid` ;
 // ALTER TABLE `aststatus` ADD `servertech` VARCHAR( 128 ) AFTER `lansshport` ;
 // drop table astsyslog;
-
+// ALTER TABLE `astpartner` CHANGE `status` `active` VARCHAR( 128 ) NULL 
+// ALTER TABLE `astuser` CHANGE `tid` `partnerid` INT( 11 ) NULL DEFAULT '0'
 
 // Make Index and Primary key - Add data to AstBill - Still work to be done.
 CREATE TABLE `astpricelistcountry` (

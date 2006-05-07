@@ -41,12 +41,12 @@ function astadmin_menu($may_cache) {
 	$accessrt = user_access('astadmin asterisk');
 	$accesspay = user_access('astadmin payment');
 	
-	$items[] = array('path' => 'astbilladm',
+/*	$items[] = array('path' => 'astbilladm',
                                   'title' => t('admin'),
                                   'callback' => '_astadmin_all',
                                   'access' => $access,
                                   'type' => MENU_CALLBACK);
-
+*/
  	$items[] = array('path' => 'astbilladm/hardware', 'title' => t('Hardware'),
 	'callback' => 'page_astadmin_hardware',
 	'callback arguments' => array(),
@@ -226,6 +226,7 @@ function astadmin_perm() {
 
 // ##########################################################################################################
 
+/*
 function _astadmin_all() {
 	global $user;
 
@@ -238,6 +239,7 @@ function _astadmin_all() {
 	$account = $user->uid;
 	_astadmin_printtheme_best($output, $account, $title);
 }
+*/
 
 function page_astadmin_friends() {
 	$edit = $_POST['edit'];

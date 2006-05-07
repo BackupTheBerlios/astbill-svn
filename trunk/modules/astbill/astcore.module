@@ -428,9 +428,12 @@ function array2uri($to_uri, $current_key = '') {
   return $query_string;
 }
 
-function astcore_tenant() {
-	$gettenant = db_fetch_object(db_query("SELECT tid FROM astuser WHERE uid = '%s' AND db_prefix = '".$db_prefix."'", $user->uid));
-    return $gettenant->tid;
+function astcore_partnerid() {
+	global $db_prefix;
+	global $user;
+	$gettenant = db_fetch_object(db_query("SELECT partnerid FROM astuser WHERE uid = '%s' AND db_prefix = '".$db_prefix."'", $user->uid));
+	// drupal_set_message($gettenant->partnerid);
+    return $gettenant->partnerid;
 }
 /*
 Modification in menu.inc line 351:
