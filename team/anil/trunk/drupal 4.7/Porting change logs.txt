@@ -21,16 +21,17 @@ Porting notes:
 2) object2array in astcontact.module needs to be changed to array ??? maybe a new port allready exists on drupal.
 3) Convert all form_* to new API format. (run it in the form updater)
 4) Fieldset seems to be not compatible in drupal 4.7. (this is out of my league, any one able to help ??)
-5) 
+5) When creating astbill_views.sql file. asvaccount & asvaccount2 should be placed after asvaccuser (must).
+6) asvprice_uk, asvprice_uk_all, asvprice_usa needs removal, these seems specific to astartelecom site
 
 
 
 To DO LIST:
 
 
-1) drupal 4.1 mysql db ported
-2) astbill.sql ported
-3) Astbill modules as given below:
+1) drupal 4.1 mysql db = ported
+2) astbill.sql = ported
+3) Astbill views = ported, except a small error at start.
 4) astbill theme = needs re-working from slash blue phptemplate
 5) astadmin.module = ported
 6) astcallcard.module = ported
@@ -41,6 +42,6 @@ To DO LIST:
 11) astpbx.module = ported
 12) astpricelist.module = ported
 13) astroute.module = inprogress
-14) astsettings.module = ported
+14) astsettings.module = (broken in drupal 4.7) will not update changes and does not dislay descriptions. (ARE)
 15) astsettingsdid.module
 16) front_page.module

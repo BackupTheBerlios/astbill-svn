@@ -1,0 +1,613 @@
+$form[] = array(  '#type' => 'submit',  '#value' => t('Export'),);
+
+$output = drupal_get_form('1', $form);
+
+$form["routeid"] = array(  '#type' => 'select',  '#title' => t("Select Route"),  '#default_value' => NULL,  '#options' => $routeout,);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Edit'),);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Confirm'),);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
+
+$output = drupal_get_form('1', $form);
+
+$form["countrycode"] = array(  '#type' => 'select',  '#title' => t("Select Country"),  '#default_value' => $countrydefault,  '#options' => $countryout,);
+
+$form["trunk"] = array(  '#type' => 'select',  '#title' => t("Select Trunk"),  '#default_value' => $trunk,  '#options' => $trunklist,);
+
+$form['pattern'] = array(  '#type' => 'textfield',  '#title' => t('Pattern'),  '#default_value' => $countrydefault,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['routename'] = array(  '#type' => 'textfield',  '#title' => t('Route'),  '#default_value' => $name->country,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['costplan'] = array(  '#type' => 'textfield',  '#title' => t('Cost Plan'),  '#default_value' => $costplan,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['connectcharge'] = array(  '#type' => 'textfield',  '#title' => t('Connection Charge'),  '#default_value' => $charge,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['includedseconds'] = array(  '#type' => 'textfield',  '#title' => t('Included Seconds'),  '#default_value' => $sec,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['billincrement'] = array(  '#type' => 'textfield',  '#title' => t('Billing Increment'),  '#default_value' => $billinc,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['minimumcost'] = array(  '#type' => 'textfield',  '#title' => t('Minimum Cost'),  '#default_value' => $mincost,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['cost'] = array(  '#type' => 'textfield',  '#title' => t('Cost'),  '#default_value' => $cost,  '#size' => 30,  '#maxlength' => 100,);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Create'),);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
+
+$output = drupal_get_form('1', $form);
+
+$form['routename'] = array(  '#type' => 'textfield',  '#title' => t('Route'),  '#default_value' => $valuessql->routename,  '#size' => 30,  '#maxlength' => 100,);
+
+$form["trunk"] = array(  '#type' => 'select',  '#title' => t("Select Trunk"),  '#default_value' => $valuessql->trunk,  '#options' => $trunklist,);
+
+$form['costplan'] = array(  '#type' => 'textfield',  '#title' => t('Cost Plan'),  '#default_value' => $valuessql->costplan,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['connectcharge'] = array(  '#type' => 'textfield',  '#title' => t('Connection Charge'),  '#default_value' => $valuessql->connectcharge,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['includedseconds'] = array(  '#type' => 'textfield',  '#title' => t('Included Seconds'),  '#default_value' => $valuessql->includedseconds,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['billincrement'] = array(  '#type' => 'textfield',  '#title' => t('Billing Increment'),  '#default_value' => $valuessql->billincrement,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['minimumcost'] = array(  '#type' => 'textfield',  '#title' => t('Minimum Cost'),  '#default_value' => $valuessql->minimumcost,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['cost'] = array(  '#type' => 'textfield',  '#title' => t('Cost'),  '#default_value' => $valuessql->cost,  '#size' => 30,  '#maxlength' => 100,);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Save'),);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
+
+$output = drupal_get_form('1', $form);
+
+$form["countrycode"] = array(  '#type' => 'select',  '#title' => t("Select Country"),  '#default_value' => $defaultcountry,  '#options' => $countryout,);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Go'),);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Add'),);
+
+$output = drupal_get_form('1', $form);
+
+$form["brand"] = array(  '#type' => 'select',  '#title' => t('Select Rate Plan'),  '#default_value' => 'ALL',  '#options' => $brandlist,);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Export'),);
+
+$output = drupal_get_form('1', $form);
+
+$form["brand"] = array(  '#type' => 'select',  '#title' => NULL,  '#default_value' => 'ALL',  '#options' => $brandlist).'  <input type="submit" value="Send File" /><BR>  </form>	';		$output .= '<BR><BR>';	if ($_FILES['import']['error'] == '0') {  $csv = & new csv($_FILES['import']['tmp_name'],  '#description' => ',  '#extra' => ',);
+
+$form['decorinc'] = array(  '#type' => 'radios',  '#title' => t('Choose percentage to increase or decrease or set a fixed price'),  '#default_value' => 1,  '#options' => array(0 => 'Decrease', 1 => 'Increase', 2 => 'Fixed'),);
+
+$form['percentage'] = array(  '#type' => 'textfield',  '#title' => t('Percentage/Fixed Value'),  '#default_value' => NULL,  '#size' => 7,  '#maxlength' => 100,);
+
+$form['hidcountry'] = array(  '#type' => 'hidden',  '#value' => $value,);
+
+$form['hidbrand'] = array(  '#type' => 'hidden',  '#value' => $value2,);
+
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Generate'),);
+
+$form["routeid"] = array(  '#type' => 'select',  '#title' => t("Select Route"),  '#default_value' => NULL,  '#options' => $routeout,);
+
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Edit'),);
+
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
+
+
+$output = drupal_get_form('1', $form);
+
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Confirm'),);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
+
+$output = drupal_get_form('1', $form);
+
+$form["brand"] = array(  '#type' => 'select',  '#title' => t("Select Rate Plan"),  '#default_value' => $valuessql->brand,  '#options' => $brandlist,);
+
+$form['pattern'] = array(  '#type' => 'textfield',  '#title' => t('Pattern'),  '#default_value' => $valuessql->pattern,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['name'] = array(  '#type' => 'textfield',  '#title' => t('Name'),  '#default_value' => $valuessql->name,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['connectcharge'] = array(  '#type' => 'textfield',  '#title' => t('Connection Charge'),  '#default_value' => $valuessql->connectcharge,  '#size' => 30,  '#maxlength' => 100,);
+
+
+$form['includedseconds'] = array(  '#type' => 'textfield',  '#title' => t('Included Seconds'),  '#default_value' => $valuessql->includedseconds,  '#size' => 30,  '#maxlength' => 100,);
+
+
+$form['minimumprice'] = array(  '#type' => 'textfield',  '#title' => t('Minimum Price'),  '#default_value' => $valuessql->minimumprice,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['price'] = array(  '#type' => 'textfield',  '#title' => t('Price'),  '#default_value' => $valuessql->price,  '#size' => 30,  '#maxlength' => 100,);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Save'),);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
+
+$output = drupal_get_form('1', $form);
+
+
+$form["countrycode"] = array(  '#type' => 'select',  '#title' => t("Select Country"),  '#default_value' => $countrydefault,  '#options' => $countryout,);
+
+$form["brand"] = array(  '#type' => 'select',  '#title' => t("Select Rate Plan"),  '#default_value' => $branddefault,  '#options' => $brandlist,);
+
+$form['pattern'] = array(  '#type' => 'textfield',  '#title' => t('Pattern'),  '#default_value' => $countrydefault,  '#size' => 30,  '#maxlength' => 100,);
+
+
+$form['name'] = array(  '#type' => 'textfield',  '#title' => t('Name'),  '#default_value' => $name->country,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['connectcharge'] = array(  '#type' => 'textfield',  '#title' => t('Connection Charge'),  '#default_value' => $charge,  '#size' => 30,  '#maxlength' => 100,);
+
+
+$form['includedseconds'] = array(  '#type' => 'textfield',  '#title' => t('Included Seconds'),  '#default_value' => $sec,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['minimumprice'] = array(  '#type' => 'textfield',  '#title' => t('Minimum Price'),  '#default_value' => $mincost,  '#size' => 30,  '#maxlength' => 100,);
+
+$form['price'] = array(  '#type' => 'textfield',  '#title' => t('Price'),  '#default_value' => $cost,  '#size' => 30,  '#maxlength' => 100,);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Create'),);
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Back'),);
+
+$output = drupal_get_form('1', $form);
+
+
+$form["brand"] = array(  '#type' => 'select',  '#title' => t("Select Rate Plan"),  '#default_value' => $defaultbrand,  '#options' => $brandout,);
+
+$form["countrycode"] = array(  '#type' => 'select',  '#title' => t("Select Country"),  '#default_value' => $defaultcountry,  '#options' => $countryout,);
+
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Go'),);
+
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Add'),);
+
+
+$form[] = array(  '#type' => 'submit',  '#value' => t('Change Prices'),);
+
+
+$output = drupal_get_form('1', $form);
+
+
+$form['tech'] = array(
+  '#type' => 'radios',
+  '#title' => t('Choose Provider Trunk type'),
+  '#default_value' => $tech,
+  '#options' => array(0 => 'SIP' , 1 => 'IAX2', 2 => 'H323', 3 => 'Zap'),
+);
+
+
+$form['name'] = array(
+  '#type' => 'textfield',
+  '#title' => t($fieldtxt),
+  '#default_value' => $sqlout->name,
+  '#size' => 30,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form["serverid"] = array(
+  '#type' => 'select',
+  '#title' => t("ServerID"),
+  '#default_value' => $sqlout->serverid,
+  '#options' => $getserverid,
+);
+
+
+$form['username'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Provider Username'),
+  '#default_value' => $sqlout->username,
+  '#size' => 30,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['password'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Provider Password'),
+  '#default_value' => $sqlout->password,
+  '#size' => 30,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['host'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Provider Host'),
+  '#default_value' => $sqlout->host,
+  '#size' => 30,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+
+$form['comment'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Description'),
+  '#default_value' => $sqlout->comment,
+  '#size' => 100,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['vat'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Vat/Sales Tax:<BR><FONT SIZE=1>If you want to add VAT/Sales Tax to the Vendors prices before you calculate our cost. This field will make astcdr.ourcost include VAT/Sales Tax. This is usefull if you are not able to get your VAT/Sales Tax back</FONT>'),
+  '#default_value' => $sqlout->vat,
+  '#size' => 5,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['vat2'] = array(
+  '#type' => 'textfield',
+  '#title' => t("Vat2/Sales Tax2:<BR><FONT SIZE=1>If you don't want astcdr.ourcost to include the VAT/Sales Tax2 but want to store the rate for use on reports. Update the vendors VAT/Sales Tax2 rate. This rate is not used during calculations of astcdr.ourcost</FONT>"),
+  '#default_value' => $sqlout->vat2,
+  '#size' => 5,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+
+$form['maxusage'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Maximum channels:<BR><FONT SIZE=1>Controls the maximum number of channels (simultaneous calls) that can be used on this trunk, including both incoming and outgoing calls. Enter 9999 to specify no maximum</FONT>'),
+  '#default_value' => $sqlout->maxusage,
+  '#size' => 5,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['trunkcost'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Relative Cost/Metric:<BR><FONT SIZE=1>Specifies the metric, ie. cost for the destination. This gives higher priority to lower cost routes</FONT>'),
+  '#default_value' => $sqlout->trunkcost,
+  '#size' => 5,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['removeprefix'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Remove Prefix:<BR><FONT SIZE=1>The outbound dialing removeprefix is used to remove digits from the dialing string to all outbound calls placed on this trunk. Most users should leave this option 0.</FONT>'),
+  '#default_value' => $sqlout->removeprefix,
+  '#size' => 5,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['usstyleprefix'] = array(
+  '#type' => 'checkbox',
+  '#title' => t('<STRONG>US Style Prefix 011:<BR><FONT SIZE=1>The outbound US Style dialing prefix is used to prefix a dialing string to None US outbound calls placed on this trunk. If this option is choosen 011 will prefix all numbers not starting with 1. This is used with many US providers. The AddPrefix below will be appended before the 011 prefix.</FONT></STRONG>'),
+  '#return_value' => 1,
+  '#default_value' => $sqlout->usstyleprefix,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['addprefix'] = array(
+  '#type' => 'textfield',
+  '#title' => t('AddPrefix<BR><FONT SIZE=1>The outbound dialing prefix is used to prefix a dialing string to all outbound calls placed on this trunk. For example, if this trunk is behind another PBX or is a Centrex line, then you would put 9 here to access an outbound line. Most users should leave this option blank.</FONT>'),
+  '#default_value' => $sqlout->addprefix,
+  '#size' => 5,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['registerstring'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Register String:<BR><FONT SIZE=1>Register String Many VoIP providers require your system to REGISTER with theirs. Enter the registration line here. example: username:password@sip.astartelecom.com</FONT>'),
+  '#default_value' => $sqlout->registerstring,
+  '#size' => 90,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['auth'] = array(
+  '#type' => 'checkboxes',
+  '#title' => t('Choose authentication methods'),
+  '#default_value' => $authvalues,
+  '#options' => $authmethods,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+$form['isdefault'] = array(
+  '#type' => 'checkbox',
+  '#title' => t('<STRONG>Click to make default:<BR><FONT SIZE=1>If this is your first Provider Trunk you have to click to make it default. You need one default Provider Trunk</FONT></STRONG>'),
+  '#return_value' => 1,
+  '#default_value' => $ifchecked,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['name'] = array(
+  '#type' => 'textfield',
+  '#title' => t($fieldtxt),
+  '#default_value' => $sqlout->name,
+  '#size' => 30,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['username'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Provider Username'),
+  '#default_value' => $sqlout->username,
+  '#size' => 30,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['password'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Provider Password'),
+  '#default_value' => $sqlout->password,
+  '#size' => 30,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['host'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Provider Host'),
+  '#default_value' => $sqlout->host,
+  '#size' => 30,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['comment'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Description'),
+  '#default_value' => $sqlout->comment,
+  '#size' => 100,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['vat'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Vat/Sales Tax:<BR><FONT SIZE=1>If you want to add VAT/Sales Tax to the Vendors prices before you calculate our cost. This field will make astcdr.ourcost include VAT/Sales Tax. This is usefull if you are not able to get your VAT/Sales Tax back</FONT>'),
+  '#default_value' => $sqlout->vat,
+  '#size' => 5,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['vat2'] = array(
+  '#type' => 'textfield',
+  '#title' => t("Vat2/Sales Tax2:<BR><FONT SIZE=1>If you don't want astcdr.ourcost to include the VAT/Sales Tax2 but want to store the rate for use on reports. Update the vendors VAT/Sales Tax2 rate. This rate is not used during calculations of astcdr.ourcost</FONT>"),
+  '#default_value' => $sqlout->vat2,
+  '#size' => 5,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['maxusage'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Maximum channels:<BR><FONT SIZE=1>Controls the maximum number of channels (simultaneous calls) that can be used on this trunk, including both incoming and outgoing calls. Enter 9999 to specify no maximum</FONT>'),
+  '#default_value' => $sqlout->maxusage,
+  '#size' => 5,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['trunkcost'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Relative Cost/Metric:<BR><FONT SIZE=1>Specifies the metric, ie. cost for the destination. This gives higher priority to lower cost routes</FONT>'),
+  '#default_value' => $sqlout->trunkcost,
+  '#size' => 5,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['removeprefix'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Remove Prefix:<BR><FONT SIZE=1>The outbound dialing removeprefix is used to remove digits from the dialing string to all outbound calls placed on this trunk. Most users should leave this option 0.</FONT>'),
+  '#default_value' => $sqlout->removeprefix,
+  '#size' => 5,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['usstyleprefix'] = array(
+  '#type' => 'checkbox',
+  '#title' => t('<STRONG>US Style Prefix 011:<BR><FONT SIZE=1>The outbound US Style dialing prefix is used to prefix a dialing string to None US outbound calls placed on this trunk. If this option is choosen 011 will prefix all numbers not starting with 1. This is used with many US providers. The AddPrefix above will be appended before this.</FONT></STRONG>'),
+  '#return_value' => 1,
+  '#default_value' => $sqlout->usstyleprefix,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['addprefix'] = array(
+  '#type' => 'textfield',
+  '#title' => t('AddPrefix<BR><FONT SIZE=1>The outbound dialing prefix is used to prefix a dialing string to all outbound calls placed on this trunk. For example, if this trunk is behind another PBX or is a Centrex line, then you would put 9 here to access an outbound line. Most users should leave this option blank.</FONT>'),
+  '#default_value' => $sqlout->addprefix,
+  '#size' => 5,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['registerstring'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Register String:<BR><FONT SIZE=1>Register String Many VoIP providers require your system to REGISTER with theirs. Enter the registration line here. example: username:password@sip.astartelecom.com</FONT>'),
+  '#default_value' => $sqlout->registerstring,
+  '#size' => 90,
+  '#maxlength' => 128,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['auth'] = array(
+  '#type' => 'checkboxes',
+  '#title' => t('Choose authentication methods'),
+  '#default_value' => $authvalues,
+  '#options' => $authmethods,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['isdefault'] = array(
+  '#type' => 'checkbox',
+  '#title' => t('<STRONG>Click to make default:<BR><FONT SIZE=1>Only one Provider Trunk can be used as default</FONT></STRONG>'),
+  '#return_value' => 1,
+  '#default_value' => $ifchecked,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form['days'] = array(
+  '#type' => 'checkboxes',
+  '#title' => t('Days of the week.'),
+  '#default_value' => $days,
+  '#options' => $weekdays,
+  '#description' => null,
+  '#attributes' => null,
+  '#required' => false,
+);
+
+
+$form["starthour"] = array(
+  '#type' => 'select',
+  '#title' => t("Hour"),
+  '#default_value' => $edit['start_time_hr'],
+  '#options' => $sttimehr,
+);
+
+
+$form["startmin"] = array(
+  '#type' => 'select',
+  '#title' => t("Min"),
+  '#default_value' => $edit['start_time_min'],
+  '#options' => $sttimemin,
+);
+
+
+$form["endhour"] = array(
+  '#type' => 'select',
+  '#title' => t("Hour"),
+  '#default_value' => $edit['end_time_hr'],
+  '#options' => $endtimehr,
+);
+
+
+$form["endmin"] = array(
+  '#type' => 'select',
+  '#title' => t("Min"),
+  '#default_value' => $edit['end_time_min'],
+  '#options' => $endtimemin,
+);
+
+
+$form[] = array(
+  '#type' => 'submit',
+  '#value' => t('Create'),
+);
+
+
+$form[] = array(
+  '#type' => 'submit',
+  '#value' => t('Change'),
+);
+
+
+$form[] = array(
+  '#type' => 'submit',
+  '#value' => t('Delete'),
+);
+
+
+$form[] = array(
+  '#type' => 'submit',
+  '#value' => t('Back'),
+);
+
+$output = drupal_get_form('your_form_id', $form);
+
