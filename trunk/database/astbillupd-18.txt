@@ -910,11 +910,10 @@ WHEN callednum not like '47%'
 THEN 4 
 WHEN (dayofweek(date_created) in (1,7))  
 THEN 3  
-WHEN (time(date_created) < '07:00:00' or time(date_created) > '16:00:00' )  /* This is evening - Remember time differences*/
-THEN 2 /* This is evening */
-ELSE 1 /* This is daytime */
+WHEN (time(date_created) < '07:00:00' or time(date_created) > '16:00:00' ) 
+THEN 2 
+ELSE 1 
 END callrate from astcdr");
-
 
   $ret[] = update_sql("DROP VIEW IF EXISTS asvbill");
   $ret[] = update_sql("CREATE OR REPLACE SQL SECURITY INVOKER VIEW asvbill as
