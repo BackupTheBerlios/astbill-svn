@@ -905,7 +905,7 @@ where `astcdr`.`accountcode` = `astaccount`.`accountcode` and `astaccount`.`uid`
   $ret[] = update_sql("DROP VIEW IF EXISTS `asvcallrate`");
   
   /* Return 1 = Daytime, 2 = Evening, 3 = Weekend  Day 4 is not Norway */
-  /* CASE statement will return the first value that is true /*
+  /* CASE statement will return the first value that is true */
   $ret[] = update_sql("CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcallrate` AS 
 select id, `uniqueid`, invoiceno,callednum, date_created date, dayofweek(date_created) day, CASE 
 WHEN callednum not like '47%'  
@@ -968,4 +968,3 @@ CREATE TABLE `astpricelistcountry` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 */
 
-?>
