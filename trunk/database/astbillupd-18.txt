@@ -956,6 +956,8 @@ function astbill_update_047() {
 // drop table astsyslog;
 // ALTER TABLE `astpartner` CHANGE `status` `active` VARCHAR( 128 ) NULL 
 // ALTER TABLE `astuser` CHANGE `tid` `partnerid` INT( 11 ) NULL DEFAULT '0'
+// ALTER TABLE `aststatus` ADD `mysqluser` VARCHAR( 128 ) AFTER `servertech` 
+// ALTER TABLE `astacname` ADD `shortnumber` VARCHAR( 128 ) AFTER `accountcode` 
 
 // Make Index and Primary key - Add data to AstBill - Still work to be done.
 CREATE TABLE `astpricelistcountry` (
