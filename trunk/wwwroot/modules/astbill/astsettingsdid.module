@@ -41,19 +41,33 @@ function astsettingsdid_help($section='') {
 
 
 function astsettingsdid_menu($may_cache) {
-  $items = array();
-  $access = user_access('astsettingsdid batch');
+  $items   = array();
+  $access  = user_access('astsettingsdid batch');
+  $access2 = user_access('astsettingsdid Incomming');
+
   $items[] = array('path' => 'astbilladm/settings/createdidbatch',
                                   'title' => t('Generate DIDs'),
                                   'callback' => 'astsettingsdid_createdidbatch',
                                   'access' => $access);
                                  // 'type' => MENU_CALLBACK);
 
+  $items[] = array('path' => 'astbilladm/incomming',
+                                  'title' => t('Incoming Numbers'),
+                                  'callback' => 'settingsdid_incomming_main',
+                                  'access' => $access2);
+                                 // 'type' => MENU_CALLBACK);
+
+  $items[] = array('path' => 'astbilladm/incomming/assign',
+                                  'title' => t('Assign Incoming Number'),
+                                  'callback' => 'settingsdid_incomming_assign',
+                                  'access' => $access2,
+                                 'type' => MENU_CALLBACK);
+
   return $items;
 }
 
 function astsettingsdid_perm() {
-	return array('astsettingsdid batch');
+	return array('astsettingsdid batch', 'astsettingsdid Incomming');
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -243,4 +257,97 @@ if (arg(2) == 'addmac'){
 	return form($group);
 }
 
+function settingsdid_incomming_main() {
+	global $user;
+	global $db_prefix;
+	$edit = $_POST['edit'];
+	$op = $_POST['op'];
+	$value = $edit['search'];
+	$tmp = astcore_flattenArray($_GET);
+	
+	if (!empty($tmp['searchedit'])) {
+		$value = $tmp['searchedit'];
+	}
 
+	$output = astcore_search($edit, $posturl = url('astbilladm/incomming'), $value, 'NO');
+	$output .= settingsdid_incomming_list($value);
+	
+	$title = t("Incoming Numbers");
+	astcore_printtheme($output, $title);
+}
+
+function settingsdid_incomming_list($value) {
+	global $user;
+	global $db_prefix;
+
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+	$maxline = 40;
+
+	$header = array(
+	array('data' => t('User'), 'field' => 'name'),
+	array('data' => t('UID'), 'field' => 'uid'),
+	array('data' => t('Publicnumber'), 'field' => 'did', 'sort' => 'asc'),
+	array('data' => t('Group'), 'field' => 'acgroup'),
+	array('data' => t('Forwardto'), 'field' => 'forwardto'),
+	array('data' => t('Batch'), 'field' => 'batchno'),
+	array('data' => t('Operations'), 'colspan' => 3)	
+	);
+
+	$sql = "SELECT did.uid, did, acgroup, forwardto, batchno, name FROM astacdid did, {users} users WHERE did.uid = users.uid AND db_prefix = '".$db_prefix."' AND CONCAT_WS(',', did.uid, LOWER(did), LOWER(acgroup), forwardto, batchno, LOWER(name)) like LOWER('%".$value."%')". tablesort_sql($header);
+	
+	$result = pager_query($sql, $maxline);
+
+  
+	while ($item = db_fetch_object($result)) {
+	  	$rows[] = array('<A HREF="'.url('user/'.$item->uid).'">'.$item->name.'</A>',
+		$item->uid.'&nbsp;&nbsp;',
+		$item->did.'&nbsp;&nbsp;',
+		$item->acgroup.'&nbsp;&nbsp;',
+	        $item->forwardto.'&nbsp;&nbsp;',
+	        $item->batchno.'&nbsp;&nbsp;',
+/*		$item->username.'&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/realtime/friends/change/'.$item->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>&nbsp;&nbsp;',
+*/		'<A HREF="'.url('astbilladm/incomming/assign/'.$item->did).'">'.t('Assign').'</A>&nbsp;&nbsp;',
+//		'<A HREF="'.url('astbilladm/realtime/friends/remove/'.$item->accountcode).'/'.$item->accountcode.'">'.t('Remove').'</A>'
+		);
+	}
+
+	$output = astcore_list($header, $rows, t('No Friend entries.'), $maxline);
+	
+	return $output;
+}
+
+
+function settingsdid_incomming_assign() {
+  global $user;
+  global $db_prefix; 
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(2))) {
+    case t('Assign'):
+		$sqlout = db_fetch_object(db_query("select uid from astaccount where accountcode = '%s'",$edit['assignto']));
+
+		db_query("update astacdid set forwardto = '%s', uid = '%d'  WHERE did = '%s' and db_prefix = '".$db_prefix."'",$edit['assignto'],$sqlout->uid, arg(3));
+
+		db_query("update astaccount set forcecallerid = '%s' WHERE accountcode = '%s' and db_prefix = '".$db_prefix."'",arg(3),$edit['assignto']);
+
+		drupal_set_message(t('Incoming Number ').' '.arg(4).' '.t('Assigned to').' '.$edit['assignto'].t(' userid: ').$sqlout->uid);
+        // astadmin_friends_save($edit,arg(4));
+        drupal_goto("astbilladm/incomming");
+      break;
+  	// case t('Back'):
+		//drupal_goto("astbilladm/realtime/friends");
+    default:
+
+		$group .= form_textfield(t("Assign to Accountcode"), "assignto", "", 40, 150, null, null, false);
+		$group .= form_submit(t('Assign'));
+		$output = form($group);
+	    $title = t('Assign Incoming Number ').arg(3);
+		$account = $user->uid;
+	    astcore_printtheme($output, $title);
+  }
+}

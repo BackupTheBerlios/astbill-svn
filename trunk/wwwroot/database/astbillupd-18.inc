@@ -54,11 +54,12 @@ $sql_updates = array(
   "2006-03-17" => "astbill_update_040",
   "2006-03-18" => "astbill_update_041",
   "2006-03-25" => "astbill_update_042",
-  "2006-03-26" => "astbill_update_043",
+//  "2006-03-26" => "astbill_update_043",
   "2006-03-26b" => "astbill_update_044",
   "2006-03-28" => "astbill_update_045",
   "2006-04-15" => "astbill_update_046",
   "2006-04-20" => "astbill_update_047",
+  "2006-05-13" => "astbill_update_048",
 );
 
 function update_sql($sql) {
@@ -583,41 +584,6 @@ function astbill_update_042() {
   $ret[] = update_sql("ALTER TABLE `astacgroup` DROP PRIMARY KEY");
   $ret[] = update_sql("ALTER TABLE `astacgroup` ADD PRIMARY KEY ( `gtype` , `mastergroup` , `tenantid` )");
 
-  $ret[] = update_sql("CREATE TABLE `astprospect` (
-  `id` int(10) NOT NULL auto_increment,
-  `uid` int(10) NOT NULL default '1',
-  `db_prefix` varchar(40) NOT NULL default 'pbx_',
-  `company` varchar(128) NOT NULL default '',
-  `firstname` varchar(128) default NULL,
-  `lastname` varchar(128) default NULL,
-  `contactperson` varchar(128) default NULL,
-  `sosialsecurityno` varchar(128) NOT NULL default '',
-  `address1` varchar(128) NOT NULL default '',
-  `address2` varchar(128) NOT NULL default '',
-  `zip` varchar(64) NOT NULL default '',
-  `city` varchar(128) NOT NULL default '',
-  `state` varchar(128) default NULL,
-  `country` varchar(128) NOT NULL,
-  `mobile` varchar(128) NOT NULL default '',
-  `phonehome` varchar(128) NOT NULL default '',
-  `phonework` varchar(128) NOT NULL default '',
-  `fax` varchar(128) NOT NULL default '',
-  `email` varchar(128) NOT NULL default '',
-  `status` varchar(128) NOT NULL default '',
-  `customerstatus` varchar(128) NOT NULL default '',
-  `subscriptiontype` varchar(128) NOT NULL default '',
-  `porteringsno` varchar(128) NOT NULL default '',
-  `newno` varchar(128) NOT NULL default '',
-  `voicemail` varchar(128) NOT NULL default '',
-  `date_followup` datetime NOT NULL default '0000-00-00 00:00:00',
-  `comment` varchar(1024) NOT NULL default '',
-  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
-  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  PRIMARY KEY  (`id`),
-  KEY `company` (`company`),
-  KEY `contactname` (`lastname`)
-) ");
-  
   $ret[] = update_sql("ALTER TABLE `astlog` ADD `uid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `message`");
   $ret[] = update_sql("ALTER TABLE `astlog` ADD `accountcode` varchar(40) DEFAULT NULL NULL AFTER `uid`");
   $ret[] = update_sql("ALTER TABLE `astlog` ADD `db_prefix` varchar(40) DEFAULT NULL NULL AFTER `uid`");
@@ -625,13 +591,6 @@ function astbill_update_042() {
   return $ret;
 }
 
-function astbill_update_043() {
-  $ret = array();
-  $ret[] = update_sql("ALTER TABLE `astprospect` ADD `ref` varchar(256) DEFAULT NULL NULL AFTER `comment`");
-
-  return $ret;
-}
-  
  function astbill_update_044() {
   $ret = array();
   $ret[] = update_sql("CREATE TABLE `astlogsms` (
@@ -654,33 +613,13 @@ function astbill_update_043() {
   `date_scheduled` datetime NOT NULL default '0000-00-00 00:00:00',
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`smsid`)
-) AUTO_INCREMENT= 20000");
-
-  $ret[] = update_sql("CREATE TABLE `astprospect2` (
-  `id` int(10) NOT NULL auto_increment,
-  `refid` int(10) NOT NULL default '0',
-  `uid` int(10) NOT NULL default '0',
-  `db_prefix` varchar(40) NOT NULL default 'pbx_',
-  `contactperson` varchar(128) default NULL,
-  `mobile` varchar(128) NOT NULL default '',
-  `comment` varchar(1024) NOT NULL default '',
-  `ref` varchar(256) default NULL,
-  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
-  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  PRIMARY KEY  (`id`),
-  KEY `contactperson` (`contactperson`)
-) AUTO_INCREMENT=90000");
-
-  $ret[] = update_sql("ALTER TABLE `astprospect2` ADD `status` varchar(128) NOT NULL default '' AFTER `comment`");
-  $ret[] = update_sql("ALTER TABLE `astprospect2` ADD `date_followup` datetime NOT NULL default '0000-00-00 00:00:00' AFTER `status`");
-  $ret[] = update_sql("ALTER TABLE `astprospect` ADD `prospectid` int(10) NOT NULL default '0' AFTER `id`");
+) AUTO_INCREMENT= 20000 ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
   return $ret;
 }
 
 function astbill_update_045() {
   $ret = array();
-  $ret[] = update_sql("ALTER TABLE `astprospect2` ADD `email` VARCHAR( 128 ) AFTER `mobile`");
   $ret[] = update_sql("CREATE TABLE `astlogemail` (
   `emailid` int(10) NOT NULL auto_increment,
   `uid` int(10) NOT NULL default '0',
@@ -696,11 +635,7 @@ function astbill_update_045() {
   `date_scheduled` datetime NOT NULL default '0000-00-00 00:00:00',
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`emailid`)
-)");
-  $ret[] = update_sql("ALTER TABLE `astprospect` ADD `lateporting` varchar(128) default NULL AFTER `porteringsno`");
-  $ret[] = update_sql("ALTER TABLE `astprospect2` ADD `extid` varchar(128) default NULL AFTER `refid`");
-  $ret[] = update_sql("ALTER TABLE `astprospect2` ADD `source` varchar(128) default NULL AFTER `comment`");
-  $ret[] = update_sql("ALTER TABLE `astprospect2` ADD `tid` int(111) NOT NULL default '0' AFTER `extid`");
+) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
   return $ret;
 }
@@ -769,7 +704,7 @@ $ret[] = update_sql("CREATE TABLE `astpartner` (
   KEY `company` (`company`),
   KEY `contactname` (`lastname`),
   KEY `contactperson` (`contactperson`)
-) AUTO_INCREMENT=130001");
+) AUTO_INCREMENT=130001 ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
   $ret[] = update_sql("INSERT INTO astpartner ( pid, company, contactperson, address1, address2, zip, city, state, country, mobile, phonework, fax, status, date_created, timestamp )
 SELECT asttenant.tid, asttenant.company, asttenant.contactname, asttenant.address1, asttenant.address2, asttenant.zip, asttenant.city, asttenant.state, asttenant.country, asttenant.phone, asttenant.phone2, asttenant.fax, asttenant.status, asttenant.date_created, asttenant.timestamp
@@ -778,7 +713,6 @@ FROM asttenant");
   return $ret;
 }
 
-// update astprospect set `date_to_vendor` = Now() where customerstatus = 'B';
 function astbill_update_047() {
   $ret = array();
   $ret[] = update_sql("ALTER TABLE `astlogsms` ADD `pid` int(10) NOT NULL default '0' AFTER `uid`");
@@ -801,7 +735,7 @@ function astbill_update_047() {
   `batchno` varchar(128) NULL default NULL,
   `remarks` varchar(1024) NULL default NULL,
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  PRIMARY KEY  (`countryprefix`,`did`)  )");
+  PRIMARY KEY  (`countryprefix`,`did`)  ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
   $ret[] = update_sql("CREATE TABLE `astparcontact` (
   `coid` int(10) NOT NULL auto_increment,
@@ -844,7 +778,7 @@ function astbill_update_047() {
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`coid`),
   KEY `contactname` (`lastname`),
-  KEY `contactperson` (`firstname`)  )");
+  KEY `contactperson` (`firstname`)  ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
   $ret[] = update_sql("CREATE TABLE `astorder` (
   `orderno` int(10) unsigned NOT NULL default '0',
@@ -909,7 +843,7 @@ function astbill_update_047() {
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`orderno`),
   KEY `inv_db_prefix` (`db_prefix`,`uid`,`orderno`)
-) ENGINE=InnoDB   ");
+) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
   $ret[] = update_sql("CREATE TABLE `astorderline` (
   `orderno` int(11) unsigned NOT NULL,
@@ -933,62 +867,46 @@ function astbill_update_047() {
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`orderno`),
   UNIQUE KEY `invid` (`orderno`,`lineno`)
-) ENGINE=InnoDB ");
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ");
 
   $ret[] = update_sql("ALTER TABLE `astpartner` ADD `users_roles` varchar(256) NOT NULL default '2' AFTER `customerstatus`");
-
-//  $ret[] = update_sql("");
   return $ret;
 }
 
-// ALTER TABLE `astlogsms` CHANGE `invoiceno` `invoiceno` int(11) UNSIGNED NULL DEFAULT NULL 
-// ALTER TABLE `astcdr` ADD `invoiceno` int(11) UNSIGNED DEFAULT NULL AFTER `extension` ;
-// change name of invid to invoiceno = change 0 to NULL
-// ALTER TABLE `astplans` ADD `addseconds` INT( 10 ) DEFAULT '0' NOT NULL AFTER `connectcharge` ;
-// ALTER TABLE `astcdr` ADD INDEX `invoiceno_id` ( `invoiceno` , `id` ) 
-// ALTER TABLE `astcdr` ADD `priceid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `status` ;
-// ALTER TABLE `astcdr` ADD `countrycode` INT( 6 ) DEFAULT '0' NOT NULL AFTER `priceid` , ADD `productcode` VARCHAR( 40 ) AFTER `countrycode` ;
-// ALTER TABLE `astpricelist` CHANGE `productcode` `productcode` VARCHAR( 40 ) NULL DEFAULT '950'
-// ALTER TABLE `astprospect` ADD `lateportingdate` DATE AFTER `lateporting` ;
-// ALTER TABLE `astinvoice` DROP `freight`, DROP `adminfee`;
-// ALTER TABLE `astcdr` ADD `context` VARCHAR( 80 ) AFTER `extension`,ADD `rdnis` VARCHAR( 80 ) AFTER `context`,ADD `blindtransfer` VARCHAR( 255 ) AFTER `rdnis`;
-// ALTER TABLE `astcdr` ADD `dnid` VARCHAR( 80 ) AFTER `rdnis` ;
-// ALTER TABLE `aststatus` ADD `pid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `serverid` ;
-// ALTER TABLE `aststatus` ADD `servertech` VARCHAR( 128 ) AFTER `lansshport` ;
-// drop table astsyslog;
-// ALTER TABLE `astpartner` CHANGE `status` `active` VARCHAR( 128 ) NULL 
-// ALTER TABLE `astuser` CHANGE `tid` `partnerid` INT( 11 ) NULL DEFAULT '0'
-
-// Make Index and Primary key - Add data to AstBill - Still work to be done.
-CREATE TABLE `astpricelistcountry` (
-  `countrycode` int(11) default NULL,
-  `name` varchar(128) default NULL
-) ENGINE=InnoDB;
-  
-/*
-
-
-
-
-DROP VIEW IF EXISTS `asvcall`;
-
-CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcall` AS select `astcdr`.`uniqueid`,
+function astbill_update_048() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astlogsms` CHANGE `invoiceno` `invoiceno` int(11) UNSIGNED NULL DEFAULT NULL");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `invoiceno` int(11) UNSIGNED DEFAULT NULL AFTER `extension`");
+  $ret[] = update_sql("ALTER TABLE `astplans` ADD `addseconds` INT( 10 ) DEFAULT '0' NOT NULL AFTER `connectcharge` ");
+  $ret[] = update_sql("ALTER TABLE `astplans` ADD `addseconds` INT( 10 ) DEFAULT '0' NOT NULL AFTER `connectcharge`");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceno_id` ( `invoiceno` , `id` )");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `priceid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `status` ");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `countrycode` INT( 6 ) DEFAULT '0' NOT NULL AFTER `priceid` , ADD `productcode` VARCHAR( 40 ) AFTER `countrycode`");
+  $ret[] = update_sql("ALTER TABLE `astpricelist` CHANGE `productcode` `productcode` VARCHAR( 40 ) NULL DEFAULT '950'");
+  $ret[] = update_sql("ALTER TABLE `astprospect` ADD `lateportingdate` DATE AFTER `lateporting`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` DROP `freight`, DROP `adminfee`");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `context` VARCHAR( 80 ) AFTER `extension`,ADD `rdnis` VARCHAR( 80 ) AFTER `context`,ADD `blindtransfer` VARCHAR( 255 ) AFTER `rdnis`");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `dnid` VARCHAR( 80 ) AFTER `rdnis`");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `pid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `serverid`");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `servertech` VARCHAR( 128 ) AFTER `lansshport`");
+  $ret[] = update_sql("ALTER TABLE `astpartner` CHANGE `status` `active` VARCHAR( 128 ) NULL");
+  $ret[] = update_sql("ALTER TABLE `astuser` CHANGE `tid` `partnerid` INT( 11 ) NULL DEFAULT '0'");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `mysqluser` VARCHAR( 128 ) AFTER `servertech` ");
+  $ret[] = update_sql("ALTER TABLE `astacname` ADD `shortnumber` VARCHAR( 128 ) AFTER `accountcode` ");
+  $ret[] = update_sql("drop table astsyslog");
+  $ret[] = update_sql("ALTER TABLE `astcdr` CHANGE `invid` `invoiceno` INT( 11 ) UNSIGNED NULL");
+  $ret[] = update_sql("DROP VIEW IF EXISTS `asvcall`");
+  $ret[] = update_sql("CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcall` AS select `astcdr`.`uniqueid`,
 `astcdr`.`accountcode`,`astcdr`.`callednum`,`astuser`.`uid`,`astuser`.`brand`,`astuser`.`CountryPrefix`,
 `astplans`.`markup`,`astplans`.`billincrement` 
 from `astcdr`, `astaccount`, `astuser`, `astplans`
 where `astcdr`.`accountcode` = `astaccount`.`accountcode` and `astaccount`.`uid` = `astuser`.`uid` and 
-`astaccount`.`db_prefix` = `astuser`.`db_prefix` and `astcdr`.`brand` = `astplans`.`name`;
-
-select * from asvcall where `uniqueid` = '1135182346.302';
-select * from asvcall where `uniqueid` = '1145541220.17284';
-
-select * from asvcall limit 40;
-
-DROP VIEW IF EXISTS `asvcallrate`;
-
-/* Return 1 = Daytime, 2 = Evening, 3 = Weekend  */
-/* CASE statement will return the first value that is true /*
-CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcallrate` AS 
+`astaccount`.`db_prefix` = `astuser`.`db_prefix` and `astcdr`.`brand` = `astplans`.`name`");
+  $ret[] = update_sql("DROP VIEW IF EXISTS `asvcallrate`");
+  
+  /* Return 1 = Daytime, 2 = Evening, 3 = Weekend  */
+  /* CASE statement will return the first value that is true /*
+  $ret[] = update_sql("CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcallrate` AS 
 select id, `uniqueid`, invoiceno,callednum, date_created date, dayofweek(date_created) day, CASE 
 WHEN callednum not like '47%'  
 THEN 4 /* This is not Norway */
@@ -997,21 +915,13 @@ THEN 3  /* This is weekend */
 WHEN (time(date_created) < '07:00:00' or time(date_created) > '16:00:00' )  /* This is evening - Remember time differences*/
 THEN 2 /* This is evening */
 ELSE 1 /* This is daytime */
-END callrate
-from astcdr;
+END callrate from astcdr");
 
-
-select * from `asvcallrate` where `uniqueid` = '1135182346.302';
-
-
-DROP VIEW IF EXISTS asvbill;
-
-CREATE OR REPLACE SQL SECURITY INVOKER VIEW asvbill as
+  $ret[] = update_sql("DROP VIEW IF EXISTS asvbill");
+  $ret[] = update_sql("CREATE OR REPLACE SQL SECURITY INVOKER VIEW asvbill as
 select accountcode, date_created, DATE_FORMAT(date_created,'%d %b %Y %H:%i:%S') as datec, callednum, answeredtime, billtime, SEC_TO_TIME(billtime) as billtime2, pricerate, 
-price from astcdr where dialstatus like 'ANSWER%' and answeredtime <> 0 and trunk <> 'Local' order by date_created desc;
-
-
-CREATE TABLE `astproduct` (
+price from astcdr where dialstatus like 'ANSWER%' and answeredtime <> 0 and trunk <> 'Local' order by date_created desc");
+  $ret[] = update_sql("CREATE TABLE `astproduct` (
   `productcode` varchar(40) NOT NULL,
   `categoryid` varchar(6) NOT NULL default '',
   `description` varchar(50) NOT NULL default '',
@@ -1044,6 +954,18 @@ CREATE TABLE `astproduct` (
   KEY `Controlled` (`controlled`),
   KEY `DiscountCategory` (`discountcategory`),
   KEY `taxcatid` (`taxcatid`)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
-/*?>
+//  $ret[] = update_sql("");
+  return $ret;
+}
+
+/* Below is not in use yet.
+TODO: Make Index and Primary key - Add data to AstBill Demo
+CREATE TABLE `astpricelistcountry` (
+  `countrycode` int(11) default NULL,
+  `name` varchar(128) default NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*
+
+?>
