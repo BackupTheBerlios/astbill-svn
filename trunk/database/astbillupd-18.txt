@@ -52,7 +52,6 @@ $sql_updates = array(
   "2006-03-17" => "astbill_update_040",
   "2006-03-18" => "astbill_update_041",
   "2006-03-25" => "astbill_update_042",
-//  "2006-03-26" => "astbill_update_043",
   "2006-03-26b" => "astbill_update_044",
   "2006-03-28" => "astbill_update_045",
   "2006-04-15" => "astbill_update_046",
@@ -873,14 +872,12 @@ function astbill_update_047() {
 
 function astbill_update_048() {
   $ret = array();
-  $ret[] = update_sql("ALTER TABLE `astlogsms` CHANGE `invoiceno` `invoiceno` int(11) UNSIGNED NULL DEFAULT NULL");
-  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `invoiceno` int(11) UNSIGNED DEFAULT NULL AFTER `extension`");
-  $ret[] = update_sql("ALTER TABLE `astplans` ADD `addseconds` INT( 10 ) DEFAULT '0' NOT NULL AFTER `connectcharge` ");
+//  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `invoiceno` int(11) UNSIGNED DEFAULT NULL AFTER `extension`");
   $ret[] = update_sql("ALTER TABLE `astplans` ADD `addseconds` INT( 10 ) DEFAULT '0' NOT NULL AFTER `connectcharge`");
   $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceno_id` ( `invoiceno` , `id` )");
   $ret[] = update_sql("ALTER TABLE `astcdr` ADD `priceid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `status` ");
   $ret[] = update_sql("ALTER TABLE `astcdr` ADD `countrycode` INT( 6 ) DEFAULT '0' NOT NULL AFTER `priceid` , ADD `productcode` VARCHAR( 40 ) AFTER `countrycode`");
-  $ret[] = update_sql("ALTER TABLE `astpricelist` CHANGE `productcode` `productcode` VARCHAR( 40 ) NULL DEFAULT '950'");
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `productcode` VARCHAR( 40 ) NULL DEFAULT '950'");
   $ret[] = update_sql("ALTER TABLE `astprospect` ADD `lateportingdate` DATE AFTER `lateporting`");
   $ret[] = update_sql("ALTER TABLE `astinvoice` DROP `freight`, DROP `adminfee`");
   $ret[] = update_sql("ALTER TABLE `astcdr` ADD `context` VARCHAR( 80 ) AFTER `extension`,ADD `rdnis` VARCHAR( 80 ) AFTER `context`,ADD `blindtransfer` VARCHAR( 255 ) AFTER `rdnis`");
@@ -954,6 +951,9 @@ price from astcdr where dialstatus like 'ANSWER%' and answeredtime <> 0 and trun
   KEY `taxcatid` (`taxcatid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
+  $ret[] = update_sql("drop view asvprice_uk");
+  $ret[] = update_sql("drop view asvprice_uk_all");
+  $ret[] = update_sql("drop view asvprice_usa");
 //  $ret[] = update_sql("");
   return $ret;
 }
