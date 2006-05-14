@@ -904,18 +904,19 @@ where `astcdr`.`accountcode` = `astaccount`.`accountcode` and `astaccount`.`uid`
 `astaccount`.`db_prefix` = `astuser`.`db_prefix` and `astcdr`.`brand` = `astplans`.`name`");
   $ret[] = update_sql("DROP VIEW IF EXISTS `asvcallrate`");
   
-  /* Return 1 = Daytime, 2 = Evening, 3 = Weekend  */
+  /* Return 1 = Daytime, 2 = Evening, 3 = Weekend  Day 4 is not Norway */
   /* CASE statement will return the first value that is true /*
   $ret[] = update_sql("CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcallrate` AS 
 select id, `uniqueid`, invoiceno,callednum, date_created date, dayofweek(date_created) day, CASE 
 WHEN callednum not like '47%'  
-THEN 4 /* This is not Norway */
-WHEN (dayofweek(date_created) in (1,7))  /* Day 1 and 7 is weekend */
-THEN 3  /* This is weekend */
+THEN 4 
+WHEN (dayofweek(date_created) in (1,7))  
+THEN 3  
 WHEN (time(date_created) < '07:00:00' or time(date_created) > '16:00:00' )  /* This is evening - Remember time differences*/
 THEN 2 /* This is evening */
 ELSE 1 /* This is daytime */
 END callrate from astcdr");
+
 
   $ret[] = update_sql("DROP VIEW IF EXISTS asvbill");
   $ret[] = update_sql("CREATE OR REPLACE SQL SECURITY INVOKER VIEW asvbill as
@@ -966,6 +967,6 @@ CREATE TABLE `astpricelistcountry` (
   `countrycode` int(11) default NULL,
   `name` varchar(128) default NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*
+*/
 
 ?>
