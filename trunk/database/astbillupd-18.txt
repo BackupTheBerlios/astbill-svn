@@ -964,5 +964,9 @@ CREATE TABLE `astpricelistcountry` (
   `countrycode` int(11) default NULL,
   `name` varchar(128) default NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `aststatus` ADD `voxtech` VARCHAR( 128 ) AFTER `servertech` ;
+ALTER TABLE `astaccount` ADD `shortnumber` VARCHAR( 128 ) AFTER `serverid` ;
+
 */
 
