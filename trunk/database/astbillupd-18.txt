@@ -968,5 +968,8 @@ CREATE TABLE `astpricelistcountry` (
 ALTER TABLE `aststatus` ADD `voxtech` VARCHAR( 128 ) AFTER `servertech` ;
 ALTER TABLE `astaccount` ADD `shortnumber` VARCHAR( 128 ) AFTER `serverid` ;
 
+ALTER TABLE `astacname` DROP `shortnumber`,
+ALTER TABLE `astaccount` ADD UNIQUE (`serverid` ,`shortnumber`);
+
 */
 
