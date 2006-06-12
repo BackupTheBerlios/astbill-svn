@@ -966,5 +966,14 @@ CREATE TABLE `astpricelistcountry` (
   `countrycode` int(11) default NULL,
   `name` varchar(128) default NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `aststatus` ADD `voxtech` VARCHAR( 128 ) AFTER `servertech` ;
+ALTER TABLE `astaccount` ADD `shortnumber` VARCHAR( 128 ) AFTER `serverid` ;
+
+ALTER TABLE `astacname` DROP `shortnumber`,
+ALTER TABLE `astaccount` ADD UNIQUE (`serverid` ,`shortnumber`);
+ALTER TABLE `aststatus` ADD `dial9` VARCHAR( 256 ) AFTER `mysqluser` ;
+ALTER TABLE `aststatus` ADD `mysqluser2` VARCHAR( 128 ) AFTER `mysqluser` ;
+
 */
 

@@ -629,7 +629,8 @@ function astcore_form_select($title, $name, $value, $options, $description = NUL
       $select .= '<option value="'. check_plain($key) .'"'. (is_array($value) ? (in_array($key, $value) ? ' selected="selected"' : '') : ($value == $key ? ' selected="selected"' : '')) .'>'. check_plain($choice) .'</option>';
     }
   }
-  return astcore_form_element($title, '<select name="edit['. $name .']'. ($multiple ? '[]' : '') .'"'. ($multiple ? ' multiple="multiple" ' : '') . ($extra ? ' '. $extra : '') .' id="edit-'. $name .'">'. $select .'</select>', $description, 'edit-'. $name, $required, _form_get_error($name));
+  $group = '<select name="edit['. $name .']'. ($multiple ? '[]' : '') .'"'. ($multiple ? ' multiple="multiple" ' : '') . ($extra ? ' '. $extra : '') .' id="edit-'. $name .'">'. $select .'</select>';
+  return astcore_form_element($title, $group, $description, 'edit-'. $name, $required, _form_get_error($name));
 }
 
 function astcore_form_start() {
@@ -641,4 +642,146 @@ function astcore_form_end() {
 	return '</TABLE>
 ';
 }
+
+function astcore_formselect_datetime($title, $lateportingdate, $edit, $showtime = FALSE) {
+	// MAKE DATE LISTS
+	
+    if (empty($edit['astyear'])) {
+		$followupsplit = explode(" ", $lateportingdate);
+		$dates = explode("-", $followupsplit[0]);
+		$edit['astyear'] = $dates[0];
+		$edit['astmonth'] = $dates[1];
+		$edit['astday'] = $dates[2];
+		$times = explode(":", $followupsplit[1]);
+		$edit['asthour'] = $times[0];
+		$edit['astminute'] = $times[1];
+		$edit['astsecond'] = $times[2];
+	}
+
+	$x = date(Y);
+	if (empty($edit['astyear'])) {
+		$y = date(Y);
+	} else {
+		$y = $edit['astyear'];
+	}
+	while ($x <= 2008) {
+		if ($x == $y) {
+			$yearlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$yearlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+	
+	$x = 1;
+	if (empty($edit['astday'])) {
+		$y = date(j);
+	} else {
+		$y = $edit['astday'];
+	}
+	while ($x <= '31') {
+		if ($x == $y) {
+			$daylist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {	
+			$daylist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+
+	$listmonth = array('1' => t('January'), '2' => t('February'), '3' => t('March'), '4' => t('April'), '5' => t('May'), '6' => t('June'), '7' => t('July'), '8' => t('August'), '9' => t('September'), '10' => t('October'), '11' => t('November'), '12' => t('December'));
+
+	$x = 1;
+	if (empty($edit['astmonth'])) {
+		$y = date(n);
+	} else {
+		$y = $edit['astmonth'];
+	}
+	while ($x <= '12') {
+		if ($x == $y) {
+			$monthlist .= '<option value="'.$x.'" selected="selected">'.$listmonth[$x].'</option>';
+		} else {
+			$monthlist .= '<option value="'.$x.'">'.$listmonth[$x].'</option>';
+		}
+		$x++;
+	}
+	// END MAKE DATE LISTS
+	// MAKE TIME LISTS
+	
+	$x = 0;
+	if (empty($edit['asthour'])) {
+		$y = date(G) + 1;
+	} else {
+		$y = $edit['asthour'];
+	}
+	while ($x <= 23) {
+		if ($x == $y) {
+			$hourlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$hourlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+	
+	$x = 0;
+	if (empty($edit['minute'])) {
+		$y = date(i);
+	} else {
+		$y = $edit['minute'];
+	}
+	$minutelist = "";
+    if ($y == "00") {
+		$minutelist .= '<option value="00" selected="selected">00</option>';
+		$minutelist .= '<option value="30">30</option>';
+	} else {
+		$minutelist .= '<option value="00">00</option>';
+		$minutelist .= '<option value="30" selected="selected">30</option>';
+	}
+	
+/*	while ($x <= 55) {
+		if ($x == $y) {
+			$minutelist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {	
+			$minutelist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+		$x++;
+		$x++;
+		$x++;
+		$x++;
+	}
+*/
+	// END MAKE TIME LISTS
+	
+if ($showtime == FALSE) {
+ 	$group = '<select name="edit[astday]" id="edit-astday">
+'.$daylist.'
+</select>
+<select name="edit[astmonth]" id="edit-astmonth">
+'.$monthlist.'
+</select>
+<select name="edit[astyear]" id="edit-astyear">
+'.$yearlist.'
+</select>';
+} else {
+	$group = '<select name="edit[astday]" id="edit-astday">
+'.$daylist.'
+</select>
+<select name="edit[astmonth]" id="edit-astmonth">
+'.$monthlist.'
+</select>
+<select name="edit[astyear]" id="edit-astyear">
+'.$yearlist.'
+</select>
+<select name="edit[asthour]" id="edit-asthour">
+'.$hourlist.'
+</select>
+<select name="edit[astminute]" id="edit-astminute">
+'.$minutelist.'
+</select>';
+	
+}
+
+	return astcore_form_element($title, $group);
+}
+
 ?>
