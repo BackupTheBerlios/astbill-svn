@@ -972,6 +972,20 @@ ALTER TABLE `astacname` DROP `shortnumber`,
 ALTER TABLE `astaccount` ADD UNIQUE (`serverid` ,`shortnumber`);
 ALTER TABLE `aststatus` ADD `dial9` VARCHAR( 256 ) AFTER `mysqluser` ;
 ALTER TABLE `aststatus` ADD `mysqluser2` VARCHAR( 128 ) AFTER `mysqluser` ;
+ALTER TABLE `astemailtext` ADD `partnerid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `EmailText` ;
+
+CREATE TABLE `astlogsmsbatch` (
+  `batchid` int(10) NOT NULL auto_increment,
+  `pdudata` text(30720) default NULL,
+  `remarks` varchar(1024) default NULL,  
+  `processed_date` DATETIME default NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`batchid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `astlogsms` ADD INDEX `fromnr` ( `fromnr` );
+ALTER TABLE `astacgroup` CHANGE `tenantid` `partnerid` INT( 11 ) NULL DEFAULT '0'
+ALTER TABLE `astprospect2` CHANGE `tid` `partnerid` INT( 11 ) NULL DEFAULT '0'
 
 */
 

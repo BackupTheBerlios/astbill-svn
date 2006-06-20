@@ -1138,7 +1138,7 @@ function astpbx_user($type, &$edit, &$user, $category = NULL) {
   // global $active_db; 
   // $result = mysql_query($query, $active_db); 
   
-  switch ($type) {
+   switch ($type) {
 /*    case 'load':
       return profile_load_profile($user);
     case 'register':
@@ -1179,15 +1179,17 @@ $edit['language'], $edit['forwardto'],$callerid,$edit['accountname'],$lastaccoun
 
 db_query("UPDATE astuser SET brand = '%s', ipaddr = '".$_SERVER['REMOTE_ADDR']."' WHERE uid='%s' and db_prefix ='".$db_prefix."'", variable_get("AstBill Brand", 'default'), $user->uid);   
 
-		//   drupal_set_message(t('New Account Created: '. $result->accountcode));
-// variable_set("AstBill Sendemail",1);
-if (variable_get('AstBill Sendemail', 1)) {
-	// drupal_set_message("astpbx_sendemail");
-	astpbx_sendemail($db_prefix."ASTARREG", $user->mail, $result->accountcode,$user->name,$lastaccount->comment);
-}
+
+ if ( arg(0) <> "astpartneradm") {
+	//   drupal_set_message(t('New Account Created: '. $result->accountcode));
+	// variable_set("AstBill Sendemail",1);
+	if (variable_get('AstBill Sendemail', 1)) {
+		// drupal_set_message("astpbx_sendemail");
+		astpbx_sendemail($db_prefix."ASTARREG", $user->mail, $result->accountcode,$user->name,$lastaccount->comment);
+	}
+ }		
 		// $sql = db_query ("insert into test (subject) values ('Drupal $db_prefix  $user->uid')");
 		// $sql = db_query ("insert into test (subject) values ('$item->id')");
-
 
 		/*  $sql = db_query ("select brand FROM astuser WHERE uid='%s'", $user->uid);   */
 		/*  $sqlget = db_fetch_object($sql);   */

@@ -363,8 +363,9 @@ drupal_set_message(t('Partner changed'));
 } // END CHECK IF PartnerCHANGE
 
 if (arg(2) == 'changespecific'){ // START CHECK IF PartnerCHANGESPECIFIC
-
-	db_query("UPDATE astuser SET partnerid = '%s', brand = '%s', CountryPrefix = '%s', currency = '%s' WHERE uid = '%s' and db_prefix ='".$db_prefix."'", $edit['partnerid'], $edit['brand'], $edit['country'], $edit['currency'], arg(3));
+    
+	// partnerid = '%s', 
+	db_query("UPDATE astuser SET brand = '%s', CountryPrefix = '%s', currency = '%s' WHERE uid = '%s' and db_prefix ='".$db_prefix."'", $edit['brand'], $edit['country'], $edit['currency'], arg(3));
 	drupal_set_message(t('Partner changed'));
 
 } // END CHECK IF PartnerCHANGE
