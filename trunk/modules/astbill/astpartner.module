@@ -162,7 +162,7 @@ if (arg(2) == '') {
     array('data' => t('id'), 'field' => 'pid', 'sort' => 'asc'),
     array('data' => t('Company'), 'field' => 'company'),
     array('data' => t('Contactperson'), 'field' => 'contactperson'),
-    array('data' => t('Operations'), 'colspan' => 2)                                                                                 
+    array('data' => t('Operations'), 'colspan' => 3)                                                                                 
   );                                                                                 
                                                                                       
  // $sql = "SELECT astpartner.pid, astpartner.company, astpartner.contactperson, Count(astuser.partnerid) AS users 
@@ -180,6 +180,7 @@ $getusers = db_fetch_object(db_query("SELECT Count(astuser.partnerid) AS users F
 		$res->pid."&nbsp;&nbsp;",
 		$res->company,
 		$res->contactperson,
+		'<A HREF="'.url('astpartneradm/usercreate/'.$res->pid).'">'.t('Create User').'</A>',
 		'<A HREF="'.url('astbilladm/partner/change/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
 		'<A HREF="'.url('astbilladm/partner/remove/'.$res->pid).'">'.t('Remove').'</A>'
 	);

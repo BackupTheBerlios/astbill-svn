@@ -259,7 +259,7 @@ function astpartneradmin_user_create() {
     $output = astpartneradmin_user_form();
   }
 
-	$title = 'Partners User Informasjon';
+	$title = 'Partners Web User Informasjon';
 	astcore_printtheme($output, $title);	
 }
 
@@ -334,6 +334,9 @@ if ($myerror == 1) {
 } else {
 
 $partnerid = astcore_partnerid();
+if (is_numeric(arg(2))) {
+	$partnerid = arg(2);
+}
 
 
 //  $wwwpw = user_password();
