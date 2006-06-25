@@ -356,6 +356,9 @@ if ($partnerid == '30005' and $db_prefix = 'cbk_') {  // WARNING - Just Temporar
 if ($partnerid == '130016' and $db_prefix = 'cbk_') {  // WARNING - Just Temporary
 	db_query("update cbk_users_roles set rid = '6' where uid = ".$newuser->uid);
 }   
+if ($partnerid == '130019' and $db_prefix = 'cbk_') {  // WARNING - Just Temporary
+	db_query("update cbk_users_roles set rid = '6' where uid = ".$newuser->uid);
+}   
 
 drupal_set_message(t('User '.$name.' Created with id: '.$newuser->uid));
 

@@ -986,6 +986,9 @@ CREATE TABLE `astlogsmsbatch` (
 ALTER TABLE `astlogsms` ADD INDEX `fromnr` ( `fromnr` );
 ALTER TABLE `astacgroup` CHANGE `tenantid` `partnerid` INT( 11 ) NULL DEFAULT '0'
 ALTER TABLE `astprospect2` CHANGE `tid` `partnerid` INT( 11 ) NULL DEFAULT '0'
+ALTER TABLE `astemailtext` ADD `db_prefix` VARCHAR( 40 ) NOT NULL FIRST 
+ALTER TABLE `astemailtext` DROP PRIMARY KEY , ADD PRIMARY KEY ( `db_prefix` , `partnerid` , `EmailText` ) 
+ALTER TABLE `astpartner` ADD `followuptype` VARCHAR( 100 ) AFTER `leadsource` ;
 
 */
 

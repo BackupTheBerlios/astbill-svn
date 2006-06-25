@@ -643,10 +643,14 @@ function astcore_form_end() {
 ';
 }
 
-function astcore_formselect_datetime($title, $lateportingdate, $edit, $showtime = FALSE) {
+function astcore_formselect_datetime($title, $lateportingdate, $edit, $showtime = FALSE, $istable = TRUE, $allowempty = FALSE) {
 	// MAKE DATE LISTS
 	
-    if (empty($edit['astyear'])) {
+//	$allowempty = TRUE;
+
+// print $lateportingdate;
+
+    if ((empty($edit['astyear']) && (!empty($lateportingdate)))) {
 		$followupsplit = explode(" ", $lateportingdate);
 		$dates = explode("-", $followupsplit[0]);
 		$edit['astyear'] = $dates[0];
@@ -658,13 +662,12 @@ function astcore_formselect_datetime($title, $lateportingdate, $edit, $showtime 
 		$edit['astsecond'] = $times[2];
 	}
 
+	// The expression (expr1) ? (expr2) : (expr3) evaluates to expr2 if expr1 evaluates to TRUE, and expr3 if expr1 evaluates to FALSE.
+	$y = (empty($lateportingdate)) ? "" : $edit['astyear'];
+	$yearlist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
 	$x = date(Y);
-	if (empty($edit['astyear'])) {
-		$y = date(Y);
-	} else {
-		$y = $edit['astyear'];
-	}
-	while ($x <= 2008) {
+	while ($x <= (date(Y)+2)) {
 		if ($x == $y) {
 			$yearlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
 		} else {
@@ -672,13 +675,11 @@ function astcore_formselect_datetime($title, $lateportingdate, $edit, $showtime 
 		}
 		$x++;
 	}
-	
+
+	$y = (empty($lateportingdate)) ? "" : $edit['astday'];
+	$daylist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
 	$x = 1;
-	if (empty($edit['astday'])) {
-		$y = date(j);
-	} else {
-		$y = $edit['astday'];
-	}
 	while ($x <= '31') {
 		if ($x == $y) {
 			$daylist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
@@ -690,12 +691,10 @@ function astcore_formselect_datetime($title, $lateportingdate, $edit, $showtime 
 
 	$listmonth = array('1' => t('January'), '2' => t('February'), '3' => t('March'), '4' => t('April'), '5' => t('May'), '6' => t('June'), '7' => t('July'), '8' => t('August'), '9' => t('September'), '10' => t('October'), '11' => t('November'), '12' => t('December'));
 
+	$y = (empty($lateportingdate)) ? "" : $edit['astmonth'];
+	$monthlist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+	
 	$x = 1;
-	if (empty($edit['astmonth'])) {
-		$y = date(n);
-	} else {
-		$y = $edit['astmonth'];
-	}
 	while ($x <= '12') {
 		if ($x == $y) {
 			$monthlist .= '<option value="'.$x.'" selected="selected">'.$listmonth[$x].'</option>';
@@ -752,6 +751,8 @@ function astcore_formselect_datetime($title, $lateportingdate, $edit, $showtime 
 */
 	// END MAKE TIME LISTS
 	
+// $edit[astyear] = '';
+
 if ($showtime == FALSE) {
  	$group = '<select name="edit[astday]" id="edit-astday">
 '.$daylist.'
@@ -780,8 +781,10 @@ if ($showtime == FALSE) {
 </select>';
 	
 }
-
+if ($istable == TRUE) {
 	return astcore_form_element($title, $group);
+} ELSE {
+	return $group.'<BR>';
 }
 
-?>
+}
