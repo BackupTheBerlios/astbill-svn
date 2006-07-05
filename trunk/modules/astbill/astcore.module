@@ -788,3 +788,26 @@ if ($istable == TRUE) {
 }
 
 }
+
+function astcore_addMonthNoLenient($my_date, $add_month)
+{
+  $day = date("d", $my_date);
+  $month = date("m", $my_date);
+  $year = date("Y", $my_date);
+
+  $new_date = date("Y-m-d", mktime(0, 0, 0, $month + $add_month, $day, $year));
+
+  $month_for_days = ($month + $add_month) % 12;
+  if($month_for_days == 0)
+  {
+   $month_for_days = 12;
+  }
+
+  if($month_for_days != date("m", mktime(0, 0, 0, $month + $add_month , $day, $year)))
+  {
+   $new_year = date("Y", mktime(0, 0, 0, $month + $add_month, $day, $year));
+   $days_in_month = cal_days_in_month(CAL_GREGORIAN, $month_for_days, $new_year);
+   $new_date = date("Y-m-d", mktime(0, 0, 0, $month + $add_month, $days_in_month, $year));
+  }
+  return $new_date;
+}
