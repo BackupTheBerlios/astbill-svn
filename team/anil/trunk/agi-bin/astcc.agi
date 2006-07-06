@@ -1,0 +1,672 @@
+#!/usr/bin/perl -w
+#
+# Asterisk(tm) Calling Card Platform
+#
+# Copyright (C) 2004, Digium, Inc.
+#
+# Mark Spencer <markster@digium.com
+# Oliver Daudey <traveler@xs4all.nl>
+#
+# This program is Free Software and is distributed under the
+# terms of the GNU General Public License version 2 or later
+# at your option.
+#
+#
+# Usage-example:
+#
+# ;
+# ; Card-number and number to dial derived from command-line.
+# ; Call script with the card-number as first arg and the number
+# ; to dial as the second arg.
+# ;
+# exten => _00XXXXXXXXX,1,DeadAGI(astcc.agi,${CALLERIDNUM},${EXTEN})
+# exten => _00XXXXXXXXX,2,Hangup
+#
+# ;
+# ; Prompt the caller for the card-number and the number to dial.
+# ;
+# exten => 1234,1,Answer
+# exten => 1234,2,DeadAGI(astcc.agi)
+# exten => 1234,3,Hangup
+#
+# ; If you call it with an extension of "BALANCE" and a calleridnumber, 
+# ; it will read your balance to you and then exit.
+#
+# exten => _00XXXXXXXXX,1,DeadAGI(astcc.agi,${CALLERIDNUM},BALANCE,1)
+# exten => _00XXXXXXXXX,2,Hangup
+# 
+# I have added a few different quiet to this program.  They can
+# be specified from the dial command. 
+# 
+# 1 - All warnings and messages play.
+# 2 - All warnings and card balance
+# 3 - All warnings
+# 4 - Interrogation Only
+
+use DBI;
+use Asterisk::AGI;
+use POSIX qw(ceil floor);
+
+sub load_config() {
+	open(CFG, "</home/astbill/astbill.conf");
+	while(<CFG>) {
+		chomp;
+		my ($var, $val) = split(/\s*\=\s*/);
+		$config{$var} = $val;
+	}
+	close(CFG);
+}
+
+sub connect_db() {
+	my $dsn = "DBI:mysql:database=$config{'dbname'};host=$config{'dbhost'}";
+	$dbh->disconnect if $dbh;
+	$dbh = DBI->connect($dsn, $config{'dbuser'}, $config{'dbpass'});
+}
+
+sub msleep() {
+	my ($time) = @_;
+	select(undef, undef, undef, $time/1000);
+}
+
+sub savedata() {
+	my ($cardinfo) = @_;
+	$dbh->do("UPDATE cards SET used=" . $dbh->quote($cardinfo->{used}) . " WHERE number=" . 
+		$dbh->quote($cardinfo->{number}));
+	$dbh->do("UPDATE cards SET inuse=" . $dbh->quote($cardinfo->{inuse}) . " WHERE number=" . 
+		$dbh->quote($cardinfo->{number}));
+}
+
+sub getcard() {
+	my ($cardno) = @_;
+	my $res;
+	$sth = $dbh->prepare("SELECT * FROM cards WHERE number=" . $dbh->quote($cardno));
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
+sub savecdr() {
+	my ($cardnum, $callerid, $callednum, $trunk, $disposition, $billseconds, $billcost,$callstart) = @_;
+	$dbh->do("INSERT INTO cdrs (cardnum,callerid,callednum,trunk,disposition,billseconds,billcost,callstart) VALUES (" .
+		$dbh->quote($cardnum) . ", " . $dbh->quote($callerid) . ", " . $dbh->quote($callednum) . ", " . $dbh->quote($trunk) . ", " .
+		$dbh->quote($disposition) . ", " . $dbh->quote($billseconds) . ", " . $dbh->quote($billcost) . ", " . $dbh->quote($callstart) . ")");
+}
+
+# Setup some variables
+$AGI = new Asterisk::AGI;
+
+my %input = $AGI->ReadParse();
+
+print STDERR "Detected dry run!\n";
+
+exit unless $input{'request'};
+
+print STDERR "AGI Environment Dump:\n";
+foreach $i (sort keys %input) {
+        print STDERR " -- $i = $input{$i}\n";
+}
+
+sub mystreamfile() {
+	my ($filename) = @_;
+	my $res;
+	$res = $AGI->stream_file($filename, "0123456789");
+	$res = "" if $res eq "0";
+	$res = sprintf("%c", $res) 	if length($res);
+	return $res;
+}
+
+sub mysaynumber() {
+	my ($number) = @_;
+	my $res;
+	$res = $AGI->say_number($number, "0123456789");
+	$res = "" if $res eq "0";
+	$res = sprintf("%c", $res) 	if length($res);
+	return $res;
+}
+
+sub tell_time() {
+	my ($carddata) = @_;
+	my $left ;
+	my $leftdollars;
+	my $leftcents;
+	my $res;
+	$credit = ($carddata->{facevalue} - $carddata->{used});
+	$credit = 0 if ($credit < 0);
+	$left = int($credit / 100);
+	$leftdollars = int($left / 100);
+	$leftcents = $left % 100;
+	print STDERR "\nCard has face value $carddata->{facevalue} and has used $carddata->{used}\n\n";
+	print STDERR "\n$leftdollars dollars and $leftcents cents remain\n";
+	if ($quiet < 3 ) {
+		$res = &mystreamfile("astcc-youhave");
+	}
+	return $res if ($res);
+	if (!$leftdollars && !$leftcents) {
+		if ($quiet < 3 ) {
+			$res = &mystreamfile("astcc-nothing");
+		}
+		return $res if ($res);
+	} else {
+		if ($leftdollars > 0) {
+			if ($quiet < 3 ) {
+				$res = &mysaynumber($leftdollars);
+			}
+			return $res if ($res);
+			if ($quiet < 3 ) {
+				if ($leftdollars > 1) {
+					$res = &mystreamfile("astcc-dollars");
+				} else {
+					$res = &mystreamfile("astcc-dollar");
+				}
+			}
+			return $res if ($res);
+			if ($quiet < 3 ) {
+				if ($leftcents > 0) {
+					$res = &mystreamfile("astcc-and");
+					return $res if ($res);
+				}
+			}
+		}
+		if ($quiet < 3 ) {
+			if ($leftcents > 0) {
+				$res = &mysaynumber($leftcents);
+				return $res if ($res);
+				$res = &mystreamfile("astcc-cents");
+				return $res if ($res);
+			}
+		}
+	}
+	if ($quiet < 3 ) {
+		$res = &mystreamfile("astcc-remaining");
+	}
+	return $res;
+}
+
+sub mysayfloat() {
+	my ($num) = @_;
+	my ($first, $second) = split(/\./, $num);
+	if ($first > 0) {
+		$res = &mysaynumber($first);
+		return $res if ($res);
+	}
+	if ($second > 0) {
+		$res = &mystreamfile("astcc-point");
+		return $res if ($res);
+		$res = &mysaynumber($second);
+		return $res if ($res);
+	}
+	return "";
+}
+
+sub saycost() {
+	my ($carddata, $numdata, $credit) = @_;
+	my ($incsecs, $incmins);
+	$adjcost = ($numdata->{cost} * (10000 + $carddata->{markup})) / 10000;
+	$adjconn = ($numdata->{connectcost} * (10000 + $carddata->{markup})) / 10000;
+#	print STDERR "Adjusted cost is $adjcost with $adjconn fee\n";
+	print STDERR "This call will cost $adjcost cents per minute + $adjconn connect fee\n";
+	if ($quiet < 2 ) {
+		$res = &mystreamfile("astcc-willcost");
+	}
+	return $res if ($res);
+	if (($adjconn < 1) && ($adjcost < 1)) {
+		if ($quiet <= 1 ) {
+			$res = &mystreamfile("astcc-nothing");
+			return $res;
+		}
+	}
+	if ($quiet <= 1 ) {
+		$res = &mysayfloat($adjcost / 100);
+	}
+	return $res if ($res);
+	if ($quiet <= 1 ) {
+		$res = &mystreamfile("astcc-perminute");
+	}
+	if ($adjconn > 0) {
+		if ($quiet <= 1 ) {
+			return $res if ($res);
+			$res = &mystreamfile("astcc-connectcharge");
+			return $res if ($res);
+			$res = &mysayfloat($adjconn / 100);
+			return $res if ($res);
+			$res = &mystreamfile("astcc-cents");
+			return $res if ($res);
+			$res = &mystreamfile("astcc-forfirst");
+		}	
+		return $res if ($res);
+		$incsecs = $numdata->{includedseconds} % 60;
+		$incmins = int($numdata->{includedseconds} / 60);
+		if ($incmins > 0) {
+			if ($incmins > 1) {
+				$res = &mysaynumber($incmins);
+				return $res if ($res);
+				if ($quiet <= 1 ) {
+					$res = &mystreamfile("astcc-minutes");
+				}	
+			} else {
+				if ($quiet <= 1 ) {
+					$res = &mystreamfile("astcc-minute");
+				}
+			}
+			if ($incsecs > 0) {
+				return $res if ($res);
+				if ($quiet <= 1 ) {
+					$res = &mystreamfile("astcc-and");
+				}	
+			}
+			return $res if ($res);
+		}
+		if ($quiet <= 1 ) {
+			if ($incsecs > 0) {
+				$res = &mysaynumber($incsecs);
+				return $res if ($res);
+				$res = &mystreamfile("astcc-seconds");
+				return $res if ($res);
+			}
+			$res = &mystreamfile("astcc-willapply");
+		}
+	}
+	return $res;
+}
+
+sub getphone() {
+	my ($number) = @_;
+	my $sth = $dbh->prepare("SELECT * FROM routes WHERE " . $dbh->quote($number) . " RLIKE pattern ORDER BY LENGTH(pattern) DESC");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
+sub trytrunk() {
+	my ($trunk, $phone, $maxtime) = @_;
+	my $sth;
+	my $res;
+	my $dialstr;
+	$sth = $dbh->prepare("SELECT * FROM trunks WHERE name=" . $dbh->quote($trunk));
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return "CHANUNAVAIL" unless $res;
+	if ($res->{tech} eq "Local") {
+		$dialstr = "Local/$phone\@$res->{path}|30|HL/n(" . ($maxtime * 60 * 1000) . ":60000:30000)";
+		$res = $AGI->exec("DIAL $dialstr");
+		$answeredtime = $AGI->get_variable("ANSWEREDTIME");
+		$dialstatus = $AGI->get_variable("DIALSTATUS");
+		$callstart = localtime();
+		return $dialstatus;
+	}
+	
+	if ($res->{tech} eq "IAX2") {
+		$dialstr = "IAX2/$res->{path}/$phone|30|HL(" . ($maxtime * 60 * 1000) . ":60000:30000)";
+		$res = $AGI->exec("DIAL $dialstr");
+		$answeredtime = $AGI->get_variable("ANSWEREDTIME");
+		$dialstatus = $AGI->get_variable("DIALSTATUS");
+		$callstart = localtime();		
+		return $dialstatus;
+	}
+	
+	if ($res->{tech} eq "Zap") {
+		$dialstr = "Zap/$res->{path}/$phone|30|HL(" . ($maxtime * 60 * 1000) . ":60000:30000)";
+		$res = $AGI->exec("DIAL $dialstr");
+                $answeredtime = $AGI->get_variable("ANSWEREDTIME");
+                $dialstatus = $AGI->get_variable("DIALSTATUS");
+		$callstart = localtime();		
+                return $dialstatus;
+	}
+
+	if ($res->{tech} eq "SIP") {
+		$dialstr = "SIP/$res->{path}/$phone|30|HL(" . ($maxtime * 60 * 1000) . ":60000:30000)";
+		$res = $AGI->exec("DIAL $dialstr");
+		$answeredtime = $AGI->get_variable("ANSWEREDTIME");
+		$dialstatus = $AGI->get_variable("DIALSTATUS");
+		$callstart = localtime();		
+		return $dialstatus;
+	}
+
+	return "CHANUNAVAIL";
+}
+
+sub calccost() {
+    #    my ($adjconn, $adjcost, $answeredtime, $increment) = @_;
+    #    print STDERR "AnsweredTime: $answeredtime\n";
+    #    print STDERR "Included Seconds: $numdata->{includedseconds}\n";
+    #    print STDERR "Increment: $increment\n";
+    #    $total_seconds = ($answeredtime - $numdata->{includedseconds})/$increment;
+    #    print STDERR "Total Seconds: $total_seconds\n";
+    #    if ($total_seconds < 0) {
+    #    	$total_seconds = 0;
+    #    }
+    #    $bill_increments = ceil($total_seconds);
+    #    $billseconds = $bill_increments * $increment;
+    #    $cost = ($billseconds / 60) * $adjcost + $adjconn;
+    #    print STDERR "Number of Increments: $bill_increments that are $increment seconds long \n";
+    #    print STDERR "Answered Time: $answeredtime, Bill Seconds: $billseconds";
+    #    print STDERR "Total cost is $cost\n";
+    #    return $cost;
+       my ($adjconn, $adjcost, $answeredtime, $increment) = @_;
+       my $cost;
+       my $adjtime = eval { $adjtime = int((($answeredtime - $numdata->{includedseconds}) + $increment - 1) / $increment) * $increment;
+		return $adjtime };
+#       eval { my $adjtime = int(($answeredtime + $increment - 1) / $increment) * $increment };
+       print STDERR "Adjusted time is $adjtime, cost is $adjcost with $adjconn fee\n";
+       eval { $cost = int($adjcost * $adjtime / 60) };
+       $cost += $adjconn;
+       print STDERR "Total cost is $cost\n";
+       return $cost;
+
+}
+
+sub checkinuse() {
+	my ($cardno) = @_;
+	my $carddata = &getcard($cardno);
+	if ($carddata->{inuse}) {
+		if ($quiet < 5 ) {
+			$AGI->stream_file("your");
+			$AGI->stream_file("card-number");
+			$AGI->stream_file("is-in-use");
+			$AGI->stream_file("please-try-again");
+			$AGI->stream_file("later");
+			$AGI->stream_file("vm-goodbye");
+		}	
+		exit(0);
+	}
+return;
+}
+
+sub checkexpired() {
+	my ($cardno) = @_;
+	my $carddata = &getcard($cardno);
+        return if ($carddata->{expiration} < 1);
+	$sth = $dbh->prepare("SELECT NOW()+0");
+	$sth->execute;
+	my ($now) = $sth->fetchrow_array;
+	$sth->finish;
+	if ($now > $carddata->{expiration}) {
+		if ($quiet < 5 ) {
+			$AGI->stream_file("your");
+			$AGI->stream_file("card-number");
+			$AGI->stream_file("has-expired");
+			$AGI->stream_file("vm-goodbye");
+		}	
+		exit(0);
+	}
+	return;
+}
+
+sub setfirstuse() {
+	my ($cardno) = @_;
+	my $carddata = &getcard($cardno);
+	if ($carddata->{firstuse} < 1) {
+	$dbh->do("UPDATE cards SET firstuse=NULL WHERE number=" . 
+		$dbh->quote($carddata->{number}));
+	}
+        &setexpiration($cardno);
+	return;
+}
+
+sub setexpiration() {
+	my ($cardno) = @_;
+        if ($config{'expirationdaysafteruse'}) {
+		my $carddata = &getcard($cardno);
+		$dbh->do("UPDATE cards SET expiration= DATE_ADD('$carddata->{firstuse}', INTERVAL $config{'expirationdaysafteruse'} day) WHERE number=" .
+			$dbh->quote($carddata->{number}));
+        }
+	return;
+}
+
+sub setinuse() {
+	my ($cardno, $inuse) = @_;
+	my $carddata = &getcard($cardno);
+	$carddata->{inuse} = $inuse;
+	&savedata($carddata);
+	return;
+}
+
+#
+# Answer the line right away
+#
+($calleridnum, $phoneno, $quiet) = @ARGV;
+$AGI->answer();
+#
+# Play a nice tone
+#
+&load_config();
+&connect_db();
+if (!$dbh) {
+	if ($quiet <= 4 ) {
+		$AGI->stream_file("astcc-down");
+	}	
+	exit(0);
+}
+my $res;
+&msleep(100);
+if ($quiet <= 4 ) {
+	$res = &mystreamfile("astcc-tone");
+} else { 
+	$res = "silent";
+}	
+print STDERR "Res is $res\n";
+print STDERR "Silent Level is $quiet\n";
+exit(0) if $res < 0;
+my $cardno;
+my $callerid = $input{callerid};
+if (!$calleridnum && !$phoneno) {
+	while(!$carddata->{number}) {
+		$tries++;
+		print STDERR "Pre-res is \"$res\"\n";
+		if (length($res) > 0) {
+			$cardno = $AGI->get_data("astcc-silence");
+		} else {
+			$res = &mystreamfile("astcc-pleasepin");  # Please enter your
+			$res = &mysaynumber($config{'cardlength'});  # How many digits long
+			$cardno = $AGI->get_data("astcc-accountnum2"); #digit account number skipping any punctuation followed by the pound sign
+		}
+		exit if $cardno < 0;
+		$cardno = $res . $cardno;
+		print STDERR "Card no is $cardno\n";
+		exit(0) if $cardno < 0;
+		$carddata = &getcard($cardno);
+		if (!$carddata->{number}) {
+			if ($quiet < 5 ) {
+				$res = &mystreamfile("astcc-badaccount");
+			} else { $res = "silent"; }	
+			exit(0) if $res < 0;
+			if ($tries > 2) {
+				if ($quiet < 2 ) {
+					$AGI->stream_file("vm-goodbye");
+				}	
+				exit(0);
+			}
+		}
+	}
+}
+else {
+	$cardno = $calleridnum;
+	exit if $cardno < 0;
+	$cardno = $res . $cardno;
+	print STDERR "Card no is $cardno\n";
+	exit(0) if $cardno < 0;
+	$carddata = &getcard($cardno);
+	if (!$carddata->{number}) {
+		if ($quiet < 5 ) {
+			$res = &mystreamfile("astcc-badaccount");
+			$AGI->stream_file("vm-goodbye");
+		}	
+		exit(0);
+	}
+}
+
+#
+# At this point we have a valid card number.
+#
+$tries = 0;
+if ($config{'pinstatus'} eq "YES") {
+	$correctpin = $carddata->{pin};
+	while ($pin ne $correctpin) {
+		$tries++;
+		if ($quiet < 5 ) {
+			$res = &mystreamfile("astcc-pleasepin");
+			$res = &mysaynumber($config{'pinlength'});
+			$pin = $AGI->get_data("astcc-pin");
+		} else { $res = "silent"; }
+		if ($tries > 1) {
+			$res = &mystreamfile("astcc-invalidpin");
+		}
+		if ($tries > 2) {
+			if ($quiet < 2 ) {
+				$AGI->stream_file("vm-goodbye");
+			}
+			exit(0);
+		}
+	}
+}
+#
+# At this point we have a valid card and pin number.
+#
+
+&checkexpired($carddata->{number});
+&checkinuse($carddata->{number});
+&setinuse($carddata->{number}, 1);
+
+$res = &tell_time($carddata);
+
+if ($credit < 1) {
+	if ($quiet < 5 ) {
+		$AGI->stream_file("vm-goodbye");
+	}	
+	&setinuse($carddata->{number}, 0);
+	exit(0);
+}
+
+if ($res < 0) {
+	&setinuse($carddata->{number}, 0);
+	exit(0);
+}
+
+$tries = 0;
+if (!$phoneno) {
+	while(!$numdata->{pattern}) {
+		$tries++;
+		print STDERR "Pre-res is \"$res\"\n";
+		if (length($res) > 0) {
+			$phoneno = $AGI->get_data("astcc-silence");
+		} else {
+			$phoneno = $AGI->get_data("astcc-phonenum");
+		}
+
+		if ($phoneno < 0) {
+			&setinuse($carddata->{number}, 0);
+			exit;
+		}
+
+		$phoneno = $res . $phoneno;
+		print STDERR "Phone number is $phoneno\n";
+		if ($phoneno < 0) {
+			&setinuse($carddata->{number}, 0);
+			exit(0);
+		}
+		$numdata = &getphone($phoneno);
+		if (!$numdata->{pattern}) {
+			if ($quiet < 5 ) {
+				$res = &mystreamfile("astcc-badphone");
+			}
+			if ($res < 0) {
+				&setinuse($carddata->{number}, 0);
+				exit(0);
+			}
+			if ($tries > 2) {
+				if ($quiet < 5 ) {
+					$AGI->stream_file("vm-goodbye");
+				}	
+				&setinuse($carddata->{number}, 0);
+				exit(0);
+			}
+		}
+	}
+}
+elsif ($phoneno eq "BALANCE") {
+		&setinuse($carddata->{number}, 0);
+		exit(0);
+}		
+else {
+	if ($phoneno < 0) {
+		&setinuse($carddata->{number}, 0);
+		exit(0);
+	}
+	$numdata = &getphone($phoneno);
+	if (!$numdata->{pattern}) {
+		if ($quiet < 5 ) {
+			$res = &mystreamfile("astcc-badphone");
+			$AGI->stream_file("vm-goodbye");
+		}	
+		&setinuse($carddata->{number}, 0);
+		exit(0);
+	}
+}
+
+print STDERR "Matching pattern is $numdata->{pattern}\n";
+
+$res = &saycost($carddata, $numdata, $credit);
+
+print STDERR "Credit $credit, conn $adjconn, cost $adjcost\n";
+
+if (($adjconn > $credit) || (($adjconn < 1) && ($adjcost > $credit))){
+	if ($quiet < 5 ) {
+		$res = &mystreamfile("astcc-notenough");
+		$AGI->stream_file("vm-goodbye") if (!$res);
+	}
+	&setinuse($carddata->{number}, 0);
+	exit(0);
+}
+
+
+$maxmins = int(($credit - $adjconn) / $adjcost);
+if ($maxmins <= 0.1) {
+	if ($quiet < 5 ) {
+		$res = &mystreamfile("astcc-notenough");
+		$AGI->stream_file("vm-goodbye") if (!$res);
+	}	
+	&setinuse($carddata->{number}, 0);
+	exit(0);
+}
+if ($quiet < 5 ) {
+	$res = &mystreamfile("astcc-pleasewait");
+}	
+
+if ($res < 0) {
+	&setinuse($carddata->{number}, 0);
+	exit(0);
+}
+
+&setfirstuse($carddata->{number});
+my @trunks = split(/:/, $numdata->{trunks});
+foreach $trunk (@trunks) {
+	$res = &trytrunk($trunk, $phoneno, $maxmins);
+	if (!($res eq "CHANUNAVAIL") && !($res eq "CONGESTION")) {
+		# Ooh, something actually happend! 
+		if ($res eq "BUSY") {
+			$res = &mystreamfile("astcc-isbusy");
+			&savecdr($cardno, $callerid, $phoneno, $trunk, $res, 0, 0);
+		} elsif ($res eq "NOANSWER") {
+			$res = &mystreamfile("astcc-noanswer");
+			&savecdr($cardno, $callerid, $phoneno, $trunk, $res, 0, 0);
+		} elsif ($res eq "CANCEL") {
+			&savecdr($cardno, $callerid, $phoneno, $trunk, $res, 0, 0);
+		} elsif ($res eq "ANSWER") {
+			print STDERR "res is $res, answered time is $answeredtime\n";
+			my $cost = &calccost($adjconn, $adjcost, $answeredtime, $carddata->{inc});
+			$carddata->{used} += $cost;
+			print STDERR "Total used is now $carddata->{used}\n";
+			&savecdr($cardno, $callerid, $phoneno, $trunk, $res, $answeredtime, $cost,$callstart);
+			&savedata($carddata);
+		}
+		&setinuse($carddata->{number}, 0);
+		exit(0);
+	}
+}
+#$res = &mystreamfile("astcc-unavail");
+&savecdr($cardno, $callerid, $phoneno, $trunk, $res, 0, 0);
+&setinuse($carddata->{number}, 0);
+exit(0);
