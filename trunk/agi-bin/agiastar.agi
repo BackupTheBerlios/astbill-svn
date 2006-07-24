@@ -24,7 +24,7 @@
 
 #use strict;
 
-open(STDERR,">/home/astbill/logs/agi_err_astar.log");
+open(STDERR,">>/home/astbill/logs/agi_err_astar.log");
 
 # 4 November 2005 Changed Sub getBalance($)
 # Added field ccopeningbalance to Credit Control Calculation
