@@ -127,7 +127,7 @@ sub getTimeOut() {
 sub getCost($) {
 	my ($uniqueid) = @_;
 	my $res;
-	$dbh->do("CALL RateSale(\@sales,\@rate,\@billtime,'$uniqueid')");
+	$dbh->do("CALL RateSale(\@sales,\@rate,\@billtime,\@priceid,'$uniqueid')");
 
 	$sth = $dbh->prepare("select \@sales as sales,\@rate as rate,\@billtime as billtime");
 	$sth->execute;
