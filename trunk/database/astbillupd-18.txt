@@ -989,6 +989,14 @@ ALTER TABLE `astprospect2` CHANGE `tid` `partnerid` INT( 11 ) NULL DEFAULT '0'
 ALTER TABLE `astemailtext` ADD `db_prefix` VARCHAR( 40 ) NOT NULL FIRST 
 ALTER TABLE `astemailtext` DROP PRIMARY KEY , ADD PRIMARY KEY ( `db_prefix` , `partnerid` , `EmailText` ) 
 ALTER TABLE `astpartner` ADD `followuptype` VARCHAR( 100 ) AFTER `leadsource` ;
+ALTER TABLE `astinvoiceline` CHANGE `ptype` `ptype` VARCHAR( 40 ) NULL DEFAULT 'Normal'
+
+ALTER TABLE `astacdid` ADD INDEX `uid` ( `uid` ) 
+ALTER TABLE `astacdid` ADD INDEX `did` ( `did` ) 
+
+ALTER TABLE `astinvoice` ADD `layout` VARCHAR( 40 ) AFTER `workflow` ;
+ALTER TABLE `astlogsms` ADD INDEX `date_created` ( `date_created` ) 
+ALTER TABLE `astprospect` ADD INDEX `cust_status_mobile` ( `customerstatus` , `mobile` ) 
 
 */
 

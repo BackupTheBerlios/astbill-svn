@@ -339,6 +339,9 @@ else {
 	}
 	if ($dnid eq 'unknown') {$dnid = $extension};  # Problem when Zap is used
 
+	# Used when dialing from VOX server. Context is normally vox-pbx and number dialed is 09000
+	if ($AGI{'context'} ne 'default') {$accountcode = $callerid};  
+
 	$dbh->do("CALL RateAddcdr('$accountcode','$channel','$dnid','$type','$uniqueid')");
     # $dbh->do("update astcdr set callerid = '$callerid', extension = '$extension' where uniqueid = '$uniqueid'");
 	$dbh->do("update astcdr set callerid = '$callerid', extension = '$extension', trunk = 'songterminate', callednum = '47$extension' where uniqueid = '$uniqueid'");
@@ -473,15 +476,18 @@ my $cost = &getCost($uniqueid);
 		} else {   
 			$callid = $nocallid;
 		}
-		if ($cli->{trustrpid} eq "yes") {  # Trust Remote Party ID
-			$callid = $lastCallerid;
-			my $mas = &getMaster($callid);
-			my $submaster = $mas->{submaster};
-			my $master = $mas->{master};
-		   $dbh->do("update astcdr set accountcode = '$callid', master = '$master', submaster = '$submaster' where uniqueid = '$uniqueid'");
+
+		if (defined($cli->{trustrpid})) { 
+			if ($cli->{trustrpid} eq "yes") {  # Trust Remote Party ID (Patton)
+				$callid = $lastCallerid;
+				my $mas = &getMaster($callid);
+				my $submaster = $mas->{submaster};
+				my $master = $mas->{master};
+			   $dbh->do("update astcdr set accountcode = '$callid', master = '$master', submaster = '$submaster' where uniqueid = '$uniqueid'");
+			}
 		}
 		print "SET VARIABLE ASTCALLERID $callid\n";
-		print STDERR $callid;
+		print STDERR "$callid\n\n";
 
 
 	} else {
