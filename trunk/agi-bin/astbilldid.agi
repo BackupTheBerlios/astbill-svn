@@ -206,8 +206,8 @@ sub getresult {
 }
 
 # This Procedure collects the right dialingstring from the accounts info in the forward field
-sub getForward($) {
-	my ($forward) = @_;
+sub getForward {
+	my ($forward, $dialno) = @_;
 	my $res = "";
 	my $tech;
 
@@ -225,7 +225,7 @@ sub getForward($) {
 	#	($tmp, $num)  = split(/=/, $num,2);
 	#	($tmp, $nide) = split(/=/, $nide,2);
     #     $SQL = "select tech, accountcode, ccbatchno from astaccount where accountcode in ('" . $sqldial . ") and tech in ('IAX','SIP')";
-    $SQL = "SELECT astaccount.tech, astaccount.accountcode, astaccount.ccbatchno, aststatus.servertech
+    $SQL = "SELECT astaccount.tech, astaccount.accountcode, astaccount.ccbatchno, aststatus.servertech, astaccount.serverid
 FROM astaccount LEFT JOIN aststatus ON astaccount.serverid = aststatus.serverid
 WHERE (((astaccount.tech) In ('IAX','SIP')) AND ((astaccount.accountcode) In ('" . $sqldial . ")))";
 
@@ -247,10 +247,19 @@ WHERE (((astaccount.tech) In ('IAX','SIP')) AND ((astaccount.accountcode) In ('"
         # print LOG "$result[0]   $result[1] \n";
 		$tech = $result[0];
 		if ($result[0] eq "IAX") {$tech = "IAX2"; }
-		#  if (defined($result[2])) { if ($result[2] eq "30004") {$tech = "IAX2/museum1" . $strAt . "dialmuseum"; }}
-		if (defined($result[3])) { $tech = $result[3]; }
-		$res .= $tech . "/" . $result[1] . "&"; }          
 
+		#  if (defined($result[2])) { if ($result[2] eq "30004") {$tech = "IAX2/museum1" . $strAt . "dialmuseum"; }}
+		
+		if (defined($result[3])) { $tech = $result[3]; }
+		$tmpres = $tech . "/" . $result[1] . "&";           
+		if (defined($result[4])) {
+			if ($result[4] eq "sipgw") {
+				$tmpres = "SIP/" . $dialno . "@" . $result[1] . "&"; 
+				# Dial(SIP/69317935@72356,60)
+			}
+		}
+		$res .= $tmpres;
+    }
 	chop($res);  # chop removes the last character - very cool
 	print LOG  $res . "\n";
 	return $res;
@@ -300,7 +309,7 @@ my $clocal = &getLocal($exten);
 if (defined($clocal))  {
 	# $clocal->{tech}   $clocal->{forwardto}
 	print STDERR $clocal->{forwardto}."\n";
-	$dialstr = getForward($clocal->{forwardto});
+	$dialstr = getForward($clocal->{forwardto},$exten);
 	print "SET VARIABLE DIALSTRING $dialstr\n";
 #	print STDERR "DEBUG: $dialstr\n";
 

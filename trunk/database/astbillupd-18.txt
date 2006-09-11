@@ -998,5 +998,37 @@ ALTER TABLE `astinvoice` ADD `layout` VARCHAR( 40 ) AFTER `workflow` ;
 ALTER TABLE `astlogsms` ADD INDEX `date_created` ( `date_created` ) 
 ALTER TABLE `astprospect` ADD INDEX `cust_status_mobile` ( `customerstatus` , `mobile` ) 
 
+CREATE TABLE `astpaymentbatch` (
+  `batchid` int(10) NOT NULL auto_increment,
+  `bankaccount` varchar(100) default NULL,
+  `date_paid` varchar(50) default NULL,
+  `totallines` int(11) NOT NULL default '0',
+  `totalprice` decimal(10,2) NOT NULL default '0.0000',
+  `filename` varchar(128) default NULL,
+  `remarks` varchar(1024) default NULL,
+  `date_created` timestamp NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`batchid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+         
+ALTER TABLE `astpayment` ADD `batchid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `paytype` ;
+ALTER TABLE `astpayment` ADD `kid` VARCHAR( 128 ) AFTER `batchid` ;
+ALTER TABLE `astpayment` ADD `kidbank` VARCHAR( 128 ) AFTER `kid` ;
+ALTER TABLE `astpayment` ADD `payment_status` VARCHAR( 255 ) AFTER `kidbank` ;
+ALTER TABLE `astaccount` ADD `trunkpath` VARCHAR( 128 ) AFTER `shortnumber` ;
+ALTER TABLE `astacdid` ADD `zipcode` VARCHAR( 128 ) NULL AFTER `batchno` ;
+ALTER TABLE `astlogsms` ADD `remarks` VARCHAR( 256 ) AFTER `invoiceno` ;
+ALTER TABLE `astpartner` ADD `didnumberserie` VARCHAR( 256 ) DEFAULT ' ' NOT NULL AFTER `phonework` ;
+ALTER TABLE `astpartner` ADD `companyno` VARCHAR( 128 ) AFTER `birthdate` ,
+ADD `valuecode` VARCHAR( 128 ) AFTER `companyno` ,
+ADD `ordercode` VARCHAR( 128 ) AFTER `valuecode` ;
+
+CREATE TABLE `astsumpartner` (
+  `pid` int(10) NOT NULL default '0',
+  `sumusers` int(10) NOT NULL default '0',
+  `sumaccounts` int(10) NOT NULL default '0',
+  `sumdid` int(10) NOT NULL default '0',
+  PRIMARY KEY  (`pid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
 */
 

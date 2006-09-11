@@ -151,6 +151,7 @@ END
 |
 delimiter ;
 
+
 DROP PROCEDURE IF EXISTS RateAddcdr;
 delimiter |
 
@@ -158,8 +159,10 @@ CREATE PROCEDURE RateAddcdr (saccountcode varchar(255),schannel varchar(255),
                     scallednum varchar(255),stype varchar(255),suniqueid varchar(255))
   NOT DETERMINISTIC
 BEGIN
-  /* Version 2.0.8 */
-  /* Written By Are at astartelecom.com */
+  /* Version 2.11 */
+  /* Written By Are at astartelecom.com 
+     RateGetTrunk Added saccountcode 
+     29 Aug 2006 Are Casilla */
 
   DECLARE phone    varchar(255); 
   DECLARE Prefix   tinyint(3); /* CountryPrefix   */
@@ -205,7 +208,7 @@ BEGIN
   	END IF; 
   END IF;
    
-  CALL RateGetTrunk(@ptrunk,phone);
+  CALL RateGetTrunk(@ptrunk,phone,saccountcode);
   SET strunk = @ptrunk;
   
   if strunk is NOT NULL THEN /* No CDR IF WE HAVE NO ROUTE   */
@@ -366,10 +369,11 @@ delimiter ;
 DROP PROCEDURE IF EXISTS RateGetTrunk;
 delimiter |
 
-CREATE PROCEDURE RateGetTrunk (OUT strunk varchar(128), phone varchar(255))
+CREATE PROCEDURE RateGetTrunk (OUT strunk varchar(128), phone varchar(255),saccountcode varchar(255))
   NOT DETERMINISTIC
 BEGIN
-  /* Version 1.0.0
+  /* Version 2.11
+     Added saccountcode 29 Aug 2006
      Taken from RateAddCDR Ver 2.0.5 and made seperate procedure */
   /* Written By Are at astartelecom.com */
 
@@ -387,7 +391,12 @@ BEGIN
   	  phone RLIKE CONCAT("^",pattern,".*") and usagecount < maxusage and astroute.trunk <> 'Local' 
   	  ORDER BY patternlen, LENGTH( pattern ) DESC, trunk.trunkcost, costplan LIMIT 1;
   END IF;
-    
+  
+  /* If we want to force a specific route for some accounts. We do that below */
+  if strunk = 'priority2400' THEN
+      SELECT IFNULL(trunkpath,strunk) into strunk FROM astaccount WHERE accountcode = saccountcode LIMIT 1;
+  END IF;
+  
   /* Use Default route */
   if strunk = 'DEF' THEN
       SELECT name INTO strunk FROM asttrunk WHERE isdefault = '1' LIMIT 1;

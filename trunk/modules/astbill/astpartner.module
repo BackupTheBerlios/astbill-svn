@@ -50,12 +50,12 @@ function astpartner_menu($may_cache) {
       'access' => $access);
      // 'type' => MENU_CALLBACK);
 
-     	$items[] = array('path' => 'astbilladm/partner/create', 'title' => t('Create Partners'),
+     	$items[] = array('path' => 'astbilladm/partner/create', 'title' => t('Create Partner'),
       'callback' => 'page_astpartner_partnercreate',
       'access' => $access);
   //    'type' => MENU_CALLBACK);
  	
-	$items[] = array('path' => 'astbilladm/partner/change', 'title' => t('Change Partners'),
+	$items[] = array('path' => 'astbilladm/partner/change', 'title' => t('Change Partner'),
       'callback' => 'page_astpartner_partnerchange',
       'access' => $access,
       'type' => MENU_CALLBACK);
@@ -65,7 +65,7 @@ function astpartner_menu($may_cache) {
       'access' => $access,
       'type' => MENU_CALLBACK);
 
-      	$items[] = array('path' => 'astbilladm/partner/remove', 'title' => t('Delete Partners'),
+      	$items[] = array('path' => 'astbilladm/partner/remove', 'title' => t('Delete Partner'),
       'callback' => 'page_astpartner_remove',
       'access' => $access,
       'type' => MENU_CALLBACK);

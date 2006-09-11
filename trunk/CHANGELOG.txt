@@ -11,7 +11,9 @@ http://astbill.com/forum/3
 09 April 2006 Version 0.9.18
 # New Partner Admin Module
 # This allow you to see accounts and users linked to this Partner (Tenant if you prefeer) :-)
-# 
+# Updated Payment module. Added read bank file for Norwegian banks. Other bank formats will be added
+# Updated payment_status field. If value = 'FP' the invoice/payment is linked and marked as FULLY PAID
+#
 
 09 April 2006 Version 0.9.17  (Not Published as bz2 - SVN only)
 
