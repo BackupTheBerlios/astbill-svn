@@ -1030,5 +1030,127 @@ CREATE TABLE `astsumpartner` (
   PRIMARY KEY  (`pid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+CREATE TABLE `astinvrecurr` (
+  `recurrno` int(11) unsigned NOT NULL auto_increment,
+  `db_prefix` varchar(40) NOT NULL default '',
+  `uid_in` varchar(128) NOT NULL default '',
+  `partnerid` int(11) NOT NULL default '0',
+  `invoice_upto_date` date NOT NULL default '0000-00-00',
+  `invtype` varchar(40) NOT NULL default '',
+  `lastrecurrence_date` date NOT NULL default '0000-00-00',
+  `stop_date` date NOT NULL default '0000-00-00',
+  `rateplan` varchar(40) NOT NULL default '',
+  `invoicefee` decimal(10,2) NOT NULL default '0.00',
+  `layout` varchar(40) NOT NULL default '',
+  `update_clip` varchar(40) NOT NULL default '',
+  `frequency` int(4) unsigned NOT NULL default '12',
+  `remarks` varchar(1024) NOT NULL default '',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`recurrno`),
+  KEY `partnerid` (`partnerid`,`recurrno`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  
+ALTER TABLE `astinvrecurr` ADD `invoiceid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `frequency` ;
+ALTER TABLE `astinvoice` ADD `inv_name` varchar(128) NOT NULL DEFAULT '' AFTER `kid` ;
+ALTER TABLE `astinvoice` ADD `inv_address1` varchar(128) DEFAULT '' NOT NULL AFTER `inv_company` ;
+ALTER TABLE `astinvoice` ADD `inv_address2` varchar(128) DEFAULT '' NOT NULL AFTER `inv_address1` ;
+ALTER TABLE `astinvoice` ADD `inv_zip` varchar(64) DEFAULT '' NOT NULL AFTER `inv_address2` ;
+ALTER TABLE `astinvoice` ADD `inv_city` varchar(128) DEFAULT '' NOT NULL AFTER `inv_zip` ;
+ALTER TABLE `astinvoice` CHANGE `invoiceno` `invoiceno` INT( 11 ) UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `astinvoice` ADD `invoiceid` INT(11) NOT NULL FIRST ;
+ALTER TABLE `astinvoice` DROP PRIMARY KEY ;
+ALTER TABLE `astinvoice` ADD PRIMARY KEY (`invoiceid`);
+ALTER TABLE `astinvoice` CHANGE `invoiceid` `invoiceid` INT(11) UNSIGNED NOT NULL;
+ALTER TABLE `astinvoice` ADD `partnerid` INT(11) DEFAULT '0' NOT NULL AFTER `uid` ;
+ALTER TABLE `astinvoice` CHANGE `invoiceid` `invoiceid` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT ;
+ALTER TABLE `astcdr` CHANGE `invoiceno` `invoiceid` INT( 11 ) UNSIGNED NULL DEFAULT NULL ;
+ALTER TABLE `astinvoice` CHANGE `workflow` `workflow` VARCHAR(40) NOT NULL DEFAULT '1';
+ALTER TABLE `astinvoiceline` ADD `invoiceid` INT(11) UNSIGNED NOT NULL DEFAULT '0' FIRST ;
+ALTER TABLE `astinvoiceline` ADD INDEX ( `invoiceid` , `lineno` ); 
+ALTER TABLE `astinvoice` ADD `inv_firstname` VARCHAR(128) DEFAULT '' NOT NULL AFTER `inv_name` ,
+ADD `inv_lastname` VARCHAR(128) DEFAULT '' NOT NULL AFTER `inv_firstname` ;
+ALTER TABLE `astinvrecurr` ADD `rateplanint` VARCHAR(40) DEFAULT '' NOT NULL AFTER `rateplan` ;
+
+CREATE TABLE `astsumaccount` (
+  `accountcode` varchar(40) NOT NULL,
+  `countcalls` int(10) NOT NULL default '0',
+  `sumcost` decimal(10,2) NOT NULL default '0.00',  
+  `sumpaid` decimal(10,2) NOT NULL default '0.00',  
+  PRIMARY KEY  (`accountcode`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+DROP VIEW IF EXISTS asvcallrate;
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcallrate` AS 
+select id, `uniqueid`, invoiceid,callednum, date_created date, dayofweek(date_created) day, CASE 
+WHEN callednum not like '47%'  
+THEN 4 /* This is not Norway */
+WHEN (dayofweek(date_created) in (1,7))  /* Day 1 and 7 is weekend */
+THEN 3  /* This is weekend */
+WHEN (time(date_created) < '07:00:00' or time(date_created) > '16:00:00' )  /* This is evening - Remember time differences*/
+THEN 2 /* This is evening */
+ELSE 1 /* This is daytime */
+END callrate
+from astcdr;
+
+
+ALTER TABLE `astcdr` ADD `callstatus` TINYINT( 3 ) DEFAULT '0' NOT NULL AFTER `status` ;
+ALTER TABLE `astcdr` DROP INDEX `accountcode` ,
+ADD INDEX `accountcode` ( `accountcode` , `callstatus` , `date_created` );
+ALTER TABLE `astcdr` ADD INDEX ( `callstatus` , `accountcode` , `date_created` ) 
+
+update astcdr set `callstatus` = 1
+WHERE `astcdr`.`dialstatus` like 'ANSWER%' and `astcdr`.`answeredtime` <> 0 and 
+`astcdr`.`trunk` <> 'Local';
+
+CREATE TABLE `astorderip` (
+  `oid` int(10) NOT NULL auto_increment,
+  `orderno` varchar(40) NOT NULL default '',
+  `pid` int(10) NOT NULL default '0',
+  `order_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `delivery_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `customers_order` varchar(256) NOT NULL default '',
+  `no_bri` varchar(128) NOT NULL default '',
+  `no_pri` varchar(128) NOT NULL default '',
+  `crc4_on` tinyint(1) NOT NULL default '1',
+  `rpid_on` tinyint(1) NOT NULL default '1',
+  `protocol` varchar(40) NOT NULL default '',
+  `fixed_ip` varchar(40) NOT NULL default '',
+  `partners_pbx` varchar(128) NOT NULL default '',
+  `partners_broadband` varchar(128) NOT NULL default '',
+  `broadband_vendor` varchar(128) NOT NULL default '',
+  `speed_in` varchar(40) NOT NULL default '',
+  `speed_out` varchar(40) NOT NULL default '',
+  `want_our_dsl` tinyint(1) NOT NULL default '0',
+  `we_offer_dsl_speed` varchar(128) NOT NULL default '',
+  `active` varchar(128) default NULL,
+  `date_followup` datetime NOT NULL default '0000-00-00 00:00:00',
+  `install_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `install_by` varchar(128) NOT NULL default '',
+  `remarks` varchar(1024) NOT NULL default '',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`oid`),
+  KEY `orderno` (`orderno`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=3000;
+  
+
+CREATE TABLE `astlogdb` (
+  `logid` int(10) NOT NULL auto_increment,
+  `tablename` varchar(40) NOT NULL default '',
+  `prikey` varchar(40) NOT NULL default '',
+  `action` char(1) NOT NULL default '',
+  `db_prefix` varchar(40) NOT NULL default '',
+  `uid` int(10) NOT NULL default '0',
+  `sql` varchar(1028) NOT NULL default '',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`logid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+ALTER TABLE `astacgroup` ADD `lineno` INT DEFAULT '0' NOT NULL AFTER `active` ; 
+
+ALTER TABLE `astorderip` ADD `workflow` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `active` ,
+ADD `assigned_to_uid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `workflow` ,
+ADD `assigned_to_prefix` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `assigned_to_uid` ;
+
 */
 

@@ -8,6 +8,18 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
+23 Sept 2006 Version 0.9.18
+# Improved performanse of astpbx.module. My Subscription can now handle millions of records
+# Performance have changed from 12 seconds to 1 seconds on my current setup with nearly a million cdr records
+# The same Improvement will have to be done in MyAdmin
+# Added astglobal.module. This allow you to create accounts and partners and show customer status even under a multi site setup.
+# Remember to update your site list in table astacgroup WHERE mastergroup = 'Site'
+# Added astcdr.callstatus to database. This field is 1 if this is a valid PSTN call. This improve performance by 10000%
+# The reason for that is that we can SELECT WHERE callstatus = 1 and not 
+# `astcdr`.`dialstatus` like 'ANSWER%' and `astcdr`.`answeredtime` <> 0 and `astcdr`.`trunk` <> 'Local'
+#  Created a LOG system for database updates. This allows tracking of who changed what in each table. astcore_astlogdb
+#
+
 09 April 2006 Version 0.9.18
 # New Partner Admin Module
 # This allow you to see accounts and users linked to this Partner (Tenant if you prefeer) :-)

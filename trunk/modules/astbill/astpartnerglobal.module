@@ -75,6 +75,11 @@ function astpartnerglobal_menu($may_cache) {
 	'access' => $access,
 	'type' => MENU_CALLBACK);
 
+   	$items[] = array('path' => 'astglobal/msn/remove', 'title' => t('Delete MSN'),
+    'callback' => 'astpartnerglobal_msn_remove',
+    'access' => $access,
+    'type' => MENU_CALLBACK);
+
 	$items[] = array('path' => 'astglobal/msn/create', 'title' => t('Create New MSN/DID Numbers'),
 	'callback' => 'astpartnerglobal_msn_create',
 	'access' => $access,
@@ -149,7 +154,11 @@ function astpartnerglobal_main() {
 	switch ($op) {
 		case t('Search'):
 		// $output .= astpartnerglobal_list($value, $edit);
-		$output .= astpglobal_list($value, $edit);
+		if ($db_prefix == "cbk_" or $db_prefix == "ipp_") {   // Just some customising :-)
+			$output .= astpglobalcbk_list($value, $edit);
+		} else {
+			$output .= astpglobal_list($value, $edit);
+		}
 		break;
 		default:
 		
@@ -162,7 +171,11 @@ function astpartnerglobal_main() {
 		
 		$output .= astcore_search($edit, $posturl = url('astglobal/'.$param), $value);
 		// $output .= astpartnerglobal_list($value, $edit);
-		$output .= astpglobal_list($value, $edit);
+		if ($db_prefix == "cbk_" or $db_prefix == "ipp_") {   // Just some customising :-)
+			$output .= astpglobalcbk_list($value, $edit);
+		} else {
+			$output .= astpglobal_list($value, $edit);
+		}
 	}
 	
 	$title = t('View Partners');
@@ -306,20 +319,20 @@ function astglobal_msn_list($value, $edit) {
 		
   $header = array(
     array('data' => t('Usr'), 'field' => 'uid'),
-    array('data' => t('MSN'), 'field' => 'did'),
+    array('data' => t('MSN'), 'field' => 'did', 'sort' => 'asc'),
     array('data' => t('Group'), 'field' => 'acgroup'),
     array('data' => t('Forward'), 'field' => 'forwardto'),
     array('data' => t('A')),
     array('data' => t('Porting Date'), 'field' => 'portindate'),
     array('data' => t('Zipcode'), 'field' => 'zipcode'),
-    array('data' => t('Ops'), 'colspan' => 1),
+    array('data' => t('Ops'), 'colspan' => 2),
 	array('data' => t('Batch'), 'colspan' => 1),
 	array('data' => t('Remarks'), 'colspan' => 1),
   );
     
 $value = arg(2);                                                                                 
 
-$SQL = "SELECT did.uid,did.did,did.acgroup,did.forwardto,did.active, did.portindate,did.zipcode,did.batchno,did.remarks FROM astacdid did, astuser us,astpartner pa WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid and pa.pid = '".$value."'". tablesort_sql($header);
+$SQL = "SELECT did.uid,did.did,did.acgroup,did.forwardto,did.active, did.portindate,did.zipcode,did.batchno,did.remarks,pa.pid FROM astacdid did, astuser us,astpartner pa WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid and pa.pid = '".$value."'". tablesort_sql($header);
 
   $result = pager_query($SQL, $maxline);
   
@@ -333,12 +346,50 @@ $SQL = "SELECT did.uid,did.did,did.acgroup,did.forwardto,did.active, did.portind
 		$res->portindate."&nbsp;",
 		$res->zipcode,
 		'<A HREF="'.url('astglobal/msn/change/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<A HREF="'.url('astglobal/msn/remove/'.$res->did.'/'.$res->pid).'">Remove</A>',
 		$res->batchno,
 		$res->remarks,
 	);
   }
 	$output = astcore_list($header, $rows, $noresults = t('No MSN Numbers for Partner.'), $maxline);
 	return $output;
+}
+
+function astpartnerglobal_msn_remove() {
+	global $user;
+	global $db_prefix; 
+  	$pass = '1';
+	$errors = array();
+	if ((!is_numeric(arg(3))) or (arg(3) == '')) {
+	  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+    return; }
+  
+	$test = db_fetch_object(db_query("select count(*) count from astacdid where portindate is not null and did = '%s'", arg(3)));
+	if ($test->count == '1') {
+		$errors["isported"] = t("Unable to delete, MSN Have Ported date. This number is Ported.");
+		$pass = '0';
+	}	
+	$testac = db_fetch_object(db_query("select accountcode ac from astcdr where accountcode = '%s' limit 1", arg(3)));
+	// $errors["havecdr"] = t("Unable to delete, MSN Have Caller Records (CDR). This number is in use.");
+
+	if ($testac->ac == arg(3)) {
+		$errors["havecdr"] = t("Unable to delete, MSN Have Caller Records (CDR). This number is in use.");
+		$pass = '0';
+	}	
+	if ($pass == '1') {
+		$title = "Delete MSN Number ".arg(3);
+		$deletedmsg = t('The MSN was deleted');
+		$confirmmsg = t('Are you sure you want to delete this MSN?');
+		$dbqueries = array();
+		$dbqueries[] = "DELETE FROM astacdid WHERE did = '".arg(3)."'";
+		$goto = "astbilladm/partner";
+		$donegoto = "astglobal/msn/".arg(4);
+		astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries);
+	}	else {
+			foreach ($errors as $name => $message) { form_set_error($name, $message); }
+			drupal_goto("astglobal/msn/".arg(4));
+	}
 }
 
 
@@ -529,11 +580,11 @@ if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
 	$paiddate = null;
 	$active = "1";
 
-db_query("INSERT INTO astpartner (db_prefix, company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,customerstatus,active, companyno,didnumberserie,comment,date_created) 
-VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s','%s','%s', '%s',Now())", 
-$edit['provider'],$edit['company'], $edit['firstname'],$edit['lastname'],$edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['fax'],$edit['email'], $edit['customerstatus'], $active,$edit['companyno'],$edit['didnumberserie'],$edit['comment']);
+db_query("INSERT INTO astpartner (db_prefix, company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,customerstatus,active, companyno,didnumberserie,valuecode,comment,date_created) 
+VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s','%s','%s','%s', '%s',Now())", 
+$edit['provider'],$edit['company'], $edit['firstname'],$edit['lastname'],$edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['fax'],$edit['email'], $edit['customerstatus'], $active,$edit['companyno'],$edit['didnumberserie'],$edit['valuecode'],$edit['comment']);
 
-
+astcore_astlogdb("astpartner","I", $edit);
 drupal_set_message(t('New Partner added'));
 
 } // END CHECK IF PartnerCREATE
@@ -545,9 +596,10 @@ if (arg(2) == 'change'){ // START CHECK IF PartnerCHANGE
 		drupal_access_denied();
 		return;
 	  }
-	db_query("UPDATE astpartner SET company = '%s',firstname = '%s',lastname = '%s', contactperson = '%s', address1 = '%s', address2 = '%s', zip = '%s', city = '%s', state = '%s', countrycode = '%s', mobile = '%s', phonework = '%s', email = '%s', fax = '%s',comment = '%s', customerstatus = '%s', companyno = '%s',didnumberserie = '%s' WHERE pid = '%s'"
-	, $edit['company'], $edit['firstname'],$edit['lastname'], $edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['email'],$edit['fax'], $edit['comment'], $edit['customerstatus'], $edit['companyno'], $edit['didnumberserie'], arg(3));
-
+	db_query("UPDATE astpartner SET company = '%s',firstname = '%s',lastname = '%s', contactperson = '%s', address1 = '%s', address2 = '%s', zip = '%s', city = '%s', state = '%s', countrycode = '%s', mobile = '%s', phonework = '%s', email = '%s', fax = '%s',comment = '%s', customerstatus = '%s', companyno = '%s',didnumberserie = '%s',valuecode = '%s' WHERE pid = '%s'"
+	, $edit['company'], $edit['firstname'],$edit['lastname'], $edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['email'],$edit['fax'], $edit['comment'], $edit['customerstatus'], $edit['companyno'], $edit['didnumberserie'], $edit['valuecode'], arg(3));
+	
+	astcore_astlogdb("astpartner","U", $edit,arg(3));
 	drupal_set_message(t('Partner changed'));
 } // END CHECK IF PartnerCHANGE
 
@@ -559,7 +611,7 @@ function astpartnerglobal_Partner_form($edit) {
 	// $edit = $_POST["edit"];
     $op = $_POST["op"];
 
-
+/*
 if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
 
 	$resellerid = null;
@@ -580,9 +632,9 @@ if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
 
 
 } // END CHECK IF PartnerCREATE
-
+*/
 if (arg(2) == 'change'){ 
-	$sql = db_query("SELECT company,companyno, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, didnumberserie, fax,email,comment,customerstatus,active,date_created,LEFT(db_prefix,3) provider FROM astpartner WHERE pid = '%s'", arg(3));
+	$sql = db_query("SELECT company,companyno, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, didnumberserie, fax,email,comment,customerstatus,active,date_created,LEFT(db_prefix,3) provider,valuecode FROM astpartner WHERE pid = '%s'", arg(3));
 	$sqlout = db_fetch_object($sql);
 
 	$edit['company'] = $sqlout->company;
@@ -605,6 +657,7 @@ if (arg(2) == 'change'){
 	$edit['email'] = $sqlout->email;
 	$edit['status'] = $sqlout->status;
 	$edit['comment'] = $sqlout->comment;
+	$edit['valuecode'] = $sqlout->valuecode;
 	$edit['customerstatus'] = $sqlout->customerstatus;
 	$edit['date_created'] = $sqlout->date_created;
 	$edit['provider'] = $sqlout->provider;
@@ -619,7 +672,7 @@ if (arg(2) == 'change'){
 		$group .= form_select(t('Provider'), 'provider', $param, $statusopts);
 	}
 	if (arg(2) == 'change') {
-		$group .= '<B>'.t('Provider').' : </B>'.$edit['provider'].'<BR><BR>';
+		$group .= t('Provider').' : <B>'.$edit['provider'].'</B><BR>';
 	}
 
 	$group .= astcore_form_start();
@@ -639,12 +692,16 @@ if (arg(2) == 'change'){
 	$group .= astcore_form_textfield(t('MSN NumberSerie'), 'didnumberserie', $edit['didnumberserie'], 60, 100);
 	$group .= astcore_form_textfield(t('Fax'), 'fax', $edit['fax'], 30, 100);
 	$group .= astcore_form_textfield(t('E-Mail'), 'email', $edit['email'], 30, 100);
-	$group .= astcore_form_textfield(t('Comment'), 'comment', $edit['comment'], 60, 1024);
+	$group .= astcore_form_textfield(t('Valuecode'), 'valuecode', $edit['valuecode'], 30, 100);
+//	$group .= astcore_form_textfield(t('Comment'), 'comment', $edit['comment'], 60, 1024);
+
 //	$group .= astcore_form_textfield(t('CustomerStatus'), 'customerstatus', $edit['customerstatus'], 30, 30);
 //	$group .= astcore_form_textfield(t('Active'), 'active', $active, 30, 100);
 	$group .= astcore_form_end();
+	$group .= form_textarea(t('Remarks'), 'comment', $edit['comment'], 60, 6, 1024);
+
 	if (arg(2) == 'change') {
-		$group .= '<BR><B>'.t('Date Created').' : </B>'.$edit['date_created'].'<BR>';
+		$group .= '<B>'.t('Date Created').' : </B>'.$edit['date_created'].'<BR>';
 	}
 
 

@@ -132,7 +132,8 @@ function page_astpartner_remove() {
 		$dbqueries[] = "DELETE FROM astpartner WHERE pid = '".arg(3)."'";
 		$goto = "astbilladm/partner";
 		$donegoto = 'astbilladm/partner';
-		$backgoto = 'astbilladm/partner/change/'.arg(3);
+		$backgoto = 'astbilladm/partner';
+		$title = "Delete Partner ".arg(3);
 		astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries, $backgoto);
 	}	else {
 			form_set_error("test", "Unable to delete, Partner contains users.");

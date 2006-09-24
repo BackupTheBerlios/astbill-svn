@@ -690,6 +690,41 @@ RETURN status;
 END |
 delimiter ;
 	
+delimiter |
+CREATE PROCEDURE RateStarDead (suniqueid varchar(255), sdialstatus varchar(255),sansweredtime int(11),sdialedtime int(11))
+  NOT DETERMINISTIC
+BEGIN
+  /* Version 2.0.0 */
+  /* Written By Are at astartelecom.com */
+  DECLARE phone    varchar(255); 
+  DECLARE Prefix   tinyint(3); /* CountryPrefix   */
+  DECLARE strunk  varchar(128); /* The Trunk used for outgoing Dialing */
+  DECLARE status   tinyint(3); /* callstatus   */
+	
+  select trunk INTO strunk FROM astcdr where uniqueid = suniqueid LIMIT 1;
+  SET status = 0;
+  IF sdialstatus LIKE 'ANSWER%' and sansweredtime <> 0 and strunk <> 'Local' THEN
+	  SET status = 1;
+  END IF;
+  
+ UPDATE astcdr SET callstatus=status,dialstatus=sdialstatus,answeredtime=sansweredtime,billtime=sansweredtime,dialedtime=sdialedtime WHERE uniqueid = suniqueid LIMIT 1;
+      
+    UPDATE astaccount
+    set usagecount = usagecount - 1
+    where accountcode = (select accountcode from astcdr where uniqueid = suniqueid  LIMIT 1);
+
+    UPDATE asttrunk
+    set usagecount = usagecount - 1
+    where name = strunk;
+    
+    delete from astcreditres where uniqueid = suniqueid;
+    
+ CALL RateCost(suniqueid);  
+
+END
+|
+delimiter ;
+
 /* This procedure is used for testing of Billing and Calculations */
 /* CALL astTestBilling('70104'); */
 
