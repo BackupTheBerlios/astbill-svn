@@ -1147,6 +1147,15 @@ CREATE TABLE `astlogdb` (
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`logid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
- 
+
+ALTER TABLE `astacgroup` ADD `lineno` INT DEFAULT '0' NOT NULL AFTER `active` ; 
+
+ALTER TABLE `astorderip` ADD `workflow` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `active` ,
+ADD `assigned_to_uid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `workflow` ,
+ADD `assigned_to_prefix` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `assigned_to_uid` ;
+ALTER TABLE `astlogdb` ADD `workflow` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `uid` ;
+
+ALTER TABLE `astorderip` ADD `leasing_ok` TINYINT( 1 ) DEFAULT '0' NOT NULL AFTER `customers_order` ;
+
 */
 

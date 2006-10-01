@@ -70,6 +70,11 @@ function astpartnerglobal_menu($may_cache) {
 	'access' => $access,
 	'type' => MENU_CALLBACK);
 
+	$items[] = array('path' => 'astglobal/tech/change', 'title' => t('Edit Account'),
+	'callback' => 'astpartnerglobal_tech_create',
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+
   	$items[] = array('path' => 'astglobal/msn', 'title' => t('Show MSN and DID Numbers'),
 	'callback' => 'astpartnerglobal_msn',
 	'access' => $access,
@@ -271,7 +276,7 @@ function astglobal_tech_list($value, $edit) {
   );
     
 $value = arg(2);                                                                                 
-$SQL = "SELECT ac.uid,ac.accountcode,ac.secret,ac.callerid,ac.forcecallerid,ac.tech, ac.serverid,ac.trustrpid,fullcontact, CONCAT_WS(':',ac.ipaddr,ac.port) ip, ac.reg_changed,accountname FROM astaccount ac, astuser us,astpartner pa WHERE ac.uid = us.uid and ac.db_prefix = us.db_prefix and   us.partnerid = pa.pid and pa.pid = '".$value."' and ac.tech in (select actype from astactype where active = '1')". tablesort_sql($header);;
+$SQL = "SELECT pa.pid,ac.uid,ac.accountcode,ac.secret,ac.callerid,ac.forcecallerid,ac.tech, ac.serverid,ac.trustrpid,fullcontact, CONCAT_WS(':',ac.ipaddr,ac.port) ip, ac.reg_changed,accountname FROM astaccount ac, astuser us,astpartner pa WHERE ac.uid = us.uid and ac.db_prefix = us.db_prefix and   us.partnerid = pa.pid and pa.pid = '".$value."' and ac.tech in (select actype from astactype where active = '1')". tablesort_sql($header);;
 
 // $SQL = mysql_real_escape_string($SQL);
 
@@ -289,7 +294,7 @@ $SQL = "SELECT ac.uid,ac.accountcode,ac.secret,ac.callerid,ac.forcecallerid,ac.t
 		$res->forcecallerid."&nbsp;",
 		$res->serverid."&nbsp;",
 		$res->trustrpid."&nbsp;",
-		'<A HREF="'.url('astglobal/tech/change/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<A HREF="'.url('astglobal/tech/change/'.$res->accountcode.'/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
 		// $res->ip,fullcontact
         array('data' => $res->ip, 'title' => $res->fullcontact),
 		//	title="Password: '.$res->secret.'"
@@ -736,29 +741,61 @@ function astpartnerglobal_tech_create() {
 			drupal_goto("astglobal/tech/".arg(3));
 		  }
 		  break;
+		case t('Update'):
+		  if (astpartnerglobal_tech_create_validate($edit)) {
+			astpartnerglobal_tech_create_save($edit);
+			drupal_goto("astglobal/tech/".arg(4));
+		  } else {
+			drupal_goto("astglobal/tech/".arg(4));
+			//drupal_goto("astglobal/tech/change/".arg(3));
+		  }
+		  break;
 		case t('Back'):
 			drupal_goto("astglobal/tech/".arg(3));
 		default:
-		    $output = astpartnerglobal_tech_create_form($edit);
+		    // $output = astpartnerglobal_tech_create_form($edit);
   }
-	$title = "Create New SIP or IAX Account";
+
+  	if (arg(2) == 'change') {
+		$output = astpartnerglobal_tech_change_form($edit);
+ 	    $title = t('Edit Account'.': '.arg(3));
+	} elseif(arg(2) == 'create') {
+		$output = astpartnerglobal_tech_create_form($edit);
+	    $title = t('Create New SIP or IAX Account');
+	} else {
+		// $output .= astccorders_users_list($edit, $value);
+	}
+
 	astcore_printtheme($output, $title);	
 }
 
 function astpartnerglobal_tech_create_validate($edit) {
   $myerror = 1;
   $errors = array();
-   	if (empty($edit['noaccounts'])) {
-		$errors['noaccounts'] = t('Must Be Numeric');
-		$myerror = 0;
+
+	if (arg(2) == 'change') {
+		if (strlen($edit['clip']) <> 8 && strlen($edit['clip']) <> 0) {
+			$errors['clip'] = t('CLIP ikke gyldig');
+			$myerror = 0;
+		}
+		if (!is_numeric($edit['clip']) && strlen($edit['clip']) <> 0) {
+			$errors['clip'] = t('CLIP kan bare være tall');
+			$myerror = 0;
+		}
 	}
-	if (strlen($edit['noaccounts']) > 2) {
-		$errors['noaccounts'] = t('To Large Number');
-		$myerror = 0;
-	}
-	if (!is_numeric($edit['noaccounts']) && strlen($edit['noaccounts']) <> 0) {
-		$errors['noaccounts'] = t('Must Be Numeric');
-		$myerror = 0;
+	if (arg(2) == 'create') {
+		if (empty($edit['noaccounts'])) {
+			$errors['noaccounts'] = t('Must Be Numeric');
+			$myerror = 0;
+		}
+		if (strlen($edit['noaccounts']) > 2) {
+			$errors['noaccounts'] = t('To Large Number');
+			$myerror = 0;
+		}
+		if (!is_numeric($edit['noaccounts']) && strlen($edit['noaccounts']) <> 0) {
+			$errors['noaccounts'] = t('Must Be Numeric');
+			$myerror = 0;
+		}
 	}
   foreach ($errors as $name => $message) {
     form_set_error($name, $message);
@@ -798,7 +835,12 @@ INSERT INTO ipp_users_roles (uid,rid) SELECT uid,2 FROM ipp_users where uid >1;
 }
 
 function astpartnerglobal_create_account($partnerid,$editech) {
-    $SQL = "select IFNULL(us.uid,0) uid, pa.pid,pa.db_prefix,pa.email,pa.phonework from astpartner pa left join astuser us on us.partnerid = pa.pid and us.db_prefix = pa.db_prefix where pa.pid = ".$partnerid." limit 1";
+	if ((!is_numeric($partnerid)) or ($partnerid == '')) {
+	  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+    return; }
+
+	$SQL = "select IFNULL(us.uid,0) uid, pa.pid,pa.db_prefix,pa.email,pa.phonework from astpartner pa left join astuser us on us.partnerid = pa.pid and us.db_prefix = pa.db_prefix where pa.pid = ".$partnerid." limit 1";
 
 	$res = db_fetch_object(db_query($SQL)); 	
 	// $rescount = db_num_rows($res);
@@ -815,14 +857,21 @@ function astpartnerglobal_create_account($partnerid,$editech) {
     // $acc = '70827';
 	$acc = $resacc->acc;
 	$tech = 'SIP';
-	if ($editech == 'IAX') { $tech = 'IAX'; };
-    $clip = '22885819';
+	if ($editech == 'IAX' or $editech == 'IAXSERV') { $tech = 'IAX'; };
+	$clip = $res->phonework;  // It is important to fill in Partners main number.
 
-    $SQL = "INSERT INTO `astaccount` ( `uid`,`db_prefix`,`accountcode`,`secret`,`tech`, `callerid`,`forcecallerid`,`serverid`,`date_created`,`trunkpath`,`creditlimit`,`trustrpid`) VALUES ('".$rescount."', '".$res->db_prefix."', '".$acc."', RIGHT(rand(),6), '".$tech."', '<".$acc.">' , '".$clip."', NULL , Now(), 'songterminate',3000, NULL )";
+    $SQL = "INSERT INTO `astaccount` ( `uid`,`db_prefix`,`accountcode`,`secret`,`tech`, `callerid`,`forcecallerid`,`serverid`,`date_created`,`trunkpath`,`creditlimit`,`trustrpid`) VALUES ('".$rescount."', '".$res->db_prefix."', '".$acc."', RIGHT(rand(),6), '".$tech."', '<".$clip.">' , '".$clip."', NULL , Now(), 'songterminate',3000, NULL )";
 	db_query($SQL);
 
 	if ($editech == 'SIPGW') {
-		$SQL = "UPDATE `astaccount` set callerid=NULL,forcecallerid=NULL,trustrpid='yes',serverid='sipgw' where accountcode = '".$acc."'";
+		//  $SQL = "UPDATE `astaccount` set callerid=NULL,forcecallerid=NULL,trustrpid='yes',serverid='sipgw' where accountcode = '".$acc."'";
+		$SQL = "UPDATE `astaccount` set callerid=NULL,trustrpid='yes',serverid='sipgw' where accountcode = '".$acc."'";
+		db_query($SQL);
+	}
+	if ($editech == 'IAXSERV') {
+		//  $SQL = "UPDATE `astaccount` set callerid=NULL,forcecallerid=NULL,trustrpid='yes',serverid='sipgw' where accountcode = '".$acc."'";
+		// TODO: Add IP for fromdomain and Host
+		$SQL = "UPDATE `astaccount` set callerid=NULL,forcecallerid=NULL,canreinvite='no',context='vox-pbx',language='no',nat='no',qualify='no',hardwareid='18', acgroup = 'IAXSERV' where accountcode = '".$acc."'";
 		db_query($SQL);
 	}
 	$SQL = "REPLACE INTO `astsumpartner`
@@ -834,23 +883,42 @@ function astpartnerglobal_create_account($partnerid,$editech) {
 	(SELECT Count(*) AS msn FROM astacdid did, astuser us,astpartner pa 
 	WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid 
 	and pa.pid = apa.pid) did
-	FROM astpartner apa where pid = ".arg(3)."";
+	FROM astpartner apa where pid = ".$partnerid."";
 	db_query($SQL);
 
 	return $acc;
-/*
-	db_query("INSERT INTO astpartner (db_prefix, company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,customerstatus,active, companyno,didnumberserie,date_created) 
-	VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s','%s','%s',Now())", 
-	$edit['provider'],$edit['company'], $edit['firstname'],$edit['lastname'],$edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['fax'],$edit['email'], $edit['customerstatus'], $active,$edit['companyno'],$edit['didnumberserie']);
-*/
 }
 
 function astpartnerglobal_tech_create_save($edit) {
+  	if (arg(2) == 'change') {
+		if ((!is_numeric(arg(3))) or (arg(3) == '')) {
+		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return;
+		}
+		db_query("UPDATE astaccount SET forcecallerid = '%s',secret = '%s',callerid = '%s',serverid = '%s' WHERE accountcode = '%s'"
+		, $edit['clip'], $edit['secret'],$edit['callerid'],$edit['serverid'], arg(3));
 
-	$newac = astpartnerglobal_create_account(arg(3),$edit['tech']);
-	//.$edit['tech'].'  '.$edit['noaccounts']
-	//drupal_set_message($edit['noaccounts'].' '.t('New Accounts added').  $res->uid . '  ' . $res->db_prefix . '  '.$rescount );
-	drupal_set_message(t('New Account added').': '.$newac);
+		if ($edit['clip'] == '') {
+			db_query("UPDATE astaccount SET forcecallerid = NULL WHERE accountcode = '%s'", arg(3));
+		}
+		if ($edit['callerid'] == '') {
+			db_query("UPDATE astaccount SET callerid = NULL WHERE accountcode = '%s'", arg(3));
+		}
+		if ($edit['serverid'] == '') {
+			db_query("UPDATE astaccount SET serverid = NULL WHERE accountcode = '%s'", arg(3));
+		}
+		astcore_astlogdb("astaccount","U", $edit,arg(3));
+		drupal_set_message(t('Account changed').': '.arg(3));
+	} 
+	if (arg(2) == 'create') {
+		$newac = astpartnerglobal_create_account(arg(3),$edit['tech']);
+		//.$edit['tech'].'  '.$edit['noaccounts']
+		//drupal_set_message($edit['noaccounts'].' '.t('New Accounts added').  $res->uid . '  ' . $res->db_prefix . '  '.$rescount );
+		astcore_astlogdb("astaccount","I", $edit,$newac);
+		drupal_set_message(t('New Account added').': '.$newac);
+	}
+
 } // end Save function
 
 
@@ -859,13 +927,20 @@ function astpartnerglobal_tech_create_form($edit) {
 	global $user;
 	global $db_prefix; 
     $op = $_POST["op"];
+	$partnerid = arg(3);
+	if ((!is_numeric($partnerid)) or ($partnerid == '')) {
+  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return; 
+	}
 	$sql = db_query("select gtype, gname from astacgroup where active = 1 and mastergroup = 'CreateAccount' order by gtype desc");
 	// $statusopts['None2'] = t('Choose Provider');
 	while ($item = db_fetch_object($sql)) {
 		$statusopts[$item->gtype] = $item->gname;
 	}
 	$group .= form_select(t('Account Type (Tech)'), 'tech', $param, $statusopts);
-	$group .= form_textfield(t('Number of Accounts'), 'noaccounts', '1', 20, 20);
+//	$group .= form_textfield(t('Number of Accounts'), 'noaccounts', '1', 20, 20);
+	$group .= form_hidden('noaccounts', '1', $edit = 'edit', $attributes = NULL);
 	$group .= form_submit(t('Create'));
 	$group .= form_submit(t('Back'));
 	return form($group);
@@ -873,6 +948,42 @@ function astpartnerglobal_tech_create_form($edit) {
 
 ///////////// End SIP/IAX Create Form /////////////////////////////////////////////////////////////
 
+function astpartnerglobal_tech_change_form($edit) {
+	global $user;
+	global $db_prefix; 
+    $op = $_POST["op"];
+	$account = arg(3);
+	if ((!is_numeric($account)) or ($account == '')) {
+  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return; 
+	}
+	$SQL = "SELECT forcecallerid,callerid,secret,IFNULL(serverid,'')serverid,tech FROM astaccount WHERE accountcode = '%s'";
+	$resq = db_query($SQL, $account);
+	$res = db_fetch_object($resq);
+
+/*	
+	if (empty($edit['email'])) {
+	if ($edit['clip'] == '') { $edit['clip'] = $sqlout->forcecallerid; }
+	$edit['callerid'] = $sqlout->callerid;
+	$edit['secret'] = $sqlout->secret;
+	$edit['serverid'] = $sqlout->serverid;
+*/
+
+	$group .= form_textfield(t('CLIP = The Callerid shown when calling PSTN<BR>CLIP = Calling Line Identification Presentation<BR>Remove this if Client is getting Remote Party ID (RPID) from PBX'), 'clip', $res->forcecallerid, 30, 30);
+	$group .= form_textfield(t('Callerid - The Callerid shown when calling in our Network<BR>NEVER CHANGE THIS. This value may only be activ and updated when Asterisk is reloaded<BR>Format: &lt;xxxxxxxx&gt;'), 'callerid', $res->callerid, 30, 30);
+	$group .= form_textfield(t('Password<BR>NEVER CHANGE THIS. This value may only be activ and updated when Asterisk is reloaded'), 'secret', $res->secret, 30, 30);
+	if (($res->tech == 'SIP') and ($res->serverid <> 'sipgw')) {
+		$group .= form_textfield(t('Serverid - The name of the Asterisk server where this account is valid'), 'serverid', $res->serverid, 30, 30);
+	}
+//	$group .= form_textfield(t('Number of Accounts'), 'noaccounts', '1', 20, 20);
+//	$group .= form_hidden('noaccounts', '1', $edit = 'edit', $attributes = NULL);
+	$group .= form_submit(t('Update'));
+	$group .= form_submit(t('Back'));
+	return form($group);
+}
+
+///////////// End Account Change Form /////////////////////////////////////////////////////////////
 
 
 
@@ -950,8 +1061,9 @@ function astpartnerglobal_msn_create_form($edit) {
 	$group .= '<BR><B>'.t('Main Number').' : </B>'.$res->phonework.'<BR>';
 	$group .= '<BR><B>'.t('MSN NumberSerie').' : </B>'.$res->didnumberserie.'<BR>';
 	$group .= '<BR><B>'.t('Fax:').' : </B>'.$res->fax.'<BR>';
-	$group .= form_textfield(t('From MSN/DID Number'), 'frommsn', $res->phonework, 20, 20);
-	$group .= form_textfield(t('Number of MSN/DID to Create in a serie'), 'nomsn', '1', 20, 20);
+	$group .= form_textfield(t('Create MSN/DID Number'), 'frommsn', $res->phonework, 20, 20);
+	// $group .= form_textfield(t('Number of MSN/DID to Create in a serie'), 'nomsn', '1', 20, 20);
+	$group .= form_hidden('nomsn', '1', $edit = 'edit', $attributes = NULL);
 	$group .= form_submit(t('Create'));
 	$group .= form_submit(t('Back'));
 	return form($group);
