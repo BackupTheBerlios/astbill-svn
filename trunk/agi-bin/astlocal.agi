@@ -62,7 +62,9 @@ if ($config{odbc} eq "YES") {
 	$dbh= DBI->connect("DBI:ODBC:$config{dbdsn}",$config{dbuser},$config{dbpass}) ||   die "Got error $DBI::errstr when connecting to $config{dbdsn}\n";
 }
 else {
-	$dbh = DBI->connect("dbi:mysql:dbname=$config{dbname};server=$config{dbhost}", "$config{dbuser}", "$config{dbpass}"); 
+	#  $dbh = DBI->connect("dbi:mysql:dbname=$config{dbname};server=$config{dbhost}", "$config{dbuser}", "$config{dbpass}"); 
+	 $dbh   = DBI->connect ("DBI:mysql:database=$config{dbname}:host=$config{dbhost}", 
+		$config{dbuser},$config{dbpass}) or die "Can't connect to database: $DBI::errstr\n";
 }
 
 my $defmaxminute = &getMaxMinute();
