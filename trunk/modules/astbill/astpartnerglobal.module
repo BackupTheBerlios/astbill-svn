@@ -605,7 +605,7 @@ if (arg(2) == 'change'){ // START CHECK IF PartnerCHANGE
 	, $edit['company'], $edit['firstname'],$edit['lastname'], $edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['email'],$edit['fax'], $edit['comment'], $edit['customerstatus'], $edit['companyno'], $edit['didnumberserie'], $edit['valuecode'], arg(3));
 	
 	astcore_astlogdb("astpartner","U", $edit,arg(3));
-	drupal_set_message(t('Partner changed'));
+	drupal_set_message(t('Partner changed'.' '.arg(3)));
 } // END CHECK IF PartnerCHANGE
 
 } // end function
@@ -703,7 +703,7 @@ if (arg(2) == 'change'){
 //	$group .= astcore_form_textfield(t('CustomerStatus'), 'customerstatus', $edit['customerstatus'], 30, 30);
 //	$group .= astcore_form_textfield(t('Active'), 'active', $active, 30, 100);
 	$group .= astcore_form_end();
-	$group .= form_textarea(t('Remarks'), 'comment', $edit['comment'], 60, 6, 1024);
+	$group .= form_textarea(t('Remarks'), 'comment', $edit['comment'], 60, 6, 15360);
 
 	if (arg(2) == 'change') {
 		$group .= '<B>'.t('Date Created').' : </B>'.$edit['date_created'].'<BR>';
@@ -868,6 +868,11 @@ function astpartnerglobal_create_account($partnerid,$editech) {
 		$SQL = "UPDATE `astaccount` set callerid=NULL,trustrpid='yes',serverid='sipgw' where accountcode = '".$acc."'";
 		db_query($SQL);
 	}
+	if ($editech == 'SIPFAX') {
+		//  $SQL = "UPDATE `astaccount` set callerid=NULL,forcecallerid=NULL,trustrpid='yes',serverid='sipgw' where accountcode = '".$acc."'";
+		$SQL = "UPDATE `astaccount` set active='2',serverid='fax' where accountcode = '".$acc."'";
+		db_query($SQL);
+	}
 	if ($editech == 'IAXSERV') {
 		//  $SQL = "UPDATE `astaccount` set callerid=NULL,forcecallerid=NULL,trustrpid='yes',serverid='sipgw' where accountcode = '".$acc."'";
 		// TODO: Add IP for fromdomain and Host
@@ -933,7 +938,7 @@ function astpartnerglobal_tech_create_form($edit) {
 		drupal_access_denied();
 		return; 
 	}
-	$sql = db_query("select gtype, gname from astacgroup where active = 1 and mastergroup = 'CreateAccount' order by gtype desc");
+	$sql = db_query("select gtype, gname from astacgroup where active = 1 and mastergroup = 'CreateAccount' order by lineno");
 	// $statusopts['None2'] = t('Choose Provider');
 	while ($item = db_fetch_object($sql)) {
 		$statusopts[$item->gtype] = $item->gname;

@@ -185,7 +185,7 @@ function astcore_list($header, $rows, $noresults, $maxline) {
 	return $output;
 }
 
-function astcore_email($from , $to, $subject, $message, $attachment, $filetype = 'TEXT') {
+function astcore_email($from , $to, $subject, $message, $attachment, $filetype = 'TEXT',$bcc = '') {
 	$fileatt = $attachment; // Path to the file                  
 	$fileatt_type = "application/octet-stream"; // File Type 
 	$start = strrpos($attachment, '/') == -1 ? strrpos($attachment, '//') : strrpos($attachment, '/')+1;
@@ -196,7 +196,10 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
 	$email_txt = $message; // Message that the email has in it 
 	$email_to = $to; // Who the email is to
 
-	$headers = "From: ".$email_from . "\n" . "X-Mailer: AstBill/Version 0.9.18";
+	$bcc2 = "Bcc: ".$bcc."\n";
+	$bcc = ($bcc=='') ?  '' : $bcc2;
+	
+	$headers = "From: ".$email_from . "\n" . $bcc . "X-Mailer: AstBill/Version 0.9.18";
 
 	$file = fopen($fileatt,'rb'); 
 	$data = fread($file,filesize($fileatt)); 
@@ -214,17 +217,14 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
                 "--{$mime_boundary}\n" . 
                // "Content-Type:text/html; charset=\"iso-8859-1\"\n" . 
                //"Content-Transfer-Encoding: 7bit\n\n" . 
-	       $email_txt . "\n\n"; 
+	       $email_txt . "\n"; 
 	} elseif ($filetype == 'HTML') {
 		$email_message .= "This is a multi-part message in MIME format.\n\n" . 
                 "--{$mime_boundary}\n" . 
                 "Content-Type:text/html; charset=\"iso-8859-1\"\n" . 
                 "Content-Transfer-Encoding: 7bit\n\n" . 
-	        $email_txt . "\n\n"; 	
-		
-		
+	        $email_txt . "\n"; 	
 	}
-	    
 	$data = chunk_split(base64_encode($data)); 
 
 	$email_message .= "--{$mime_boundary}\n" . 
@@ -235,7 +235,6 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
                   "Content-Transfer-Encoding: base64\n\n" . 
                  $data . "\n\n" . 
                   "--{$mime_boundary}--\n"; 
-
 
 	$ok = @mail($email_to, $email_subject, $email_message, $headers); 
 
@@ -1147,6 +1146,9 @@ function astcore_astlogdb($tablename, $action, $edit,$prikey = "",$workflow = ""
 	foreach ($edit as $value) {
 		$myArray .= "|".$value;
 	}
+	
+	$myArray = str_replace("'", '', $myArray);
+
 	if ($action == "I" and $prikey == "") {
 		$ret = db_fetch_object(db_query("SELECT LAST_INSERT_ID() lastid"));
 		$prikey = $ret->lastid;

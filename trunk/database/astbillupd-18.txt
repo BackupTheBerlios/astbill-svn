@@ -1154,6 +1154,9 @@ ADD `assigned_to_prefix` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `assigned_to_ui
 ALTER TABLE `astlogdb` ADD `workflow` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `uid` ;
 
 ALTER TABLE `astorderip` ADD `leasing_ok` TINYINT( 1 ) DEFAULT '0' NOT NULL AFTER `customers_order` ;
+ALTER TABLE `astpartner` CHANGE `comment` `comment` VARCHAR( 15360 ) NOT NULL DEFAULT '';
+ALTER TABLE `astorderip` CHANGE `remarks` `remarks` VARCHAR( 15360 ) NOT NULL DEFAULT '';
+
 
 */
 

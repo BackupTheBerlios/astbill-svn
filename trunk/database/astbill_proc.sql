@@ -279,8 +279,8 @@ IF mytrunk <> 'Local' THEN
   select dialstatus    INTO mydialst    from astcdr   where uniqueid = uid;
   
   select brand         INTO mybrand     from astcdr  where uniqueid = uid;
-  select billincrement INTO myincrement from asvcall  where uniqueid = uid;    
-  select markup        INTO mymarkup    from asvcall  where uniqueid = uid; 
+  select billincrement INTO myincrement from astcdr cdr,astplans pla where cdr.brand=pla.name and cdr.uniqueid=uid;
+  select markup        INTO mymarkup from astcdr cdr,astplans pla where cdr.brand=pla.name and cdr.uniqueid=uid;
   select vat           INTO myvat       from asttrunk where asttrunk.name = mytrunk;
 
   
@@ -557,7 +557,12 @@ IF mytrunk <> 'Local' THEN
   IF sales < round(minimum + (minimum * mymarkup / 100),0) THEN
        SET sales = round(minimum + (minimum * mymarkup / 100),2); /* We may charge a minimum charge to our customer */
   END IF;
-   SET sales = sales + round(myconnect + (myconnect * mymarkup / 100),0)  ;  /* Add Vendors Connection Charge  */
+
+  /* Rounding BUG Below Are Casilla - Modified 1 Oct 2006  */
+  SET myconnect = myconnect + round((myconnect * mymarkup / 100),0);
+  /* SET sales = sales + round(myconnect + (myconnect * mymarkup / 100),0)  ;   Add Vendors Connection Charge  */
+
+   SET sales = sales + round(myconnect,2)  ;   /*  Add Vendors Connection Charge  */
   
    /*
    update astcdr
