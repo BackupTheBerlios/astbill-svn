@@ -8,6 +8,11 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
+14 Oct 2006
+# Modified DBI->connect in Perl Script agi-bin
+# This allows use of remote server not only localhost
+# Still under testing
+
 23 Sept 2006 Version 0.9.18
 # Improved performanse of astpbx.module. My Subscription can now handle millions of records
 # Performance have changed from 12 seconds to 1 seconds on my current setup with nearly a million cdr records
