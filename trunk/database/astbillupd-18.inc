@@ -1175,6 +1175,7 @@ CREATE TABLE `astsumorderip` (
 ALTER TABLE `astcdr` ADD `partnerid` INT( 11 ) NOT NULL DEFAULT '0' AFTER `submaster` ,
 ADD `uid` INT( 10 ) NOT NULL DEFAULT '0' AFTER `partnerid` ;
 ALTER TABLE `astinvoice` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `invoiceno` ;
+ALTER TABLE `astpaymentbatch` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `batchid` ;
 
 */
 
