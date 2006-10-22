@@ -901,8 +901,9 @@ function astpartnerglobal_tech_create_save($edit) {
 		drupal_access_denied();
 		return;
 		}
-		db_query("UPDATE astaccount SET forcecallerid = '%s',secret = '%s',callerid = '%s',serverid = '%s' WHERE accountcode = '%s'"
-		, $edit['clip'], $edit['secret'],$edit['callerid'],$edit['serverid'], arg(3));
+/*		db_query("UPDATE astaccount SET forcecallerid = '%s',secret = '%s',callerid = '%s',serverid = '%s' WHERE accountcode = '%s'", $edit['clip'], $edit['secret'],$edit['callerid'],$edit['serverid'], arg(3));
+*/
+		db_query("UPDATE astaccount SET forcecallerid = '%s',secret = '%s',callerid = '%s' WHERE accountcode = '%s'", $edit['clip'], $edit['secret'],$edit['callerid'], arg(3));
 
 		if ($edit['clip'] == '') {
 			db_query("UPDATE astaccount SET forcecallerid = NULL WHERE accountcode = '%s'", arg(3));
@@ -911,7 +912,7 @@ function astpartnerglobal_tech_create_save($edit) {
 			db_query("UPDATE astaccount SET callerid = NULL WHERE accountcode = '%s'", arg(3));
 		}
 		if ($edit['serverid'] == '') {
-			db_query("UPDATE astaccount SET serverid = NULL WHERE accountcode = '%s'", arg(3));
+	//		db_query("UPDATE astaccount SET serverid = NULL WHERE accountcode = '%s'", arg(3));
 		}
 		astcore_astlogdb("astaccount","U", $edit,arg(3));
 		drupal_set_message(t('Account changed').': '.arg(3));

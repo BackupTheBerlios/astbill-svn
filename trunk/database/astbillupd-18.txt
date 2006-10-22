@@ -1157,6 +1157,23 @@ ALTER TABLE `astorderip` ADD `leasing_ok` TINYINT( 1 ) DEFAULT '0' NOT NULL AFTE
 ALTER TABLE `astpartner` CHANGE `comment` `comment` VARCHAR( 15360 ) NOT NULL DEFAULT '';
 ALTER TABLE `astorderip` CHANGE `remarks` `remarks` VARCHAR( 15360 ) NOT NULL DEFAULT '';
 
+CREATE TABLE `astsumorderip` (
+  `db_prefix` varchar(40) NOT NULL default '',
+  `period` varchar(40) NOT NULL default '',
+  `qty` int(10) NOT NULL default '0',
+  `percent` decimal(10,2) NOT NULL default '0.00',
+  `total` int(10) NOT NULL default '0',
+  `msn` int(10) NOT NULL default '0',
+  `sip` int(10) NOT NULL default '0',
+  `workflow` varchar(40) NOT NULL default '',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`db_prefix`,`period`,`workflow`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+ALTER TABLE `astcdr` ADD `partnerid` INT( 11 ) NOT NULL DEFAULT '0' AFTER `submaster` ,
+ADD `uid` INT( 10 ) NOT NULL DEFAULT '0' AFTER `partnerid` ;
+ALTER TABLE `astinvoice` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `invoiceno` ;
+ALTER TABLE `astpaymentbatch` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `batchid` ;
 
 */
 
