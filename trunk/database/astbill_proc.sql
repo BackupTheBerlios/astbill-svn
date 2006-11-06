@@ -752,6 +752,24 @@ and answeredtime <> 0 and trunk <> 'Local' and accountcode = saccountcode;
 END;;
 delimiter ;
 
+DROP PROCEDURE IF EXISTS createmsn;
+delimiter |
+CREATE PROCEDURE createmsn(msnstart int(8), maxmsn int(8), fylke char(2))
+    BEGIN
+      SET @x = 0;
+      REPEAT 
+      	SET @msn = msnstart + @x;
+      	SET @x = @x + 1; 
+      	
+      	INSERT INTO `astacdid`(`countryprefix`,`did`,`db_prefix`,`uid`,`acgroup`,`fylkekode`,`active`)
+      	VALUES ('47', @msn,'pbx_',0,'newmsn',fylke,'1');
+      	
+      	UNTIL @x >= maxmsn END REPEAT;
+    END
+|
+
+delimiter ;
+
 GRANT ALL PRIVILEGES ON astbill.* TO astbilluser@localhost IDENTIFIED BY 'astbill419';
 
 SET PASSWORD FOR 'astbilluser'@'localhost' = OLD_PASSWORD('astbill419');
