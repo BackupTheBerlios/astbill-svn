@@ -365,30 +365,8 @@ function page_astentry_swtech() {
       // $output = astentry_form($edit);
   }
 
-$uid = $user->uid;
- _astentry_printtheme_swtech($output, arg(2), $uid);
+ astcore_printtheme($output, arg(2));
 }
-
-
-function _astentry_printtheme_swtech($page_content, $account, $uid) {
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.t('Account -').' '.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-  
-$output .= '<div class="nodecontent"><B>'.t('My account: ').'</B><BR>';
-$output .= '<FONT SIZE=1><A HREF="'.url('astentry/advset/'.$account.'/'.$uid).'">'.t('Advanced Settings.').'</A><BR>';
-
-$output .= '</FONT></DIV>';
-
-  // $output .= '<div class="astpbx">' . $page_content . "</div>\n";
-  print theme("page", $output);
-}
-
-// END EDIT ACCOUNT STUFF
-
-// ##########################################################################################################
-// ##########################################################################################################
-
-
 
 // ##########################################################################################################
 // ##########################################################################################################
@@ -548,9 +526,8 @@ function page_astentry_createnr() {
       // $output = astpbx_form($edit);
   }
 
-$title = 'Insert';
-$account = '';
-_astentry_printtheme_best($output, $account, $title);
+	$title = 'Insert';
+	astcore_printtheme($output, $title);
 }
 
 // END CREATENR STUFF
@@ -615,8 +592,7 @@ function page_astentry_emailme() {
 	
 	$output = form($group);
 	
-	$account = '';
-	_astentry_printtheme_best($output, $account, $title);	
+	astcore_printtheme($output, $title);	
 }
 
 // END EMAILME
@@ -1079,18 +1055,7 @@ $sql = db_query("SELECT did, conditions, action, mon, tue, wed, thu, fri, sat, s
 
   $output .= (count($rows) == 0) ? t('No Dialplan for this user.') : theme('table', $header, $rows);
 
-_astentry_printthemedp($output, arg(2));
-}
-
-function _astentry_printthemedp($page_content, $account) {
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.t('Account -').' '.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-
-  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-
-$output .= '<div class="nodecontent">';
-$output .= '<B><FONT SIZE=1><A HREF="'.url('astentry/dialplancreate/'.arg(2)).'">'.t('Create new').'</A></B><BR>';
-
-  print theme("page", $output);
+  astcore_printtheme($output, arg(2));
 }
 
 
@@ -1127,7 +1092,7 @@ function page_astentry_change_dialplan() {
       // $output = astpbx_form($edit);
   }
 
-_astentry_printtheme($output, arg(3));
+	astcore_printtheme($output, arg(3));
 }
 
 function page_astentry_create_dialplan() {
@@ -1163,7 +1128,7 @@ function page_astentry_create_dialplan() {
       // $output = astpbx_form($edit);
   }
 
-_astentry_printtheme($output, arg(2));
+	astcore_printtheme($output, arg(2));
 }
 
 function page_astentry_remove_dialplan($did, $account) {
@@ -1334,7 +1299,7 @@ function page_astentry_advset() {
       // $output = astpbx_form($edit);
   }
 
-_astentry_printtheme($output, arg(2));
+	astcore_printtheme($output, arg(2));
 
 }
 
@@ -1503,9 +1468,8 @@ function page_astentry_voicemailchange() {
       // $output = astpbx_form($edit);
   }
 
-$title = t('Mailbox');
-$account = ' - '.arg(2);
-_astentry_printtheme_best($output, $account, $title);
+	$title = t('Mailbox'.' '.arg(2));
+	astcore_printtheme($output, $title);
 
 }
 
@@ -1517,29 +1481,6 @@ function astincomingnr_validate($edit) {
   $myerror = 1;
   $errors = array();
 
-/*if(empty($edit["tech"])) {
-	$errors['tech'] = t("You did not enter your choice.");
-	$myerror = 0;
-}*/
-
-/*if (check_email($edit['mailboxemail'])){
-	$myerror = 1;
-} else {
-	$errors['mailboxemail'] = t('Invalid email');
-	$myerror = 0;
-}*/
-
-//if($edit['comment'] 20 chars
-
-
-//  if (isset($edit['mailboxpin']) && !$edit['mailboxpin']) {
-//    $errors['mailboxpin'] = t('Your pin must be 4 numbers.');
-//    $myerror = 0;
-//}
-//  if (isset($edit['url']) && !$edit['url']) {
-//    $errors['url'] = t('You must supply an URL.');
-//  }
-
   foreach ($errors as $name => $message) {
     form_set_error($name, $message);
   } 
@@ -1547,54 +1488,39 @@ function astincomingnr_validate($edit) {
 }
 
 function astincomingnr_save($edit, $account) {
-  global $user;
-  global $db_prefix;
-  // Make sure you don't trust the URL to be safe! Always check for exploits.
-  //if (!is_numeric($alice) || !is_numeric($bob)) {
-  if (!is_numeric($account)) {
-    // We will just show a standard "access denied" page in this case.
-    drupal_access_denied();
-    return;
-  }
-
-
-
-db_query("UPDATE asv_friend SET forwardto = '%s', comment = '%s' WHERE publicnumber = '%s' AND uid = '%s' and db_prefix ='".$db_prefix."'", $edit['forwardto'], $edit['comment'], arg(2), $user->uid);
-
-
-  drupal_set_message(t('The Account settings have been updated.'));
+	global $user;
+	global $db_prefix;
+	// Make sure you don't trust the URL to be safe! Always check for exploits.
+	//if (!is_numeric($alice) || !is_numeric($bob)) {
+	if (!is_numeric($account)) {
+		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return;
+	}
+	db_query("UPDATE astacdid SET forwardtmp = '%s' WHERE did = '%s' AND uid = '%s' and db_prefix ='".$db_prefix."'", $edit['forwardtmp'], arg(2), $user->uid);
+	drupal_set_message(t('The Forwarding settings have been updated.'));
 }
 
 function astincomingnr_form($edit) {
   global $user;
-  
-  /*$group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'));
-//  $group = form_textfield(t('Title'), 'title', $edit['title'], 60, 128, null, null, true);
-  $group .= form_textfield(t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
-  $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);*/
-
-
-  $group .= form_textfield(t("Enter the number(s) you want to forward to separated by &<BR>(Example: 70500&70501)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 50, 150, null, null, false);
-  $group .= form_textfield(t("Comment"), "comment", $edit['comment'], 50, 150, null, null, false);
-
-
-  // $group .= form_hidden('AmiTest', "JustTesting");
+  global $db_prefix;
+/*
+  $group .= form_textfield(t("Enter the phone number(s) you want to forward to separated by &<BR>(Example: 70500&70501)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 50, 150, null, null, false);
+*/  
+  $group .= form_textfield(t("Enter the phone number you want to forward to"), "forwardtmp", $edit['forwardtmp'], 50, 150, null, null, false);
+  // $group .= form_textfield(t("Comment"), "comment", $edit['comment'], 50, 150, null, null, false);
   $group .= form_submit(t('Save'));
   $group .= form_submit(t('Back'));
-  //$form = form_group(t('Account details'), $group);
   return form($group);
 }
 
 function astincomingnr_load($account) {
   global $user;
   global $db_prefix;
-//  return db_fetch_array(db_query("SELECT * FROM {bookmarks} WHERE uid = %s AND url = '%s'", $user->uid, $url));
-  return db_fetch_array(db_query("SELECT accountcode, publicnumber, tech, forwardto, comment FROM asv_friend WHERE uid = %s and db_prefix ='".$db_prefix."' AND publicnumber = '%s'", $user->uid, arg(2)));
+  return db_fetch_array(db_query("SELECT forwardtmp FROM astacdid WHERE uid = %s and db_prefix ='".$db_prefix."' AND did = '%s'", $user->uid, arg(2)));
 }
-// END FORM STUFF
 
 function page_astentry_incomingnr() {
-
   global $user;
   global $db_prefix; 
 
@@ -1612,35 +1538,24 @@ function page_astentry_incomingnr() {
 
 
   $header = array(
-    array('data' => t('Account'), 'field' => 'incomingno', 'sort' => 'asc'),
-    array('data' => t('Public NR'), 'field' => 'publicno'),
-	array('data' => t('Tech')),
+    array('data' => t('Phone Number'), 'field' => 'did', 'sort' => 'asc'),
+    array('data' => t('Account')),
     array('data' => t('Forwarded to')),
-    array('data' => t('Comment')),
+//    array('data' => t('Remarks')),
 	array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 1)
 	
   );
 
-$sql = db_query("SELECT accountcode, publicnumber, tech, forwardto, comment FROM asv_friend WHERE uid = '%s' and db_prefix ='".$db_prefix."' ", $user->uid);
+$ret = db_query("SELECT did, forwardto, forwardtmp FROM astacdid WHERE uid = '%s' and db_prefix ='".$db_prefix."' ", $user->uid);
 
  // $result = pager_query($sql, $maxline);
   
-  while ($item = db_fetch_object($sql)) {
-	if ($item->tech == 'IN-IAX') {$tech = 'IAX';}
-	if ($item->tech == 'IN-SIP') {$tech = 'SIP';}
-	if ($item->tech == 'IN-FOR') {$tech = 'FOR';}
-	$account = arg(2);
-	  	$rows[] = array($item->accountcode,
-		$item->publicnumber,
-		'&nbsp;&nbsp;<img border="0" src="files/astar/'.$tech.'.gif">&nbsp;&nbsp;',
-	    	$item->forwardto,
-		'&nbsp;&nbsp;'.$item->comment,
-		'<A HREF="'.url('astentry/incomingnrchange/'.$item->publicnumber).'">'.t('Change').'</A>');
-
-
-  }
-
-
+  while ($item = db_fetch_object($ret)) {
+	  	$rows[] = array($item->did,
+	    'sip:'.$item->forwardto,
+	    '&nbsp;&nbsp;'.$item->forwardtmp,
+		'<A HREF="'.url('astentry/incomingnrchange/'.$item->did).'">'.t('Change').'</A>');
+ }
 
   $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
   if (!empty($pager)) {
@@ -1649,14 +1564,11 @@ $sql = db_query("SELECT accountcode, publicnumber, tech, forwardto, comment FROM
 
   $output .= (count($rows) == 0) ? t('No incoming Number for this user.') : theme('table', $header, $rows);
 
-$title = t('View');
-$account = '';
-_astentry_printtheme_best($output, $account, $title);
-
+	$title = t('List');
+	astcore_printtheme($output, $title);
 }
 
 function page_astentry_incomingnrchange(){
-
   global $user;
   global $db_prefix;
 
@@ -1687,34 +1599,14 @@ function page_astentry_incomingnrchange(){
 	  $output = astincomingnr_form(astincomingnr_load(arg(2)));
       // $output = astpbx_form($edit);
   }
-
-$title = t('Change');
-$account = ' - '.arg(2);
-_astentry_printtheme_best($output, $account, $title);
-
-
+	$title = t('Change').' - '.arg(2);
+	astcore_printtheme($output, $title);
 }
 
 // END INCOMINGNR
 
 
 // ##########################################################################################################
-
-function _astentry_printtheme($page_content, $account) {
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.t('Account -').' '.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-
-  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-  // $output .= '<div class="astentry">' . $page_content . "</div>\n";
-  print theme("page", $output);
-}
-
-function _astentry_printtheme_best($page_content, $account, $title) {
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.''.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-
-  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-  // $output .= '<div class="astentry">' . $page_content . "</div>\n";
-  print theme("page", $output);
-}
 
 function array_push2(&$array,$object,$key=null){
    $keys = array_keys($array);

@@ -1159,3 +1159,235 @@ function astcore_astlogdb($tablename, $action, $edit,$prikey = "",$workflow = ""
 }
 
 
+// Oles Functions
+
+// This is the same as astcore_formselect_datetime()
+// This doesnot call astcore_form_element()
+// The point is not to have the <tr> tag
+// this also alows multiple instanses of datetime forms in one page
+
+function astcore_formselect_datetime_ole($title, $lateportingdate, $edit, $showtime = FALSE, $istable = TRUE, $allowempty = FALSE, $uid) {
+	// MAKE DATE LISTS
+	
+//	$allowempty = TRUE;
+
+// print $lateportingdate;
+$theyear = $uid."_astyear";
+$themonth = $uid."_astmonth";
+$theday = $uid."_astday";
+$thehour = $uid."_asthour";
+$theminute = $uid."_astminute";
+$thesecond = $uid."_astsecond";
+
+
+    if ((empty($edit[$theyear]) && (!empty($lateportingdate)))) {
+		$followupsplit = explode(" ", $lateportingdate);
+		$dates = explode("-", $followupsplit[0]);
+		$edit[$theyear] = $dates[0];
+		$edit[$themonth] = $dates[1];
+		$edit[$theday] = $dates[2];
+		$times = explode(":", $followupsplit[1]);
+		$edit[$thehour] = $times[0];
+		$edit[$theminute] = $times[1];
+		$edit[$thesecond] = $times[2];
+	}
+
+
+	// The expression (expr1) ? (expr2) : (expr3) evaluates to expr2 if expr1 evaluates to TRUE, and expr3 if expr1 evaluates to FALSE.
+	$y = (empty($lateportingdate)) ? "" : $edit[$theyear];
+	$yearlist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
+	$x = date(Y);
+	while ($x <= (date(Y)+2)) {
+		if ($x == $y) {
+			$yearlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$yearlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+
+	$y = (empty($lateportingdate)) ? "" : $edit[$theday];
+	$daylist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
+	$x = 1;
+	while ($x <= '31') {
+		if ($x == $y) {
+			$daylist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {	
+			$daylist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+
+	$listmonth = array('1' => t('January'), '2' => t('February'), '3' => t('March'), '4' => t('April'), '5' => t('May'), '6' => t('June'), '7' => t('July'), '8' => t('August'), '9' => t('September'), '10' => t('October'), '11' => t('November'), '12' => t('December'));
+
+	$y = (empty($lateportingdate)) ? "" : $edit[$themonth];
+	$monthlist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+	
+	$x = 1;
+	while ($x <= '12') {
+		if ($x == $y) {
+			$monthlist .= '<option value="'.$x.'" selected="selected">'.$listmonth[$x].'</option>';
+		} else {
+			$monthlist .= '<option value="'.$x.'">'.$listmonth[$x].'</option>';
+		}
+		$x++;
+	}
+	// END MAKE DATE LISTS
+	// MAKE TIME LISTS
+	
+	$x = 0;
+	if (empty($edit[$thehour])) {
+		$y = date(G) + 1;
+	} else {
+		$y = $edit[$thehour];
+	}
+	while ($x <= 23) {
+		if ($x == $y) {
+			$hourlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$hourlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+	
+	$x = 0;
+	if (empty($edit['minute'])) {
+		$y = date(i);
+	} else {
+		$y = $edit['minute'];
+	}
+	$minutelist = "";
+    if ($y == "00") {
+		$minutelist .= '<option value="00" selected="selected">00</option>';
+		$minutelist .= '<option value="30">30</option>';
+	} else {
+		$minutelist .= '<option value="00">00</option>';
+		$minutelist .= '<option value="30" selected="selected">30</option>';
+	}
+	
+/*	while ($x <= 55) {
+		if ($x == $y) {
+			$minutelist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {	
+			$minutelist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+		$x++;
+		$x++;
+		$x++;
+		$x++;
+	}
+*/
+	// END MAKE TIME LISTS
+	
+// $edit[astyear] = '';
+
+if ($showtime == FALSE) {
+ 	$group = '<select name="edit['.$theday.']" id="edit-'.$theday.'">
+'.$daylist.'
+</select>
+<select name="edit['.$themonth.']" id="edit-'.$themonth.'">
+'.$monthlist.'
+</select>
+<select name="edit['.$theyear.']" id="edit-.'.$theyear.'">
+'.$yearlist.'
+</select>';
+} else {
+	$group = '<select name="edit[.'.$theday.']" id="edit-.'.$theday.'">
+'.$daylist.'
+</select>
+<select name="edit['.$themonth.']" id="edit-'.$themonth.'">
+'.$monthlist.'
+</select>
+<select name="edit['.$theyear.']" id="edit-'.$theyear.'">
+'.$yearlist.'
+</select>
+<select name="edit['.$thehour.']" id="edit-'.$thehour.'">
+'.$hourlist.'
+</select>
+<select name="edit[ast'.$theminute.']" id="edit-'.$theminute.'">
+'.$minutelist.'
+</select>';
+	
+}
+if ($istable == TRUE) {
+	return astcore_form_element_ole($title, $group);
+} ELSE {
+	return $group.'<BR>';
+}
+//	return astcore_form_element_ole($title, $group);
+}
+
+function astcore_form_textfield_ole($title, $name, $value, $size, $maxlength, $description = NULL, $attributes = NULL, $required = FALSE) {
+  $size = $size ? ' size="'. $size .'"' : '';
+  return astcore_form_element_ole($title, '<input type="text" maxlength="'. $maxlength .'" class="'. _form_get_class('form-text', $required, _form_get_error($name)) .'" name="edit['. $name .']" id="edit-'. $name .'"'. $size .' value="'. check_plain($value) .'"'. drupal_attributes($attributes) .' />', $description, 'edit-'. $name, $required, _form_get_error($name));
+}
+
+function astcore_form_element_ole($title, $value, $description = NULL, $id = NULL, $required = FALSE, $error = FALSE) {
+
+//  $output  = "<div class=\"form-item\">\n";
+//  $required = $required ? '<span class="form-required">*</span>' : '';
+
+  if ($title) {
+    if ($id) {
+      $output .= " <TH><label for=\"$id\">$title:</label>$required</TH>\n";
+    }
+    else {
+      $output .= " <TH><label>$title:</label>$required</TH>\n";
+    }
+  }
+
+  $output .= " <TD>$value</TD>\n";
+
+  if ($description) {
+    $output .= " <div class=\"description\">$description</div>\n";
+  }
+
+//  $output .= "</div><TR>\n";
+
+  return $output;
+}
+
+// Convert a multi dimensional array to csv
+function astcore_export_arraytocsv($array, $filename = 'astexport.csv') {
+	global $db_prefix;
+
+	$fields=0;
+	foreach ($array as $line) {
+ 		foreach ($line as $item => $val) {
+ 			$columnnames .= $item;
+ 			$columnnames .= ',';
+ 			$fields++;
+		}
+		break;
+	}
+	$columnnames[strlen($columnnames)-1] = '';
+	
+	$list = $columnnames.'
+';
+	
+	$columns = explode(",", $columnnames);
+
+	foreach ($array as $line) {
+
+ 		foreach ($line as $item => $val) {
+ 
+ 		$list .= astcore_utf8_to_unicode($val,FALSE).',';
+		}
+		$list .= '
+';
+
+	}
+
+	$size = strlen($list);
+	header("Content-length: ".$size);
+	header("Content-type: text/comma-separated-values");
+	header("Content-Disposition: attachment; filename=".$filename);
+	
+	echo $list;
+	
+	exit;
+}
+

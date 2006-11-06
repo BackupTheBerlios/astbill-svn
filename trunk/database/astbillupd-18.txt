@@ -1174,6 +1174,7 @@ ALTER TABLE `astcdr` ADD `partnerid` INT( 11 ) NOT NULL DEFAULT '0' AFTER `subma
 ADD `uid` INT( 10 ) NOT NULL DEFAULT '0' AFTER `partnerid` ;
 ALTER TABLE `astinvoice` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `invoiceno` ;
 ALTER TABLE `astpaymentbatch` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `batchid` ;
+ALTER TABLE `astacdid` ADD `forwardtmp` VARCHAR(255) DEFAULT '' NOT NULL AFTER `forwarto` ;
 
 */
 
