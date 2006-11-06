@@ -150,20 +150,32 @@ function _astpbx_all() {
 	array('data' => t('Calls'), 'field' => 'countcalls'),
 	array('data' => t('Operations'), 'colspan' => 2)
 	);
-	
+/*	
 	$sql = "SELECT accountcode, tech, secret, accountname, sumprice, sumpaid, balance,startingcredit,countcalls, forcecallerid FROM asvaccount2 WHERE tech in (select actype from astactype where active = '1' ) and db_prefix ='".$db_prefix."' and uid ='".$user->uid."'". tablesort_sql($header);
+*/
+$sql = "SELECT `accountcode`,tech,secret,startingcredit,forcecallerid, (
+select count(*) from astcdr cdr where cdr.accountcode = acc.accountcode and `dialstatus` like 'ANSWER%'
+and `answeredtime` <> 0 and `trunk` <> 'Local'
+) AS `countcalls`,
+(select IFNULL(ROUND((sum(cdr.price)/100),2),0) from astcdr cdr where cdr.accountcode = acc.accountcode and cdr.dialstatus like 'ANSWER%' and cdr.answeredtime <> 0 
+and trunk <> 'Local' 
+) AS `sumcost`,
+(select IFNULL(sum(pay.paidamount),0) from `astpayment` pay WHERE pay.accountcode = acc.accountcode
+) AS `sumpaid`
+FROM astaccount acc WHERE tech in (select actype from astactype where active = '1' ) and db_prefix ='".$db_prefix."' and uid ='".$user->uid."'". tablesort_sql($header);
 	
+
 	$result = pager_query($sql, $maxline);
   
 	while ($res = db_fetch_object($result)) {
-		$sumbalance = number_format(($res->balance + $res->startingcredit), 2);
+		$sumbalance = number_format(($res->sumpaid - $res->sumcost + $res->startingcredit), 2);
 		$sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
 		$rows[] = array('<a title="Password: '.$res->secret.'"  href="'.url('astpbx/account/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
 		'<img border="0" src="files/astar/'.$res->tech.'.gif">',
 		$res->accountname.'&nbsp;&nbsp;&nbsp;',
 		$res->forcecallerid,
 		array('data' => '<b>'.$sumbalance.'</b>', 'align' => 'right'),
-		array('data' => $res->sumprice, 'align' => 'right'),
+		array('data' => $res->sumcost, 'align' => 'right'),
 		array('data' => $res->sumpaid, 'align' => 'right'),
 		array('data' => $res->countcalls, 'align' => 'right'),
 		'<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
@@ -223,9 +235,18 @@ if (!user_access('can use admin astpbx')){
     array('data' => t('Charge'), 'field' => 'price')
     //array('data' => t('Operations'), 'colspan' => 2)
   );
-  $sql = 'select UNIX_TIMESTAMP(date_created) datec,callednum,billtime, billtime2,pricerate,price from asvbill where accountcode = '. db_escape_string($account). tablesort_sql($header);
-  $sqlCount = "select count(*) from asvbill where accountcode = '" . $account . "'";
+/*  $sql = 'select UNIX_TIMESTAMP(date_created) datec,callednum,billtime, billtime2,pricerate,price from asvbill where accountcode = '. db_escape_string($account). tablesort_sql($header);
+*/
+
+ $sql = "select `accountcode`,UNIX_TIMESTAMP(date_created) datec,
+`callednum`,`answeredtime`,`billtime`,sec_to_time(`astcdr`.`billtime`) AS `billtime2`,
+`pricerate`,`price` from `astcdr` 
+where callstatus = 1 and accountcode = '". db_escape_string($account)."' ". tablesort_sql($header);
+
+
+  $sqlCount = "select count(*) from astcdr where callstatus = 1 and accountcode = '" . $account . "'";
   $result = pager_query($sql, $maxline, 0, $sqlCount);
+//  $result = pager_query($sql, $maxline);
   //$result = pager_query($sql, 10);
 
   while ($res = db_fetch_object($result)) {
@@ -242,25 +263,13 @@ if (!user_access('can use admin astpbx')){
 
   $output .= (count($rows) == 0) ? t('No Records for this Account.') : theme('table', $header, $rows);
   
-  _astpbx_printtheme($output, $account);
+  astcore_printtheme($output, $account);
 
   // Not a logged in user or has no rights
   } else {
     drupal_access_denied();
   }
 }
-// ##########################################################################################################
-
-function _astpbx_printtheme($page_content, $account) {
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.t('Account -').' '.$account.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-
-  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-  // $output .= '<div class="astpbx">' . $page_content . "</div>\n";
-  print theme("page", $output);
-}
-
-// ##########################################################################################################
-
 // ##########################################################################################################
 
 function _astpbx_voipadmin() {
@@ -1138,7 +1147,7 @@ function astpbx_user($type, &$edit, &$user, $category = NULL) {
   // global $active_db; 
   // $result = mysql_query($query, $active_db); 
   
-  switch ($type) {
+   switch ($type) {
 /*    case 'load':
       return profile_load_profile($user);
     case 'register':
@@ -1179,15 +1188,17 @@ $edit['language'], $edit['forwardto'],$callerid,$edit['accountname'],$lastaccoun
 
 db_query("UPDATE astuser SET brand = '%s', ipaddr = '".$_SERVER['REMOTE_ADDR']."' WHERE uid='%s' and db_prefix ='".$db_prefix."'", variable_get("AstBill Brand", 'default'), $user->uid);   
 
-		//   drupal_set_message(t('New Account Created: '. $result->accountcode));
-// variable_set("AstBill Sendemail",1);
-if (variable_get('AstBill Sendemail', 1)) {
-	// drupal_set_message("astpbx_sendemail");
-	astpbx_sendemail($db_prefix."ASTARREG", $user->mail, $result->accountcode,$user->name,$lastaccount->comment);
-}
+
+ if ( arg(0) <> "astpartneradm") {
+	//   drupal_set_message(t('New Account Created: '. $result->accountcode));
+	// variable_set("AstBill Sendemail",1);
+	if (variable_get('AstBill Sendemail', 1)) {
+		// drupal_set_message("astpbx_sendemail");
+		astpbx_sendemail($db_prefix."ASTARREG", $user->mail, $result->accountcode,$user->name,$lastaccount->comment);
+	}
+ }		
 		// $sql = db_query ("insert into test (subject) values ('Drupal $db_prefix  $user->uid')");
 		// $sql = db_query ("insert into test (subject) values ('$item->id')");
-
 
 		/*  $sql = db_query ("select brand FROM astuser WHERE uid='%s'", $user->uid);   */
 		/*  $sqlget = db_fetch_object($sql);   */

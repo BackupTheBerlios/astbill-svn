@@ -55,6 +55,11 @@ function astpartneradmin_menu($may_cache) {
 	'callback' => 'astpartneradmin_user_create',
 	'access' => $access);
 
+	$items[] = array('path' => 'astpartneradm/useredit', 'title' => t('Edit User'),
+	'callback' => 'astpartneradmin_user_edit',
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+
 /*      	$items[] = array('path' => 'astbilladm/orders/info', 'title' => t('Detailed'),
 		'callback' => 'astorders_info',
 		'access' => $access,
@@ -225,8 +230,8 @@ function astpartneradmin_webuser_list($value, $edit) {
 	while ($res = db_fetch_object($result)) {
 		
 		$rows[] = array(
-		'<A HREF="'.url('user/'.$res->uid).'">'.$res->name.'</A>',
-		$res->uid,
+		'<A HREF="'.url('astpartneradm/useredit/'.$res->uid).'">'.$res->name.'</A>'.'&nbsp;&nbsp;',
+		'<A HREF="'.url('astpartneradm/useredit/'.$res->uid).'">'.$res->uid.'</A>',
 //		'<IMG BORDER="0" SRC="files/astar/'.$res->tech.'.gif">',
 		$res->created.'&nbsp;&nbsp;', 
 		$res->mail, 
@@ -254,7 +259,7 @@ function astpartneradmin_user_create() {
     $output = astpartneradmin_user_form();
   }
 
-	$title = 'Partners User Informasjon';
+	$title = 'Partners Web User Informasjon';
 	astcore_printtheme($output, $title);	
 }
 
@@ -329,6 +334,9 @@ if ($myerror == 1) {
 } else {
 
 $partnerid = astcore_partnerid();
+if (is_numeric(arg(2))) {
+	$partnerid = arg(2);
+}
 
 
 //  $wwwpw = user_password();
@@ -345,6 +353,12 @@ $edit['firstname'], $edit['lastname'], $edit['address1'], $edit['zip'], $edit['p
 if ($partnerid == '30005' and $db_prefix = 'cbk_') {  // WARNING - Just Temporary
 	db_query("update cbk_users_roles set rid = '6' where uid = ".$newuser->uid);
 }   
+if ($partnerid == '130016' and $db_prefix = 'cbk_') {  // WARNING - Just Temporary
+	db_query("update cbk_users_roles set rid = '6' where uid = ".$newuser->uid);
+}   
+if ($partnerid == '130019' and $db_prefix = 'cbk_') {  // WARNING - Just Temporary
+	db_query("update cbk_users_roles set rid = '6' where uid = ".$newuser->uid);
+}   
 
 drupal_set_message(t('User '.$name.' Created with id: '.$newuser->uid));
 
@@ -356,6 +370,30 @@ function astpartneradmin_user_form() {
 	global $db_prefix; 
 	$edit = $_POST["edit"];
     $op = $_POST["op"];
+
+if (arg(1) == 'useredit'){ // START CHECK IF PartnerCHANGE
+
+$sql = db_query("SELECT company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,comment,customerstatus,active FROM astpartner WHERE pid = '%s' and db_prefix ='".$db_prefix."'", arg(3));
+$sqlout = db_fetch_object($sql);
+
+	$firstname = $sqlout->firstname;
+	$lastname = $sqlout->lastname;
+	$address1 = $sqlout->address1;
+	//$address2 = $sqlout->address2;
+	$zip = $sqlout->zip;
+	$city = $sqlout->city;
+	//$state = $sqlout->state;
+	$country = $sqlout->countrycode;
+	$mobile = $sqlout->mobile;
+	//$phonework = $sqlout->phonework;
+	//$fax = $sqlout->fax;
+	$comment = $sqlout->comment;
+	$customerstatus = $sqlout->customerstatus;
+	$active = $sqlout->active;
+
+
+}// User Edit
+
 
 	$group .= astcore_form_start();
 	$group .= astcore_form_textfield(t("Firstname"), "firstname", $firstname, 30, 100);
@@ -380,4 +418,139 @@ if (arg(1) == 'usercreate'){
 	$group .= form_submit(t('Back'));
 	//$form = form_group(t('Account details'), $group);
 	return form($group);
+}
+
+
+function astpartneradmin_user_simpleform($userid) {
+	global $user;
+	global $db_prefix; 
+	$edit = $_POST["edit"];
+    $op = $_POST["op"];
+
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric($userid)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+
+$partnerid = astcore_partnerid();
+
+// if (arg(1) == 'useredit'){ 
+
+$SQL = "SELECT name, firstname, lastname, mail FROM cbk_users, astuser WHERE astuser.db_prefix = 'cbk_' and cbk_users.uid = astuser.uid and astuser.uid = %s and partnerid = '%s'";
+
+$sqlfetch = db_query($SQL, $userid,$partnerid);
+//$sqlfetch = db_query($SQL);
+$sqlout = db_fetch_object($sqlfetch);
+
+// }// User Edit
+
+
+	$group .= astcore_form_start();
+	$group .= astcore_form_textfield(t("Username"), "name", $sqlout->name, 30, 100);
+
+//	$group .= astcore_form_textfield(t("Firstname"), "firstname", $sqlout->firstname, 30, 100);
+//	$group .= astcore_form_textfield(t("Lastname"), "lastname", $sqlout->lastname, 30, 100);
+
+//	$group .= astcore_form_textfield(t('Address1'), 'address1', $address1, 30, 100);
+//	$group .= astcore_form_textfield(t('Address2'), 'address2', $address2, 30, 100);
+//	$group .= astcore_form_textfield(t('Zip'), 'zip', $zip, 30, 100);
+//	$group .= astcore_form_textfield(t('Place'), 'place', $place, 30, 100);
+//	$group .= astcore_form_textfield(t('mobile'), 'mobile', $mobile, 30, 100);
+	
+	$group .= astcore_form_textfield(t('E-mail'), 'mail', $sqlout->mail, 30, 100);
+
+//	$group .= astcore_form_textfield(t('Password'), 'password', "", 30, 100);
+
+//	$group .= astcore_form_textfield(t('Valuecode'), 'valuecode', $valuecode, 30, 100);
+    $group .= astcore_form_end();
+	
+	
+
+if (arg(1) == 'usercreate'){
+	$group .= form_submit(t('Create'));
+} else {
+	$group .= form_submit(t('Change'));
+}
+	$group .= form_submit(t('Back'));
+	//$form = form_group(t('Account details'), $group);
+	return form($group);
+}
+
+
+function astpartneradmin_user_edit() {
+  global $user;
+  global $db_prefix; 
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch (($op ? $op : arg(1))) {
+    case t('Change'):
+      $title = t('Edit Account');
+   //   if (astpartner_Partner_validate($edit)) {
+        astpartneradmin_simpleuser_save($edit,arg(2));
+        drupal_goto("astpartneradm/users");
+    //  } else {
+	//	drupal_goto("astpartneradm/useredit/".arg(3));
+	//  }
+      break;
+  	case t('Back'):
+		drupal_goto("astpartneradm/users");
+    default:
+	  $output = astpartneradmin_user_simpleform(arg(2));
+  }
+
+
+	$title = t('Change');
+	astcore_printtheme($output, $title);	
+}
+
+function astpartneradmin_simpleuser_save($edit, $userid) {
+  global $user;
+  global $db_prefix; 
+ 
+  $myerror = 0;
+  $errors = array();
+
+    // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric($userid)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+
+
+ // if (empty($edit['firstname'])) {
+ //  		  $errors['firstname'] = t('Firstname have no characters');
+//		  $myerror = 1;
+ // }
+//  if  (empty($edit['lastname'])) {
+//		  $errors['lastname'] = t('Lastname have no characters');
+//		  $myerror = 1;
+//  }
+
+
+// $tmpuser = user_load(array('uid' => $userid));
+
+//drupal_set_message($tmpuser=>name);
+
+$partnerid = astcore_partnerid();
+
+$sqlfetch = db_query("select uid, partnerid from astuser where db_prefix = '%s' and uid = '%s'", $db_prefix, $userid);
+$sqlout = db_fetch_object($sqlfetch);
+
+// To ensure we only update this partners users
+if ($sqlout->partnerid == $partnerid) {
+	//  $wwwpw = user_password();
+	//$newuser = user_save($tmpuser, array('name' => $name, 'mail' => $edit['email']));
+	$sqlfetch = db_query("UPDATE {users} set name = '%s', mail='%s' where uid = '%s'", $edit['name'], $edit['mail'], $userid);
+	drupal_set_message(t('User '.$name.' Updated id: '.$userid));
+}
+
+
+
 }

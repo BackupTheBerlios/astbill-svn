@@ -50,12 +50,12 @@ function astpartner_menu($may_cache) {
       'access' => $access);
      // 'type' => MENU_CALLBACK);
 
-     	$items[] = array('path' => 'astbilladm/partner/create', 'title' => t('Create Partners'),
+     	$items[] = array('path' => 'astbilladm/partner/create', 'title' => t('Create Partner'),
       'callback' => 'page_astpartner_partnercreate',
       'access' => $access);
   //    'type' => MENU_CALLBACK);
  	
-	$items[] = array('path' => 'astbilladm/partner/change', 'title' => t('Change Partners'),
+	$items[] = array('path' => 'astbilladm/partner/change', 'title' => t('Change Partner'),
       'callback' => 'page_astpartner_partnerchange',
       'access' => $access,
       'type' => MENU_CALLBACK);
@@ -65,7 +65,7 @@ function astpartner_menu($may_cache) {
       'access' => $access,
       'type' => MENU_CALLBACK);
 
-      	$items[] = array('path' => 'astbilladm/partner/remove', 'title' => t('Delete Partners'),
+      	$items[] = array('path' => 'astbilladm/partner/remove', 'title' => t('Delete Partner'),
       'callback' => 'page_astpartner_remove',
       'access' => $access,
       'type' => MENU_CALLBACK);
@@ -132,7 +132,8 @@ function page_astpartner_remove() {
 		$dbqueries[] = "DELETE FROM astpartner WHERE pid = '".arg(3)."'";
 		$goto = "astbilladm/partner";
 		$donegoto = 'astbilladm/partner';
-		$backgoto = 'astbilladm/partner/change/'.arg(3);
+		$backgoto = 'astbilladm/partner';
+		$title = "Delete Partner ".arg(3);
 		astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries, $backgoto);
 	}	else {
 			form_set_error("test", "Unable to delete, Partner contains users.");
@@ -162,7 +163,7 @@ if (arg(2) == '') {
     array('data' => t('id'), 'field' => 'pid', 'sort' => 'asc'),
     array('data' => t('Company'), 'field' => 'company'),
     array('data' => t('Contactperson'), 'field' => 'contactperson'),
-    array('data' => t('Operations'), 'colspan' => 2)                                                                                 
+    array('data' => t('Operations'), 'colspan' => 3)                                                                                 
   );                                                                                 
                                                                                       
  // $sql = "SELECT astpartner.pid, astpartner.company, astpartner.contactperson, Count(astuser.partnerid) AS users 
@@ -180,6 +181,7 @@ $getusers = db_fetch_object(db_query("SELECT Count(astuser.partnerid) AS users F
 		$res->pid."&nbsp;&nbsp;",
 		$res->company,
 		$res->contactperson,
+		'<A HREF="'.url('astpartneradm/usercreate/'.$res->pid).'">'.t('Create User').'</A>',
 		'<A HREF="'.url('astbilladm/partner/change/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
 		'<A HREF="'.url('astbilladm/partner/remove/'.$res->pid).'">'.t('Remove').'</A>'
 	);
@@ -363,8 +365,9 @@ drupal_set_message(t('Partner changed'));
 } // END CHECK IF PartnerCHANGE
 
 if (arg(2) == 'changespecific'){ // START CHECK IF PartnerCHANGESPECIFIC
-
-	db_query("UPDATE astuser SET partnerid = '%s', brand = '%s', CountryPrefix = '%s', currency = '%s' WHERE uid = '%s' and db_prefix ='".$db_prefix."'", $edit['partnerid'], $edit['brand'], $edit['country'], $edit['currency'], arg(3));
+    
+	// partnerid = '%s', 
+	db_query("UPDATE astuser SET brand = '%s', CountryPrefix = '%s', currency = '%s' WHERE uid = '%s' and db_prefix ='".$db_prefix."'", $edit['brand'], $edit['country'], $edit['currency'], arg(3));
 	drupal_set_message(t('Partner changed'));
 
 } // END CHECK IF PartnerCHANGE

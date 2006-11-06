@@ -131,6 +131,12 @@ function astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $db
 	$op = $_POST['op'];
 	$edit = $_POST['edit'];
 
+	if ($op == t('Back')) {
+		
+		if ($backgoto == 'DEFAULT') {$backgoto = $donegoto;}
+		drupal_goto($backgoto);
+	}
+
 	if ($edit['deleteverified'] == 'deleteverified') {
 		foreach ($dbqueries as $key) {
 			db_query($key);
@@ -138,11 +144,6 @@ function astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $db
 		
 		drupal_set_message(t($deletedmsg));
 		drupal_goto($donegoto);
-	}
-	if ($op == t('Back')) {
-		
-		if ($backgoto == 'DEFAULT') {$backgoto = $donegoto;}
-		drupal_goto($backgoto);
 	}
 	
 	$output .= '<BR>'.$confirmmsg.'<BR><BR>';
@@ -184,7 +185,7 @@ function astcore_list($header, $rows, $noresults, $maxline) {
 	return $output;
 }
 
-function astcore_email($from , $to, $subject, $message, $attachment, $filetype = 'TEXT') {
+function astcore_email($from , $to, $subject, $message, $attachment, $filetype = 'TEXT',$bcc = '') {
 	$fileatt = $attachment; // Path to the file                  
 	$fileatt_type = "application/octet-stream"; // File Type 
 	$start = strrpos($attachment, '/') == -1 ? strrpos($attachment, '//') : strrpos($attachment, '/')+1;
@@ -195,7 +196,10 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
 	$email_txt = $message; // Message that the email has in it 
 	$email_to = $to; // Who the email is to
 
-	$headers = "From: ".$email_from . "\n" . "X-Mailer: AstBill/Version 0.9.18";
+	$bcc2 = "Bcc: ".$bcc."\n";
+	$bcc = ($bcc=='') ?  '' : $bcc2;
+	
+	$headers = "From: ".$email_from . "\n" . $bcc . "X-Mailer: AstBill/Version 0.9.18";
 
 	$file = fopen($fileatt,'rb'); 
 	$data = fread($file,filesize($fileatt)); 
@@ -213,17 +217,14 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
                 "--{$mime_boundary}\n" . 
                // "Content-Type:text/html; charset=\"iso-8859-1\"\n" . 
                //"Content-Transfer-Encoding: 7bit\n\n" . 
-	       $email_txt . "\n\n"; 
+	       $email_txt . "\n"; 
 	} elseif ($filetype == 'HTML') {
 		$email_message .= "This is a multi-part message in MIME format.\n\n" . 
                 "--{$mime_boundary}\n" . 
                 "Content-Type:text/html; charset=\"iso-8859-1\"\n" . 
                 "Content-Transfer-Encoding: 7bit\n\n" . 
-	        $email_txt . "\n\n"; 	
-		
-		
+	        $email_txt . "\n"; 	
 	}
-	    
 	$data = chunk_split(base64_encode($data)); 
 
 	$email_message .= "--{$mime_boundary}\n" . 
@@ -234,7 +235,6 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
                   "Content-Transfer-Encoding: base64\n\n" . 
                  $data . "\n\n" . 
                   "--{$mime_boundary}--\n"; 
-
 
 	$ok = @mail($email_to, $email_subject, $email_message, $headers); 
 
@@ -357,6 +357,8 @@ function astcore_utf8_to_unicode($message, $reverse = FALSE) {
 		$message = str_replace("æ", "Ã¦", $message);
 		$message = str_replace("Æ", "Ã†", $message);	
 		$message = str_replace("è", "Ã¨", $message);	
+		$message = str_replace("ü", "Ã¼", $message);	
+		$message = str_replace("Ü", "Ãœ", $message);	
 	} else {
 		$message = str_replace("Ã¥", "å", $message);
 		$message = str_replace("Ã…", "Å", $message);
@@ -365,6 +367,33 @@ function astcore_utf8_to_unicode($message, $reverse = FALSE) {
 		$message = str_replace("Ã¦", "æ", $message);
 		$message = str_replace("Ã†", "Æ", $message);
 		$message = str_replace("Ã¨", "è", $message);	
+		$message = str_replace("Ã¼", "ü", $message);	
+		$message = str_replace("Ãœ", "Ü", $message);	
+   	}
+ 	return $message;
+}
+function utf82uni($message, $reverse = FALSE) {
+	// This is made just to shorten the function name. This is the name to use in the future
+	if($reverse == TRUE) {
+		$message = str_replace("å", "Ã¥", $message);
+		$message = str_replace("Å", "Ã…", $message);
+		$message = str_replace("ø", "Ã¸", $message);
+		$message = str_replace("Ø", "Ã˜", $message);
+		$message = str_replace("æ", "Ã¦", $message);
+		$message = str_replace("Æ", "Ã†", $message);	
+		$message = str_replace("è", "Ã¨", $message);	
+		$message = str_replace("ü", "Ã¼", $message);	
+		$message = str_replace("Ü", "Ãœ", $message);	
+	} else {
+		$message = str_replace("Ã¥", "å", $message);
+		$message = str_replace("Ã…", "Å", $message);
+		$message = str_replace("Ã¸", "ø", $message);
+		$message = str_replace("Ã˜", "Ø", $message);
+		$message = str_replace("Ã¦", "æ", $message);
+		$message = str_replace("Ã†", "Æ", $message);
+		$message = str_replace("Ã¨", "è", $message);	
+		$message = str_replace("Ã¼", "ü", $message);	
+		$message = str_replace("Ãœ", "Ü", $message);	
    	}
  	return $message;
 }
@@ -629,7 +658,17 @@ function astcore_form_select($title, $name, $value, $options, $description = NUL
       $select .= '<option value="'. check_plain($key) .'"'. (is_array($value) ? (in_array($key, $value) ? ' selected="selected"' : '') : ($value == $key ? ' selected="selected"' : '')) .'>'. check_plain($choice) .'</option>';
     }
   }
-  return astcore_form_element($title, '<select name="edit['. $name .']'. ($multiple ? '[]' : '') .'"'. ($multiple ? ' multiple="multiple" ' : '') . ($extra ? ' '. $extra : '') .' id="edit-'. $name .'">'. $select .'</select>', $description, 'edit-'. $name, $required, _form_get_error($name));
+  $group = '<select name="edit['. $name .']'. ($multiple ? '[]' : '') .'"'. ($multiple ? ' multiple="multiple" ' : '') . ($extra ? ' '. $extra : '') .' id="edit-'. $name .'">'. $select .'</select>';
+  return astcore_form_element($title, $group, $description, 'edit-'. $name, $required, _form_get_error($name));
+}
+
+function astcore_form_checkbox($title, $name, $value) {
+/*	$group .= '<th><label for="edit-want_our_dsl">Ã˜nsker Ã¥ bestille BredbÃ¥nd fra Oss:</label></th><td><input  value="on" type="checkbox" class="form-checkbox" name="edit[want_our_dsl]" id="edit-want_our_dsl" '.$dsl.'</td>
+	</tr><tr>';
+*/
+	$retgroup = '<th><label for="edit-$name">'.$title.':</label></th><td><input  value="on" type="checkbox" class="form-checkbox" name="edit['.$name.']" id="edit-'.$name.'" '.$value.'</td>
+	</tr><tr>';
+	return $retgroup;
 }
 
 function astcore_form_start() {
@@ -641,4 +680,714 @@ function astcore_form_end() {
 	return '</TABLE>
 ';
 }
-?>
+
+function astcore_formselect_datetime($title, $lateportingdate, $edit, $showtime = FALSE, $istable = TRUE, $allowempty = FALSE) {
+	// MAKE DATE LISTS
+	
+//	$allowempty = TRUE;
+
+// print $lateportingdate;
+
+    if ((empty($edit['astyear']) && (!empty($lateportingdate)))) {
+		$followupsplit = explode(" ", $lateportingdate);
+		$dates = explode("-", $followupsplit[0]);
+		$edit['astyear'] = $dates[0];
+		$edit['astmonth'] = $dates[1];
+		$edit['astday'] = $dates[2];
+		$times = explode(":", $followupsplit[1]);
+		$edit['asthour'] = $times[0];
+		$edit['astminute'] = $times[1];
+		$edit['astsecond'] = $times[2];
+	}
+
+	// The expression (expr1) ? (expr2) : (expr3) evaluates to expr2 if expr1 evaluates to TRUE, and expr3 if expr1 evaluates to FALSE.
+	$y = (empty($lateportingdate)) ? "" : $edit['astyear'];
+	$yearlist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
+	$x = date(Y);
+	while ($x <= (date(Y)+2)) {
+		if ($x == $y) {
+			$yearlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$yearlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+
+	$y = (empty($lateportingdate)) ? "" : $edit['astday'];
+	$daylist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
+	$x = 1;
+	while ($x <= '31') {
+		if ($x == $y) {
+			$daylist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {	
+			$daylist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+
+	$listmonth = array('1' => t('January'), '2' => t('February'), '3' => t('March'), '4' => t('April'), '5' => t('May'), '6' => t('June'), '7' => t('July'), '8' => t('August'), '9' => t('September'), '10' => t('October'), '11' => t('November'), '12' => t('December'));
+
+	$y = (empty($lateportingdate)) ? "" : $edit['astmonth'];
+	$monthlist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+	
+	$x = 1;
+	while ($x <= '12') {
+		if ($x == $y) {
+			$monthlist .= '<option value="'.$x.'" selected="selected">'.$listmonth[$x].'</option>';
+		} else {
+			$monthlist .= '<option value="'.$x.'">'.$listmonth[$x].'</option>';
+		}
+		$x++;
+	}
+	// END MAKE DATE LISTS
+	// MAKE TIME LISTS
+	
+	$x = 0;
+	if (empty($edit['asthour'])) {
+		$y = date(G) + 1;
+	} else {
+		$y = $edit['asthour'];
+	}
+	while ($x <= 23) {
+		if ($x == $y) {
+			$hourlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$hourlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+	
+	$x = 0;
+	if (empty($edit['astminute'])) {
+		$y = date(i);
+	} else {
+		$y = $edit['astminute'];
+	}
+	$minutelist = "";
+    if ($y == "00") {
+		$minutelist .= '<option value="00" selected="selected">00</option>';
+		$minutelist .= '<option value="30">30</option>';
+	} else {
+		$minutelist .= '<option value="00">00</option>';
+		$minutelist .= '<option value="30" selected="selected">30</option>';
+	}
+	
+/*	while ($x <= 55) {
+		if ($x == $y) {
+			$minutelist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {	
+			$minutelist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+		$x++;
+		$x++;
+		$x++;
+		$x++;
+	}
+*/
+	// END MAKE TIME LISTS
+	
+// $edit[astyear] = '';
+
+if ($showtime == FALSE) {
+ 	$group = '<select name="edit[astday]" id="edit-astday">
+'.$daylist.'
+</select>
+<select name="edit[astmonth]" id="edit-astmonth">
+'.$monthlist.'
+</select>
+<select name="edit[astyear]" id="edit-astyear">
+'.$yearlist.'
+</select>';
+} else {
+	$group = '<select name="edit[astday]" id="edit-astday">
+'.$daylist.'
+</select>
+<select name="edit[astmonth]" id="edit-astmonth">
+'.$monthlist.'
+</select>
+<select name="edit[astyear]" id="edit-astyear">
+'.$yearlist.'
+</select>
+<select name="edit[asthour]" id="edit-asthour">
+'.$hourlist.'
+</select>
+<select name="edit[astminute]" id="edit-astminute">
+'.$minutelist.'
+</select>';
+	
+}
+if ($istable == TRUE) {
+	return astcore_form_element($title, $group);
+} ELSE {
+	return $group.'<BR>';
+}
+
+}
+
+function astcore_formselect_datetime2($title, $getdate, $edit, $showtime = FALSE, $istable = TRUE, $allowempty = FALSE) {
+	// MAKE DATE LISTS
+	
+//	$allowempty = TRUE;
+
+// print $getdate;
+
+    if ((empty($edit['astyear2']) && (!empty($getdate)))) {
+		$followupsplit = explode(" ", $getdate);
+		$dates = explode("-", $followupsplit[0]);
+		$edit['astyear2'] = $dates[0];
+		$edit['astmonth2'] = $dates[1];
+		$edit['astday2'] = $dates[2];
+		$times = explode(":", $followupsplit[1]);
+		$edit['asthour2'] = $times[0];
+		$edit['astminute2'] = $times[1];
+		$edit['astsecond2'] = $times[2];
+	}
+
+	// The expression (expr1) ? (expr2) : (expr3) evaluates to expr2 if expr1 evaluates to TRUE, and expr3 if expr1 evaluates to FALSE.
+	$y = (empty($getdate)) ? "" : $edit['astyear2'];
+	$yearlist = (empty($getdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
+	$x = date(Y);
+	while ($x <= (date(Y)+2)) {
+		if ($x == $y) {
+			$yearlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$yearlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+
+	$y = (empty($getdate)) ? "" : $edit['astday2'];
+	$daylist = (empty($getdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
+	$x = 1;
+	while ($x <= '31') {
+		if ($x == $y) {
+			$daylist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {	
+			$daylist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+
+	$listmonth = array('1' => t('January'), '2' => t('February'), '3' => t('March'), '4' => t('April'), '5' => t('May'), '6' => t('June'), '7' => t('July'), '8' => t('August'), '9' => t('September'), '10' => t('October'), '11' => t('November'), '12' => t('December'));
+
+	$y = (empty($getdate)) ? "" : $edit['astmonth2'];
+	$monthlist = (empty($getdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+	
+	$x = 1;
+	while ($x <= '12') {
+		if ($x == $y) {
+			$monthlist .= '<option value="'.$x.'" selected="selected">'.$listmonth[$x].'</option>';
+		} else {
+			$monthlist .= '<option value="'.$x.'">'.$listmonth[$x].'</option>';
+		}
+		$x++;
+	}
+	// END MAKE DATE LISTS
+	// MAKE TIME LISTS
+	
+	$x = 0;
+	if (empty($edit['asthour2'])) {
+		$y = date(G) + 1;
+	} else {
+		$y = $edit['asthour2'];
+	}
+	while ($x <= 23) {
+		if ($x == $y) {
+			$hourlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$hourlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+	
+	$x = 0;
+	if (empty($edit['astminute2'])) {
+		$y = date(i);
+	} else {
+		$y = $edit['astminute2'];
+	}
+	$minutelist = "";
+    if ($y == "00") {
+		$minutelist .= '<option value="00" selected="selected">00</option>';
+		$minutelist .= '<option value="30">30</option>';
+	} else {
+		$minutelist .= '<option value="00">00</option>';
+		$minutelist .= '<option value="30" selected="selected">30</option>';
+	}
+	
+/*	while ($x <= 55) {
+		if ($x == $y) {
+			$minutelist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {	
+			$minutelist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+		$x++;
+		$x++;
+		$x++;
+		$x++;
+	}
+*/
+	// END MAKE TIME LISTS
+	
+// $edit[astyear] = '';
+
+if ($showtime == FALSE) {
+ 	$group = '<select name="edit[astday2]" id="edit-astday2">
+'.$daylist.'
+</select>
+<select name="edit[astmonth2]" id="edit-astmonth2">
+'.$monthlist.'
+</select>
+<select name="edit[astyear2]" id="edit-astyear2">
+'.$yearlist.'
+</select>';
+} else {
+	$group = '<select name="edit[astday2]" id="edit-astday2">
+'.$daylist.'
+</select>
+<select name="edit[astmonth2]" id="edit-astmonth2">
+'.$monthlist.'
+</select>
+<select name="edit[astyear2]" id="edit-astyear2">
+'.$yearlist.'
+</select>
+<select name="edit[asthour2]" id="edit-asthour2">
+'.$hourlist.'
+</select>
+<select name="edit[astminute2]" id="edit-astminute2">
+'.$minutelist.'
+</select>';
+	
+}
+if ($istable == TRUE) {
+	return astcore_form_element($title, $group);
+} ELSE {
+	return $group.'<BR>';
+}
+
+}
+
+function astcore_formselect_datetime3($title,$getdate,$edit,$showtime=FALSE,$istable=TRUE,$minstep=15,$allowempty=FALSE) {
+	// MAKE DATE LISTS
+	
+//	$allowempty = TRUE;
+
+// print $getdate;
+
+    if ((empty($edit['astyear3']) && (!empty($getdate)))) {
+		$followupsplit = explode(" ", $getdate);
+		$dates = explode("-", $followupsplit[0]);
+		$edit['astyear3'] = $dates[0];
+		$edit['astmonth3'] = $dates[1];
+		$edit['astday3'] = $dates[2];
+		$times = explode(":", $followupsplit[1]);
+		$edit['asthour3'] = $times[0];
+		$edit['astminute3'] = $times[1];
+		$edit['astsecond3'] = $times[2];
+	}
+
+	// The expression (expr1) ? (expr2) : (expr3) evaluates to expr2 if expr1 evaluates to TRUE, and expr3 if expr1 evaluates to FALSE.
+	$y = (empty($getdate)) ? "" : $edit['astyear3'];
+	$yearlist = (empty($getdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
+	$x = date(Y);
+	while ($x <= (date(Y)+2)) {
+		if ($x == $y) {
+			$yearlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$yearlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+
+	$y = (empty($getdate)) ? "" : $edit['astday3'];
+	$daylist = (empty($getdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
+	$x = 1;
+	while ($x <= '31') {
+		if ($x == $y) {
+			$daylist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {	
+			$daylist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+
+	$listmonth = array('1' => t('January'), '2' => t('February'), '3' => t('March'), '4' => t('April'), '5' => t('May'), '6' => t('June'), '7' => t('July'), '8' => t('August'), '9' => t('September'), '10' => t('October'), '11' => t('November'), '12' => t('December'));
+
+	$y = (empty($getdate)) ? "" : $edit['astmonth3'];
+	$monthlist = (empty($getdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+	
+	$x = 1;
+	while ($x <= '12') {
+		if ($x == $y) {
+			$monthlist .= '<option value="'.$x.'" selected="selected">'.$listmonth[$x].'</option>';
+		} else {
+			$monthlist .= '<option value="'.$x.'">'.$listmonth[$x].'</option>';
+		}
+		$x++;
+	}
+	// END MAKE DATE LISTS
+	// MAKE TIME LISTS
+	
+	$hourlist = (empty($getdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+	$x = 0;
+	if (empty($edit['asthour3'])) {
+		// $y = date(G) + 1;
+		$y = 12;
+	} else {
+		$y = $edit['asthour3'];
+	}
+	while ($x <= 23) {
+		if ($x == $y) {
+			$hourlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$hourlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+	
+	$x = 0;
+	if (empty($edit['astminute3'])) {
+		// $y = date(i);
+		$y = 00;
+	} else {
+		$y = $edit['astminute3'];
+	}
+//	$minutelist = "";
+	$minutelist = (empty($getdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
+	while ($x <= 59) {
+		if ($x == $y) {
+			$minutelist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$minutelist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x += $minstep;
+	}
+/*
+    if ($y == "00") {
+		$minutelist .= '<option value="00" selected="selected">00</option>';
+		$minutelist .= '<option value="30">30</option>';
+	} else {
+		$minutelist .= '<option value="00">00</option>';
+		$minutelist .= '<option value="30" selected="selected">30</option>';
+	}
+*/	
+if ($showtime == FALSE) {
+ 	$group = '<select name="edit[astday3]" id="edit-astday3">
+'.$daylist.'
+</select>
+<select name="edit[astmonth3]" id="edit-astmonth3">
+'.$monthlist.'
+</select>
+<select name="edit[astyear3]" id="edit-astyear3">
+'.$yearlist.'
+</select>';
+} else {
+	$group = '<select name="edit[astday3]" id="edit-astday3">
+'.$daylist.'
+</select>
+<select name="edit[astmonth3]" id="edit-astmonth3">
+'.$monthlist.'
+</select>
+<select name="edit[astyear3]" id="edit-astyear3">
+'.$yearlist.'
+</select>
+<select name="edit[asthour3]" id="edit-asthour3">
+'.$hourlist.'
+</select>
+<select name="edit[astminute3]" id="edit-astminute3">
+'.$minutelist.'
+</select>';
+	
+}
+if ($istable == TRUE) {
+	return astcore_form_element($title, $group);
+} ELSE {
+	return $group.'<BR>';
+}
+
+}
+
+function astcore_addMonthNoLenient($my_date, $add_month)
+{
+  $day = date("d", $my_date);
+  $month = date("m", $my_date);
+  $year = date("Y", $my_date);
+
+  $new_date = date("Y-m-d", mktime(0, 0, 0, $month + $add_month, $day, $year));
+
+  $month_for_days = ($month + $add_month) % 12;
+  if($month_for_days == 0)
+  {
+   $month_for_days = 12;
+  }
+
+  if($month_for_days != date("m", mktime(0, 0, 0, $month + $add_month , $day, $year)))
+  {
+   $new_year = date("Y", mktime(0, 0, 0, $month + $add_month, $day, $year));
+   $days_in_month = cal_days_in_month(CAL_GREGORIAN, $month_for_days, $new_year);
+   $new_date = date("Y-m-d", mktime(0, 0, 0, $month + $add_month, $days_in_month, $year));
+  }
+  return $new_date;
+}
+
+function astcore_astlogdb($tablename, $action, $edit,$prikey = "",$workflow = "") {
+	global $user;
+	global $db_prefix; 
+	$myArray = "";
+	foreach ($edit as $value) {
+		$myArray .= "|".$value;
+	}
+	
+	$myArray = str_replace("'", '', $myArray);
+
+	if ($action == "I" and $prikey == "") {
+		$ret = db_fetch_object(db_query("SELECT LAST_INSERT_ID() lastid"));
+		$prikey = $ret->lastid;
+	}
+	$SQL = "INSERT INTO astlogdb VALUES(NULL,'$tablename','$prikey','$action', '$db_prefix', $user->uid, '$workflow' ,'$myArray',Now())";
+	db_query($SQL);
+	return $prikey;
+}
+
+
+// Oles Functions
+
+// This is the same as astcore_formselect_datetime()
+// This doesnot call astcore_form_element()
+// The point is not to have the <tr> tag
+// this also alows multiple instanses of datetime forms in one page
+
+function astcore_formselect_datetime_ole($title, $lateportingdate, $edit, $showtime = FALSE, $istable = TRUE, $allowempty = FALSE, $uid) {
+	// MAKE DATE LISTS
+	
+//	$allowempty = TRUE;
+
+// print $lateportingdate;
+$theyear = $uid."_astyear";
+$themonth = $uid."_astmonth";
+$theday = $uid."_astday";
+$thehour = $uid."_asthour";
+$theminute = $uid."_astminute";
+$thesecond = $uid."_astsecond";
+
+
+    if ((empty($edit[$theyear]) && (!empty($lateportingdate)))) {
+		$followupsplit = explode(" ", $lateportingdate);
+		$dates = explode("-", $followupsplit[0]);
+		$edit[$theyear] = $dates[0];
+		$edit[$themonth] = $dates[1];
+		$edit[$theday] = $dates[2];
+		$times = explode(":", $followupsplit[1]);
+		$edit[$thehour] = $times[0];
+		$edit[$theminute] = $times[1];
+		$edit[$thesecond] = $times[2];
+	}
+
+
+	// The expression (expr1) ? (expr2) : (expr3) evaluates to expr2 if expr1 evaluates to TRUE, and expr3 if expr1 evaluates to FALSE.
+	$y = (empty($lateportingdate)) ? "" : $edit[$theyear];
+	$yearlist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
+	$x = date(Y);
+	while ($x <= (date(Y)+2)) {
+		if ($x == $y) {
+			$yearlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$yearlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+
+	$y = (empty($lateportingdate)) ? "" : $edit[$theday];
+	$daylist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+
+	$x = 1;
+	while ($x <= '31') {
+		if ($x == $y) {
+			$daylist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {	
+			$daylist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+
+	$listmonth = array('1' => t('January'), '2' => t('February'), '3' => t('March'), '4' => t('April'), '5' => t('May'), '6' => t('June'), '7' => t('July'), '8' => t('August'), '9' => t('September'), '10' => t('October'), '11' => t('November'), '12' => t('December'));
+
+	$y = (empty($lateportingdate)) ? "" : $edit[$themonth];
+	$monthlist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
+	
+	$x = 1;
+	while ($x <= '12') {
+		if ($x == $y) {
+			$monthlist .= '<option value="'.$x.'" selected="selected">'.$listmonth[$x].'</option>';
+		} else {
+			$monthlist .= '<option value="'.$x.'">'.$listmonth[$x].'</option>';
+		}
+		$x++;
+	}
+	// END MAKE DATE LISTS
+	// MAKE TIME LISTS
+	
+	$x = 0;
+	if (empty($edit[$thehour])) {
+		$y = date(G) + 1;
+	} else {
+		$y = $edit[$thehour];
+	}
+	while ($x <= 23) {
+		if ($x == $y) {
+			$hourlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			$hourlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+	
+	$x = 0;
+	if (empty($edit['minute'])) {
+		$y = date(i);
+	} else {
+		$y = $edit['minute'];
+	}
+	$minutelist = "";
+    if ($y == "00") {
+		$minutelist .= '<option value="00" selected="selected">00</option>';
+		$minutelist .= '<option value="30">30</option>';
+	} else {
+		$minutelist .= '<option value="00">00</option>';
+		$minutelist .= '<option value="30" selected="selected">30</option>';
+	}
+	
+/*	while ($x <= 55) {
+		if ($x == $y) {
+			$minutelist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {	
+			$minutelist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+		$x++;
+		$x++;
+		$x++;
+		$x++;
+	}
+*/
+	// END MAKE TIME LISTS
+	
+// $edit[astyear] = '';
+
+if ($showtime == FALSE) {
+ 	$group = '<select name="edit['.$theday.']" id="edit-'.$theday.'">
+'.$daylist.'
+</select>
+<select name="edit['.$themonth.']" id="edit-'.$themonth.'">
+'.$monthlist.'
+</select>
+<select name="edit['.$theyear.']" id="edit-.'.$theyear.'">
+'.$yearlist.'
+</select>';
+} else {
+	$group = '<select name="edit[.'.$theday.']" id="edit-.'.$theday.'">
+'.$daylist.'
+</select>
+<select name="edit['.$themonth.']" id="edit-'.$themonth.'">
+'.$monthlist.'
+</select>
+<select name="edit['.$theyear.']" id="edit-'.$theyear.'">
+'.$yearlist.'
+</select>
+<select name="edit['.$thehour.']" id="edit-'.$thehour.'">
+'.$hourlist.'
+</select>
+<select name="edit[ast'.$theminute.']" id="edit-'.$theminute.'">
+'.$minutelist.'
+</select>';
+	
+}
+if ($istable == TRUE) {
+	return astcore_form_element_ole($title, $group);
+} ELSE {
+	return $group.'<BR>';
+}
+//	return astcore_form_element_ole($title, $group);
+}
+
+function astcore_form_textfield_ole($title, $name, $value, $size, $maxlength, $description = NULL, $attributes = NULL, $required = FALSE) {
+  $size = $size ? ' size="'. $size .'"' : '';
+  return astcore_form_element_ole($title, '<input type="text" maxlength="'. $maxlength .'" class="'. _form_get_class('form-text', $required, _form_get_error($name)) .'" name="edit['. $name .']" id="edit-'. $name .'"'. $size .' value="'. check_plain($value) .'"'. drupal_attributes($attributes) .' />', $description, 'edit-'. $name, $required, _form_get_error($name));
+}
+
+function astcore_form_element_ole($title, $value, $description = NULL, $id = NULL, $required = FALSE, $error = FALSE) {
+
+//  $output  = "<div class=\"form-item\">\n";
+//  $required = $required ? '<span class="form-required">*</span>' : '';
+
+  if ($title) {
+    if ($id) {
+      $output .= " <TH><label for=\"$id\">$title:</label>$required</TH>\n";
+    }
+    else {
+      $output .= " <TH><label>$title:</label>$required</TH>\n";
+    }
+  }
+
+  $output .= " <TD>$value</TD>\n";
+
+  if ($description) {
+    $output .= " <div class=\"description\">$description</div>\n";
+  }
+
+//  $output .= "</div><TR>\n";
+
+  return $output;
+}
+
+// Convert a multi dimensional array to csv
+function astcore_export_arraytocsv($array, $filename = 'astexport.csv') {
+	global $db_prefix;
+
+	$fields=0;
+	foreach ($array as $line) {
+ 		foreach ($line as $item => $val) {
+ 			$columnnames .= $item;
+ 			$columnnames .= ',';
+ 			$fields++;
+		}
+		break;
+	}
+	$columnnames[strlen($columnnames)-1] = '';
+	
+	$list = $columnnames.'
+';
+	
+	$columns = explode(",", $columnnames);
+
+	foreach ($array as $line) {
+
+ 		foreach ($line as $item => $val) {
+ 
+ 		$list .= astcore_utf8_to_unicode($val,FALSE).',';
+		}
+		$list .= '
+';
+
+	}
+
+	$size = strlen($list);
+	header("Content-length: ".$size);
+	header("Content-type: text/comma-separated-values");
+	header("Content-Disposition: attachment; filename=".$filename);
+	
+	echo $list;
+	
+	exit;
+}
+
