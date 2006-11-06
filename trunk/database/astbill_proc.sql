@@ -761,13 +761,12 @@ CREATE PROCEDURE createmsn(msnstart int(8), maxmsn int(8), fylke char(2))
       	SET @msn = msnstart + @x;
       	SET @x = @x + 1; 
       	
-      	INSERT INTO `astacdid`(`countryprefix`,`did`,`db_prefix`,`uid`,`acgroup`,`fylkekode`,`active`)
-      	VALUES ('47', @msn,'pbx_',0,'newmsn',fylke,'1');
+      	INSERT INTO `astacdid`(`countryprefix`,`did`,`db_prefix`,`uid`,`acgroup`,`fylkekode`,`active`,portindate)
+      	VALUES ('47', @msn,'cbk_',0,'Priority',fylke,'1',Now());
       	
       	UNTIL @x >= maxmsn END REPEAT;
     END
 |
-
 delimiter ;
 
 GRANT ALL PRIVILEGES ON astbill.* TO astbilluser@localhost IDENTIFIED BY 'astbill419';
