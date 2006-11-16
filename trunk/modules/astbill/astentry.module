@@ -1497,8 +1497,8 @@ function astincomingnr_save($edit, $account) {
 		drupal_access_denied();
 		return;
 	}
-	db_query("UPDATE astacdid SET forwardtmp = '%s' WHERE did = '%s' AND uid = '%s' and db_prefix ='".$db_prefix."'", $edit['forwardtmp'], arg(2), $user->uid);
-	drupal_set_message(t('The Forwarding settings have been updated.'));
+	db_query("UPDATE astacdid SET redirectevent = '%s',redirectalways = '%s' WHERE did = '%s' AND uid = '%s' and db_prefix ='".$db_prefix."'", $edit['redirectevent'],$edit['redirectalways'], arg(2), $user->uid);
+	drupal_set_message(t('Forwarding settings have been updated for').' '.arg(2));
 }
 
 function astincomingnr_form($edit) {
@@ -1507,7 +1507,18 @@ function astincomingnr_form($edit) {
 /*
   $group .= form_textfield(t("Enter the phone number(s) you want to forward to separated by &<BR>(Example: 70500&70501)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 50, 150, null, null, false);
 */  
-  $group .= form_textfield(t("Enter the phone number you want to forward to"), "forwardtmp", $edit['forwardtmp'], 50, 150, null, null, false);
+
+	$rediropts['N'] = 'None';
+	$rediropts['A'] = 'Always';
+//	$rediropts['B'] = 'When Busy';
+//	$rediropts['T'] = 'After Timeout';
+	$group .= form_select(t('Redirection Event'), 'redirectevent', $edit['redirectevent'], $rediropts);
+
+   // astcore_form_select	
+  $group .= form_textfield(t("Always Redirection Number"), "redirectalways", $edit['redirectalways'], 50, 150, null, null, false);
+//  $group .= form_textfield(t("Busy Redirection Number"), "redirec65talways", $edit['redire4ctalways'], 50, 150, null, null, false);
+//  $group .= form_textfield(t("Timeout Redirection Number"), "redire12ctalways", $edit['redi3rectalways'], 50, 150, null, null, false);
+//  $group .= form_textfield(t("Timeout Seconds"), "redirecta999ways", $edit['redirec99talways'], 50, 150, null, null, false);
   // $group .= form_textfield(t("Comment"), "comment", $edit['comment'], 50, 150, null, null, false);
   $group .= form_submit(t('Save'));
   $group .= form_submit(t('Back'));
@@ -1517,7 +1528,7 @@ function astincomingnr_form($edit) {
 function astincomingnr_load($account) {
   global $user;
   global $db_prefix;
-  return db_fetch_array(db_query("SELECT forwardtmp FROM astacdid WHERE uid = %s and db_prefix ='".$db_prefix."' AND did = '%s'", $user->uid, arg(2)));
+  return db_fetch_array(db_query("SELECT redirectalways,redirectevent FROM astacdid WHERE uid = %s and db_prefix ='".$db_prefix."' AND did = '%s'", $user->uid, arg(2)));
 }
 
 function page_astentry_incomingnr() {
@@ -1540,20 +1551,21 @@ function page_astentry_incomingnr() {
   $header = array(
     array('data' => t('Phone Number'), 'field' => 'did', 'sort' => 'asc'),
     array('data' => t('Account')),
+    array('data' => t('Event')),
     array('data' => t('Forwarded to')),
 //    array('data' => t('Remarks')),
 	array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 1)
-	
   );
 
-$ret = db_query("SELECT did, forwardto, forwardtmp FROM astacdid WHERE uid = '%s' and db_prefix ='".$db_prefix."' ", $user->uid);
+$ret = db_query("SELECT did, forwardto, redirectevent,redirectalways,redirectbusy,redirecttimeout,redirecttimeoutsec FROM astacdid WHERE uid = '%s' and db_prefix ='".$db_prefix."' ", $user->uid);
 
  // $result = pager_query($sql, $maxline);
   
   while ($item = db_fetch_object($ret)) {
 	  	$rows[] = array($item->did,
 	    'sip:'.$item->forwardto,
-	    '&nbsp;&nbsp;'.$item->forwardtmp,
+	    '&nbsp;&nbsp;'.$item->redirectevent,   //array('data' => $item->redirectevent, 'title' => "blab bla"),
+	    '&nbsp;&nbsp;'.$item->redirectalways,
 		'<A HREF="'.url('astentry/incomingnrchange/'.$item->did).'">'.t('Change').'</A>');
  }
 

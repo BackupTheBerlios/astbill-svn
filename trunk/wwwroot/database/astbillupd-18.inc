@@ -1177,6 +1177,13 @@ ADD `uid` INT( 10 ) NOT NULL DEFAULT '0' AFTER `partnerid` ;
 ALTER TABLE `astinvoice` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `invoiceno` ;
 ALTER TABLE `astpaymentbatch` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `batchid` ;
 ALTER TABLE `astacdid` ADD `forwardtmp` VARCHAR(255) DEFAULT '' NOT NULL AFTER `forwarto` ;
+ALTER TABLE `astacdid` ADD `fylkekode` CHAR(2) DEFAULT '' NOT NULL AFTER `zipcode` ;
+
+ALTER TABLE `astacdid` CHANGE `forwardtmp` `redirectalways` VARCHAR( 255 ) NOT NULL DEFAULT '';
+ALTER TABLE `astacdid` ADD `redirectevent` CHAR(1) DEFAULT 'N' NOT NULL AFTER `forwardto` ;
+ALTER TABLE `astacdid` ADD `redirectbusy` VARCHAR(255) DEFAULT '' NOT NULL AFTER `redirectalways` ;
+ALTER TABLE `astacdid` ADD `redirecttimeout` VARCHAR(255) DEFAULT '' NOT NULL AFTER `redirectbusy` ;
+ALTER TABLE `astacdid` ADD `redirecttimeoutsec` int(4) DEFAULT '15' NOT NULL AFTER `redirecttimeout` ;
 
 */
 

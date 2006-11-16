@@ -8,6 +8,12 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
+16 Nov 2006
+# Implementet new Price List structure. Price List are now based on
+# CCN = Charge Code Numbers
+# We have different tables for countrycode, language, Dial Prefix (Pattern) and Rates
+# The old Price List structure still exist but may be depriciated in future versions.
+
 14 Oct 2006
 # Modified DBI->connect in Perl Script agi-bin
 # This allows use of remote server not only localhost
