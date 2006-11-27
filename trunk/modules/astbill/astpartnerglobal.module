@@ -42,6 +42,8 @@ function astpartnerglobal_help($section='') {
 function astpartnerglobal_menu($may_cache) {
 	$items = array();
 	$access = user_access('astpartnerglobal admin module');
+	$access2 = user_access('astpartnerglobal Account');
+	
 
 	$items[] = array('path' => 'astglobal', 'title' => t('Global Admin'),
 	'callback' => 'astpartnerglobal_main',
@@ -57,22 +59,22 @@ function astpartnerglobal_menu($may_cache) {
 */
   	$items[] = array('path' => 'astglobal/tech', 'title' => t('Show SIP or IAX Accounts'),
 	'callback' => 'astpartnerglobal_tech',
-	'access' => $access,
+	'access' => $access2,
 	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astglobal/web', 'title' => t('Show Web Users'),
 	'callback' => 'astpartnerglobal_webuser',
-	'access' => $access,
+	'access' => $access2,
 	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astglobal/tech/create', 'title' => t('Create New SIP and IAX Account'),
 	'callback' => 'astpartnerglobal_tech_create',
-	'access' => $access,
+	'access' => $access2,
 	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astglobal/tech/change', 'title' => t('Edit Account'),
 	'callback' => 'astpartnerglobal_tech_create',
-	'access' => $access,
+	'access' => $access2,
 	'type' => MENU_CALLBACK);
 
   	$items[] = array('path' => 'astglobal/msn', 'title' => t('Show MSN and DID Numbers'),
@@ -82,17 +84,17 @@ function astpartnerglobal_menu($may_cache) {
 
    	$items[] = array('path' => 'astglobal/msn/remove', 'title' => t('Delete MSN'),
     'callback' => 'astpartnerglobal_msn_remove',
-    'access' => $access,
+    'access' => $access2,
     'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astglobal/msn/create', 'title' => t('Create New MSN/DID Numbers'),
 	'callback' => 'astpartnerglobal_msn_create',
-	'access' => $access,
+	'access' => $access2,
 	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astglobal/useredit', 'title' => t('Edit User'),
 	'callback' => 'astpartnerglobal_user_edit',
-	'access' => $access,
+	'access' => $access2,
 	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astglobal/partner/create', 'title' => t('Create Partner'),
@@ -130,7 +132,7 @@ function astpartnerglobal_menu($may_cache) {
 
 
 function astpartnerglobal_perm() {
-	return array('astpartnerglobal admin module');
+	return array('astpartnerglobal admin module', 'astpartnerglobal Global','astpartnerglobal Account');
 }
 
 
@@ -525,9 +527,11 @@ function astpartnerglobal_Partner_validate($edit) {
 		$myerror = 0;
 	}
 //	if (arg(2) == 'change') {
-	if (strlen($edit['provider']) <> 4 && (arg(2) == 'create')) {
-		$errors['provider'] = t('Leverandør ikke gyldig');
-		$myerror = 0;
+	if (user_access('astpartnerglobal Global')) { 
+		if (strlen($edit['provider']) <> 4 && (arg(2) == 'create')) {
+			$errors['provider'] = t('Leverandør ikke gyldig');
+			$myerror = 0;
+		}
 	}
 	if (strlen($edit['zip']) <> 4) {
 		$errors['zip'] = t('Postnummer ikke gyldig');
@@ -578,6 +582,8 @@ function astpartnerglobal_Partner_save($edit) {
 
 if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
 
+if (!user_access('astpartnerglobal Global')) { $edit['provider'] = $db_prefix; }					  
+
 	$accountcode = null;
 	$paytype = null;
 	$comment = null;
@@ -601,8 +607,10 @@ if (arg(2) == 'change'){ // START CHECK IF PartnerCHANGE
 		drupal_access_denied();
 		return;
 	  }
-	db_query("UPDATE astpartner SET company = '%s',firstname = '%s',lastname = '%s', contactperson = '%s', address1 = '%s', address2 = '%s', zip = '%s', city = '%s', state = '%s', countrycode = '%s', mobile = '%s', phonework = '%s', email = '%s', fax = '%s',comment = '%s', customerstatus = '%s', companyno = '%s',didnumberserie = '%s',valuecode = '%s' WHERE pid = '%s'"
-	, $edit['company'], $edit['firstname'],$edit['lastname'], $edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['email'],$edit['fax'], $edit['comment'], $edit['customerstatus'], $edit['companyno'], $edit['didnumberserie'], $edit['valuecode'], arg(3));
+	if (user_access('astpartnerglobal Global')) { $dbprefix = '%';} else { $dbprefix = $db_prefix;}					  
+
+	db_query("UPDATE astpartner SET company = '%s',firstname = '%s',lastname = '%s', contactperson = '%s', address1 = '%s', address2 = '%s', zip = '%s', city = '%s', state = '%s', countrycode = '%s', mobile = '%s', phonework = '%s', email = '%s', fax = '%s',comment = '%s', customerstatus = '%s', companyno = '%s',didnumberserie = '%s',valuecode = '%s' WHERE pid = '%s' and db_prefix like '%s'"
+	, $edit['company'], $edit['firstname'],$edit['lastname'], $edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['email'],$edit['fax'], $edit['comment'], $edit['customerstatus'], $edit['companyno'], $edit['didnumberserie'], $edit['valuecode'], arg(3),$dbprefix);
 	
 	astcore_astlogdb("astpartner","U", $edit,arg(3));
 	drupal_set_message(t('Partner changed'.' '.arg(3)));
@@ -639,7 +647,8 @@ if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
 } // END CHECK IF PartnerCREATE
 */
 if (arg(2) == 'change'){ 
-	$sql = db_query("SELECT company,companyno, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, didnumberserie, fax,email,comment,customerstatus,active,date_created,LEFT(db_prefix,3) provider,valuecode FROM astpartner WHERE pid = '%s'", arg(3));
+	if (user_access('astpartnerglobal Global')) { $dbprefix = '%';} else { $dbprefix = $db_prefix;}					  
+	$sql = db_query("SELECT company,companyno, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, didnumberserie, fax,email,comment,customerstatus,active,date_created,LEFT(db_prefix,3) provider,valuecode FROM astpartner WHERE pid = '%s' and db_prefix like '%s'", arg(3),$dbprefix);
 	$sqlout = db_fetch_object($sql);
 
 	$edit['company'] = $sqlout->company;
@@ -674,7 +683,9 @@ if (arg(2) == 'change'){
 		$statusopts[$item->gtype] = $item->gname;
 	}
 	if (arg(2) == 'create'){ 
-		$group .= form_select(t('Provider'), 'provider', $param, $statusopts);
+		if (user_access('astpartnerglobal Global')) { 					  
+			$group .= form_select(t('Provider'), 'provider', $param, $statusopts);
+		}
 	}
 	if (arg(2) == 'change') {
 		$group .= t('Provider').' : <B>'.$edit['provider'].'</B><BR>';

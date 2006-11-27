@@ -1184,6 +1184,59 @@ ALTER TABLE `astacdid` ADD `redirectevent` CHAR(1) DEFAULT 'N' NOT NULL AFTER `f
 ALTER TABLE `astacdid` ADD `redirectbusy` VARCHAR(255) DEFAULT '' NOT NULL AFTER `redirectalways` ;
 ALTER TABLE `astacdid` ADD `redirecttimeout` VARCHAR(255) DEFAULT '' NOT NULL AFTER `redirectbusy` ;
 ALTER TABLE `astacdid` ADD `redirecttimeoutsec` int(4) DEFAULT '15' NOT NULL AFTER `redirecttimeout` ;
+ALTER TABLE `astplans` ADD `remarks` varchar(256) DEFAULT '' NOT NULL;
+
+CREATE TABLE `astccnrate` (
+  `id` int(11) NOT NULL auto_increment,
+  `rateplan` varchar(128) NOT NULL default '',
+  `ccn` int(11) NOT NULL default '0',
+  `weight` tinyint(4) NOT NULL default '0',
+  `connectcharge` decimal(12,4) NOT NULL default '0.0000',
+  `includedseconds` decimal(12,4) NOT NULL default '0.0000',
+  `minimumprice` decimal(12,4) NOT NULL default '0.0000',
+  `rate` decimal(12,4) NOT NULL default '0.0000',
+  `rateevening` decimal(10,4) NOT NULL default '0.0000',
+  `rateweekend` decimal(10,4) NOT NULL default '0.0000',
+  `productcode` varchar(40) default '950',
+  `remarks` varchar(256) default NULL,
+  PRIMARY KEY  (`id`),
+  KEY `rateplanccn` (`rateplan`,`ccn`)
+) ENGINE=MyISAM AUTO_INCREMENT=10000;
+
+ALTER TABLE `astacgroup` ADD `language2` varchar(256) DEFAULT '' NOT NULL;
+ALTER TABLE `astccncountry` RENAME `astccnlist`;
+ALTER TABLE `astcdr` ADD `ccn` int(11) DEFAULT '0' NOT NULL AFTER `priceid`;
+
+
+/* Remember the order of 'case when' is important as the statement close when first match  */
+DROP VIEW IF EXISTS `asvcallrate`;
+CREATE VIEW `asvcallrate` AS select `astcdr`.`id` AS `id`,`astcdr`.`uniqueid` AS `uniqueid`,
+`astcdr`.`invoiceid` AS `invoiceid`,`astcdr`.`callednum` AS `callednum`,`astcdr`.`date_created` AS `date`,
+dayofweek(`astcdr`.`date_created`) AS `day`,
+(case when not((`astcdr`.`callednum` like '47%')) then 4 
+when not((`astcdr`.`ccn` in (11,903,904,924,905,16,901,906,900,897,898,35,902))) then 1 
+when (dayofweek(`astcdr`.`date_created`) in (1,7)) then 3 when ((cast(`astcdr`.`date_created` as time) 
+< '08:00:00') or (cast(`astcdr`.`date_created` as time) > '17:00:00')) then 2  
+else 1 end) AS `callrate`, 
+ccn, brand rateplan, rateplan3
+from `astcdr`;
+
+DROP VIEW IF EXISTS `asvcallrate2`;
+CREATE VIEW `asvcallrate2` AS select asv.*, 
+CASE asv.callrate WHEN 1 THEN rat.rate WHEN 2 THEN rat.rateoffpeak WHEN 3 THEN rat.rateweekend ELSE rat.rate END rate
+from asvcallrate asv, astccnrate rat
+where asv.ccn = rat.ccn and asv.rateplan = rat.rateplan;
+
+DROP VIEW IF EXISTS `asvcallrate3`;
+CREATE VIEW `asvcallrate3` AS select asv.*, 
+CASE asv.callrate WHEN 1 THEN rat.rate WHEN 2 THEN rat.rateoffpeak WHEN 3 THEN rat.rateweekend ELSE rat.rate END rate
+from asvcallrate asv, astccnrate rat
+where asv.ccn = rat.ccn and asv.rateplan3 = rat.rateplan;
+
+ALTER TABLE `astcdr` ADD `billtime3` int(11) DEFAULT '0' NOT NULL AFTER `billtime`;
+ALTER TABLE `astcdr` ADD `price3` decimal(10,2) DEFAULT '0.00' NOT NULL AFTER `price`;
+ALTER TABLE `astcdr` ADD `rateplan3` varchar(128) DEFAULT '' NOT NULL AFTER `brand`;
+ALTER TABLE `astcdr` ADD `invoiceid3` int(11) DEFAULT '0' NOT NULL AFTER `invoiceid`;
 
 */
 
