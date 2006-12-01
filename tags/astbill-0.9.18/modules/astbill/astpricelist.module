@@ -1,0 +1,273 @@
+<?php
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2006.03.17 Version 0.9.18
+ * 
+ */
+
+/**
+* Display help and module information
+* @param section which section of the site we're displaying help
+* @return help text for section
+*/
+
+
+function astpricelist_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Pricelist");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astpricelist_menu($may_cache) {
+  $items = array();
+  $access = user_access('astpricelist can use');
+  $items[] = array('path' => 'astpbx/pricelist',
+                                  'title' => t('Rate Table'),
+                                  'callback' => '_astratetable_all',
+				  'callback arguments' => array(),
+                                  'access' => $access);
+                                 // 'type' => MENU_CALLBACK);
+
+	// By using the MENU_CALLBACK type, we can register the callback for this
+    // path but not have the item show up in the menu; the admin is not allowed
+    // to enable the item in the menu, either.
+
+  return $items;
+}
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+function astpricelist_perm() {
+	return array('astpricelist can use');
+  // return array('can use astentry');
+} // function astentry_perm()
+
+
+// BEGIN PRICELIST
+function _astratetable_all() {
+  global $user;
+  global $db_prefix; 
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+
+
+  switch (($op ? $op : arg(1))) {
+    case t('Go'):
+
+    	$sql = db_fetch_object(db_query("SELECT brand FROM astuser WHERE uid = '%s' and db_prefix ='".$db_prefix."'", $user->uid));
+	drupal_goto("astpbx/pricelist/country/".$edit['countrycode']."/".$sql->brand);
+	break;
+        default:
+        if (arg(2) == 'country') {
+		if (!is_numeric(arg(3))) {
+		drupal_access_denied();
+		return;
+	} else {
+		$value = arg(3);
+		$value2 = arg(4);
+	}}
+
+
+    	$output = astratetable_form($where, $value, $value2);
+	
+    	if (arg(2) == 'country') {
+		$where = 'country';
+		$output .= astratetable_form($where, $value, $value2);
+
+	}
+	
+	
+  }
+
+  
+  if ($where == 'country') {
+	  $sql = db_fetch_object(db_query("SELECT country FROM astcountrycode WHERE countrycode = '%s' and db_prefix ='".$db_prefix."'", $value));
+	  $title = $sql->country;
+  }
+  
+  if (empty($title)) {
+	  $title = t('Select Country');
+  }
+  
+
+_astroute_printtheme_best($output, $title);
+}
+
+
+// FORM STUFF
+function astratetable_validate($edit) {
+  $myerror = 1;
+  $errors = array();
+
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+
+function astratetable_save($edit) {
+  global $user;
+
+}
+
+
+function astratetable_form($where, $value, $value2) {
+	global $user;
+	global $db_prefix; 
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+if ($where == 'country') {
+	
+	if (!is_numeric(arg(3))) {
+		drupal_access_denied();
+		return;
+	} else {
+		$value = arg(3);
+		}
+
+$maxline = 40;
+
+  $header = array(
+    array('data' => t('Pattern').'&nbsp;&nbsp;', 'field' => 'pattern'),
+    array('data' => t('Name').'&nbsp;&nbsp;', 'field' => 'name', 'colspan' => 2),
+    array('data' => t('Price').'&nbsp;&nbsp;', 'field' => 'price'),
+    );
+
+
+// array('data' => t('operations'), 'colspan' => 2)
+
+    $sql = db_query("SELECT id, pattern, name, round(price, 2) price, brand FROM astpricelist WHERE (countrycode LIKE '".$value."' AND brand LIKE '".$value2."')". tablesort_sql($header));
+    
+    $sql2 = db_fetch_object(db_query("select currency FROM astplans WHERE name='%s'", $value2));
+    
+	$cur = db_fetch_object(db_query("select ratetabledesc FROM astcurrency WHERE currency='%s'", $sql2->currency));
+     
+  while ($item = db_fetch_object($sql)) {
+	  
+	  	$rows[] = array(
+		$item->pattern.'&nbsp;&nbsp;',
+		$item->name.'&nbsp;&nbsp;',
+		$cur->ratetabledesc.'&nbsp;',
+		array('data' => $item->price, 'align' => 'right')
+
+		);
+  }
+
+  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+  if (!empty($pager)) {
+    $rows[] = array(array('data' => $pager, 'colspan' => 8));
+  }
+
+
+ $output .= (count($rows) == 0) ? t('No records.') : theme('table', $header, $rows);
+
+
+ return $output;
+	
+
+}
+
+if (empty($where)) {
+	
+	$countrylist = db_query("SELECT countrycode, country FROM astcountrycode WHERE usstate is null and db_prefix ='".$db_prefix."' order by country");
+	$countryout = array();
+  
+	
+	while ($model = db_fetch_object($countrylist)) {
+		array_push2($countryout, $model->country, $model->countrycode);
+	}
+
+
+	if (empty($value)) {
+	$sql = db_fetch_object(db_query("SELECT countryprefix FROM astuser WHERE uid = '%d' and db_prefix ='".$db_prefix."'", $user->uid));
+	$defaultcountry = $sql->countryprefix;
+	} else {
+		$defaultcountry = $value;
+		
+	}
+	
+	if (empty($value2)) {
+	$defaultbrand = 'default';
+	} else {
+		$defaultbrand = $value2;
+		
+	}
+	if ($db_prefix == 'fut_') {
+		$group .= astpricelist_Norge($defaultcountry);
+	} else {
+		$group .= form_select(t("Select Country"), "countrycode", $defaultcountry, $countryout);
+	}
+	$group .= form_submit(t('Go'));
+	
+	return form($group);
+}
+
+
+
+}
+
+
+
+// END FORM STUFF
+// END PRICELIST
+
+
+// ##########################################################################################################
+
+
+function _astpricelist_printtheme_best($page_content, $title) {
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+  // $output .= '<div class="astentry">' . $page_content . "</div>\n";
+  print theme("page", $output);
+}
+
+function astpricelist_currency($cur) {
+	$output = $cur;
+	if ($cur == "E") { $output = "?"; }
+	if ($cur == "G") { $output = "GBP"; }
+	// $output = "?";
+	return $output;
+}
+
+
+function astpricelist_Norge($country) {
+$output = '<div class="form-item">
+ <label for="edit-countrycode">Velg Land:</label><br>
+
+ <select name="edit[countrycode]" id="edit-countrycode"><option value="93">Afghanistan</option><option value="355">Albania</option><option value="213">Algerie</option><option value="1340">Am. Jomfru&#248;yene</option><option value="684">Am. Samoa&#248;yene</option><option value="376">Andorra</option><option value="244">Angola</option><option value="1264">Anguilla</option><option value="6721">Antarktis</option><option value="1268">Antigua &amp; Barbuda</option><option value="54">Argentina</option><option value="374">Armenia</option><option value="297">Aruba</option><option value="247">Ascension</option><option value="61">Australia</option><option value="994">Azerbadjan</option><option value="1242">Bahamas</option><option value="973">Bahrain</option><option value="880">Bangladesh</option><option value="1246">Barbados</option><option value="32">Belgia</option><option value="501">Belize</option><option value="229">Benin</option><option value="1441">Bermuda</option><option value="975">Bhutan</option><option value="591">Bolivia</option><option value="387">Bosnia-Hercegovina</option><option value="267">Botswana</option><option value="55">Brasil</option><option value="1284">Britiske Jomfru&#248;yer</option><option value="673">Brunei</option><option value="359">Bulgaria</option><option value="226">Burkina Faso</option><option value="257">Burundi</option><option value="1604">Canada</option><option value="1345">Cayman-&#248;yene</option><option value="56">Chile</option><option value="672">Christmas- &amp; Cocos&#248;yene</option><option value="57">Colombia</option><option value="682">Cook-&#248;yene</option><option value="506">Costa Rica</option><option value="53">Cuba</option><option value="45">Danmark</option><option value="246">Diego Garcia</option><option value="253">Djibouti</option><option value="1767">Dominica</option><option value="1809">Dominikanske Rep.</option><option value="593">Ecuador</option><option value="20">Egypt</option><option value="240">Ekvatorialguinea</option><option value="503">El Salvador</option><option value="225">Elfenbenskysten</option><option value="291">Eritrea</option><option value="372">Estland</option><option value="251">Etiopia</option><option value="500">Falklands&#248;yene</option><option value="679">Fiji</option><option value="358">Filippinene</option><option value="63">Finland</option><option value="971">Forente Arabiske Emirater</option><option value="33">Frankrike</option><option value="594">Fransk Guyana</option><option value="689">Fransk Polynesia</option><option value="298">F&#230;r&#248;yene</option><option value="241">Gabon</option><option value="220">Gambia</option><option value="995">Georgia</option><option value="233">Ghana</option><option value="350">Gibraltar</option><option value="1473">Grenada</option><option value="299">Gr&#248;nland</option><option value="590">Guadeloupe</option><option value="671">Guam</option><option value="502">Guatemala</option><option value="224">Guinea</option><option value="245">Guinea-Bissau</option><option value="592">Guyana</option><option value="509">Haiti</option><option value="30">Hellas</option><option value="504">Honduras</option><option value="852">Hong Kong</option><option value="375">Hviterussland</option><option value="91">India</option><option value="62">Indonesia</option><option value="964">Irak</option><option value="98">Iran</option><option value="353">Irland</option><option value="354">Island</option><option value="972">Israel</option><option value="39">Italia</option><option value="1876">Jamaica</option><option value="81">Japan</option><option value="967">Jemen, Arab. Rep</option><option value="962">Jordan</option><option value="381">Jugoslavia</option><option value="855">Kambodsja</option><option value="237">Kamerun</option><option value="238">Kapp Verde</option><option value="731">Kazakstan</option><option value="254">Kenya</option><option value="86">Kina</option><option value="996">Kirgistan</option><option value="686">Kiribati</option><option value="269">Komorerne &amp; Mayotte</option><option value="242">Kongo</option><option value="243">Kongo, Dem. Rep. (tidl. Zaire)</option><option value="850">Korea, Nord</option><option value="82">Korea, Syd</option><option value="385">Kroatia</option><option value="965">Kuwait</option><option value="357">Kypros</option><option value="856">Laos</option><option value="371">Latvia</option><option value="266">Leshoto</option><option value="961">Libanon</option><option value="231">Liberia</option><option value="218">Libya</option><option value="423">Liechtenstein</option><option value="370">Litauen</option><option value="352">Luxemburg</option><option value="853">Macao</option><option value="261">Madagaskar</option><option value="389">Makedonia</option><option value="265">Malawi</option><option value="60">Malaysia</option><option value="960">Maldivene</option><option value="223">Mali</option><option value="356">Malta</option><option value="1670">Marianerne</option><option value="212">Marokko</option><option value="692">Marshall&#248;yene</option><option value="596">Martinique</option><option value="222">Mauretania</option><option value="230">Mauritius</option><option value="52">Mexico</option><option value="691">Mikronesia</option><option value="373">Moldova</option><option value="377">Monaco</option><option value="976">Mongolia</option><option value="1664">Monserrat</option><option value="258">Mosambik</option><option value="95">Myanmar (tidl. Burma)</option><option value="264">Namibia</option><option value="674">Nauru</option><option value="31">Nederland</option><option value="599">Nederlandske Ant.</option><option value="977">Nepal</option><option value="64">New Zealand</option><option value="505">Nicaragua</option><option value="227">Niger</option><option value="234">Nigeria</option><option value="683">Niue</option><option value="6723">Norfolk &#248;yene</option><option value="47" selected="selected">Norge</option><option value="687">Ny Caledonia</option><option value="968">Oman</option><option value="92">Pakistan</option><option value="680">Palau</option><option value="970">Palestina</option><option value="507">Panama</option><option value="675">Papua, Ny Guinea</option><option value="595">Paraguay</option><option value="51">Peru</option><option value="48">Polen</option><option value="351">Portugal</option><option value="1787">Puerto Rico</option><option value="974">Quatar</option><option value="262">Reunion</option><option value="40">Romania</option><option value="7">Russland</option><option value="250">Rwanda</option><option value="677">Salomon&#248;yene</option><option value="378">San Marino</option><option value="239">Sao Tome &amp; Principe</option><option value="871">Satellite</option><option value="966">Saudi Arabia</option><option value="221">Senegal</option><option value="236">Sentralafrikanske rep.</option><option value="248">Seychellene</option><option value="232">Sierra Leone</option><option value="65">Singapore</option><option value="421">Slovakia</option><option value="386">Slovenia</option><option value="252">Somalia</option><option value="34">Spania</option><option value="94">Sri Lanka</option><option value="290">St. Helena</option><option value="1869">St. Kitts (St. Christopher - Nevis)</option><option value="1758">St. Lucia</option><option value="508">St. Pierre/Miquelon</option><option value="1784">St. Vincent/Grenadines</option><option value="44">Storbritannia</option><option value="249">Sudan</option><option value="597">Surinam</option><option value="41">Sveits</option><option value="46">Sverige</option><option value="268">Swaziland</option><option value="963">Syria</option><option value="27">S&#248;r-Afrika</option><option value="992">Tadzjikistan</option><option value="886">Taiwan</option><option value="255">Tanzania</option><option value="235">Tchad</option><option value="66">Thailand</option><option value="228">Togo</option><option value="690">Tokelau</option><option value="676">Tonga</option><option value="1868">Trinidad &amp; Tobago</option><option value="289">Tristan da Cunha</option><option value="420">Tsjekkia</option><option value="216">Tunisia</option><option value="993">Turkmenistan</option><option value="1649">Turks &amp; Caicos&#248;yene</option><option value="688">Tuvalu</option><option value="90">Tyrkia</option><option value="49">Tyskland</option><option value="256">Uganda</option><option value="380">Ukraina</option><option value="36">Ungarn</option><option value="598">Uruguay</option><option value="1">USA</option><option value="998">Uzbekistan</option><option value="678">Vanatu</option><option value="379">Vatikanstaten</option><option value="58">Venezuela</option><option value="685">Vestre Samoa</option><option value="84">Vietnam</option><option value="681">Wallis &amp; Futuna</option><option value="260">Zambia</option><option value="263">Zimbabwe</option><option value="670">&#216;st Timor</option><option value="43">&#216;sterrike</option></select>
+
+</div>';
+ return $output;
+}

@@ -1,0 +1,164 @@
+#!/usr/bin/perl
+# use strict;
+
+open(STDERR,">/home/astbill/logs/agi_err_voicemail.log");
+
+$|=1;
+
+# Setup some variables
+my %AGI; my $tests = 0; my $fail = 0; my $pass = 0;
+
+while(<STDIN>) {
+	chomp;
+	last unless length($_);
+	if (/^agi_(\w+)\:\s+(.*)$/) {
+		$AGI{$1} = $2;
+	}
+}
+
+# print STDERR "AGI Environment Dump:\n";
+# foreach my $i (sort keys %AGI) {
+# 	print STDERR " -- $i = $AGI{$i}\n";
+# }
+
+sub checkresult {
+	my ($res) = @_;
+	my $retval;
+	$tests++;
+	chomp $res;
+	if ($res =~ /^200/) {
+		$res =~ /result=(-?\d+)/;
+		if (!length($1)) {
+			print STDERR "FAIL ($res)\n";
+			$fail++;
+		} else {
+			print STDERR "PASS ($1)\n";
+			$pass++;
+		}
+	} else {
+		print STDERR "FAIL (unexpected result '$res')\n";
+		$fail++;
+	}
+}
+
+sub load_config() {
+		$runtime = localtime(time);
+		if (-e "astbill.conf"){
+			open(CFG, "<astbill.conf");
+			
+		} else {
+			open(CFG, "</home/astbill/astbill.conf");
+		}
+		# chdir ('../newdir') || die ("Could not set new directory");
+        while(<CFG>) {
+                chomp;
+                my ($var, $val) = split(/\s*\=\s*/);
+                $config{$var} = $val;
+        }
+        close(CFG);
+		if ($config{odbc} eq "YES") {$jobstr = "XP";} # $ENV{"_"};
+        else {$jobstr = $ENV{"_"};}
+		print STDERR "Executing: $jobstr    $runtime\n";
+		return $config;
+}
+
+use DBI;
+
+################### BEGIN CONFIGURATION ####################
+
+my $config = &load_config();
+
+print STDERR "config.conf loaded. dbhost = $config{dbhost}\n";
+
+if ($config{odbc} eq "YES") {
+	$dbh= DBI->connect("DBI:ODBC:$config{dbdsn}",$config{dbuser},$config{dbpass}) ||   die "Got error $DBI::errstr when connecting to $config{dbdsn}\n";
+}
+else {
+	#  $dbh = DBI->connect("dbi:mysql:dbname=$config{dbname};server=$config{dbhost}", "$config{dbuser}", "$config{dbpass}"); 
+	 $dbh   = DBI->connect ("DBI:mysql:database=$config{dbname}:host=$config{dbhost}", 
+		$config{dbuser},$config{dbpass}) or die "Can't connect to database: $DBI::errstr\n";
+}
+
+
+sub getLocal($) {
+	my ($callednum) = @_;
+	my $res;
+	$sth = $dbh->prepare("select tech, forwardto, mailbox from astaccount where accountcode = '" . $callednum . "' LIMIT 1");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
+sub getresult {
+	my ($cmd) = @_;
+	my $retval;
+	print "$cmd\n";
+	my $res = <STDIN>;
+	# $result2 = &getresult($result);
+	# print STDERR "VOICEMAIL: $result2\n";
+
+	chomp $res;
+	if ($res =~ /^200/) {
+		$res =~ /result=(-?\d+)/;
+		if (!length($1)) {
+			print STDERR "FAIL ($res)\n";
+		} else {
+			# print STDERR "PASS ($1)\n";
+			$res =~ s/\(/</;   # Have to convert ( to > and ) to >
+			$res =~ s/\)/>/;
+			$x = "<(.+)>";    # IAX2/5004@5004/2    SIP/5003-130f
+			$res =~/$x/;
+			my $tmp = $1;
+			# print STDERR "getresult: $1\n";
+			$retval = $1;
+			return $retval;
+		}
+	} else {
+		print STDERR "FAIL (unexpected result '$res')\n";
+	}
+}
+
+
+# my $dnid = $AGI{'dnid'};      #  `callednum` in DB
+my $channel = $AGI{'channel'};
+#      $channel = $input{'channel'};
+# $channel = $AGI->get_variable("channel");
+# my $channel = $AGI{'channel'};
+print STDERR "agistarvoicemail: $channel  $dnid   $clocal->{mailbox}\n";
+
+
+#  $channel = "SIP/77005-a6b5";
+my $x = "/(.+)[-@\/]";    # IAX2/5004@5004/2    SIP/5003-130f   IAX2/70104/2
+$channel =~/$x/;
+#  print "$channel      more:$1\n";
+my $dnid = $1;
+
+# This is used when using ANI/CLI authentication with SER
+if ($#ARGV>=0) { 
+	print STDERR "ARGV[0]: $ARGV[0]    $#ARGV\n";	
+	$dnid = $ARGV[0];
+} 
+
+my $clocal = &getLocal($dnid);
+print "SET VARIABLE VOICEMAIL $clocal->{mailbox}\n";
+my $result = <STDIN>;
+&checkresult($result);
+
+$result = &getresult("GET VARIABLE VOICEMAIL");
+print STDERR "VOICEMAIL: $result\n";
+
+$result = &getresult("GET VARIABLE DIALSTATUS");
+print STDERR "DIALSTATUS: $result\n";
+
+$result = &getresult("database get SIP/Registry 70108");
+print STDERR "database: $result\n";
+
+$result = &getresult("database get IAX/Registry 70104");
+print STDERR "IAXdatabase: $result\n";
+
+# http://www.voip-info.org/tiki-index.php?page=Asterisk+cmd+DISA
+
+$dbh->disconnect;
+
+
