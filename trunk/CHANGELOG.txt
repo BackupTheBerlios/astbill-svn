@@ -8,6 +8,19 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
+02 Dec 2006
+# New User management for multi sites.
+# If you have many sites. Please add all your sites to this view.
+DROP VIEW IF EXISTS `asvuser`;
+CREATE VIEW `asvuser` AS 
+select 'cbk_' db_prefix,cbk_users.* from cbk_users
+union
+select 'ipp_',ipp_users.* from ipp_users
+union
+select 'sea_',sea_users.* from sea_users
+union
+select 'pbx_',pbx_users.* from pbx_users;
+
 16 Nov 2006
 # Implementet new Price List structure. Price List are now based on
 # CCN = Charge Code Numbers

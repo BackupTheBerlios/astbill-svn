@@ -1,0 +1,46 @@
+im thinking in the peering stuff. 
+say i give portal (tenant) to a provider in a different country.. 
+they give same in return but i need to have setting to set a route
+system to allow there clients to route via there routes and still
+have all other from my clients routing via default routes
+  
+yes think it work well when sharing routes like untimmed calls etc
+
+
+IN PROGRESS
+
+oh and can you please post a reply to my posting saying the installation team donation 
+system is approved and all installations should use this service
+
+I have changed the pricing system compleetly
+I have a programmer making the web interface now. It will be ready in a weeks time
+we use what we call ccn - Charge Code Number
+
+The idea is to have the dialing pattern compleetly seperated from the price list and rateplan
+ok you know what would be good
+it is a bit complex with 5 tables
+but it is very good
+to have route available per tenant..
+as maintaining price lists are so much easeri
+so you can set route per tenant
+The route is when we dial out. This is just for the call cost.
+I have not implemented it in the dialing route yet.
+but it makes it very easy to have a price list for each tenant and you dont need to maintain all the dialing patterns for each price list
+im thinking in the peering stuff. say i give portal (tenant) to a provider in a different country.. they give same in return but i need to have setting to set a route system to allow there clients to route via there routes and still have all other from my clients routing via default routes
+That is a good point
+yes think it work well when sharing routes like untimmed calls etc
+I think so
+The consept of the CCN numbers is taken from one of the largest telecoms in Scandinavia. It is very efficient.
+You only have to maintain the dial/price patterns for all the countries in one table.
+thats sound sbetter
+all your prices and rateplans will be independent
+yes i think thats a better way to manage things
+in away what we have has rateplan and pricelist seperate
+Dialing patterns hardly changes and if they change it is for all the rateplans
+true
+
+
+we also need to address failovers for when a carrier returns congested
+
+
+Add reporttitle to report table astreport

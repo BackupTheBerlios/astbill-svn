@@ -1238,5 +1238,85 @@ ALTER TABLE `astcdr` ADD `price3` decimal(10,2) DEFAULT '0.00' NOT NULL AFTER `p
 ALTER TABLE `astcdr` ADD `rateplan3` varchar(128) DEFAULT '' NOT NULL AFTER `brand`;
 ALTER TABLE `astcdr` ADD `invoiceid3` int(11) DEFAULT '0' NOT NULL AFTER `invoiceid`;
 
+/*
+New User management for multi sites.
+If you have many sites. Please add all your sites to this view.
+DROP VIEW IF EXISTS `asvuser`;
+CREATE VIEW `asvuser` AS 
+select 'cbk_' db_prefix,cbk_users.* from cbk_users
+union
+select 'ipp_',ipp_users.* from ipp_users
+union
+select 'sea_',sea_users.* from sea_users
+union
+select 'pbx_',pbx_users.* from pbx_users;
+*/
+
+New User management for multi sites.
+If you have many sites. Please add all your sites to this view.
+DROP VIEW IF EXISTS `asvuser`;
+CREATE VIEW `asvuser` AS 
+select 'pbx_' db_prefix,cbk_users.* from cbk_users;
+
+DROP VIEW IF EXISTS `asvuser2`;
+CREATE VIEW `asvuser2` AS 
+select name,pass,mail,created,changed,status,timezone,picture,language,init, usr.* 
+from astuser usr, asvuser asv 
+where usr.db_prefix = asv.db_prefix and usr.uid = asv.uid;
+
+ALTER TABLE `astinvoice` CHANGE `remarks` `remarks` VARCHAR( 1024 ) NOT NULL DEFAULT '';
+
+// Show list of PDF reports
+DROP TABLE `astreport`;
+CREATE TABLE `astreport` (
+  `repid` int(10) NOT NULL auto_increment,
+  `reportgroup` varchar(40) NOT NULL default '',
+  `reportorder` int(6) NOT NULL default '0',
+  `reportname` varchar(256) NOT NULL default '',
+  `reportname2` varchar(256) NOT NULL default '',
+  `classfile` varchar(128) NOT NULL default '',
+  `functionname` varchar(128) NOT NULL default '',
+  `functionphp` varchar(1024) NOT NULL default '',
+  `header` varchar(1024) NOT NULL default '',
+  `footer` varchar(1024) NOT NULL default '',
+  `orientation` char(1) NOT NULL default 'P',
+  `unit` varchar(2) NOT NULL default 'mm',
+  `format` varchar(2) NOT NULL default 'A4',
+  `selectbox1` tinyint(2) NOT NULL default '0',
+  `selectbox2` tinyint(2) NOT NULL default '0',
+  `selectbox3` tinyint(2) NOT NULL default '0',
+  `selectbox4` tinyint(2) NOT NULL default '0',
+  `selectbox5` tinyint(2) NOT NULL default '0',
+  `selectbox6` tinyint(2) NOT NULL default '0',
+  `isfile`     tinyint(1) NOT NULL default '1',
+  `description` varchar(1024) NOT NULL default '',
+  `remarks` varchar(1024) NOT NULL default '',
+   `active` tinyint(1) NOT NULL default '1',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`repid`),
+  KEY `reportgroup` (`reportgroup`,`reportorder`,`reportname`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
+// if `selectbox1` = 0 = Not Used
+// if `selectbox1` = 1 = Normal Text Box
+// if `selectbox1` = 2 = Drop Down List
+// if `selectbox1` = 3 = Date Selector
+
+// in the `classfile` we store the name of the `classfile` to use like pdfliste.php
+// To populate require('modules/astprof/pdfliste.php');
+// `function` is the functon name that starts this report
+
+CREATE TABLE `astreplication` (
+  `id` int(11) NOT NULL auto_increment,
+  `server` varchar(255) NOT NULL default '',
+  `tbname` varchar(255) NOT NULL default '',
+  `counts` int(11) NOT NULL default '0',
+  `date` datetime NOT NULL default '0000-00-00 00:00:00',
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
 */
 

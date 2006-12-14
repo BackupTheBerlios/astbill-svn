@@ -45,18 +45,27 @@ function astpartnerglobal_menu($may_cache) {
 	$access2 = user_access('astpartnerglobal Account');
 	
 
-	$items[] = array('path' => 'astglobal', 'title' => t('Global Admin'),
+	$items[] = array('path' => 'astglobal', 'title' => t('CRM System'),
 	'callback' => 'astpartnerglobal_main',
 	'access' => $access);
 /*
-  	$items[] = array('path' => 'astglobal/users', 'title' => t('Web Users'),
-	'callback' => 'astpartnerglobal_webuser',
-	'access' => $access);
-
-	$items[] = array('path' => 'astglobal/usercreate', 'title' => t('Create User'),
-	'callback' => 'astpartnerglobal_user_create',
+	$items[] = array('path' => 'astglobal/business', 'title' => t('Business'),
+	'callback' => 'astpglobal_business_main',
 	'access' => $access);
 */
+	$items[] = array('path' => 'astglobal/private', 'title' => t('Private'),
+	'callback' => 'astpglobal_private_main',
+	'access' => $access);
+
+	$items[] = array('path' => 'astglobal/voip', 'title' => t('Voip Data'),
+	'callback' => 'astpglobal_voip_main',
+	'access' => $access);
+
+	$items[] = array('path' => 'astglobal/order', 'title' => t('Invoice/Orders'),
+	'callback' => 'astpglobal_order_main',
+	'access' => $access,
+	'weight' => 5);
+
   	$items[] = array('path' => 'astglobal/tech', 'title' => t('Show SIP or IAX Accounts'),
 	'callback' => 'astpartnerglobal_tech',
 	'access' => $access2,
@@ -64,7 +73,7 @@ function astpartnerglobal_menu($may_cache) {
 
 	$items[] = array('path' => 'astglobal/web', 'title' => t('Show Web Users'),
 	'callback' => 'astpartnerglobal_webuser',
-	'access' => $access2,
+	'access' => $access,
 	'type' => MENU_CALLBACK);
 
 	$items[] = array('path' => 'astglobal/tech/create', 'title' => t('Create New SIP and IAX Account'),
@@ -97,10 +106,10 @@ function astpartnerglobal_menu($may_cache) {
 	'access' => $access2,
 	'type' => MENU_CALLBACK);
 
-	$items[] = array('path' => 'astglobal/partner/create', 'title' => t('Create Partner'),
+	$items[] = array('path' => 'astglobal/partner/create', 'title' => t('New Customer'),
 	'callback' => 'astpartnerglobal_partnercreate',
-	'access' => $access);
-	//    'type' => MENU_CALLBACK);
+	'access' => $access,
+	'weight' => -5);
 
 	$items[] = array('path' => 'astglobal/partner/change', 'title' => t('Change Partner'),
 	'callback' => 'astpartnerglobal_partnercreate',
@@ -186,6 +195,23 @@ function astpartnerglobal_main() {
 	}
 	
 	$title = t('View Partners');
+	astcore_printtheme($output, $title);
+}
+
+function astpglobal_business_main() {
+	$title = t('CRM Business Customers');
+	astcore_printtheme($output, $title);
+}
+function astpglobal_private_main() {
+	$title = t('CRM Private Customers');
+	astcore_printtheme($output, $title);
+}
+function astpglobal_voip_main() {
+	$title = t('CRM VOIP Data');
+	astcore_printtheme($output, $title);
+}
+function astpglobal_order_main() {
+	$title = t('Invoice and Orders');
 	astcore_printtheme($output, $title);
 }
 
@@ -506,7 +532,7 @@ function astpartnerglobal_Partnercreate() {
  	    $title = t('Edit Partner');
 	} elseif(arg(2) == 'create') {
 		$output .= astpartnerglobal_Partner_form($edit);
-	    $title = t('Create Partner');
+	    $title = t('Create New Customer');
 	} else {
 		// $output .= astccorders_users_list($edit, $value);
 	}
@@ -914,7 +940,7 @@ function astpartnerglobal_tech_create_save($edit) {
 		}
 /*		db_query("UPDATE astaccount SET forcecallerid = '%s',secret = '%s',callerid = '%s',serverid = '%s' WHERE accountcode = '%s'", $edit['clip'], $edit['secret'],$edit['callerid'],$edit['serverid'], arg(3));
 */
-		db_query("UPDATE astaccount SET forcecallerid = '%s',secret = '%s',callerid = '%s' WHERE accountcode = '%s'", $edit['clip'], $edit['secret'],$edit['callerid'], arg(3));
+		db_query("UPDATE astaccount SET forcecallerid = '%s',secret = '%s',callerid = '%s',serverid = '%s' WHERE accountcode = '%s'", $edit['clip'], $edit['secret'],$edit['callerid'],$edit['serverid'], arg(3));
 
 		if ($edit['clip'] == '') {
 			db_query("UPDATE astaccount SET forcecallerid = NULL WHERE accountcode = '%s'", arg(3));
@@ -923,7 +949,7 @@ function astpartnerglobal_tech_create_save($edit) {
 			db_query("UPDATE astaccount SET callerid = NULL WHERE accountcode = '%s'", arg(3));
 		}
 		if ($edit['serverid'] == '') {
-	//		db_query("UPDATE astaccount SET serverid = NULL WHERE accountcode = '%s'", arg(3));
+			db_query("UPDATE astaccount SET serverid = NULL WHERE accountcode = '%s'", arg(3));
 		}
 		astcore_astlogdb("astaccount","U", $edit,arg(3));
 		drupal_set_message(t('Account changed').': '.arg(3));
