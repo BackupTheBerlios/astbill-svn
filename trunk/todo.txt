@@ -44,3 +44,22 @@ we also need to address failovers for when a carrier returns congested
 
 
 Add reporttitle to report table astreport
+
+
+Husk DTMF på Patton Config!
+
+Audit system på Call forwarding. We need to track who logged in and put what number.
+
+CROSS TABS
+http://dev.mysql.com/tech-resources/articles/wizard/page4.html
+
+Talent is to hit a nail that nobody else can hit.
+Genius is to hit a nail that nobody else can see.
+ 
+http://www.onlamp.com/pub/a/onlamp/2006/04/20/advanced-mysql-replication.html
+
+http://www.mysql.com/news-and-events/users-conference/2003/session.html#Session:TamingtheDistributedDatabaseProblem
+http://datacharmer.org/presentations/froscon2006/img5.html
+
+http://www.softwaresecretweapons.com/jspwiki/Wiki.jsp?page=HowToMonitorMYSQLReplicationInRealTimeWithSNMP
+

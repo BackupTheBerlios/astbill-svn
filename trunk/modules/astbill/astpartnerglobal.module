@@ -297,20 +297,24 @@ function astglobal_tech_list($value, $edit) {
     array('data' => t('CLIP'), 'field' => 'forcecallerid'),
     array('data' => t('Serverid'), 'field' => 'serverid'),
     array('data' => t('RPID'), 'field' => 'trustrpid'),
-    array('data' => t('Ops'), 'colspan' => 1),
+    array('data' => t('Ops'), 'colspan' => 2),
 	array('data' => t('IP'), 'colspan' => 1),
 	array('data' => t('Refreshed'), 'colspan' => 1),
 	array('data' => t(''), 'colspan' => 1)
   );
     
 $value = arg(2);                                                                                 
-$SQL = "SELECT pa.pid,ac.uid,ac.accountcode,ac.secret,ac.callerid,ac.forcecallerid,ac.tech, ac.serverid,ac.trustrpid,fullcontact, CONCAT_WS(':',ac.ipaddr,ac.port) ip, ac.reg_changed,accountname FROM astaccount ac, astuser us,astpartner pa WHERE ac.uid = us.uid and ac.db_prefix = us.db_prefix and   us.partnerid = pa.pid and pa.pid = '".$value."' and ac.tech in (select actype from astactype where active = '1')". tablesort_sql($header);;
+$SQL = "SELECT pa.pid,ac.uid,ac.accountcode,ac.secret,ac.callerid,ac.forcecallerid,ac.tech, ac.serverid,ac.trustrpid,fullcontact, CONCAT_WS(':',ac.ipaddr,ac.port) ip, ac.reg_changed,accountname,ac.hardwareid FROM astaccount ac, astuser us,astpartner pa WHERE ac.uid = us.uid and ac.db_prefix = us.db_prefix and   us.partnerid = pa.pid and pa.pid = '".$value."' and ac.tech in (select actype from astactype where active = '1')". tablesort_sql($header);;
 
 // $SQL = mysql_real_escape_string($SQL);
 
   $result = pager_query($SQL, $maxline);
   
   while ($res = db_fetch_object($result)) {
+		if ($res->hardwareid <> 0) { 
+			$hw = '&nbsp;<A HREF="'.url('astglobal/voip/aps/'.$res->hardwareid).'">cfg</A>&nbsp;';
+		} else { $hw = "&nbsp;";}
+
 	$rows[] = array(
 //		$res->prefix,
 //		$res->pid,
@@ -323,6 +327,7 @@ $SQL = "SELECT pa.pid,ac.uid,ac.accountcode,ac.secret,ac.callerid,ac.forcecaller
 		$res->serverid."&nbsp;",
 		$res->trustrpid."&nbsp;",
 		'<A HREF="'.url('astglobal/tech/change/'.$res->accountcode.'/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		$hw,
 		// $res->ip,fullcontact
         array('data' => $res->ip, 'title' => $res->fullcontact),
 		//	title="Password: '.$res->secret.'"

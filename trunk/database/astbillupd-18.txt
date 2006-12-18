@@ -1254,7 +1254,7 @@ New User management for multi sites.
 If you have many sites. Please add all your sites to this view.
 DROP VIEW IF EXISTS `asvuser`;
 CREATE VIEW `asvuser` AS 
-select 'pbx_' db_prefix,cbk_users.* from cbk_users;
+select 'pbx_' db_prefix,pbx_users.* from pbx_users;
 
 DROP VIEW IF EXISTS `asvuser2`;
 CREATE VIEW `asvuser2` AS 
@@ -1314,6 +1314,79 @@ CREATE TABLE `astreplication` (
   `date` datetime NOT NULL default '0000-00-00 00:00:00',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+alter table asthardwareid rename asthardwaretype;
+ALTER TABLE `asthardwaretype` ADD `macoui` varchar(6) DEFAULT '' NOT NULL AFTER `hardware`;
+update asthardwaretype set macoui = concat(mac1,mac2,mac3) where mac1 is not null;
+alter table asthardwaretype drop mac1;
+alter table asthardwaretype drop mac2;
+alter table asthardwaretype drop mac3;
+ALTER TABLE `asthardwaretype` CHANGE `comment` `remarks` varchar(1024) NOT NULL DEFAULT '';
+ALTER TABLE `asthardwaretype` CHANGE `hardware` `hardware` varchar(256) NOT NULL DEFAULT '';
+ALTER TABLE `asthardwaretype` ADD `organization` varchar(256) DEFAULT '' NOT NULL AFTER `hardware`;
+
+ALTER TABLE `asthardware` ADD `mac` varchar(12) DEFAULT '' NOT NULL AFTER `hardwareid`;
+
+update asthardware set mac = concat(mac4,mac5,mac6) where mac4 is not null;
+alter table asthardware drop mac4;
+alter table asthardware drop mac5;
+alter table asthardware drop mac6;
+
+ALTER TABLE `asthardware` CHANGE `hardwareid` `hid` int(10) NOT NULL default '0';
+ALTER TABLE `asthardware` CHANGE `id` `hardwareid` int(10) unsigned NOT NULL auto_increment;
+update astaccount acc, asthardware hw set acc.hardwareid = hw.hardwareid where acc.accountcode = hw.accountcode;
+alter table asthardware drop accountcode;
+ALTER TABLE `asthardware` CHANGE `comment` `remarks` varchar(1024) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` CHANGE `serialnumber` `serialnumber` varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `wandhcp` tinyint(1) DEFAULT '1' NOT NULL AFTER `remarks`;
+ALTER TABLE `asthardware` CHANGE `ipaddress` `wanip` varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` CHANGE `subnet` `wansubnet` varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` CHANGE `port` `wangateway` varchar(128) NOT NULL DEFAULT '';
+alter table asthardware drop sip2;
+alter table asthardware drop ipaddress2;
+alter table asthardware drop subnet2;
+alter table asthardware drop port2;
+
+alter table asthardware drop sip3;
+alter table asthardware drop ipaddress3;
+alter table asthardware drop subnet3;
+alter table asthardware drop port3;
+
+alter table asthardware drop sip4;
+alter table asthardware drop ipaddress4;
+alter table asthardware drop subnet4;
+alter table asthardware drop port4;
+
+ALTER TABLE `asthardware` ADD `landhcp` tinyint(1) DEFAULT '1' NOT NULL AFTER `wangateway`;
+ALTER TABLE `asthardware` ADD `lanip` varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `lansubnet` varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `langateway` varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `telnetport` varchar(4) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `webport` varchar(4) NOT NULL DEFAULT '';
+
+ALTER TABLE `asthardware` ADD `bri0protocol` varchar(10) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `bri0uniside` varchar(10) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `bri1protocol` varchar(10) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `bri1uniside` varchar(10) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `bri2protocol` varchar(10) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `bri2uniside` varchar(10) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `bri3protocol` varchar(10) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `bri3uniside` varchar(10) NOT NULL DEFAULT '';
+
+ALTER TABLE `asthardware` ADD `faxclip` varchar(10) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `dialmodem` varchar(10) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `map_rpid_default` varchar(1024) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `map_rpid1` varchar(1024) NOT NULL DEFAULT '';
+
+ALTER TABLE `asthardware` ADD `adminuser` varchar(128) DEFAULT '' NOT NULL AFTER `webport`;
+ALTER TABLE `asthardware` ADD `adminpassword` varchar(128) DEFAULT '' NOT NULL AFTER `adminuser`;
+ALTER TABLE `asthardware` ADD `active` tinyint(1) NOT NULL default '1' AFTER `landhcp`;
+ALTER TABLE `asthardwaretype` ADD `active` tinyint(1) NOT NULL default '1' AFTER `remarks`;
+ALTER TABLE `asthardware` ADD `configupdate` int(11) NOT NULL default '60' AFTER `timestamp`;
+
+ALTER TABLE `asthardware` ADD `digitcollection` tinyint(2) NOT NULL default '4';
+ALTER TABLE `asthardware` ADD `reglifetime` tinyint(4) NOT NULL default '90';
+ALTER TABLE `asthardwaretype` ADD `templatefile` varchar(128) NOT NULL default '';
 
 
 */
