@@ -1372,6 +1372,8 @@ ALTER TABLE `asthardware` ADD `bri2protocol` varchar(10) NOT NULL DEFAULT '';
 ALTER TABLE `asthardware` ADD `bri2uniside` varchar(10) NOT NULL DEFAULT '';
 ALTER TABLE `asthardware` ADD `bri3protocol` varchar(10) NOT NULL DEFAULT '';
 ALTER TABLE `asthardware` ADD `bri3uniside` varchar(10) NOT NULL DEFAULT '';
+ALTER TABLE `asthardware` ADD `bri4protocol` varchar(10) NOT NULL DEFAULT '' AFTER `bri3uniside`;
+ALTER TABLE `asthardware` ADD `bri4uniside` varchar(10) NOT NULL DEFAULT '' AFTER `bri4protocol`;
 
 ALTER TABLE `asthardware` ADD `faxclip` varchar(10) NOT NULL DEFAULT '';
 ALTER TABLE `asthardware` ADD `dialmodem` varchar(10) NOT NULL DEFAULT '';
@@ -1387,6 +1389,7 @@ ALTER TABLE `asthardware` ADD `configupdate` int(11) NOT NULL default '60' AFTER
 ALTER TABLE `asthardware` ADD `digitcollection` tinyint(2) NOT NULL default '4';
 ALTER TABLE `asthardware` ADD `reglifetime` tinyint(4) NOT NULL default '90';
 ALTER TABLE `asthardwaretype` ADD `templatefile` varchar(128) NOT NULL default '';
+ALTER TABLE `astpayment` ADD `generalledger` varchar(255) NOT NULL DEFAULT '' AFTER `accountcode`;
 
 
 */

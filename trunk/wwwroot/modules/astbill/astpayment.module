@@ -145,7 +145,7 @@ function astpayment_bank_import() {
 					$kid = substr($arr_data[0],61,13);
 					$amount = substr($arr_data[0],38,12) / 100;
 					$output .= $paydate.'&nbsp;&nbsp;&nbsp;'.$kid.'&nbsp;&nbsp;&nbsp;'.$amount.'<BR>';
-					db_query("INSERT INTO astpayment (accountcode, paytype,batchid,kid,kidbank,paiddate,paidamount,date_created) VALUES ('1030','OCR-giro','$batchid','$kid','$kid','$paydate','$amount',now())");
+					db_query("INSERT INTO astpayment (generalledger, paytype,batchid,kid,kidbank,paiddate,paidamount,date_created) VALUES ('1030','OCR-giro','$batchid','$kid','$kid','$paydate','$amount',now())");
 					//$output .= $arr_data[0].'<BR>';
 				}
 				if (substr($arr_data[0],0,8) == 'NY090088' ) {

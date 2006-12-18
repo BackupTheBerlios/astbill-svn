@@ -1490,33 +1490,52 @@ function page_astadmin_payment_form($value, $edit) {
 	$maxline = 40;
 	
 	$header = array(
-	array('data' => t('User'), 'field' => 'name'),
+	array('data' => t('db'), 'field' => 'db_prefix'),
 	array('data' => t('ID'), 'field' => 'paid', 'sort' => 'desc'),
 	array('data' => t('Accountcode'), 'field' => 'accountcode'),
+	array('data' => t('GL'), 'field' => 'generealledger'),
+	array('data' => t('Batch'), 'field' => 'batch'),
+	array('data' => t('Jour'), 'field' => 'journal'),
+	array('data' => t('S')),
 	array('data' => t('Pay Type'), 'field' => 'paytype'),
 	array('data' => t('Comment'), 'field' => 'comment'),
 	array('data' => t('Paid Amount'), 'field' => 'paidamount'),
-	array('data' => t('Last Paid'), 'field' => 'paiddate'),
-	array('data' => t('Date Created'), 'field' => 'date_created'),
-	array('data' => t('Operations'), 'colspan' => 2)
+	array('data' => t('Paid Date'), 'field' => 'paiddate'),
+//	array('data' => t('Date Created'), 'field' => 'date_created'),
+//	array('data' => t('Operations'), 'colspan' => 2)
 	);
 	
-	$sql = "SELECT paid, pay.accountcode, paytype, pay.comment, paidamount, date(paiddate) paiddate, date(pay.date_created) date_created, users.name, astaccount.uid FROM astpayment pay, astaccount, {users} users WHERE pay.accountcode = astaccount.accountcode AND astaccount.uid = users.uid AND db_prefix ='".$db_prefix."' AND CONCAT_WS(',', paid, pay.accountcode, LOWER(paytype), LOWER(pay.comment), paidamount, paiddate, pay.date_created, LOWER(users.name), astaccount.uid) LIKE LOWER('%".$value."%')". tablesort_sql($header);
-	
+/*	$sql = "SELECT paid, pay.accountcode, paytype, pay.comment, paidamount, date(paiddate) paiddate, date(pay.date_created) date_created, users.name, astaccount.uid FROM astpayment pay, astaccount, {users} users WHERE pay.accountcode = astaccount.accountcode AND astaccount.uid = users.uid AND db_prefix ='".$db_prefix."' AND CONCAT_WS(',', paid, pay.accountcode, LOWER(paytype), LOWER(pay.comment), paidamount, paiddate, pay.date_created, LOWER(users.name), astaccount.uid) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+
+$sql = "SELECT paid, pay.accountcode, paytype, pay.comment, paidamount, date(paiddate) paiddate, date(pay.date_created) date_created, usr.name, acc.uid,usr.partnerid FROM astpayment pay LEFT JOIN (astaccount acc,asvuser2 usr) ON (pay.accountcode = acc.accountcode and acc.uid = usr.uid and acc.db_prefix = usr.db_prefix) WHERE CONCAT_WS(',', paid, pay.accountcode, LOWER(paytype), LOWER(pay.comment), paidamount, paiddate, pay.date_created, LOWER(usr.name), acc.uid) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+*/
+
+$sql = "SELECT paid, pay.accountcode,pay.generalledger,pay.batchid,bat.journalno,pay.payment_status, acc.db_prefix, paytype, pay.comment, paidamount, date(paiddate) paiddate, date(pay.date_created) date_created, acc.uid,usr.partnerid FROM astpayment pay LEFT JOIN (astaccount acc,astuser usr,astpaymentbatch bat) ON (pay.accountcode = acc.accountcode and acc.uid = usr.uid and acc.db_prefix = usr.db_prefix and pay.batchid = bat.batchid) WHERE CONCAT_WS(',', paid, pay.accountcode, LOWER(paytype), LOWER(pay.comment), paidamount, paiddate, pay.date_created, acc.uid) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+
+
 	$result = pager_query($sql, $maxline);
 	
 	while ($res = db_fetch_object($result)) {                                          
 		$rows[] = array(
-			$res->name.'&nbsp;&nbsp;',
-			$res->paid.'&nbsp;&nbsp;',
+			$res->db_p2refix.'&nbsp;',
+			$res->paid.'&nbsp;',
 			array('data' => $res->accountcode, 'align' => 'right'),
+			$res->generalledger.'&nbsp;',
+			array('data' => $res->batchid, 'align' => 'center'),
+		//	$res->batchid.'&nbsp;',
+		    array('data' => $res->journalno, 'align' => 'center'),
+		//	$res->journalno.'&nbsp;',
+		//	$res->payment_status.'&nbsp;',
+			array('data' => $res->payment_status, 'align' => 'center'),
 			'&nbsp;&nbsp;'.$res->paytype,
 			$res->comment,
 			array('data' => $res->paidamount, 'align' => 'right'),
 		    '&nbsp;&nbsp;'.$res->paiddate,
-			$res->date_created,
+		//	$res->date_created,
+/*
 			'<A HREF="'.url('astbilladm/payment/change/'.$res->paid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
 			'<A HREF="'.url('astbilladm/payment/remove/'.$res->paid).'">'.t('Remove').'</A>'
+*/
 			);
 	}
 	
