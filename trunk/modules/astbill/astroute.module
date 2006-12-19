@@ -236,9 +236,8 @@ function _astroute_all() {
   if (empty($title)) {
 	  $title = t('Select Country');
   }
-  
 
-_astroute_printtheme_best($output, $title);
+	astcore_printtheme($output, $title);
 }
 
 
@@ -279,17 +278,12 @@ function _astroute_export() {
 
 		exit;
 	break;
-
         default:
-		
 		$group .= form_submit(t('Export'));
-
 		$output = form($group);
-		$title = 'Export';
-		_astroute_printtheme_best($output, $title);
+		$title = t('Export');
+		astcore_printtheme($output, $title);
   }
-
-
 }
 
 
@@ -406,10 +400,10 @@ function _astroute_import() {
 	}
 	
 	if (empty($title)) {
-	$title = 'Import';
+	$title = t('Import');
 	}	
-	
-	_astroute_printtheme_best($output, $title);
+  
+	astcore_printtheme($output, $title);
 }
 
 
@@ -2069,16 +2063,5 @@ function page_astroute_trunkremove() {
 		drupal_goto("astbilladm/trunks");
 	}
 
-}
-
-// END TRUNK STUFF
-
-
-function _astroute_printtheme_best($page_content, $title) {
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-
-  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-  //$output .= $page_content;
-  print theme("page", $output);
 }
 

@@ -351,7 +351,7 @@ function _astpbx_voipadmin_list($value, $edit) {
 		
 		'<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
 		'<a href="'.url('astbilladm/editaccount/'.$res->accountcode).'"><img border="0" src="files/astar/edit.gif"></a>',
-		'<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>',
+	//	'<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>',
 		'<a href="'.url('astbilladm/removeaccount/'.$res->uid.'/'.$res->accountcode).'">'.t('Remove').'</a>'
 		);
 	}
@@ -815,9 +815,7 @@ $account = arg(2);
 	  $title = t('Change');
   }
   
-$account = '';
-_astentry_printtheme_best($output, $account, $title);
-	
+  astcore_printtheme($output, $title);
 }
 
 function _astpbx_accounts_remove() { // DANGER! REMOVING ACCOUNTS IS NOT WISE :D
@@ -1045,7 +1043,7 @@ function _astpbx_accounts_form($edit = null) {
 		array_push2($languagelist, $item->languagename, $item->language);
 	}
 
-	$sql = db_query("select hid, hardware from asthardwareid");
+	$sql = db_query("select hid, hardware from asthardwaretype where active = 1");
 
 	$hardwareidlist = array();
 
@@ -1278,9 +1276,7 @@ function page_astpbx_emailme() {
 	}
 	
 	$output = form($group);
-	
-	$account = '';
-	_astentry_printtheme_best($output, $account, $title);	
+	astcore_printtheme($output, $title);
 }
 
 function astpbx_sendemail($EmailText, $tomail, $accountcode, $wwwuser, $wwwpw) {

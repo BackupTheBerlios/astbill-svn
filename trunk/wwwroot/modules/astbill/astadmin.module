@@ -226,20 +226,6 @@ function astadmin_perm() {
 
 // ##########################################################################################################
 
-/*
-function _astadmin_all() {
-	global $user;
-
-	$edit = $_POST["edit"];
-	$op = $_POST["op"];
-
-
-
-	$title = 'UID';
-	$account = $user->uid;
-	_astadmin_printtheme_best($output, $account, $title);
-}
-*/
 
 function page_astadmin_friends() {
 	$edit = $_POST['edit'];
@@ -337,9 +323,8 @@ function page_astadmin_friendschange() {
 	}
 
 
-	$title = 'Change';
-	$account = $user->uid;
-	_astadmin_printtheme_best($output, $account, $title);
+	$title = t('Change').' '.$user->uid;
+	astcore_printtheme($output, $title);
 }
 
 function page_astadmin_friendscreate() {
@@ -364,9 +349,8 @@ function page_astadmin_friendscreate() {
 	  $output = astadmin_friends_form(arg(4));
   }
 
-$title = 'Insert';
-$account = $user->uid;
-_astadmin_printtheme_best($output, $account, $title);
+	$title = t('Insert').' '.$user->uid;
+	astcore_printtheme($output, $title);
 }
 
 
@@ -383,13 +367,6 @@ function page_astadmin_friendsremove() {
 	$item = arg(4);
 
 	$output = astadmin_confirm_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item);
-
-//	print theme('page', $output);
-//	$title = 'Remove '.$item;
-//	$account = $user->uid;
-//	_astadmin_printtheme_best($output, $account, $title);
-
-
 }
 
 
@@ -643,10 +620,8 @@ function page_astadmin_hardwarechange() {
 	  $output = astadmin_hardware_form(arg(3));
   }
 
-
-$title = 'Change';
-$account = $user->uid;
-_astadmin_printtheme_best($output, $account, $title);
+	$title = t('Change').' '.$user->uid;
+	astcore_printtheme($output, $title);
 }
 
 
@@ -672,9 +647,8 @@ function page_astadmin_hardwarecreate() {
 	  $output = astadmin_hardware_form(arg(3));
   }
 
-$title = 'Insert';
-$account = $user->uid;
-_astadmin_printtheme_best($output, $account, $title);
+	$title = t('Insert').' '.$user->uid;
+	astcore_printtheme($output, $title);
 }
 
 function page_astadmin_hardwareremove() {
@@ -878,7 +852,7 @@ if (arg(2) == '') {
 	  $output .= '<A HREF="'.url('astbilladm/realtime/sip').'">'.t('Sip Users').'</A><BR>';
 	  
 	  
-	$title = 'Select asterisk REALTIME function';
+	$title = t('Select asterisk REALTIME function');
 	$account = $user->uid;  
 }
 
@@ -1001,12 +975,11 @@ if (!empty($pager)) {
 $output .= (count($rows) == 0) ? t('No records available.') : theme('table', $header, $rows);
 
 
-$title = t('View');
-$account = $user->uid;
+$title = t('View').' '.$user->uid;
 
 }
-
-_astadmin_printtheme_best($output, $account, $title);
+  
+astcore_printtheme($output, $title);
 }
 // END SHOWPEERS STUFF
 
@@ -1210,7 +1183,7 @@ function page_astadmin_listcdr() {
 		$output .= page_astadmin_listcdr_form($value, $edit);
 	}
 	
-	$title = 'View';
+	$title = t('View');
 	astcore_printtheme($output, $title);
 }
 
@@ -1224,7 +1197,7 @@ function page_astadmin_listcdr_form($value, $edit) {
 
 	if (arg(2) == 'specific') { // START CHECK IF SPECIFIC RECORD
 		$skipcolumlist = 1;
-		$title = 'Specific Record';
+		$title = t('Specific Record');
 
 		$sql = db_query("SELECT *, UNIX_TIMESTAMP(astcdr.date_created) dcreat FROM astcdr WHERE astcdr.id = '%d'", arg(3));
 
@@ -1476,7 +1449,7 @@ function page_astadmin_payment() {
 		$output .= page_astadmin_payment_form($value, $edit);
 	}
 	
-	$title = 'View';
+	$title = t('View');
 	
 	$undermenu = array(url('astbilladm/payment/create/').'">'.t('Create New Payment')	);
 	
@@ -1565,11 +1538,8 @@ function page_astadmin_paymentchange() {
     default:
 	  $output = astadmin_payment_form(arg(3));
   }
-
-
-$title = 'Change';
-$account = $user->uid;
-_astadmin_printtheme_best($output, $account, $title);
+	$title = t('Change').' '.$user->uid;
+	astcore_printtheme($output, $title);
 }
 
 
@@ -1595,9 +1565,8 @@ function page_astadmin_paymentcreate() {
 	  $output = astadmin_payment_form(arg(3));
   }
 
-$title = 'Create';
-$account = $user->uid;
-_astadmin_printtheme_best($output, $account, $title);
+	$title = 'Create'.' '.$user->uid;
+	astcore_printtheme($output, $title);
 }
 
 function page_astadmin_paymentremove() {
@@ -1785,7 +1754,7 @@ function page_astadmin_credit() {
 		$output .= page_astadmin_credit_form($value, $edit);
 	}
 	
-	$title = 'View';
+	$title = t('View');
 	astcore_printtheme($output, $title);
 }
 
@@ -1846,11 +1815,8 @@ function page_astadmin_creditchange() {
     default:
 	  $output = astadmin_credit_form(arg(4));
   }
-
-
-$title = 'Change';
-$account = $user->uid;
-_astadmin_printtheme_best($output, $account, $title);
+	$title = t('Change').' '.$user->uid;
+	astcore_printtheme($output, $title);
 }
 
 
@@ -1903,30 +1869,6 @@ function astadmin_credit_form($account) {
 }
 
 
-// END CREDIT LIMIT STUFF
-// END CREDIT LIMIT STUFF
-
-
-
-
-
-
-
-
-
-
-// START COMMON FUNCTIONS
-
-
-function _astadmin_printtheme_best($page_content, $account, $title) {
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-
-  $output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-  // $output .= '<div class="astentry">' . $page_content . "</div>\n";
-  print theme("page", $output);
-}
-
-
 function astadmin_confirm_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto, $item) {
 	global $user;
 	$cid = arg(2);
@@ -1952,32 +1894,6 @@ function astadmin_confirm_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $got
 	//return form($output);
 	$group = form($output);
 
-$title = t('Remove ').$item;
-$account = $user->uid;
-_astadmin_printtheme_best($group, $account, $title);
-//return $output;
+	$title = t('Remove').' '.$item.' '.$user->uid;
+	astcore_printtheme($output, $title);
 }
-
-/*
-function array_push2(&$array,$object,$key=null){
-   $keys = array_keys($array);
-   rsort($keys);
-   $newkey = ($key==null)?$keys[0]+1:$key;
-   $array[$newkey] = $object;
-   return $newkey;
-}
-
-function myRange($low,$high,$step=1)
-{
-$ranArray = range($low,$high);
-$step--;
-$keys = count($ranArray);
-   for($i=0;$i<$keys;$i++)
-   {
-   $retArray[] = $ranArray[$i];
-   $i = $i + $step;
-   }
-return $retArray;
-}
-*/
-// END COMMON FUNCTIONS

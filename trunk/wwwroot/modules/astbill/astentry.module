@@ -261,7 +261,7 @@ function astentry_form($edit = null) {
   if ($edit['tech'] == "H323") {$tech = 3;} 
 
 
-	$sql = db_query("select hid, hardware from asthardwareid");
+	$sql = db_query("select hid, hardware from asthardwaretype where active = 1");
 
 	$hardwareidlist = array();
 
