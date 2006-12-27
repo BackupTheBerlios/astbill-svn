@@ -143,10 +143,8 @@ function _astsettings_all() {
 //$brand = db_fetch_object($sql);
 
 
-$title = 'Settings';
-
-
-_astsettings_printtheme_best($output, $title);
+	$title = 'Settings';
+	astcore_printtheme($output, $title);
 }
 
 
@@ -199,8 +197,7 @@ function page_astsettings_countrylist() {
 
 	$title = t("Country List");
 
-
-	_astsettings_printtheme_best($output, $title);	
+	astcore_printtheme($output, $title);
 }
 
 
@@ -295,8 +292,7 @@ function page_astsettings_createbatch() {
 	
 	$title = t("Generate Account Pin's");
 
-
-_astsettings_printtheme_best($output, $title);
+	astcore_printtheme($output, $title);
 }
 
 // FORM STUFF
@@ -1103,8 +1099,7 @@ function page_astsettings_batch() {
 
 
 	$title = 'Batch Activation';
-
-_astsettings_printtheme_best($output, $title);
+	astcore_printtheme($output, $title);
 }
 
 
@@ -1173,7 +1168,7 @@ if (empty($arg3)) {
     array('data' => t('Operations'))
   );
 
-$sql = "SELECT name, currency, language, publishednum, did, markup, billincrement, connectcharge, status FROM astplans". tablesort_sql($header);
+$sql = "SELECT name, currency, language, publishednum, did, markup, billincrement, connectcharge, active status FROM astplans". tablesort_sql($header);
 $result = pager_query($sql, $maxline);
 
   
@@ -1203,28 +1198,14 @@ $result = pager_query($sql, $maxline);
 
   $output .= (count($rows) == 0) ? t('No Peers.') : theme('table', $header, $rows);
   $title = t('View');
-  
-  _astplans_printtheme_best($output, $title);
+
+  astcore_printtheme($output, $title);
 } else {
 
-
-if ($arg3 == 'edit') {$title = t('Edit');}
-if ($arg3 == 'create') {$title = t('Create');}
-
-_astsettings_printtheme_best($output, $title);
+	if ($arg3 == 'edit') {$title = t('Edit');}
+	if ($arg3 == 'create') {$title = t('Create');}
+	astcore_printtheme($output, $title);
 }
-}
-
-function _astplans_printtheme_best($page_content, $title) {
-	global $user;
-$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-
-$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-
-$output .= '<div class="nodecontent">';
-$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/settings/plans/create/').'">'.t('Create new').'</A></B><BR>';
-
-  print theme("page", $output);
 }
 
 //END BRAND STUFF
@@ -1395,9 +1376,8 @@ function page_astsettings_manager() {
 	
 
 
-$title = t('Manager');
-
-_astsettings_printtheme_best($output, $title);
+	$title = t('Manager');
+	astcore_printtheme($output, $title);
 }
 
 function page_astsettings_manager_writeconf() {
@@ -1770,23 +1750,22 @@ function page_astsettings_anicli() {
 
 	  if (arg(3) == 'edit') {
 		  $title = t('Edit');
-		  _astsettings_printtheme_best($output, $title);
+		  astcore_printtheme($output, $title);
 	  } 
 	  
 	  if (arg(3) == 'delete') {
 		  $title = t('Delete');
-		  _astsettings_printtheme_best($output, $title);
+		  astcore_printtheme($output, $title);
 	  }
 	  
 	  if (arg(3) == 'create') {
 		  $title = t('Create');
-		  _astsettings_printtheme_best($output, $title);
-	  }
+		  astcore_printtheme($output, $title);
 	  
 	  if (empty($title)) {
 		  $title = t('View');
-		  _astsettings_anicli_printtheme_best($output, $title);
-	  }
+		  astcore_printtheme($output, $title);
+}
 }
 
   
@@ -1947,27 +1926,3 @@ function page_astsettings_anicli_save($edit) {
 
 // END ANICLI
 
-
-
-// ##########################################################################################################
-
-function _astsettings_anicli_printtheme_best($page_content, $title) {
-	$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-
-	$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-
-	$output .= '<div class="nodecontent">';
-	$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/settings/anicli/create/').'">'.t('Create new').'</A></B><BR>';
-	print theme("page", $output);
-}
-
-function _astsettings_printtheme_best($page_content, $title) {
-	$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
-
-	$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
-	// $output .= '<div class="astentry">' . $page_content . "</div>\n";
-	print theme("page", $output);
-}
-
-
-// ##########################################################################################################

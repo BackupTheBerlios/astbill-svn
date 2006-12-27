@@ -820,7 +820,7 @@ function _astpriceedit_all() {
   }
   
 
-_astroute_printtheme_best($output, $title);
+	astcore_printtheme($output, $title);
 }
 
 
@@ -870,7 +870,7 @@ function _astpriceedit_export() {
 
 		$output = form($group);
 		$title = 'Export';
-		_astroute_printtheme_best($output, $title);
+  		astcore_printtheme($output, $title);
   }
 
 
@@ -1006,8 +1006,7 @@ function _astpriceedit_import() {
 	if (empty($title)) {
 	$title = 'Import';
 	}	
-	
-	_astroute_printtheme_best($output, $title);
+	astcore_printtheme($output, $title);
 }
 
 

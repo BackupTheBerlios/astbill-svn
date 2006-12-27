@@ -53,13 +53,115 @@ Audit system på Call forwarding. We need to track who logged in and put what num
 CROSS TABS
 http://dev.mysql.com/tech-resources/articles/wizard/page4.html
 
-Talent is to hit a nail that nobody else can hit.
-Genius is to hit a nail that nobody else can see.
- 
 http://www.onlamp.com/pub/a/onlamp/2006/04/20/advanced-mysql-replication.html
 
 http://www.mysql.com/news-and-events/users-conference/2003/session.html#Session:TamingtheDistributedDatabaseProblem
 http://datacharmer.org/presentations/froscon2006/img5.html
 
 http://www.softwaresecretweapons.com/jspwiki/Wiki.jsp?page=HowToMonitorMYSQLReplicationInRealTimeWithSNMP
+
+    eirik.glance.net
+    
+    85.19.198.26
+    
+    Telsys ipFax v6.3
+    
+    Fax File Cabinet
+    http://www.wcom.se/
+    
+    Leading provider of global internet fax services
+    
+    25 pr bruke. Vi kan få 45,- pr måned
+    
+   Medieamp SS7
+   
+   
+   http://www.sisd.com/freeside/
+http://www.sisd.com/mediawiki/index.php/Freeside:1.7:Documentation:Administration:VoIP
+Configuraiton | Provisioning, services and packages | 
+    *  Pick a "Rate plan" from above.
+    * Make sure to set a "Recurring fee frequency"
+    * Don't change the "Region rating method" 
+    
+http://www.simian.ca/index/news-app/story.25/title.simian-systems-announces-siteinvoice-open-source-invoice-manager/menu.no/sec./home.
+
+http://www.sitelliteforge.com/inc/app/siteforge/pix/siteinvoice/03-create-invoice.png
+http://www.sisd.com/freeside/commercial.html#servers
+
+http://www.sisd.com/mediawiki/index.php/Freeside:1.7:Documentation:Developer:Price_Plans
+
+http://www.citrusdb.org/about.html
+
+    * http://www.asterisk2billing.org/ 
+    
+http://www.trabas.com/opensource/largescreen/VoIPUsage.gif
+http://www.trabas.com/opensource/screen.html
+
+PortaBilling_Admin_Guide_MR13.pdf - Page 29 -31 Destinations
+http://www.cpan.org/modules/by-module/Business/
+
+           
+
+) find the product & business model that maximizes that natural rate, 
+and 2) execute on removing whatever are the natural limiters to that 
+growth rate. Limiters are the scalable part of that natural growth rate. 
+For example, once you have the right product and know the right sales 
+pitch, the limiter may be finding the right people to hear the pitch 
+(e.g. sales leads). Or, if you have the right product, right sales pitch, 
+and know the target customers, the limiter may be how fast you can hire 
+and train the sales people to deliver the right pitch. 
+The limiters in software business are typically leads or 
+sales people. The limiters in a services business are typically 
+the ability to deliver on the services (hiring and training the 
+services delivery people).
+http://lmaugustin.typepad.com/
+
+Every business is different, but returning to our theme of Open Source, I have some observations common to many Open Source businesses on revenue growth rates. First, most such businesses use Open Source as a lead generation and demand creation mechanism. They use Open Source to create customer pull for their commercial offering, whether it’s a service and support offering, or a commercial product offering. This is in contrast to a push model which relies on a sales force (or channel) to introduce (“push”) your software to customers. Push and pull models have very different operating characteristics; that is, they have very different cost structures and revenue growth profiles.
+
+I believe that one of the benefits of Open Source models is the ability to create customer pull at low cost. (The changing environment around software development and the software marketplace that has enabled this is a topic I hope to spend some time discussing in the near future.) However, along with that pull model is a delayed (or deferred) revenue growth ramp. Pull in an Open Source model is typically created through widespread adoption and usage of your software. Once the software is widely used, natural customer segments begin to appear. For example, customers that want insurance, indemnification, support, enhanced features, etc. But all those requests from users (pull) depend on their adoption of the software. So the initial focus of an Open source model needs to be customer adoption. And what drives customer adoption of Open source software? A quality product.
+
+
+Printing Welcome Letters
+Click on the Tools icon and select the Welcome Letters icon. 
+This will print a simple welcome letter for new customers that can be mailed. 
+It has a summary of the services they signed up for included. 
+    
+New Billing Types require:
+# Frequency: This is the frequency in months that this billing type is billed. For example a billing type of Yearly Invoice would have a frequency of 12, where a billing type of Monthly Invoice would have a frequency of 1. One time billing types for free accounts or single purchase types would have a frequency of 0
+# Method: This is the method category for the billing type, creditcard, invoice, prepay, or free. This method determins what billing tool will create the bill for this billing type. 
+
+Frequency: Services and Billing Types both have frequencies. Frequencies are numbers of months that the service or account is billed for at one time. Each service has a billing frequency. Lets say you want to offer a service for 4.95 per month, then you make a new service with a price of 4.95 and a frequency of 1. If the customer has a billing type with a frequency of 3, it would multiply that monthly cost times 3 and get the resulting cost for that quarterly invoice, 14.85. If the customer billing type is monthly then it will just have 1x1 and give you 4.95 as the cost for that billing type. You can use this to create services that are billed at more than monthly frequencies by making the frequency for example 6. Then that service and price will be billed every 6 months.
+http://www.citrusdb.org/help.html
+
+
+How to Hire
+http://www.bestpractical.com/about/jobs.html
+
+
+- the rating engine: processing the usage 
+- the invoicing engine: month-end processing 
+
+AstBill - Billing, CRM and Revenue Management software for Radius, Asterisk and VOIP
+
+
+Talent is to hit a nail that nobody else can hit.
+Genius is to hit a nail that nobody else can see.
+
+MySQL CEO:
+There are so many tempting business models and products, 
+but to really grow fast there are just three main rules: Focus, Focus, and Focus
+
+
+http://www.pentaho.com/
+
+Documentation issues in open source
+http://www.oss-watch.ac.uk/resources/documentation.xml
+
+Transactions
+http://dev.mysql.com/books/mysqlpress/mysql-tutorial/ch10.html
+
+start transaction;
+update account set balance = balance - 1000 where number = 2;
+update account set balance = balance + 1000 where number = 1;
+commit;
 

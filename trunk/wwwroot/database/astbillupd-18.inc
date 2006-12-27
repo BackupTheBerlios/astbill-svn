@@ -1393,6 +1393,31 @@ ALTER TABLE `asthardware` ADD `reglifetime` tinyint(4) NOT NULL default '90';
 ALTER TABLE `asthardwaretype` ADD `templatefile` varchar(128) NOT NULL default '';
 ALTER TABLE `astpayment` ADD `generalledger` varchar(255) NOT NULL DEFAULT '' AFTER `accountcode`;
 
+ALTER TABLE `astreport` ADD `label1` varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE `astreport` ADD `label2` varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE `astreport` ADD `label3` varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE `astreport` ADD `label4` varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE `astreport` ADD `label5` varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE `astreport` ADD `label6` varchar(128) NOT NULL DEFAULT '';
+
+ALTER TABLE `astreport` ADD `dropdownsql1` varchar(256) NOT NULL DEFAULT '';
+ALTER TABLE `astreport` ADD `dropdownsql2` varchar(256) NOT NULL DEFAULT '';
+ALTER TABLE `astreport` ADD `dropdownsql3` varchar(256) NOT NULL DEFAULT '';
+ALTER TABLE `astreport` ADD `dropdownsql4` varchar(256) NOT NULL DEFAULT '';
+ALTER TABLE `astreport` ADD `dropdownsql5` varchar(256) NOT NULL DEFAULT '';
+ALTER TABLE `astreport` ADD `dropdownsql6` varchar(256) NOT NULL DEFAULT '';
+ALTER TABLE `astpartner` ADD `partnerclass` varchar(128) NOT NULL DEFAULT '' AFTER extsource;
+
+ALTER TABLE `astpartner` CHANGE `active` `active` tinyint(1) NOT NULL default '1';
+ALTER TABLE `astpartner` ADD INDEX ( `partnerclass` ) ;
+
+ALTER TABLE `astplans` CHANGE `status` `active` tinyint(1) NOT NULL default '1';
+ALTER TABLE `astinvoice` ADD `fromdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `period`;
+ALTER TABLE `astinvoice` ADD `todate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `fromdate`;
+
+ALTER TABLE `astplans` ADD `intconnectcharge` decimal(12,4) NOT NULL default '0.0000' AFTER `connectcharge`;
+
+
 
 */
 
