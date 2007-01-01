@@ -96,6 +96,11 @@ function astpartnerglobal_menu($may_cache) {
     'access' => $access2,
     'type' => MENU_CALLBACK);
 
+	$items[] = array('path' => 'astglobal/msn/change', 'title' => t('Edit MSN'),
+	'callback' => 'astpartnerglobal_msn_create',
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
+
 	$items[] = array('path' => 'astglobal/msn/create', 'title' => t('Create New MSN/DID Numbers'),
 	'callback' => 'astpartnerglobal_msn_create',
 	'access' => $access2,
@@ -375,15 +380,19 @@ $SQL = "SELECT did.uid,did.did,did.acgroup,did.forwardto,did.active, did.portind
   $result = pager_query($SQL, $maxline);
   
   while ($res = db_fetch_object($result)) {
+	if ($res>active == 1){ $imagename = "green_dott1.gif";
+	} else { $imagename = "red_dott1.gif"; }
+
 	$rows[] = array(
 		$res->uid."&nbsp;",
 		$res->did."&nbsp;",
 		$res->acgroup."&nbsp;",
 		$res->forwardto."&nbsp;",
-		$res->active."&nbsp;",
+		array('data' => "<IMG BORDER=\"0\" src=\"files/astar/$imagename\">", 'align' => 'center'),
+	//	$res->active."&nbsp;",
 		$res->portindate."&nbsp;",
 		$res->zipcode,
-		'<A HREF="'.url('astglobal/msn/change/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<A HREF="'.url('astglobal/msn/change/'.$res->did.'/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
 		'<A HREF="'.url('astglobal/msn/remove/'.$res->did.'/'.$res->pid).'">Remove</A>',
 		$res->batchno,
 		$res->remarks,
@@ -1045,6 +1054,7 @@ function astpartnerglobal_msn_create_save($edit) {
 
 function astpartnerglobal_msn_validate($edit) {
   $myerror = 1;
+  if (arg(2) == 'change') { return 0; }
   $errors = array();
    	if (empty($edit['nomsn'])) {
 		$errors['nomsn'] = t('Must Be Numeric');
@@ -1071,7 +1081,7 @@ function astpartnerglobal_msn_validate($edit) {
 function astpartnerglobal_msn_create() {
   $edit = $_POST["edit"];
   $op = $_POST["op"];
-  $drupal_goto = "astglobal/msn/".arg(3);
+  $drupal_goto = "astglobal/msn/".arg(4);
 
   switch($op) {
 		case t('Create'):
@@ -1082,13 +1092,31 @@ function astpartnerglobal_msn_create() {
 			drupal_goto($drupal_goto);
 		  }
 		  break;
+		 case t('Save MSN'):
+		//  if (astpartnerglobal_msn_validate($edit)) {
+			astpartnerglobal_msn_change_save($edit);
+			drupal_goto($drupal_goto);
+		 // } else {
+		//	drupal_goto($drupal_goto);
+		 // }
+		  break;
 		case t('Back'):
 			drupal_goto($drupal_goto);
 		default:
-		    $output = astpartnerglobal_msn_create_form($edit);
+		 //   $output = astpartnerglobal_msn_create_form($edit);
   }
-//	$title = "Create New MSN/DID Numbers";
-	$title = "MSN/DID";
+
+
+  	if (arg(2) == 'change') {
+		$output = astpartnerglobal_msn_change_form($edit);
+ 	    $title = t('Edit MSN'.': '.arg(3));
+	} elseif(arg(2) == 'create') {
+		$output = astpartnerglobal_msn_create_form($edit);
+	    $title = t('MSN/DID');
+	} else {
+		// $output .= astccorders_users_list($edit, $value);
+	}
+
 	astcore_printtheme($output, $title);	
 }
 
@@ -1178,3 +1206,42 @@ function astpartnerglobal_create_msn($partnerid,$frommsn,$nomsn) {
 	return $resuid;
 
 }
+
+
+///////////// End MSN Change Form /////////////////////////////////////////////////////////////
+
+function astpartnerglobal_msn_change_form($edit) {
+	global $user;
+	global $db_prefix; 
+    $op = $_POST["op"];
+	$did = arg(3);
+	if ((!is_numeric($did)) or ($did == '')) {
+  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return; 
+	}
+	$SQL = "SELECT forwardto,remarks FROM astacdid WHERE did = '%s'";
+	$resq = db_query($SQL, $did);
+	$res = db_fetch_object($resq);
+	$group .= form_textfield(t('Forwardto Account'), 'forwardto', $res->forwardto, 30, 30);
+	$group .= form_textfield(t('Remarks'), 'remarks', $res->remarks, 60, 30);
+
+	$group .= form_submit(t('Save MSN'));
+	$group .= form_submit(t('Back'));
+	return form($group);
+}
+
+function astpartnerglobal_msn_change_save($edit) {
+	global $user;
+	global $db_prefix; 
+	$did = arg(3);
+	if ((!is_numeric($did)) or ($did == '')) {
+  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return; 
+	}
+	$SQL = "UPDATE astacdid SET forwardto = '%s',remarks = '%s' WHERE did = '%s'";
+	$resq = db_query($SQL, trim($edit['forwardto']),trim($edit['remarks']),$did);
+
+	drupal_set_message(t('Updated MSN').' '.$did);
+} // end Save function
