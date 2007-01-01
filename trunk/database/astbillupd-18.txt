@@ -1414,7 +1414,22 @@ ALTER TABLE `astinvoice` ADD `fromdate` datetime NOT NULL DEFAULT '0000-00-00 00
 ALTER TABLE `astinvoice` ADD `todate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `fromdate`;
 
 ALTER TABLE `astplans` ADD `intconnectcharge` decimal(12,4) NOT NULL default '0.0000' AFTER `connectcharge`;
+alter table astinvoice drop payment_method;
+alter table astinvoice drop is_recurring
+ALTER TABLE astinvoice ADD reminder tinyint(2) NOT NULL default '0' AFTER payment_status;
+ALTER TABLE astinvoice ADD reminderemail tinyint(2) NOT NULL default '0' AFTER reminder;
 
+INSERT INTO `astsystem` ( `serverid` , `name` , `value` , `comment` , `viewstatus` , `timestamp` )
+VALUES (
+'DEF', 'pricelistfooter', 'Rates are valid 24 hrs\\nAll amounts are in NOK\\nRates apply worldwide and exclude VAT\\nAll rates are subject to change without notice\\nRates and availability is subject to change without notice\\nWe do not accept liability for any errors or omissions.', 'This will be shown as a footer at the end of the PDF Price Lists', 'E', NOW( )
+);
+
+alter table astparcontact drop uid;
+alter table astparcontact drop memberof;
+alter table astparcontact drop status;
+ALTER TABLE astparcontact ADD `date_created` datetime NOT NULL default '0000-00-00 00:00:00' AFTER description;
+ALTER TABLE astparcontact ADD `active` tinyint(1) NOT NULL default '1' AFTER description;
+ALTER TABLE astparcontact CHANGE description remarks varchar(15360) NOT NULL default '';
 
 
 */
