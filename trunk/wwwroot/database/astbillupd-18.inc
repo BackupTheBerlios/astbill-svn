@@ -960,47 +960,45 @@ price from astcdr where dialstatus like 'ANSWER%' and answeredtime <> 0 and trun
   return $ret;
 }
 
-/* Below is not in use yet.
-TODO: Make Index and Primary key - Add data to AstBill Demo
-CREATE TABLE `astpricelistcountry` (
-  `countrycode` int(11) default NULL,
-  `name` varchar(128) default NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+function astbill_update_049() {
+  $ret = array();
 
-ALTER TABLE `aststatus` ADD `voxtech` VARCHAR( 128 ) AFTER `servertech` ;
-ALTER TABLE `astaccount` ADD `shortnumber` VARCHAR( 128 ) AFTER `serverid` ;
+  $ret[] = update_sql("");
 
-ALTER TABLE `astacname` DROP `shortnumber`,
-ALTER TABLE `astaccount` ADD UNIQUE (`serverid` ,`shortnumber`);
-ALTER TABLE `aststatus` ADD `dial9` VARCHAR( 256 ) AFTER `mysqluser` ;
-ALTER TABLE `aststatus` ADD `mysqluser2` VARCHAR( 128 ) AFTER `mysqluser` ;
-ALTER TABLE `astemailtext` ADD `partnerid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `EmailText` ;
-
-CREATE TABLE `astlogsmsbatch` (
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `voxtech` VARCHAR( 128 ) AFTER `servertech`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `shortnumber` VARCHAR( 128 ) AFTER `serverid` ");
+  $ret[] = update_sql("ALTER TABLE `astacname` DROP `shortnumber`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD UNIQUE (`serverid` ,`shortnumber`)");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `dial9` VARCHAR( 256 ) AFTER `mysqluser`");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `mysqluser2` VARCHAR( 128 ) AFTER `mysqluser`");
+  $ret[] = update_sql("ALTER TABLE `astemailtext` ADD `partnerid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `EmailText`");
+  $ret[] = update_sql("CREATE TABLE `astlogsmsbatch` (
   `batchid` int(10) NOT NULL auto_increment,
   `pdudata` text(30720) default NULL,
   `remarks` varchar(1024) default NULL,  
   `processed_date` DATETIME default NULL,
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`batchid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  $ret[] = update_sql("ALTER TABLE `astlogsms` ADD INDEX `fromnr` ( `fromnr` )");
+  $ret[] = update_sql("ALTER TABLE `astacgroup` CHANGE `tenantid` `partnerid` INT( 11 ) NULL DEFAULT '0'");
+  $ret[] = update_sql("ALTER TABLE `astprospect2` CHANGE `tid` `partnerid` INT( 11 ) NULL DEFAULT '0'");
+  $ret[] = update_sql("ALTER TABLE `astemailtext` ADD `db_prefix` VARCHAR( 40 ) NOT NULL FIRST ");
+  $ret[] = update_sql("ALTER TABLE `astemailtext` DROP PRIMARY KEY , ADD PRIMARY KEY ( `db_prefix` , `partnerid` , `EmailText` ) ");
+  $ret[] = update_sql("ALTER TABLE `astpartner` ADD `followuptype` VARCHAR( 100 ) AFTER `leadsource` ;");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` CHANGE `ptype` `ptype` VARCHAR( 40 ) NULL DEFAULT 'Normal'");
+  $ret[] = update_sql("ALTER TABLE `astacdid` ADD INDEX `uid` ( `uid` ) ");
+  $ret[] = update_sql("ALTER TABLE `astacdid` ADD INDEX `did` ( `did` ) ");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `layout` VARCHAR( 40 ) AFTER `workflow` ;");
+  $ret[] = update_sql("ALTER TABLE `astlogsms` ADD INDEX `date_created` ( `date_created` ) ");
+  $ret[] = update_sql("ALTER TABLE `astprospect` ADD INDEX `cust_status_mobile` ( `customerstatus` , `mobile` ) ");
 
-ALTER TABLE `astlogsms` ADD INDEX `fromnr` ( `fromnr` );
-ALTER TABLE `astacgroup` CHANGE `tenantid` `partnerid` INT( 11 ) NULL DEFAULT '0'
-ALTER TABLE `astprospect2` CHANGE `tid` `partnerid` INT( 11 ) NULL DEFAULT '0'
-ALTER TABLE `astemailtext` ADD `db_prefix` VARCHAR( 40 ) NOT NULL FIRST 
-ALTER TABLE `astemailtext` DROP PRIMARY KEY , ADD PRIMARY KEY ( `db_prefix` , `partnerid` , `EmailText` ) 
-ALTER TABLE `astpartner` ADD `followuptype` VARCHAR( 100 ) AFTER `leadsource` ;
-ALTER TABLE `astinvoiceline` CHANGE `ptype` `ptype` VARCHAR( 40 ) NULL DEFAULT 'Normal'
+  return $ret;
+}
 
-ALTER TABLE `astacdid` ADD INDEX `uid` ( `uid` ) 
-ALTER TABLE `astacdid` ADD INDEX `did` ( `did` ) 
-
-ALTER TABLE `astinvoice` ADD `layout` VARCHAR( 40 ) AFTER `workflow` ;
-ALTER TABLE `astlogsms` ADD INDEX `date_created` ( `date_created` ) 
-ALTER TABLE `astprospect` ADD INDEX `cust_status_mobile` ( `customerstatus` , `mobile` ) 
-
-CREATE TABLE `astpaymentbatch` (
+function astbill_update_050() {
+  $ret = array();
+    $ret[] = update_sql("CREATE TABLE `astpaymentbatch` (
   `batchid` int(10) NOT NULL auto_increment,
   `bankaccount` varchar(100) default NULL,
   `date_paid` varchar(50) default NULL,
@@ -1010,29 +1008,26 @@ CREATE TABLE `astpaymentbatch` (
   `remarks` varchar(1024) default NULL,
   `date_created` timestamp NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`batchid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-         
-ALTER TABLE `astpayment` ADD `batchid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `paytype` ;
-ALTER TABLE `astpayment` ADD `kid` VARCHAR( 128 ) AFTER `batchid` ;
-ALTER TABLE `astpayment` ADD `kidbank` VARCHAR( 128 ) AFTER `kid` ;
-ALTER TABLE `astpayment` ADD `payment_status` VARCHAR( 255 ) AFTER `kidbank` ;
-ALTER TABLE `astaccount` ADD `trunkpath` VARCHAR( 128 ) AFTER `shortnumber` ;
-ALTER TABLE `astacdid` ADD `zipcode` VARCHAR( 128 ) NULL AFTER `batchno` ;
-ALTER TABLE `astlogsms` ADD `remarks` VARCHAR( 256 ) AFTER `invoiceno` ;
-ALTER TABLE `astpartner` ADD `didnumberserie` VARCHAR( 256 ) DEFAULT ' ' NOT NULL AFTER `phonework` ;
-ALTER TABLE `astpartner` ADD `companyno` VARCHAR( 128 ) AFTER `birthdate` ,
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("ALTER TABLE `astpayment` ADD `batchid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `paytype`");
+    $ret[] = update_sql("ALTER TABLE `astpayment` ADD `kid` VARCHAR( 128 ) AFTER `batchid`");
+    $ret[] = update_sql("ALTER TABLE `astpayment` ADD `kidbank` VARCHAR( 128 ) AFTER `kid`");
+    $ret[] = update_sql("ALTER TABLE `astpayment` ADD `payment_status` VARCHAR( 255 ) AFTER `kidbank`");
+    $ret[] = update_sql("ALTER TABLE `astaccount` ADD `trunkpath` VARCHAR( 128 ) AFTER `shortnumber`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `zipcode` VARCHAR( 128 ) NULL AFTER `batchno`");
+    $ret[] = update_sql("ALTER TABLE `astlogsms` ADD `remarks` VARCHAR( 256 ) AFTER `invoiceno` ");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `didnumberserie` VARCHAR( 256 ) DEFAULT ' ' NOT NULL AFTER `phonework`");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `companyno` VARCHAR( 128 ) AFTER `birthdate` ,
 ADD `valuecode` VARCHAR( 128 ) AFTER `companyno` ,
-ADD `ordercode` VARCHAR( 128 ) AFTER `valuecode` ;
-
-CREATE TABLE `astsumpartner` (
+ADD `ordercode` VARCHAR( 128 ) AFTER `valuecode` ");
+    $ret[] = update_sql("CREATE TABLE `astsumpartner` (
   `pid` int(10) NOT NULL default '0',
   `sumusers` int(10) NOT NULL default '0',
   `sumaccounts` int(10) NOT NULL default '0',
   `sumdid` int(10) NOT NULL default '0',
   PRIMARY KEY  (`pid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE `astinvrecurr` (
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("CREATE TABLE `astinvrecurr` (
   `recurrno` int(11) unsigned NOT NULL auto_increment,
   `db_prefix` varchar(40) NOT NULL default '',
   `uid_in` varchar(128) NOT NULL default '',
@@ -1050,39 +1045,40 @@ CREATE TABLE `astinvrecurr` (
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`recurrno`),
   KEY `partnerid` (`partnerid`,`recurrno`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-  
-ALTER TABLE `astinvrecurr` ADD `invoiceid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `frequency` ;
-ALTER TABLE `astinvoice` ADD `inv_name` varchar(128) NOT NULL DEFAULT '' AFTER `kid` ;
-ALTER TABLE `astinvoice` ADD `inv_address1` varchar(128) DEFAULT '' NOT NULL AFTER `inv_company` ;
-ALTER TABLE `astinvoice` ADD `inv_address2` varchar(128) DEFAULT '' NOT NULL AFTER `inv_address1` ;
-ALTER TABLE `astinvoice` ADD `inv_zip` varchar(64) DEFAULT '' NOT NULL AFTER `inv_address2` ;
-ALTER TABLE `astinvoice` ADD `inv_city` varchar(128) DEFAULT '' NOT NULL AFTER `inv_zip` ;
-ALTER TABLE `astinvoice` CHANGE `invoiceno` `invoiceno` INT( 11 ) UNSIGNED NOT NULL DEFAULT '0';
-ALTER TABLE `astinvoice` ADD `invoiceid` INT(11) NOT NULL FIRST ;
-ALTER TABLE `astinvoice` DROP PRIMARY KEY ;
-ALTER TABLE `astinvoice` ADD PRIMARY KEY (`invoiceid`);
-ALTER TABLE `astinvoice` CHANGE `invoiceid` `invoiceid` INT(11) UNSIGNED NOT NULL;
-ALTER TABLE `astinvoice` ADD `partnerid` INT(11) DEFAULT '0' NOT NULL AFTER `uid` ;
-ALTER TABLE `astinvoice` CHANGE `invoiceid` `invoiceid` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT ;
-ALTER TABLE `astcdr` CHANGE `invoiceno` `invoiceid` INT( 11 ) UNSIGNED NULL DEFAULT NULL ;
-ALTER TABLE `astinvoice` CHANGE `workflow` `workflow` VARCHAR(40) NOT NULL DEFAULT '1';
-ALTER TABLE `astinvoiceline` ADD `invoiceid` INT(11) UNSIGNED NOT NULL DEFAULT '0' FIRST ;
-ALTER TABLE `astinvoiceline` ADD INDEX ( `invoiceid` , `lineno` ); 
-ALTER TABLE `astinvoice` ADD `inv_firstname` VARCHAR(128) DEFAULT '' NOT NULL AFTER `inv_name` ,
-ADD `inv_lastname` VARCHAR(128) DEFAULT '' NOT NULL AFTER `inv_firstname` ;
-ALTER TABLE `astinvrecurr` ADD `rateplanint` VARCHAR(40) DEFAULT '' NOT NULL AFTER `rateplan` ;
-
-CREATE TABLE `astsumaccount` (
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("ALTER TABLE `astinvrecurr` ADD `invoiceid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `frequency`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_name` varchar(128) NOT NULL DEFAULT '' AFTER `kid`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_address1` varchar(128) DEFAULT '' NOT NULL AFTER `inv_company` ");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_address2` varchar(128) DEFAULT '' NOT NULL AFTER `inv_address1`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_zip` varchar(64) DEFAULT '' NOT NULL AFTER `inv_address2`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_city` varchar(128) DEFAULT '' NOT NULL AFTER `inv_zip` ");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `invoiceno` `invoiceno` INT( 11 ) UNSIGNED NOT NULL DEFAULT '0'");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `invoiceid` INT(11) NOT NULL FIRST");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` DROP PRIMARY KEY ");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD PRIMARY KEY (`invoiceid`)");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `invoiceid` `invoiceid` INT(11) UNSIGNED NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `partnerid` INT(11) DEFAULT '0' NOT NULL AFTER `uid`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `invoiceid` `invoiceid` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT");
+    $ret[] = update_sql("ALTER TABLE `astcdr` CHANGE `invoiceno` `invoiceid` INT( 11 ) UNSIGNED NULL DEFAULT NULL ");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `workflow` `workflow` VARCHAR(40) NOT NULL DEFAULT '1'");
+    $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `invoiceid` INT(11) UNSIGNED NOT NULL DEFAULT '0' FIRST");
+    $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD INDEX ( `invoiceid` , `lineno` )");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_firstname` VARCHAR(128) DEFAULT '' NOT NULL AFTER `inv_name` ,
+ADD `inv_lastname` VARCHAR(128) DEFAULT '' NOT NULL AFTER `inv_firstname`");
+  return $ret;
+}
+function astbill_update_051() {
+  $ret = array();
+    $ret[] = update_sql("ALTER TABLE `astinvrecurr` ADD `rateplanint` VARCHAR(40) DEFAULT '' NOT NULL AFTER `rateplan`");
+    $ret[] = update_sql("CREATE TABLE `astsumaccount` (
   `accountcode` varchar(40) NOT NULL,
   `countcalls` int(10) NOT NULL default '0',
   `sumcost` decimal(10,2) NOT NULL default '0.00',  
   `sumpaid` decimal(10,2) NOT NULL default '0.00',  
   PRIMARY KEY  (`accountcode`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-DROP VIEW IF EXISTS asvcallrate;
-CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcallrate` AS 
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("DROP VIEW IF EXISTS asvcallrate");
+    $ret[] = update_sql("CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcallrate` AS 
 select id, `uniqueid`, invoiceid,callednum, date_created date, dayofweek(date_created) day, CASE 
 WHEN callednum not like '47%'  
 THEN 4 /* This is not Norway */
@@ -1092,19 +1088,12 @@ WHEN (time(date_created) < '07:00:00' or time(date_created) > '16:00:00' )  /* T
 THEN 2 /* This is evening */
 ELSE 1 /* This is daytime */
 END callrate
-from astcdr;
-
-
-ALTER TABLE `astcdr` ADD `callstatus` TINYINT( 3 ) DEFAULT '0' NOT NULL AFTER `status` ;
-ALTER TABLE `astcdr` DROP INDEX `accountcode` ,
-ADD INDEX `accountcode` ( `accountcode` , `callstatus` , `date_created` );
-ALTER TABLE `astcdr` ADD INDEX ( `callstatus` , `accountcode` , `date_created` ) 
-
-update astcdr set `callstatus` = 1
-WHERE `astcdr`.`dialstatus` like 'ANSWER%' and `astcdr`.`answeredtime` <> 0 and 
-`astcdr`.`trunk` <> 'Local';
-
-CREATE TABLE `astorderip` (
+from astcdr");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `callstatus` TINYINT( 3 ) DEFAULT '0' NOT NULL AFTER `status`");
+    $ret[] = update_sql("ALTER TABLE `astcdr` DROP INDEX `accountcode`");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX ( `callstatus` , `accountcode` , `date_created`)");
+    $ret[] = update_sql("update astcdr set `callstatus` = 1 WHERE `astcdr`.`dialstatus` like 'ANSWER%' and `astcdr`.`answeredtime` <> 0 and `astcdr`.`trunk` <> 'Local'");
+    $ret[] = update_sql("CREATE TABLE `astorderip` (
   `oid` int(10) NOT NULL auto_increment,
   `orderno` varchar(40) NOT NULL default '',
   `pid` int(10) NOT NULL default '0',
@@ -1133,10 +1122,8 @@ CREATE TABLE `astorderip` (
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`oid`),
   KEY `orderno` (`orderno`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=3000;
-  
-
-CREATE TABLE `astlogdb` (
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=3000");
+    $ret[] = update_sql("CREATE TABLE `astlogdb` (
   `logid` int(10) NOT NULL auto_increment,
   `tablename` varchar(40) NOT NULL default '',
   `prikey` varchar(40) NOT NULL default '',
@@ -1146,20 +1133,15 @@ CREATE TABLE `astlogdb` (
   `sql` varchar(1028) NOT NULL default '',
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`logid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-ALTER TABLE `astacgroup` ADD `lineno` INT DEFAULT '0' NOT NULL AFTER `active` ; 
-
-ALTER TABLE `astorderip` ADD `workflow` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `active` ,
-ADD `assigned_to_uid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `workflow` ,
-ADD `assigned_to_prefix` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `assigned_to_uid` ;
-ALTER TABLE `astlogdb` ADD `workflow` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `uid` ;
-
-ALTER TABLE `astorderip` ADD `leasing_ok` TINYINT( 1 ) DEFAULT '0' NOT NULL AFTER `customers_order` ;
-ALTER TABLE `astpartner` CHANGE `comment` `comment` VARCHAR( 15360 ) NOT NULL DEFAULT '';
-ALTER TABLE `astorderip` CHANGE `remarks` `remarks` VARCHAR( 15360 ) NOT NULL DEFAULT '';
-
-CREATE TABLE `astsumorderip` (
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `lineno` INT DEFAULT '0' NOT NULL AFTER `active`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `workflow` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `active` ,
+ADD `assigned_to_uid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `workflow` , ADD `assigned_to_prefix` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `assigned_to_uid` ");
+    $ret[] = update_sql("ALTER TABLE `astlogdb` ADD `workflow` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `uid`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `leasing_ok` TINYINT( 1 ) DEFAULT '0' NOT NULL AFTER `customers_order` ");
+    $ret[] = update_sql("ALTER TABLE `astpartner` CHANGE `comment` `comment` VARCHAR( 15360 ) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astorderip` CHANGE `remarks` `remarks` VARCHAR( 15360 ) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("CREATE TABLE `astsumorderip` (
   `db_prefix` varchar(40) NOT NULL default '',
   `period` varchar(40) NOT NULL default '',
   `qty` int(10) NOT NULL default '0',
@@ -1170,23 +1152,24 @@ CREATE TABLE `astsumorderip` (
   `workflow` varchar(40) NOT NULL default '',
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`db_prefix`,`period`,`workflow`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-ALTER TABLE `astcdr` ADD `partnerid` INT( 11 ) NOT NULL DEFAULT '0' AFTER `submaster` ,
-ADD `uid` INT( 10 ) NOT NULL DEFAULT '0' AFTER `partnerid` ;
-ALTER TABLE `astinvoice` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `invoiceno` ;
-ALTER TABLE `astpaymentbatch` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `batchid` ;
-ALTER TABLE `astacdid` ADD `forwardtmp` VARCHAR(255) DEFAULT '' NOT NULL AFTER `forwarto` ;
-ALTER TABLE `astacdid` ADD `fylkekode` CHAR(2) DEFAULT '' NOT NULL AFTER `zipcode` ;
-
-ALTER TABLE `astacdid` CHANGE `forwardtmp` `redirectalways` VARCHAR( 255 ) NOT NULL DEFAULT '';
-ALTER TABLE `astacdid` ADD `redirectevent` CHAR(1) DEFAULT 'N' NOT NULL AFTER `forwardto` ;
-ALTER TABLE `astacdid` ADD `redirectbusy` VARCHAR(255) DEFAULT '' NOT NULL AFTER `redirectalways` ;
-ALTER TABLE `astacdid` ADD `redirecttimeout` VARCHAR(255) DEFAULT '' NOT NULL AFTER `redirectbusy` ;
-ALTER TABLE `astacdid` ADD `redirecttimeoutsec` int(4) DEFAULT '15' NOT NULL AFTER `redirecttimeout` ;
-ALTER TABLE `astplans` ADD `remarks` varchar(256) DEFAULT '' NOT NULL;
-
-CREATE TABLE `astccnrate` (
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `partnerid` INT( 11 ) NOT NULL DEFAULT '0' AFTER `submaster` ,
+ADD `uid` INT( 10 ) NOT NULL DEFAULT '0' AFTER `partnerid`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `invoiceno`");
+    $ret[] = update_sql("ALTER TABLE `astpaymentbatch` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `batchid`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `forwardtmp` VARCHAR(255) DEFAULT '' NOT NULL AFTER `forwarto`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `fylkekode` CHAR(2) DEFAULT '' NOT NULL AFTER `zipcode`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` CHANGE `forwardtmp` `redirectalways` VARCHAR( 255 ) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `redirectevent` CHAR(1) DEFAULT 'N' NOT NULL AFTER `forwardto`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `redirectbusy` VARCHAR(255) DEFAULT '' NOT NULL AFTER `redirectalways`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `redirecttimeout` VARCHAR(255) DEFAULT '' NOT NULL AFTER `redirectbusy`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `redirecttimeoutsec` int(4) DEFAULT '15' NOT NULL AFTER `redirecttimeout`");
+    $ret[] = update_sql("ALTER TABLE `astplans` ADD `remarks` varchar(256) DEFAULT '' NOT NULL");
+  return $ret;
+}
+function astbill_update_052() {
+  $ret = array();
+    $ret[] = update_sql("CREATE TABLE `astccnrate` (
   `id` int(11) NOT NULL auto_increment,
   `rateplan` varchar(128) NOT NULL default '',
   `ccn` int(11) NOT NULL default '0',
@@ -1201,16 +1184,13 @@ CREATE TABLE `astccnrate` (
   `remarks` varchar(256) default NULL,
   PRIMARY KEY  (`id`),
   KEY `rateplanccn` (`rateplan`,`ccn`)
-) ENGINE=MyISAM AUTO_INCREMENT=10000;
-
-ALTER TABLE `astacgroup` ADD `language2` varchar(256) DEFAULT '' NOT NULL;
-ALTER TABLE `astccncountry` RENAME `astccnlist`;
-ALTER TABLE `astcdr` ADD `ccn` int(11) DEFAULT '0' NOT NULL AFTER `priceid`;
-
-
-/* Remember the order of 'case when' is important as the statement close when first match  */
-DROP VIEW IF EXISTS `asvcallrate`;
-CREATE VIEW `asvcallrate` AS select `astcdr`.`id` AS `id`,`astcdr`.`uniqueid` AS `uniqueid`,
+) ENGINE=MyISAM AUTO_INCREMENT=10000");
+    $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `language2` varchar(256) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astccncountry` RENAME `astccnlist`");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `ccn` int(11) DEFAULT '0' NOT NULL AFTER `priceid`");
+    $ret[] = update_sql("DROP VIEW IF EXISTS `asvcallrate`");
+          /* Remember the order of 'case when' is important as the statement close when first match  */
+    $ret[] = update_sql("CREATE VIEW `asvcallrate` AS select `astcdr`.`id` AS `id`,`astcdr`.`uniqueid` AS `uniqueid`,
 `astcdr`.`invoiceid` AS `invoiceid`,`astcdr`.`callednum` AS `callednum`,`astcdr`.`date_created` AS `date`,
 dayofweek(`astcdr`.`date_created`) AS `day`,
 (case when not((`astcdr`.`callednum` like '47%')) then 4 
@@ -1219,56 +1199,35 @@ when (dayofweek(`astcdr`.`date_created`) in (1,7)) then 3 when ((cast(`astcdr`.`
 < '08:00:00') or (cast(`astcdr`.`date_created` as time) > '17:00:00')) then 2  
 else 1 end) AS `callrate`, 
 ccn, brand rateplan, rateplan3
-from `astcdr`;
-
-DROP VIEW IF EXISTS `asvcallrate2`;
-CREATE VIEW `asvcallrate2` AS select asv.*, 
+from `astcdr`");
+    $ret[] = update_sql("DROP VIEW IF EXISTS `asvcallrate2`");
+    $ret[] = update_sql("CREATE VIEW `asvcallrate2` AS select asv.*, 
 CASE asv.callrate WHEN 1 THEN rat.rate WHEN 2 THEN rat.rateoffpeak WHEN 3 THEN rat.rateweekend ELSE rat.rate END rate
 from asvcallrate asv, astccnrate rat
-where asv.ccn = rat.ccn and asv.rateplan = rat.rateplan;
-
-DROP VIEW IF EXISTS `asvcallrate3`;
-CREATE VIEW `asvcallrate3` AS select asv.*, 
+where asv.ccn = rat.ccn and asv.rateplan = rat.rateplan");
+    $ret[] = update_sql("DROP VIEW IF EXISTS `asvcallrate3`");
+    $ret[] = update_sql("CREATE VIEW `asvcallrate3` AS select asv.*, 
 CASE asv.callrate WHEN 1 THEN rat.rate WHEN 2 THEN rat.rateoffpeak WHEN 3 THEN rat.rateweekend ELSE rat.rate END rate
 from asvcallrate asv, astccnrate rat
-where asv.ccn = rat.ccn and asv.rateplan3 = rat.rateplan;
+where asv.ccn = rat.ccn and asv.rateplan3 = rat.rateplan");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `billtime3` int(11) DEFAULT '0' NOT NULL AFTER `billtime");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `price3` decimal(10,2) DEFAULT '0.00' NOT NULL AFTER `price`");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `rateplan3` varchar(128) DEFAULT '' NOT NULL AFTER `brand`");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `invoiceid3` int(11) DEFAULT '0' NOT NULL AFTER `invoiceid`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `remarks` `remarks` VARCHAR( 1024 ) NOT NULL DEFAULT ''");
+    // Show list of PDF reports
+    $ret[] = update_sql("DROP TABLE IF EXISTS `astreport`");
 
-ALTER TABLE `astcdr` ADD `billtime3` int(11) DEFAULT '0' NOT NULL AFTER `billtime`;
-ALTER TABLE `astcdr` ADD `price3` decimal(10,2) DEFAULT '0.00' NOT NULL AFTER `price`;
-ALTER TABLE `astcdr` ADD `rateplan3` varchar(128) DEFAULT '' NOT NULL AFTER `brand`;
-ALTER TABLE `astcdr` ADD `invoiceid3` int(11) DEFAULT '0' NOT NULL AFTER `invoiceid`;
+// if `selectbox1` = 0 = Not Used
+// if `selectbox1` = 1 = Normal Text Box
+// if `selectbox1` = 2 = Drop Down List
+// if `selectbox1` = 3 = Date Selector
 
-/*
-New User management for multi sites.
-If you have many sites. Please add all your sites to this view.
-DROP VIEW IF EXISTS `asvuser`;
-CREATE VIEW `asvuser` AS 
-select 'cbk_' db_prefix,cbk_users.* from cbk_users
-union
-select 'ipp_',ipp_users.* from ipp_users
-union
-select 'sea_',sea_users.* from sea_users
-union
-select 'pbx_',pbx_users.* from pbx_users;
-*/
+// in the `classfile` we store the name of the `classfile` to use like pdfliste.php
+// To populate require('modules/astprof/pdfliste.php');
+// `function` is the functon name that starts this report
 
-New User management for multi sites.
-If you have many sites. Please add all your sites to this view.
-DROP VIEW IF EXISTS `asvuser`;
-CREATE VIEW `asvuser` AS 
-select 'pbx_' db_prefix,pbx_users.* from pbx_users;
-
-DROP VIEW IF EXISTS `asvuser2`;
-CREATE VIEW `asvuser2` AS 
-select name,pass,mail,created,changed,status,timezone,picture,language,init, usr.* 
-from astuser usr, asvuser asv 
-where usr.db_prefix = asv.db_prefix and usr.uid = asv.uid;
-
-ALTER TABLE `astinvoice` CHANGE `remarks` `remarks` VARCHAR( 1024 ) NOT NULL DEFAULT '';
-
-// Show list of PDF reports
-DROP TABLE `astreport`;
-CREATE TABLE `astreport` (
+    $ret[] = update_sql("CREATE TABLE `astreport` (
   `repid` int(10) NOT NULL auto_increment,
   `reportgroup` varchar(40) NOT NULL default '',
   `reportorder` int(6) NOT NULL default '0',
@@ -1296,128 +1255,133 @@ CREATE TABLE `astreport` (
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`repid`),
   KEY `reportgroup` (`reportgroup`,`reportorder`,`reportname`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-
-// if `selectbox1` = 0 = Not Used
-// if `selectbox1` = 1 = Normal Text Box
-// if `selectbox1` = 2 = Drop Down List
-// if `selectbox1` = 3 = Date Selector
-
-// in the `classfile` we store the name of the `classfile` to use like pdfliste.php
-// To populate require('modules/astprof/pdfliste.php');
-// `function` is the functon name that starts this report
-
-CREATE TABLE `astreplication` (
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("CREATE TABLE `astreplication` (
   `id` int(11) NOT NULL auto_increment,
   `server` varchar(255) NOT NULL default '',
   `tbname` varchar(255) NOT NULL default '',
   `counts` int(11) NOT NULL default '0',
   `date` datetime NOT NULL default '0000-00-00 00:00:00',
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-alter table asthardwareid rename asthardwaretype;
-ALTER TABLE `asthardwaretype` ADD `macoui` varchar(6) DEFAULT '' NOT NULL AFTER `hardware`;
-update asthardwaretype set macoui = concat(mac1,mac2,mac3) where mac1 is not null;
-alter table asthardwaretype drop mac1;
-alter table asthardwaretype drop mac2;
-alter table asthardwaretype drop mac3;
-ALTER TABLE `asthardwaretype` CHANGE `comment` `remarks` varchar(1024) NOT NULL DEFAULT '';
-ALTER TABLE `asthardwaretype` CHANGE `hardware` `hardware` varchar(256) NOT NULL DEFAULT '';
-ALTER TABLE `asthardwaretype` ADD `organization` varchar(256) DEFAULT '' NOT NULL AFTER `hardware`;
-
-ALTER TABLE `asthardware` ADD `mac` varchar(12) DEFAULT '' NOT NULL AFTER `hardwareid`;
-
-update asthardware set mac = concat(mac4,mac5,mac6) where mac4 is not null;
-alter table asthardware drop mac4;
-alter table asthardware drop mac5;
-alter table asthardware drop mac6;
-
-ALTER TABLE `asthardware` CHANGE `hardwareid` `hid` int(10) NOT NULL default '0';
-ALTER TABLE `asthardware` CHANGE `id` `hardwareid` int(10) unsigned NOT NULL auto_increment;
-update astaccount acc, asthardware hw set acc.hardwareid = hw.hardwareid where acc.accountcode = hw.accountcode;
-alter table asthardware drop accountcode;
-ALTER TABLE `asthardware` CHANGE `comment` `remarks` varchar(1024) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` CHANGE `serialnumber` `serialnumber` varchar(128) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `wandhcp` tinyint(1) DEFAULT '1' NOT NULL AFTER `remarks`;
-ALTER TABLE `asthardware` CHANGE `ipaddress` `wanip` varchar(128) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` CHANGE `subnet` `wansubnet` varchar(128) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` CHANGE `port` `wangateway` varchar(128) NOT NULL DEFAULT '';
-alter table asthardware drop sip2;
-alter table asthardware drop ipaddress2;
-alter table asthardware drop subnet2;
-alter table asthardware drop port2;
-
-alter table asthardware drop sip3;
-alter table asthardware drop ipaddress3;
-alter table asthardware drop subnet3;
-alter table asthardware drop port3;
-
-alter table asthardware drop sip4;
-alter table asthardware drop ipaddress4;
-alter table asthardware drop subnet4;
-alter table asthardware drop port4;
-
-ALTER TABLE `asthardware` ADD `landhcp` tinyint(1) DEFAULT '1' NOT NULL AFTER `wangateway`;
-ALTER TABLE `asthardware` ADD `lanip` varchar(128) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `lansubnet` varchar(128) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `langateway` varchar(128) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `telnetport` varchar(4) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `webport` varchar(4) NOT NULL DEFAULT '';
-
-ALTER TABLE `asthardware` ADD `bri0protocol` varchar(10) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `bri0uniside` varchar(10) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `bri1protocol` varchar(10) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `bri1uniside` varchar(10) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `bri2protocol` varchar(10) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `bri2uniside` varchar(10) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `bri3protocol` varchar(10) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `bri3uniside` varchar(10) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `bri4protocol` varchar(10) NOT NULL DEFAULT '' AFTER `bri3uniside`;
-ALTER TABLE `asthardware` ADD `bri4uniside` varchar(10) NOT NULL DEFAULT '' AFTER `bri4protocol`;
-
-ALTER TABLE `asthardware` ADD `faxclip` varchar(10) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `dialmodem` varchar(10) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `map_rpid_default` varchar(1024) NOT NULL DEFAULT '';
-ALTER TABLE `asthardware` ADD `map_rpid1` varchar(1024) NOT NULL DEFAULT '';
-
-ALTER TABLE `asthardware` ADD `adminuser` varchar(128) DEFAULT '' NOT NULL AFTER `webport`;
-ALTER TABLE `asthardware` ADD `adminpassword` varchar(128) DEFAULT '' NOT NULL AFTER `adminuser`;
-ALTER TABLE `asthardware` ADD `active` tinyint(1) NOT NULL default '1' AFTER `landhcp`;
-ALTER TABLE `asthardwaretype` ADD `active` tinyint(1) NOT NULL default '1' AFTER `remarks`;
-ALTER TABLE `asthardware` ADD `configupdate` int(11) NOT NULL default '60' AFTER `timestamp`;
-
-ALTER TABLE `asthardware` ADD `digitcollection` tinyint(2) NOT NULL default '4';
-ALTER TABLE `asthardware` ADD `reglifetime` tinyint(4) NOT NULL default '90';
-ALTER TABLE `asthardwaretype` ADD `templatefile` varchar(128) NOT NULL default '';
-ALTER TABLE `astpayment` ADD `generalledger` varchar(255) NOT NULL DEFAULT '' AFTER `accountcode`;
-
-ALTER TABLE `astreport` ADD `label1` varchar(128) NOT NULL DEFAULT '';
-ALTER TABLE `astreport` ADD `label2` varchar(128) NOT NULL DEFAULT '';
-ALTER TABLE `astreport` ADD `label3` varchar(128) NOT NULL DEFAULT '';
-ALTER TABLE `astreport` ADD `label4` varchar(128) NOT NULL DEFAULT '';
-ALTER TABLE `astreport` ADD `label5` varchar(128) NOT NULL DEFAULT '';
-ALTER TABLE `astreport` ADD `label6` varchar(128) NOT NULL DEFAULT '';
-
-ALTER TABLE `astreport` ADD `dropdownsql1` varchar(256) NOT NULL DEFAULT '';
-ALTER TABLE `astreport` ADD `dropdownsql2` varchar(256) NOT NULL DEFAULT '';
-ALTER TABLE `astreport` ADD `dropdownsql3` varchar(256) NOT NULL DEFAULT '';
-ALTER TABLE `astreport` ADD `dropdownsql4` varchar(256) NOT NULL DEFAULT '';
-ALTER TABLE `astreport` ADD `dropdownsql5` varchar(256) NOT NULL DEFAULT '';
-ALTER TABLE `astreport` ADD `dropdownsql6` varchar(256) NOT NULL DEFAULT '';
-ALTER TABLE `astpartner` ADD `partnerclass` varchar(128) NOT NULL DEFAULT '' AFTER extsource;
-
-ALTER TABLE `astpartner` CHANGE `active` `active` tinyint(1) NOT NULL default '1';
-ALTER TABLE `astpartner` ADD INDEX ( `partnerclass` ) ;
-
-ALTER TABLE `astplans` CHANGE `status` `active` tinyint(1) NOT NULL default '1';
-ALTER TABLE `astinvoice` ADD `fromdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `period`;
-ALTER TABLE `astinvoice` ADD `todate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `fromdate`;
-
-ALTER TABLE `astplans` ADD `intconnectcharge` decimal(12,4) NOT NULL default '0.0000' AFTER `connectcharge`;
-
-
-
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("alter table asthardwareid rename asthardwaretype");
+    $ret[] = update_sql("ALTER TABLE `asthardwaretype` ADD `macoui` varchar(6) DEFAULT '' NOT NULL AFTER `hardware`");
+    $ret[] = update_sql("update asthardwaretype set macoui = concat(mac1,mac2,mac3) where mac1 is not null");
+    $ret[] = update_sql("alter table asthardwaretype drop mac1");
+    $ret[] = update_sql("alter table asthardwaretype drop mac2");
+    $ret[] = update_sql("alter table asthardwaretype drop mac3");
+    $ret[] = update_sql("ALTER TABLE `asthardwaretype` CHANGE `comment` `remarks` varchar(1024) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardwaretype` CHANGE `hardware` `hardware` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardwaretype` ADD `organization` varchar(256) DEFAULT '' NOT NULL AFTER `hardware`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac` varchar(12) DEFAULT '' NOT NULL AFTER `hardwareid`");
+    $ret[] = update_sql("update asthardware set mac = concat(mac4,mac5,mac6) where mac4 is not null");
+    $ret[] = update_sql("alter table asthardware drop mac4");
+    $ret[] = update_sql("alter table asthardware drop mac5");
+    $ret[] = update_sql("alter table asthardware drop mac6");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `hardwareid` `hid` int(10) NOT NULL default '0'");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `id` `hardwareid` int(10) unsigned NOT NULL auto_increment");
+    $ret[] = update_sql("update astaccount acc, asthardware hw set acc.hardwareid = hw.hardwareid where acc.accountcode = hw.accountcode");
+    $ret[] = update_sql("alter table asthardware drop accountcode");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `comment` `remarks` varchar(1024) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `serialnumber` `serialnumber` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `wandhcp` tinyint(1) DEFAULT '1' NOT NULL AFTER `remarks`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `ipaddress` `wanip` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `subnet` `wansubnet` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `port` `wangateway` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("alter table asthardware drop sip2");
+    $ret[] = update_sql("alter table asthardware drop ipaddress2");
+    $ret[] = update_sql("alter table asthardware drop subnet2");
+  return $ret;
+}
+/*
+function astbill_update_999() {
+  $ret = array();
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+  return $ret;
+}
 */
-
+function astbill_update_053() {
+  $ret = array();
+    $ret[] = update_sql("alter table asthardware drop port2");
+    $ret[] = update_sql("alter table asthardware drop sip3");
+    $ret[] = update_sql("alter table asthardware drop ipaddress3");
+    $ret[] = update_sql("alter table asthardware drop subnet3");
+    $ret[] = update_sql("alter table asthardware drop port3");
+    $ret[] = update_sql("alter table asthardware drop sip4");
+    $ret[] = update_sql("alter table asthardware drop ipaddress4");
+    $ret[] = update_sql("alter table asthardware drop subnet4");
+    $ret[] = update_sql("alter table asthardware drop port4");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `landhcp` tinyint(1) DEFAULT '1' NOT NULL AFTER `wangateway`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `lanip` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `lansubnet` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `langateway` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `telnetport` varchar(4) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `webport` varchar(4) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri0protocol` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri0uniside` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri1protocol` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri1uniside` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri2protocol` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri2uniside` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri3protocol` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri3uniside` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri4protocol` varchar(10) NOT NULL DEFAULT '' AFTER `bri3uniside`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri4uniside` varchar(10) NOT NULL DEFAULT '' AFTER `bri4protocol`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `faxclip` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `dialmodem` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `map_rpid_default` varchar(1024) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `map_rpid1` varchar(1024) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `adminuser` varchar(128) DEFAULT '' NOT NULL AFTER `webport`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `adminpassword` varchar(128) DEFAULT '' NOT NULL AFTER `adminuser`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `active` tinyint(1) NOT NULL default '1' AFTER `landhcp`");
+    $ret[] = update_sql("ALTER TABLE `asthardwaretype` ADD `active` tinyint(1) NOT NULL default '1' AFTER `remarks`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `configupdate` int(11) NOT NULL default '60' AFTER `timestamp`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `digitcollection` tinyint(2) NOT NULL default '4'");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `reglifetime` tinyint(4) NOT NULL default '90'");
+    $ret[] = update_sql("ALTER TABLE `asthardwaretype` ADD `templatefile` varchar(128) NOT NULL default ''");
+    $ret[] = update_sql("ALTER TABLE `astpayment` ADD `generalledger` varchar(255) NOT NULL DEFAULT '' AFTER `accountcode`");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `label1` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `label2` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `label3` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `label4` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `label5` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `label6` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `dropdownsql1` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `dropdownsql2` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `dropdownsql3` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `dropdownsql4` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `dropdownsql5` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `dropdownsql6` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `partnerclass` varchar(128) NOT NULL DEFAULT '' AFTER extsource");
+    $ret[] = update_sql("ALTER TABLE `astpartner` CHANGE `active` `active` tinyint(1) NOT NULL default '1'");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD INDEX ( `partnerclass` ) ");
+    $ret[] = update_sql("ALTER TABLE `astplans` CHANGE `status` `active` tinyint(1) NOT NULL default '1'");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `fromdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `period`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `todate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `fromdate`");
+    $ret[] = update_sql("ALTER TABLE `astplans` ADD `intconnectcharge` decimal(12,4) NOT NULL default '0.0000' AFTER `connectcharge`");
+    $ret[] = update_sql("alter table astinvoice drop payment_method");
+    $ret[] = update_sql("alter table astinvoice drop is_recurring");
+    $ret[] = update_sql("ALTER TABLE astinvoice ADD reminder tinyint(2) NOT NULL default '0' AFTER payment_status");
+    $ret[] = update_sql("ALTER TABLE astinvoice ADD reminderemail tinyint(2) NOT NULL default '0' AFTER reminder");
+    $ret[] = update_sql("INSERT INTO `astsystem` ( `serverid` , `name` , `value` , `comment` , `viewstatus` , `timestamp` )
+VALUES (
+'DEF', 'pricelistfooter', 'Rates are valid 24 hrs\\nAll amounts are in NOK\\nRates apply worldwide and exclude VAT\\nAll rates are subject to change without notice\\nRates and availability is subject to change without notice\\nWe do not accept liability for any errors or omissions.', 'This will be shown as a footer at the end of the PDF Price Lists', 'E', NOW( )
+)");
+    $ret[] = update_sql("alter table astparcontact drop uid");
+    $ret[] = update_sql("alter table astparcontact drop memberof");
+    $ret[] = update_sql("alter table astparcontact drop status");
+    $ret[] = update_sql("ALTER TABLE astparcontact ADD `date_created` datetime NOT NULL default '0000-00-00 00:00:00' AFTER description");
+    $ret[] = update_sql("ALTER TABLE astparcontact ADD `active` tinyint(1) NOT NULL default '1' AFTER description");
+    $ret[] = update_sql("ALTER TABLE astparcontact CHANGE description remarks varchar(15360) NOT NULL default ''");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+  return $ret;
+}
