@@ -1,0 +1,1247 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005,2006 AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2006 May 07 Version 0.9.18
+ * 
+ */
+
+// &#229;  = Â
+// &#248;  = ¯
+// &#230;  = Ê
+
+
+
+function astpartnerglobal_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Global Admin");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astpartnerglobal_menu($may_cache) {
+	$items = array();
+	$access = user_access('astpartnerglobal admin module');
+	$access2 = user_access('astpartnerglobal Account');
+	
+
+	$items[] = array('path' => 'astglobal', 'title' => t('CRM System'),
+	'callback' => 'astpartnerglobal_main',
+	'access' => $access);
+/*
+	$items[] = array('path' => 'astglobal/business', 'title' => t('Business'),
+	'callback' => 'astpglobal_business_main',
+	'access' => $access);
+*/
+	$items[] = array('path' => 'astglobal/private', 'title' => t('Private'),
+	'callback' => 'astpglobal_private_main',
+	'access' => $access);
+
+	$items[] = array('path' => 'astglobal/voip', 'title' => t('Voip Data'),
+	'callback' => 'astpglobal_voip_main',
+	'access' => $access);
+
+	$items[] = array('path' => 'astglobal/order', 'title' => t('Invoice/Orders'),
+	'callback' => 'astpglobal_order_main',
+	'access' => $access,
+	'weight' => 5);
+
+  	$items[] = array('path' => 'astglobal/tech', 'title' => t('Show SIP or IAX Accounts'),
+	'callback' => 'astpartnerglobal_tech',
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astglobal/web', 'title' => t('Show Web Users'),
+	'callback' => 'astpartnerglobal_webuser',
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astglobal/tech/create', 'title' => t('Create New SIP and IAX Account'),
+	'callback' => 'astpartnerglobal_tech_create',
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astglobal/tech/change', 'title' => t('Edit Account'),
+	'callback' => 'astpartnerglobal_tech_create',
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
+
+  	$items[] = array('path' => 'astglobal/msn', 'title' => t('Show MSN and DID Numbers'),
+	'callback' => 'astpartnerglobal_msn',
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+
+   	$items[] = array('path' => 'astglobal/msn/remove', 'title' => t('Delete MSN'),
+    'callback' => 'astpartnerglobal_msn_remove',
+    'access' => $access2,
+    'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astglobal/msn/change', 'title' => t('Edit MSN'),
+	'callback' => 'astpartnerglobal_msn_create',
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astglobal/msn/create', 'title' => t('Create New MSN/DID Numbers'),
+	'callback' => 'astpartnerglobal_msn_create',
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astglobal/useredit', 'title' => t('Edit User'),
+	'callback' => 'astpartnerglobal_user_edit',
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astglobal/partner/create', 'title' => t('New Customer'),
+	'callback' => 'astpartnerglobal_partnercreate',
+	'access' => $access,
+	'weight' => -5);
+
+	$items[] = array('path' => 'astglobal/partner/change', 'title' => t('Change Partner'),
+	'callback' => 'astpartnerglobal_partnercreate',
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+/*
+    $items[] = array('path' => 'astglobal/partner/remove', 'title' => t('Delete Partner'),
+    'callback' => 'page_astpartnerglobal_remove',
+    'access' => $access,
+    'type' => MENU_CALLBACK);
+*/
+
+/*      	$items[] = array('path' => 'astglobal/orders/info', 'title' => t('Detailed'),
+		'callback' => 'astorders_info',
+		'access' => $access,
+		'type' => MENU_CALLBACK);
+*/
+  return $items;
+}
+
+// astpartnerglobal_user_create
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+
+
+function astpartnerglobal_perm() {
+	return array('astpartnerglobal admin module', 'astpartnerglobal Global','astpartnerglobal Account');
+}
+
+
+function astpartnerglobal_main() {
+	global $user;
+	global $db_prefix; 
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+/*
+	$sql = db_query("select gtype, gname from astacgroup where active = 1 and mastergroup = 'Site' order by gtype");
+	$statusopts['all'] = t('All');
+	while ($item = db_fetch_object($sql)) {
+		$statusopts[$item->gtype] = $item->gname;
+	}
+	$output = form_select(t('Database'), 'database', $param, $statusopts);
+
+	if (!empty($edit['database'])) {
+		  // $param = $edit['status'];
+		  // $param = $edit['search'];
+		$param = $edit['database'];
+		if (arg(3) != $param) {
+		   drupal_goto('astglobal/'.$param.'/'.$edit['search']);
+		}
+	}
+*/
+	switch ($op) {
+		case t('Search'):
+		// $output .= astpartnerglobal_list($value, $edit);
+		if ($db_prefix == "cbk_" or $db_prefix == "ipp_") {   // Just some customising :-)
+			$output .= astpglobalcbk_list($value, $edit);
+		} else {
+			$output .= astpglobal_list($value, $edit);
+		}
+		break;
+		default:
+		
+		$value = $edit['search'];
+		$tmp = astcore_flattenArray($_GET);
+		
+		if (!empty($tmp['searchedit'])) {
+			$value = $tmp['searchedit'];
+		}
+		
+		$output .= astcore_search($edit, $posturl = url('astglobal/'.$param), $value);
+		// $output .= astpartnerglobal_list($value, $edit);
+		if ($db_prefix == "cbk_" or $db_prefix == "ipp_") {   // Just some customising :-)
+			$output .= astpglobalcbk_list($value, $edit);
+		} else {
+			$output .= astpglobal_list($value, $edit);
+		}
+	}
+	
+	$title = t('View Partners');
+	astcore_printtheme($output, $title);
+}
+
+function astpglobal_business_main() {
+	$title = t('CRM Business Customers');
+	astcore_printtheme($output, $title);
+}
+function astpglobal_private_main() {
+	$title = t('CRM Private Customers');
+	astcore_printtheme($output, $title);
+}
+function astpglobal_voip_main() {
+	$title = t('CRM VOIP Data');
+	astcore_printtheme($output, $title);
+}
+function astpglobal_order_main() {
+	$title = t('Invoice and Orders');
+	astcore_printtheme($output, $title);
+}
+
+function astpglobal_list($value, $edit) {
+	global $user;
+	global $db_prefix;
+	$value = trim($value);
+	$maxline = 40;
+		
+  $header = array(
+    array('data' => t('db'), 'field' => 'prefix'),
+    array('data' => t('Web')),
+    array('data' => t('Account')),
+    array('data' => t('MSN')),
+    array('data' => t('Partnid'), 'field' => 'pid', 'sort' => 'desc'),
+    array('data' => t('Company'), 'field' => 'company'),
+    array('data' => t('Zipcode'), 'field' => 'zip'),
+    array('data' => t('City'), 'field' => 'city'),
+    array('data' => t('Operations'), 'colspan' => 3)                                                                                 
+  );                                                                                 
+                                                                                      
+ $SQL = "SELECT pa.pid,left(db_prefix,3) prefix,LEFT(IFNULL(pa.company,concat(firstname,' ',lastname)),35) company,zip,city, contactperson, IFNULL(sumusers,0) sumusers,IFNULL(sumaccounts,0) sumaccounts, IFNULL(sumdid,0) sumdid, db_prefix dbp FROM astpartner pa LEFT JOIN astsumpartner sp USING (pid) where (active <> '0' or active is null) and CONCAT_WS(',', db_prefix,pa.pid,LOWER(company),LOWER(firstname),LOWER(lastname),LOWER(zip),LOWER(city)) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+
+  $result = pager_query($SQL, $maxline);
+  
+  while ($res = db_fetch_object($result)) {
+/*
+$SQL = "SELECT Count(*) AS users FROM astpartner pa, astuser us WHERE pa.db_prefix = us.db_prefix and pa.pid = us.partnerid and pa.pid = '".$res->pid."'";
+$getusers = db_fetch_object(db_query($SQL));
+
+$SQL = "SELECT Count(*) AS tech FROM astaccount ac, astuser us,astpartner pa WHERE ac.uid = us.uid and ac.db_prefix = us.db_prefix and us.partnerid = pa.pid and pa.pid = '".$res->pid."' and ac.tech in (select actype from astactype where active = '1')";
+$gettech = db_fetch_object(db_query($SQL));
+*/
+	$rows[] = array(
+		$res->prefix."&nbsp;",
+		'<A HREF="'.url('astglobal/web/'.$res->pid.'/'.$res->dbp).'">'.$res->sumusers.'</A>',
+		'<A HREF="'.url('astglobal/tech/'.$res->pid).'">'.$res->sumaccounts.'</A>',
+		'<A HREF="'.url('astglobal/msn/'.$res->pid).'">'.$res->sumdid.'</A>',
+		//$gettech->tech."&nbsp;",
+		$res->pid."&nbsp;",
+		$res->company,
+		$res->zip,
+		$res->city,
+//		'<A HREF="'.url('astglobal/usercreate/'.$res->pid).'">'.t('Create User').'</A>',
+		'<A HREF="'.url('astglobal/partner/change/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+//		'<A HREF="'.url('astglobal/partner/remove/'.$res->pid).'">'.t('Remove').'</A>'
+	);
+  }
+	$output = astcore_list($header, $rows, $noresults = t('No Partners.'), $maxline);
+	return $output;
+}
+
+function astpartnerglobal_tech() {
+/*	global $user;
+	global $db_prefix; 
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+*/
+	$value = arg(2);   
+	$SQL = "SELECT left(db_prefix,3) prefix,pid,LEFT(IFNULL(company,concat(firstname,' ',lastname)),35) company FROM astpartner pa WHERE pa.pid = '".$value."'";
+	$res = db_fetch_object(db_query($SQL));
+	$output .= astglobal_tech_list($value, $edit);
+	$title = $res->prefix.' '.$res->pid.' - '.$res->company;
+
+	$overmenu = array(url('astglobal/tech/create/'.$res->pid).'">'.t('Create New SIP/IAX Account'));
+	astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu);
+}
+
+function astglobal_tech_list($value, $edit) {
+	global $user;
+	global $db_prefix;
+	$value = trim($value);
+	$maxline = 40;
+		
+  $header = array(
+//    array('data' => t('db'), 'field' => 'prefix'),
+//    array('data' => t('Partnid'), 'field' => 'pid', 'sort' => 'desc'),
+    array('data' => t('Usr'), 'field' => 'uid'),
+    array('data' => t('Tech'), 'field' => 'tech'),
+    array('data' => t('Account'), 'field' => 'accountcode'),
+    array('data' => t('Password')),
+    array('data' => t('Callerid'), 'field' => 'callerid'),
+    array('data' => t('CLIP'), 'field' => 'forcecallerid'),
+    array('data' => t('Serverid'), 'field' => 'serverid'),
+    array('data' => t('RPID'), 'field' => 'trustrpid'),
+    array('data' => t('Ops'), 'colspan' => 2),
+	array('data' => t('IP'), 'colspan' => 1),
+	array('data' => t('Refreshed'), 'colspan' => 1),
+	array('data' => t(''), 'colspan' => 1)
+  );
+    
+$value = arg(2);                                                                                 
+$SQL = "SELECT pa.pid,ac.uid,ac.accountcode,ac.secret,ac.callerid,ac.forcecallerid,ac.tech, ac.serverid,ac.trustrpid,fullcontact, CONCAT_WS(':',ac.ipaddr,ac.port) ip, ac.reg_changed,accountname,ac.hardwareid FROM astaccount ac, astuser us,astpartner pa WHERE ac.uid = us.uid and ac.db_prefix = us.db_prefix and   us.partnerid = pa.pid and pa.pid = '".$value."' and ac.tech in (select actype from astactype where active = '1')". tablesort_sql($header);;
+
+// $SQL = mysql_real_escape_string($SQL);
+
+  $result = pager_query($SQL, $maxline);
+  
+  while ($res = db_fetch_object($result)) {
+		if ($res->hardwareid <> 0) { 
+			$hw = '&nbsp;<A HREF="'.url('astglobal/voip/aps/'.$res->hardwareid).'">cfg</A>&nbsp;';
+		} else { $hw = "&nbsp;";}
+
+	$rows[] = array(
+//		$res->prefix,
+//		$res->pid,
+		$res->uid."&nbsp;",
+		$res->tech."&nbsp;",
+		$res->accountcode."&nbsp;",
+		$res->secret."&nbsp;",
+		$res->callerid."&nbsp;",
+		$res->forcecallerid."&nbsp;",
+		$res->serverid."&nbsp;",
+		$res->trustrpid."&nbsp;",
+		'<A HREF="'.url('astglobal/tech/change/'.$res->accountcode.'/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		$hw,
+		// $res->ip,fullcontact
+        array('data' => $res->ip, 'title' => $res->fullcontact),
+		//	title="Password: '.$res->secret.'"
+		$res->reg_changed,
+		$res->accountname,
+	);
+  }
+	$output = astcore_list($header, $rows, $noresults = t('No SIP and IAX Accounts.'), $maxline);
+	return $output;
+}
+
+function astpartnerglobal_msn() {
+	$value = arg(2);   
+	$SQL = "SELECT left(db_prefix,3) prefix,pid,LEFT(IFNULL(company,concat(firstname,' ',lastname)),35) company FROM astpartner pa WHERE pa.pid = '".$value."'";
+	$res = db_fetch_object(db_query($SQL));
+	$output .= astglobal_msn_list($value, $edit);
+	$title = $res->prefix.' '.$res->pid.' - '.$res->company;
+
+	$overmenu = array(url('astglobal/msn/create/'.$res->pid).'">'.t('Create New MSN/DID Numbers'));
+	astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu);
+}
+function astglobal_msn_list($value, $edit) {
+	global $user;
+	global $db_prefix;
+	$value = trim($value);
+	$maxline = 40;
+		
+  $header = array(
+    array('data' => t('Usr'), 'field' => 'uid'),
+    array('data' => t('MSN'), 'field' => 'did', 'sort' => 'asc'),
+    array('data' => t('Group'), 'field' => 'acgroup'),
+    array('data' => t('Forward'), 'field' => 'forwardto'),
+    array('data' => t('A')),
+    array('data' => t('Porting Date'), 'field' => 'portindate'),
+    array('data' => t('Zipcode'), 'field' => 'zipcode'),
+    array('data' => t('Ops'), 'colspan' => 2),
+	array('data' => t('Batch'), 'colspan' => 1),
+	array('data' => t('Remarks'), 'colspan' => 1),
+  );
+    
+$value = arg(2);                                                                                 
+
+$SQL = "SELECT did.uid,did.did,did.acgroup,did.forwardto,did.active, did.portindate,did.zipcode,did.batchno,did.remarks,pa.pid FROM astacdid did, astuser us,astpartner pa WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid and pa.pid = '".$value."'". tablesort_sql($header);
+
+  $result = pager_query($SQL, $maxline);
+  
+  while ($res = db_fetch_object($result)) {
+	if ($res>active == 1){ $imagename = "green_dott1.gif";
+	} else { $imagename = "red_dott1.gif"; }
+
+	$rows[] = array(
+		$res->uid."&nbsp;",
+		$res->did."&nbsp;",
+		$res->acgroup."&nbsp;",
+		$res->forwardto."&nbsp;",
+		array('data' => "<IMG BORDER=\"0\" src=\"files/astar/$imagename\">", 'align' => 'center'),
+	//	$res->active."&nbsp;",
+		$res->portindate."&nbsp;",
+		$res->zipcode,
+		'<A HREF="'.url('astglobal/msn/change/'.$res->did.'/'.$res->pid).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<A HREF="'.url('astglobal/msn/remove/'.$res->did.'/'.$res->pid).'">Remove</A>',
+		$res->batchno,
+		$res->remarks,
+	);
+  }
+	$output = astcore_list($header, $rows, $noresults = t('No MSN Numbers for Partner.'), $maxline);
+	return $output;
+}
+
+function astpartnerglobal_msn_remove() {
+	global $user;
+	global $db_prefix; 
+  	$pass = '1';
+	$errors = array();
+	if ((!is_numeric(arg(3))) or (arg(3) == '')) {
+	  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+    return; }
+  
+	$test = db_fetch_object(db_query("select count(*) count from astacdid where portindate is not null and did = '%s'", arg(3)));
+	if ($test->count == '1') {
+		$errors["isported"] = t("Unable to delete, MSN Have Ported date. This number is Ported.");
+		$pass = '0';
+	}	
+	$testac = db_fetch_object(db_query("select accountcode ac from astcdr where accountcode = '%s' limit 1", arg(3)));
+	// $errors["havecdr"] = t("Unable to delete, MSN Have Caller Records (CDR). This number is in use.");
+
+	if ($testac->ac == arg(3)) {
+		$errors["havecdr"] = t("Unable to delete, MSN Have Caller Records (CDR). This number is in use.");
+		$pass = '0';
+	}	
+	if ($pass == '1') {
+		$title = "Delete MSN Number ".arg(3);
+		$deletedmsg = t('The MSN was deleted');
+		$confirmmsg = t('Are you sure you want to delete this MSN?');
+		$dbqueries = array();
+		$dbqueries[] = "DELETE FROM astacdid WHERE did = '".arg(3)."'";
+		$goto = "astbilladm/partner";
+		$donegoto = "astglobal/msn/".arg(4);
+		astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries);
+	}	else {
+			foreach ($errors as $name => $message) { form_set_error($name, $message); }
+			drupal_goto("astglobal/msn/".arg(4));
+	}
+}
+
+
+
+function astpartnerglobal_webuser() {
+	global $user;
+	global $db_prefix; 
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+	switch ($op) {
+		case t('Search'):
+		$output .= astpartnerglobal_webuser_list($value, $edit);
+		break;
+		default:
+		
+		$value = $edit['search'];
+		$tmp = astcore_flattenArray($_GET);
+		
+		if (!empty($tmp['searchedit'])) {
+			$value = $tmp['searchedit'];
+		}
+		
+		$output = astcore_search($edit, $posturl = url('astglobal/web'), $value);
+		$output .= astpartnerglobal_webuser_list($value, $edit);
+	}
+	
+	$title = 'View';
+	astcore_printtheme($output, $title);
+}
+
+function astpartnerglobal_webuser_list($value, $edit) {
+	$maxline = 40;
+		
+	$header = array(
+	array('data' => t('User'), 'field' => 'name'),
+	array('data' => t('UID'), 'field' => 'uid', 'sort' => 'desc'),
+	array('data' => t('Created')),
+	array('data' => t('mail'))
+	//array('data' => t('Operations'), 'colspan' => 2)
+	);
+
+	$sql = "SELECT usr.uid, astuser.partnerid, usr.name, usr.mail, date(astuser.timestamp) created FROM ".arg(3)."users usr INNER JOIN astuser ON usr.uid = astuser.uid WHERE partnerid = '".arg(2)."' AND CONCAT_WS(',', usr.uid, LOWER('usr.name'), LOWER('usr.mail')) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+
+
+	$result = pager_query($sql, $maxline);
+	
+	while ($res = db_fetch_object($result)) {
+		
+		$rows[] = array(
+//		'<A HREF="'.url('astglobal/useredit/'.$res->uid).'">'.$res->name.'</A>'.'&nbsp;&nbsp;',
+//		'<A HREF="'.url('astglobal/useredit/'.$res->uid).'">'.$res->uid.'</A>',
+		$res->name.'&nbsp;&nbsp;',
+		$res->uid.'&nbsp;&nbsp;',
+//		'<IMG BORDER="0" SRC="files/astar/'.$res->tech.'.gif">',
+		$res->created.'&nbsp;&nbsp;', 
+		$res->mail, 
+
+		);
+
+	}
+  
+	$output = astcore_list($header, $rows, $noresults = t('No Users for Partner.'), $maxline);
+	return $output;
+}
+
+/////////////////////////// Start Partner Form //////////////////////////////////////////////////
+
+function astpartnerglobal_Partnercreate() {
+  global $user;
+  global $db_prefix;
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  // switch (($op ? $op : arg(1))) {
+  switch($op) {
+		case (t('Save'));
+		if (astpartnerglobal_Partner_validate($edit)) {
+			astpartnerglobal_Partner_save($edit);
+			drupal_goto('astglobal/partner/');
+		}
+		break;
+		case t('Create'):
+		  if (astpartnerglobal_Partner_validate($edit)) {
+			astpartnerglobal_Partner_save($edit);
+			drupal_goto("astglobal/partner/");
+		  } else {
+			drupal_goto("astglobal/partner/create/".arg(3));
+		  }
+		  break;
+		case t('Change'):
+		  if (astpartnerglobal_Partner_validate($edit)) {
+			astpartnerglobal_Partner_save($edit);
+			drupal_goto("astglobal/partner/");
+		  } else {
+			drupal_goto("astglobal/partner/change/".arg(3));
+		  }
+		  break;
+		case t('Back'):
+			drupal_goto("astglobal/partner");
+	//	default:
+	//	  $output = astpartnerglobal_Partner_form($edit);
+  }
+
+	if (arg(2) == 'change') {
+		$output .= astpartnerglobal_Partner_form($edit);
+ 	    $title = t('Edit Partner');
+	} elseif(arg(2) == 'create') {
+		$output .= astpartnerglobal_Partner_form($edit);
+	    $title = t('Create New Customer');
+	} else {
+		// $output .= astccorders_users_list($edit, $value);
+	}
+	astcore_printtheme($output, $title);	
+}
+
+
+
+
+// Partner FORM STUFF
+function astpartnerglobal_Partner_validate($edit) {
+  global $user;
+  global $db_prefix; 
+  $myerror = 1;
+  $errors = array();
+	if (!valid_email_address($edit['email']) and !empty($edit['email'])) {
+		$errors['email'] = t('Invalid Email address');
+		$myerror = 0;
+	}
+//	if (arg(2) == 'change') {
+	if (user_access('astpartnerglobal Global')) { 
+		if (strlen($edit['provider']) <> 4 && (arg(2) == 'create')) {
+			$errors['provider'] = t('Leverand√∏r ikke gyldig');
+			$myerror = 0;
+		}
+	}
+	if (strlen($edit['zip']) <> 4) {
+		$errors['zip'] = t('Postnummer ikke gyldig');
+		$myerror = 0;
+	}
+	if (!is_numeric($edit['zip'])) {
+		$errors['zip'] = t('Postnummer kan bare v√¶re tall');
+		$myerror = 0;
+	}
+	if (strlen($edit['phonework']) <> 8 && strlen($edit['phonework']) <> 0) {
+		$errors['phonework'] = t('HovedNummer ikke gyldig');
+		$myerror = 0;
+	}
+	if (!is_numeric($edit['phonework']) && strlen($edit['phonework']) <> 0) {
+		$errors['phonework'] = t('HovedNummer kan bare v√¶re tall');
+		$myerror = 0;
+	}
+	if (strlen($edit['mobile']) <> 8 && strlen($edit['mobile']) <> 0) {
+		$errors['mobile'] = t('MobilNummer ikke gyldig');
+		$myerror = 0;
+	}
+	if (!is_numeric($edit['mobile']) && strlen($edit['mobile']) <> 0) {
+		$errors['mobile'] = t('MobilNummer kan bare v√¶re tall');
+		$myerror = 0;
+	}
+
+
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+
+function astpartnerglobal_Partner_save($edit) {
+  global $user;
+  global $db_prefix; 
+
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+ /*
+  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }*/
+
+if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
+
+if (!user_access('astpartnerglobal Global')) { $edit['provider'] = $db_prefix; }					  
+
+	$accountcode = null;
+	$paytype = null;
+	$comment = null;
+	$paidamount = null;
+	$paiddate = null;
+	$active = "1";
+
+db_query("INSERT INTO astpartner (db_prefix, company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,customerstatus,active, companyno,didnumberserie,valuecode,comment,date_created) 
+VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s','%s','%s','%s', '%s',Now())", 
+$edit['provider'],$edit['company'], $edit['firstname'],$edit['lastname'],$edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['fax'],$edit['email'], $edit['customerstatus'], $active,$edit['companyno'],$edit['didnumberserie'],$edit['valuecode'],$edit['comment']);
+
+astcore_astlogdb("astpartner","I", $edit);
+drupal_set_message(t('New Partner added'));
+
+} // END CHECK IF PartnerCREATE
+
+
+if (arg(2) == 'change'){ // START CHECK IF PartnerCHANGE
+	  if (!is_numeric(arg(3))) {
+		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return;
+	  }
+	if (user_access('astpartnerglobal Global')) { $dbprefix = '%';} else { $dbprefix = $db_prefix;}					  
+
+	db_query("UPDATE astpartner SET company = '%s',firstname = '%s',lastname = '%s', contactperson = '%s', address1 = '%s', address2 = '%s', zip = '%s', city = '%s', state = '%s', countrycode = '%s', mobile = '%s', phonework = '%s', email = '%s', fax = '%s',comment = '%s', customerstatus = '%s', companyno = '%s',didnumberserie = '%s',valuecode = '%s' WHERE pid = '%s' and db_prefix like '%s'"
+	, $edit['company'], $edit['firstname'],$edit['lastname'], $edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['email'],$edit['fax'], $edit['comment'], $edit['customerstatus'], $edit['companyno'], $edit['didnumberserie'], $edit['valuecode'], arg(3),$dbprefix);
+	
+	astcore_astlogdb("astpartner","U", $edit,arg(3));
+	drupal_set_message(t('Partner changed'.' '.arg(3)));
+} // END CHECK IF PartnerCHANGE
+
+} // end function
+
+function astpartnerglobal_Partner_form($edit) {
+	global $user;
+	global $db_prefix; 
+	// $edit = $_POST["edit"];
+    $op = $_POST["op"];
+
+/*
+if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
+
+	$resellerid = null;
+	$company = null;
+	$contactperson = null;
+	$address1 = null;
+	$address2 = null;
+	$zip = null;
+	$city = null;
+	$state = null;
+	$country = null;
+	$mobile = null;
+	$phonework = null;
+	$fax = null;
+	$comment = null;
+	$customerstatus = 'C';
+	$active = '1';
+
+
+} // END CHECK IF PartnerCREATE
+*/
+if (arg(2) == 'change'){ 
+	if (user_access('astpartnerglobal Global')) { $dbprefix = '%';} else { $dbprefix = $db_prefix;}					  
+	$sql = db_query("SELECT company,companyno, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, didnumberserie, fax,email,comment,customerstatus,active,date_created,LEFT(db_prefix,3) provider,valuecode FROM astpartner WHERE pid = '%s' and db_prefix like '%s'", arg(3),$dbprefix);
+	$sqlout = db_fetch_object($sql);
+
+	$edit['company'] = $sqlout->company;
+	$edit['companyno'] = $sqlout->companyno;
+	$edit['firstname'] = $sqlout->firstname;
+	$edit['lastname'] = $sqlout->lastname;
+	$edit['contactperson'] = $sqlout->contactperson;
+	$edit['sosialsecurityno'] = $sqlout->sosialsecurityno;
+	$edit['address1'] = $sqlout->address1;
+	$edit['address2'] = $sqlout->address2;
+	$edit['zip'] = $sqlout->zip;
+	$edit['city'] = $sqlout->city;
+	$edit['state'] = $sqlout->state;
+	$edit['country'] = $sqlout->country;
+	$edit['mobile'] = $sqlout->mobile;
+	$edit['phonehome'] = $sqlout->phonehome;
+	$edit['phonework'] = $sqlout->phonework;
+	$edit['didnumberserie'] = $sqlout->didnumberserie;
+	$edit['fax'] = $sqlout->fax;
+	$edit['email'] = $sqlout->email;
+	$edit['status'] = $sqlout->status;
+	$edit['comment'] = $sqlout->comment;
+	$edit['valuecode'] = $sqlout->valuecode;
+	$edit['customerstatus'] = $sqlout->customerstatus;
+	$edit['date_created'] = $sqlout->date_created;
+	$edit['provider'] = $sqlout->provider;
+}
+
+	$sql = db_query("select gtype, gname from astacgroup where active = 1 and mastergroup = 'Site' order by gtype");
+	$statusopts['None2'] = t('Choose Provider');
+	while ($item = db_fetch_object($sql)) {
+		$statusopts[$item->gtype] = $item->gname;
+	}
+	if (arg(2) == 'create'){ 
+		if (user_access('astpartnerglobal Global')) { 					  
+			$group .= form_select(t('Provider'), 'provider', $param, $statusopts);
+		}
+	}
+	if (arg(2) == 'change') {
+		$group .= t('Provider').' : <B>'.$edit['provider'].'</B><BR>';
+	}
+
+	$group .= astcore_form_start();
+	$group .= astcore_form_textfield(t('Company'), 'company', $edit['company'], 30, 100);
+	$group .= astcore_form_textfield(t('Company Number'), 'companyno', $edit['companyno'], 30, 100);
+	$group .= astcore_form_textfield(t('Firstname'), 'firstname', $edit['firstname'], 30, 100);
+	$group .= astcore_form_textfield(t('Lastname'), 'lastname', $edit['lastname'], 30, 100);
+//	$group .= astcore_form_textfield(t('Contactperson'), 'contactperson', $edit['contactperson'], 30, 100);
+	$group .= astcore_form_textfield(t('Address1'), 'address1', $edit['address1'], 30, 100);
+	$group .= astcore_form_textfield(t('Address2'), 'address2', $edit['address2'], 30, 100);
+	$group .= astcore_form_textfield(t('Zip'), 'zip', $edit['zip'], 30, 100);
+	$group .= astcore_form_textfield(t('City'), 'city', $edit['city'], 30, 100);
+// 	 $group .= form_textfield(t('State'), 'state', $edit['state'], 30, 100);
+//	$group .= astcore_form_textfield(t('Country'), 'country', $edit['country'], 30, 100);
+	$group .= astcore_form_textfield(t('Mobile'), 'mobile', $edit['mobile'], 30, 100);
+	$group .= astcore_form_textfield(t('Main Number'), 'phonework', $edit['phonework'], 30, 100);
+	$group .= astcore_form_textfield(t('MSN NumberSerie'), 'didnumberserie', $edit['didnumberserie'], 60, 100);
+	$group .= astcore_form_textfield(t('Fax'), 'fax', $edit['fax'], 30, 100);
+	$group .= astcore_form_textfield(t('E-Mail'), 'email', $edit['email'], 30, 100);
+	$group .= astcore_form_textfield(t('Valuecode'), 'valuecode', $edit['valuecode'], 30, 100);
+//	$group .= astcore_form_textfield(t('Comment'), 'comment', $edit['comment'], 60, 1024);
+
+//	$group .= astcore_form_textfield(t('CustomerStatus'), 'customerstatus', $edit['customerstatus'], 30, 30);
+//	$group .= astcore_form_textfield(t('Active'), 'active', $active, 30, 100);
+	$group .= astcore_form_end();
+	$group .= form_textarea(t('Remarks'), 'comment', $edit['comment'], 60, 6, 15360);
+
+	if (arg(2) == 'change') {
+		$group .= '<B>'.t('Date Created').' : </B>'.$edit['date_created'].'<BR>';
+	}
+
+
+
+if (arg(2) == 'create'){
+	$group .= form_submit(t('Create'));
+} else {
+	$group .= form_submit(t('Change'));
+}
+	$group .= form_submit(t('Back'));
+	//$form = form_group(t('Account details'), $group);
+	return form($group);
+}
+
+///////////// End Partener Form /////////////////////////////////////////////////////////////
+
+
+///////////// Start SIP/IAX Create Form /////////////////////////////////////////////////////////////
+
+function astpartnerglobal_tech_create() {
+  global $user;
+  global $db_prefix;
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+  switch($op) {
+		case t('Create'):
+		  if (astpartnerglobal_tech_create_validate($edit)) {
+			astpartnerglobal_tech_create_save($edit);
+			drupal_goto("astglobal/tech/".arg(3));
+		  } else {
+			drupal_goto("astglobal/tech/".arg(3));
+		  }
+		  break;
+		case t('Update'):
+		  if (astpartnerglobal_tech_create_validate($edit)) {
+			astpartnerglobal_tech_create_save($edit);
+			drupal_goto("astglobal/tech/".arg(4));
+		  } else {
+			drupal_goto("astglobal/tech/".arg(4));
+			//drupal_goto("astglobal/tech/change/".arg(3));
+		  }
+		  break;
+		case t('Back'):
+			drupal_goto("astglobal/tech/".arg(3));
+		default:
+		    // $output = astpartnerglobal_tech_create_form($edit);
+  }
+
+  	if (arg(2) == 'change') {
+		$output = astpartnerglobal_tech_change_form($edit);
+ 	    $title = t('Edit Account'.': '.arg(3));
+	} elseif(arg(2) == 'create') {
+		$output = astpartnerglobal_tech_create_form($edit);
+	    $title = t('Create New SIP or IAX Account');
+	} else {
+		// $output .= astccorders_users_list($edit, $value);
+	}
+
+	astcore_printtheme($output, $title);	
+}
+
+function astpartnerglobal_tech_create_validate($edit) {
+  $myerror = 1;
+  $errors = array();
+
+	if (arg(2) == 'change') {
+		if (strlen($edit['clip']) <> 8 && strlen($edit['clip']) <> 0) {
+			$errors['clip'] = t('CLIP ikke gyldig');
+			$myerror = 0;
+		}
+		if (!is_numeric($edit['clip']) && strlen($edit['clip']) <> 0) {
+			$errors['clip'] = t('CLIP kan bare v√¶re tall');
+			$myerror = 0;
+		}
+	}
+	if (arg(2) == 'create') {
+		if (empty($edit['noaccounts'])) {
+			$errors['noaccounts'] = t('Must Be Numeric');
+			$myerror = 0;
+		}
+		if (strlen($edit['noaccounts']) > 2) {
+			$errors['noaccounts'] = t('To Large Number');
+			$myerror = 0;
+		}
+		if (!is_numeric($edit['noaccounts']) && strlen($edit['noaccounts']) <> 0) {
+			$errors['noaccounts'] = t('Must Be Numeric');
+			$myerror = 0;
+		}
+	}
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+function astpartnerglobal_create_uid($par) {
+/*
+CREATE TABLE new_users select * from cbk_users where uid = 2;
+insert into ipp_users select * from cbk_users where uid = 2;
+INSERT INTO ipp_users_roles (uid,rid) SELECT uid,2 FROM ipp_users where uid >1;
+*/
+	// $par->pid
+	// $par->db_prefix
+	// $par->email
+	// $par->phonework
+
+	$par->db_prefix = trim($par->db_prefix);
+	db_query("UPDATE ".$par->db_prefix."sequences set id = id+1 where name = '".$par->db_prefix."users_uid'");
+	$resuid = db_fetch_object(db_query("SELECT id from ".$par->db_prefix."sequences where name = '".$par->db_prefix."users_uid'"));
+
+	if (strlen($par->phonework) < 8) { $par->phonework = $par->pid; }
+
+	// db_query("CREATE TEMPORARY TABLE new_users select * from cbk_users where uid = 2");
+	db_query("UPDATE new_users set uid = ".$resuid->id.",name = '".$par->phonework."',mail = '".$par->email."',init = '".$par->email."'");
+	db_query("insert into ".$par->db_prefix."users select * from new_users");
+    $brand = 'cbktele';
+	if ($par->db_prefix == 'ipp_') { $brand = 'ippcom'; };
+
+	db_query("INSERT INTO `astuser`(`db_prefix`,`uid`,`partnerid`,`brand`,`CountryPrefix`,`currency`,`ipaddr`) VALUES ('".$par->db_prefix."', '".$resuid->id."', '".$par->pid."', '".$brand."', '47', 'NOK', '".$_SERVER['REMOTE_ADDR']."' )");
+	
+	$SQL = "INSERT INTO ".$par->db_prefix."users_roles (uid,rid) SELECT uid,2 FROM ".$par->db_prefix."users where uid = ".$resuid->id;
+	db_query($SQL);
+
+	return $resuid->id;
+}
+
+function astpartnerglobal_create_account($partnerid,$editech) {
+	if ((!is_numeric($partnerid)) or ($partnerid == '')) {
+	  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+    return; }
+
+	$SQL = "select IFNULL(us.uid,0) uid, pa.pid,pa.db_prefix,pa.email,pa.phonework from astpartner pa left join astuser us on us.partnerid = pa.pid and us.db_prefix = pa.db_prefix where pa.pid = ".$partnerid." limit 1";
+
+	$res = db_fetch_object(db_query($SQL)); 	
+	// $rescount = db_num_rows($res);
+	if ($res->uid == '0') {
+		$rescount = 'INGEN RECS';
+		$rescount =  astpartnerglobal_create_uid($res);
+	} else {
+		$rescount = $res->uid;
+		// $res->uid ,  $res->db_prefix 
+	}
+    $SQL = "select max(accountcode)+1 acc from astaccount where accountcode like '7%' and accountcode < '7750'";
+	$resacc = db_fetch_object(db_query($SQL));
+
+    // $acc = '70827';
+	$acc = $resacc->acc;
+	$tech = 'SIP';
+	if ($editech == 'IAX' or $editech == 'IAXSERV') { $tech = 'IAX'; };
+	$clip = $res->phonework;  // It is important to fill in Partners main number.
+
+    $SQL = "INSERT INTO `astaccount` ( `uid`,`db_prefix`,`accountcode`,`secret`,`tech`, `callerid`,`forcecallerid`,`serverid`,`date_created`,`trunkpath`,`creditlimit`,`trustrpid`) VALUES ('".$rescount."', '".$res->db_prefix."', '".$acc."', RIGHT(rand(),6), '".$tech."', '<".$clip.">' , '".$clip."', NULL , Now(), 'songterminate',3000, NULL )";
+	db_query($SQL);
+
+	if ($editech == 'SIPGW') {
+		//  $SQL = "UPDATE `astaccount` set callerid=NULL,forcecallerid=NULL,trustrpid='yes',serverid='sipgw' where accountcode = '".$acc."'";
+		$SQL = "UPDATE `astaccount` set callerid=NULL,trustrpid='yes',serverid='sipgw' where accountcode = '".$acc."'";
+		db_query($SQL);
+	}
+	if ($editech == 'SIPFAX') {
+		//  $SQL = "UPDATE `astaccount` set callerid=NULL,forcecallerid=NULL,trustrpid='yes',serverid='sipgw' where accountcode = '".$acc."'";
+		$SQL = "UPDATE `astaccount` set active='2',serverid='fax' where accountcode = '".$acc."'";
+		db_query($SQL);
+	}
+	if ($editech == 'IAXSERV') {
+		//  $SQL = "UPDATE `astaccount` set callerid=NULL,forcecallerid=NULL,trustrpid='yes',serverid='sipgw' where accountcode = '".$acc."'";
+		// TODO: Add IP for fromdomain and Host
+		$SQL = "UPDATE `astaccount` set callerid=NULL,forcecallerid=NULL,canreinvite='no',context='vox-pbx',language='no',nat='no',qualify='no',hardwareid='18', acgroup = 'IAXSERV' where accountcode = '".$acc."'";
+		db_query($SQL);
+	}
+	$SQL = "REPLACE INTO `astsumpartner`
+	SELECT pid, (select Count(*) from astuser us where partnerid = pid) user,
+	(SELECT Count(*) AS users FROM astaccount ac, astuser us 
+	WHERE ac.db_prefix = us.db_prefix and ac.uid = us.uid and 
+	ac.tech in (select actype from astactype where active = '1') and
+	partnerid = pid) account,
+	(SELECT Count(*) AS msn FROM astacdid did, astuser us,astpartner pa 
+	WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid 
+	and pa.pid = apa.pid) did
+	FROM astpartner apa where pid = ".$partnerid."";
+	db_query($SQL);
+
+	return $acc;
+}
+
+function astpartnerglobal_tech_create_save($edit) {
+  	if (arg(2) == 'change') {
+		if ((!is_numeric(arg(3))) or (arg(3) == '')) {
+		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return;
+		}
+/*		db_query("UPDATE astaccount SET forcecallerid = '%s',secret = '%s',callerid = '%s',serverid = '%s' WHERE accountcode = '%s'", $edit['clip'], $edit['secret'],$edit['callerid'],$edit['serverid'], arg(3));
+*/
+		db_query("UPDATE astaccount SET forcecallerid = '%s',secret = '%s',callerid = '%s',serverid = '%s' WHERE accountcode = '%s'", $edit['clip'], $edit['secret'],$edit['callerid'],$edit['serverid'], arg(3));
+
+		if ($edit['clip'] == '') {
+			db_query("UPDATE astaccount SET forcecallerid = NULL WHERE accountcode = '%s'", arg(3));
+		}
+		if ($edit['callerid'] == '') {
+			db_query("UPDATE astaccount SET callerid = NULL WHERE accountcode = '%s'", arg(3));
+		}
+		if ($edit['serverid'] == '') {
+			db_query("UPDATE astaccount SET serverid = NULL WHERE accountcode = '%s'", arg(3));
+		}
+		astcore_astlogdb("astaccount","U", $edit,arg(3));
+		drupal_set_message(t('Account changed').': '.arg(3));
+	} 
+	if (arg(2) == 'create') {
+		$newac = astpartnerglobal_create_account(arg(3),$edit['tech']);
+		//.$edit['tech'].'  '.$edit['noaccounts']
+		//drupal_set_message($edit['noaccounts'].' '.t('New Accounts added').  $res->uid . '  ' . $res->db_prefix . '  '.$rescount );
+		astcore_astlogdb("astaccount","I", $edit,$newac);
+		drupal_set_message(t('New Account added').': '.$newac);
+	}
+
+} // end Save function
+
+
+
+function astpartnerglobal_tech_create_form($edit) {
+	global $user;
+	global $db_prefix; 
+    $op = $_POST["op"];
+	$partnerid = arg(3);
+	if ((!is_numeric($partnerid)) or ($partnerid == '')) {
+  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return; 
+	}
+	$sql = db_query("select gtype, gname from astacgroup where active = 1 and mastergroup = 'CreateAccount' order by lineno");
+	// $statusopts['None2'] = t('Choose Provider');
+	while ($item = db_fetch_object($sql)) {
+		$statusopts[$item->gtype] = $item->gname;
+	}
+	$group .= form_select(t('Account Type (Tech)'), 'tech', $param, $statusopts);
+//	$group .= form_textfield(t('Number of Accounts'), 'noaccounts', '1', 20, 20);
+	$group .= form_hidden('noaccounts', '1', $edit = 'edit', $attributes = NULL);
+	$group .= form_submit(t('Create'));
+	$group .= form_submit(t('Back'));
+	return form($group);
+}
+
+///////////// End SIP/IAX Create Form /////////////////////////////////////////////////////////////
+
+function astpartnerglobal_tech_change_form($edit) {
+	global $user;
+	global $db_prefix; 
+    $op = $_POST["op"];
+	$account = arg(3);
+	if ((!is_numeric($account)) or ($account == '')) {
+  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return; 
+	}
+	$SQL = "SELECT forcecallerid,callerid,secret,IFNULL(serverid,'')serverid,tech FROM astaccount WHERE accountcode = '%s'";
+	$resq = db_query($SQL, $account);
+	$res = db_fetch_object($resq);
+
+/*	
+	if (empty($edit['email'])) {
+	if ($edit['clip'] == '') { $edit['clip'] = $sqlout->forcecallerid; }
+	$edit['callerid'] = $sqlout->callerid;
+	$edit['secret'] = $sqlout->secret;
+	$edit['serverid'] = $sqlout->serverid;
+*/
+
+	$group .= form_textfield(t('CLIP = The Callerid shown when calling PSTN<BR>CLIP = Calling Line Identification Presentation<BR>Remove this if Client is getting Remote Party ID (RPID) from PBX'), 'clip', $res->forcecallerid, 30, 30);
+	$group .= form_textfield(t('Callerid - The Callerid shown when calling in our Network<BR>NEVER CHANGE THIS. This value may only be activ and updated when Asterisk is reloaded<BR>Format: &lt;xxxxxxxx&gt;'), 'callerid', $res->callerid, 30, 30);
+	$group .= form_textfield(t('Password<BR>NEVER CHANGE THIS. This value may only be activ and updated when Asterisk is reloaded'), 'secret', $res->secret, 30, 30);
+	if (($res->tech == 'SIP') and ($res->serverid <> 'sipgw')) {
+		$group .= form_textfield(t('Serverid - The name of the Asterisk server where this account is valid'), 'serverid', $res->serverid, 30, 30);
+	}
+//	$group .= form_textfield(t('Number of Accounts'), 'noaccounts', '1', 20, 20);
+//	$group .= form_hidden('noaccounts', '1', $edit = 'edit', $attributes = NULL);
+	$group .= form_submit(t('Update'));
+	$group .= form_submit(t('Back'));
+	return form($group);
+}
+
+///////////// End Account Change Form /////////////////////////////////////////////////////////////
+
+
+
+function astpartnerglobal_msn_create_save($edit) {
+
+	$newac = astpartnerglobal_create_msn(arg(3),$edit['frommsn'],$edit['tomsn']);
+	//.$edit['frommsn'].'  '.$edit['nomsn']
+	drupal_set_message($edit['frommsn'].' '.$edit['nomsn'].' '.t('New Accounts added').' '.$newac);
+	// drupal_set_message(t('New MSN/DID added').': '.$newac);
+} // end Save function
+
+function astpartnerglobal_msn_validate($edit) {
+  $myerror = 1;
+  if (arg(2) == 'change') { return 0; }
+  $errors = array();
+   	if (empty($edit['nomsn'])) {
+		$errors['nomsn'] = t('Must Be Numeric');
+		$myerror = 0;
+	}
+	if (!is_numeric($edit['nomsn']) && strlen($edit['nomsn']) <> 0) {
+		$errors['nomsn'] = t('Must Be Numeric');
+		$myerror = 0;
+	}
+   	if (empty($edit['frommsn'])) {
+		$errors['frommsn'] = t('Must Be Numeric');
+		$myerror = 0;
+	}
+	if (!is_numeric($edit['frommsn']) && strlen($edit['frommsn']) <> 0) {
+		$errors['frommsn'] = t('Must Be Numeric');
+		$myerror = 0;
+	}
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+function astpartnerglobal_msn_create() {
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+  $drupal_goto = "astglobal/msn/".arg(4);
+
+  switch($op) {
+		case t('Create'):
+		  if (astpartnerglobal_msn_validate($edit)) {
+			astpartnerglobal_msn_create_save($edit);
+			drupal_goto($drupal_goto);
+		  } else {
+			drupal_goto($drupal_goto);
+		  }
+		  break;
+		 case t('Save MSN'):
+		//  if (astpartnerglobal_msn_validate($edit)) {
+			astpartnerglobal_msn_change_save($edit);
+			drupal_goto($drupal_goto);
+		 // } else {
+		//	drupal_goto($drupal_goto);
+		 // }
+		  break;
+		case t('Back'):
+			drupal_goto($drupal_goto);
+		default:
+		 //   $output = astpartnerglobal_msn_create_form($edit);
+  }
+
+
+  	if (arg(2) == 'change') {
+		$output = astpartnerglobal_msn_change_form($edit);
+ 	    $title = t('Edit MSN'.': '.arg(3));
+	} elseif(arg(2) == 'create') {
+		$output = astpartnerglobal_msn_create_form($edit);
+	    $title = t('MSN/DID');
+	} else {
+		// $output .= astccorders_users_list($edit, $value);
+	}
+
+	astcore_printtheme($output, $title);	
+}
+
+function astpartnerglobal_msn_create_form($edit) {
+    $op = $_POST["op"];
+
+/*	$sql = db_query("select gtype, gname from astacgroup where active = 1 and mastergroup = 'CreateAccount' order by gtype desc");
+	// $statusopts['None2'] = t('Choose Provider');
+	while ($item = db_fetch_object($sql)) {
+		$statusopts[$item->gtype] = $item->gname;
+	}
+	$group .= form_select(t('Account Type (Tech)'), 'tech', $param, $statusopts);
+*/
+    $SQL = "select phonework,fax,didnumberserie,LEFT(IFNULL(company,concat(firstname,' ',lastname)),35) company from astpartner where pid = ".arg(3);
+	$res = db_fetch_object(db_query($SQL)); 	
+	
+	$group .= '<BR><B>'.t('Company').' : </B>'.$res->company.'<BR>';
+	$group .= '<BR><B>'.t('Main Number').' : </B>'.$res->phonework.'<BR>';
+	$group .= '<BR><B>'.t('MSN NumberSerie').' : </B>'.$res->didnumberserie.'<BR>';
+	$group .= '<BR><B>'.t('Fax:').' : </B>'.$res->fax.'<BR>';
+	$group .= form_textfield(t('Create MSN/DID Number'), 'frommsn', $res->phonework, 20, 20);
+	// $group .= form_textfield(t('Number of MSN/DID to Create in a serie'), 'nomsn', '1', 20, 20);
+	$group .= form_hidden('nomsn', '1', $edit = 'edit', $attributes = NULL);
+	$group .= form_submit(t('Create'));
+	$group .= form_submit(t('Back'));
+	return form($group);
+}
+
+function astpartnerglobal_create_msn($partnerid,$frommsn,$nomsn) {
+    $acc = '0';
+	$SQL = "select IFNULL(us.uid,0) uid, pa.pid,pa.db_prefix,pa.email,pa.phonework from astpartner pa left join astuser us on us.partnerid = pa.pid and us.db_prefix = pa.db_prefix where pa.pid = ".$partnerid." limit 1";
+
+	$res = db_fetch_object(db_query($SQL)); 	
+	// $rescount = db_num_rows($res);
+	if ($res->uid == '0') {
+		$resuid = 'INGEN RECS';
+		$resuid =  astpartnerglobal_create_uid($res);
+		$acc    =  astpartnerglobal_create_account($partnerid,'SIPGW');
+	} else {
+		$resuid = $res->uid;
+		// $res->uid ,  $res->db_prefix 
+	}
+	 if ($acc == '0') {
+		$resacc = db_query("select accountcode from astaccount where uid = ".$resuid);
+		$tmp = db_num_rows($resacc);
+		if ($tmp > 0) { 
+			$resacc = db_fetch_object($resacc);
+			$acc = $resacc->accountcode;
+		} else {
+			$acc = astpartnerglobal_create_account($partnerid,'SIPGW');
+		}   //db_query($SQL);
+	 }
+
+	$SQL = "INSERT INTO `astacdid`(`countryprefix`,`did`,`db_prefix`,`uid`,`acgroup`,`forwardto`,`active`) VALUES ('47', '".$frommsn."','".$res->db_prefix."','".$resuid."','Porting','".$acc."','1')";
+	db_query($SQL);
+
+
+/*
+    $SQL = "select max(accountcode)+1 acc from astaccount where accountcode like '7%' and accountcode < '7750'";
+	$resacc = db_fetch_object(db_query($SQL));
+
+	$acc = $resacc->acc;
+	$tech = 'SIP';
+	if ($editech == 'IAX') { $tech = 'IAX'; };
+    $clip = '22885819';
+
+    $SQL = "INSERT INTO `astaccount` ( `uid`,`db_prefix`,`accountcode`,`secret`,`tech`, `callerid`,`forcecallerid`,`serverid`,`date_created`,`trunkpath`,`creditlimit`,`trustrpid`) VALUES ('".$rescount."', '".$res->db_prefix."', '".$acc."', RIGHT(rand(),6), '".$tech."', '<".$acc.">' , '".$clip."', NULL , Now(), 'songterminate',3000, NULL )";
+	db_query($SQL);
+
+	if ($editech == 'SIPGW') {
+		$SQL = "UPDATE `astaccount` set callerid=NULL,forcecallerid=NULL,trustrpid='yes',serverid='sipgw' where accountcode = '".$acc."'";
+		db_query($SQL);
+	}
+*/
+	$SQL = "REPLACE INTO `astsumpartner`
+	SELECT pid, (select Count(*) from astuser us where partnerid = pid) user,
+	(SELECT Count(*) AS users FROM astaccount ac, astuser us 
+	WHERE ac.db_prefix = us.db_prefix and ac.uid = us.uid and 
+	ac.tech in (select actype from astactype where active = '1') and
+	partnerid = pid) account,
+	(SELECT Count(*) AS msn FROM astacdid did, astuser us,astpartner pa 
+	WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid 
+	and pa.pid = apa.pid) did
+	FROM astpartner apa where pid = ".arg(3)."";
+	db_query($SQL);
+
+	return $resuid;
+
+}
+
+
+///////////// End MSN Change Form /////////////////////////////////////////////////////////////
+
+function astpartnerglobal_msn_change_form($edit) {
+	global $user;
+	global $db_prefix; 
+    $op = $_POST["op"];
+	$did = arg(3);
+	if ((!is_numeric($did)) or ($did == '')) {
+  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return; 
+	}
+	$SQL = "SELECT forwardto,remarks FROM astacdid WHERE did = '%s'";
+	$resq = db_query($SQL, $did);
+	$res = db_fetch_object($resq);
+	$group .= form_textfield(t('Forwardto Account'), 'forwardto', $res->forwardto, 30, 30);
+	$group .= form_textfield(t('Remarks'), 'remarks', $res->remarks, 60, 30);
+
+	$group .= form_submit(t('Save MSN'));
+	$group .= form_submit(t('Back'));
+	return form($group);
+}
+
+function astpartnerglobal_msn_change_save($edit) {
+	global $user;
+	global $db_prefix; 
+	$did = arg(3);
+	if ((!is_numeric($did)) or ($did == '')) {
+  		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return; 
+	}
+	$SQL = "UPDATE astacdid SET forwardto = '%s',remarks = '%s' WHERE did = '%s'";
+	$resq = db_query($SQL, trim($edit['forwardto']),trim($edit['remarks']),$did);
+
+	drupal_set_message(t('Updated MSN').' '.$did);
+} // end Save function

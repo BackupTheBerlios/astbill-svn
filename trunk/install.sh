@@ -17,7 +17,7 @@
 # This program is free software, distributed under the terms of
 # the GNU General Public License
 #
-# 2006.03.17 Version 0.9.18
+# 2006.12.31 Version 0.9.20
 # 
 #
 #
@@ -40,7 +40,7 @@ echo "Be aware, that this setup of AstBill is not secure. If you would like to"
 echo "have a secure AstBill setup, you'd better go on the manual way, and set"
 echo "every option carefully. This automatically working setup gives you an"
 echo "instantly working AstBill installation, but it is not meant to be used on"
-echo "online servers."
+echo "online or production servers."
 echo ""
 echo "Type in yes if you are sure you want to continue"
 
@@ -81,8 +81,6 @@ mkdir -p /var/lib/asterisk/sounds/
 # mkdir -p /var/lib/asterisk/mohmp3
 # Used for temporary outgoing calling files.
 
-
-
 # Apache need access to mysql.sock
 # Debian              /var/run/mysqld/mysqld.sock
 # Fedora and CentOS   /var/lib/mysql/mysql.sock
@@ -91,8 +89,6 @@ mkdir -p /var/run/mysqld
 mkdir -p /var/lib/mysql
 chmod 777 -R /var/run/mysqld
 chmod 777 -R /var/lib/mysql
-
-#cp -fr /home/astbill/astbill-0.9.0.7/cgi-bin/* /var/wwwroot/localhost/cgi-bin/
 
 mkdir -p /var/spool/asterisk/tmp
 mkdir -p /var/spool/asterisk/outgoing
@@ -109,7 +105,7 @@ mkdir -p /etc/asterisk
 # echo "wooo, hi there You answered: $X"
 
 
-cp -r etc/asterisk1.2.sample/* /etc/asterisk
+cp -r etc/asterisk1.2.6.sample/* /etc/asterisk
 cp -r etc/asterisk/* /etc/asterisk
 chmod 777 /etc/asterisk/*
 # chmod 770 /etc/asterisk/*

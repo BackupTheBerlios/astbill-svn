@@ -23,18 +23,18 @@ If you are using CentOS LinuX ( Asterisk@home) Have a look at the following URLs
 http://astbill.com/mysql5centos
 http://astbill.com/node/135
 
-How to install MySQL 5.0.18
+How to install MySQL 5.0.27
 
 mkdir -p /usr/local
 cd /usr/local
 # See http://dev.mysql.com/downloads/mysql/5.0.html for exact download location
-# They sometimes change it.
-wget http://dev.mysql.com/get/Downloads/MySQL-5.0/mysql-standard-5.0.24a-linux-i686.tar.gz/from/http://mirrors.dotsrc.org/mysql/
+# It may change in the future.
+wget http://dev.mysql.com/get/Downloads/MySQL-5.0/mysql-standard-5.0.27-linux-i686.tar.gz/from/http://mirrors.dotsrc.org/mysql/
 
-tar zxvf mysql-standard-5.0.24a-linux-i686.tar.gz
+tar zxvf mysql-standard-5.0.27-linux-i686.tar.gz
 groupadd mysql
 useradd -g mysql mysql
-ln -s /usr/local/mysql-standard-5.0.24a-linux-i686 mysql
+ln -s /usr/local/mysql-standard-5.0.27-linux-i686 mysql
 cd mysql
 
 scripts/mysql_install_db --user=mysql
