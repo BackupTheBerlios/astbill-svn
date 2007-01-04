@@ -1391,3 +1391,9 @@ VALUES (
     $ret[] = update_sql("");
   return $ret;
 }
+
+/*
+ALTER TABLE `astcdr` ADD INDEX `invoiceid_ccn` ( `invoiceid` , `ccn` );
+ALTER TABLE `astcdr` ADD INDEX `invoiceid_account_ccn` ( `invoiceid` , `accountcode`,`ccn` );
+
+*/

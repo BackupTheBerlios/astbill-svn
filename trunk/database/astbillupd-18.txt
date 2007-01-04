@@ -1393,5 +1393,8 @@ VALUES (
 /*
 ALTER TABLE `astcdr` ADD INDEX `invoiceid_ccn` ( `invoiceid` , `ccn` );
 ALTER TABLE `astcdr` ADD INDEX `invoiceid_account_ccn` ( `invoiceid` , `accountcode`,`ccn` );
+alter table astinvoiceline drop invoiceno;
+ALTER TABLE astinvoiceline ADD `isoid` char(2) NOT NULL default '' AFTER productcode
+ALTER TABLE astinvrecurr ADD `active` tinyint(1) NOT NULL default '1' AFTER invoiceid
 
 */
