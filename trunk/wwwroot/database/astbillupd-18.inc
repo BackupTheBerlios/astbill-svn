@@ -1668,9 +1668,7 @@ function astbill_update_054() {
   `country2` varchar(128) NOT NULL default '',
   `active` tinyint(1) NOT NULL default '1',
   PRIMARY KEY  (`language`,`isoid`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-");
-    $ret[] = update_sql("");
+) ENGINE=MyISAM DEFAULT CHARSET=latin1");
     $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'hu', 'Hungary', 'Hungary', 1)");
     $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'is', 'Iceland', 'Iceland', 1)");
     $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'in', 'India', 'India', 1)");
@@ -2163,6 +2161,10 @@ function astbill_update_054() {
     $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'hk', 'Hongkong', 'Hongkong', 1)");
     $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'z8', 'Satelite & Other', 'Satelite & Other', 1)");
     $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'z8', 'Satelite & Other', 'Satelite & Other', 1)");
+
+  return $ret;
+}
+
   /*  
     $ret[] = update_sql("")");
     $ret[] = update_sql("")");
@@ -2170,7 +2172,6 @@ function astbill_update_054() {
     $ret[] = update_sql("")");
     $ret[] = update_sql("")");
 */
-  return $ret;
 
 /*
 ;
