@@ -203,7 +203,7 @@ function astpartneradmin_webuser() {
 		$output .= astpartneradmin_webuser_list($value, $edit);
 	}
 	
-	$title = 'View Web Users for this Customers';
+	$title = 'View Web Users for this Customer / Partner';
 	astcore_printtheme($output, $title);
 }
 
