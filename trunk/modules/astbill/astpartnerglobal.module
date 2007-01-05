@@ -886,6 +886,10 @@ INSERT INTO ipp_users_roles (uid,rid) SELECT uid,2 FROM ipp_users where uid >1;
 	$SQL = "INSERT INTO ".$par->db_prefix."users_roles (uid,rid) SELECT uid,2 FROM ".$par->db_prefix."users where uid = ".$resuid->id;
 	db_query($SQL);
 
+	$SQL = "REPLACE INTO `astsumpartner` SELECT pid, (select Count(*) from astuser us where partnerid = pid) user, (SELECT Count(*) AS users FROM astaccount ac, astuser us WHERE ac.db_prefix = us.db_prefix and ac.uid = us.uid and ac.tech in (select actype from astactype where active = '1') and partnerid = pid) account, (SELECT Count(*) AS msn FROM astacdid did, astuser us,astpartner pa 	WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid and pa.pid = apa.pid) did FROM astpartner apa WHERE pid = '%s'";
+
+	db_query($SQL,$par->pid);
+
 	return $resuid->id;
 }
 
@@ -943,8 +947,8 @@ function astpartnerglobal_create_account($partnerid,$editech) {
 	(SELECT Count(*) AS msn FROM astacdid did, astuser us,astpartner pa 
 	WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid 
 	and pa.pid = apa.pid) did
-	FROM astpartner apa where pid = ".$partnerid."";
-	db_query($SQL);
+	FROM astpartner apa where pid = '%s'";
+	db_query($SQL,$partnerid);
 
 	return $acc;
 }
