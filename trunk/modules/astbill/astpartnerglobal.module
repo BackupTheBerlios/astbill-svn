@@ -270,18 +270,17 @@ $gettech = db_fetch_object(db_query($SQL));
 }
 
 function astpartnerglobal_tech() {
-/*	global $user;
-	global $db_prefix; 
-	$edit = $_POST["edit"];
-	$op = $_POST["op"];
-*/
+	global $db_prefix;
 	$value = arg(2);   
-	$SQL = "SELECT left(db_prefix,3) prefix,pid,LEFT(IFNULL(company,concat(firstname,' ',lastname)),35) company FROM astpartner pa WHERE pa.pid = '".$value."'";
+	$SQL = "SELECT left(db_prefix,3) prefix,db_prefix,pid,LEFT(IFNULL(company,concat(firstname,' ',lastname)),35) company FROM astpartner pa WHERE pa.pid = '".$value."'";
 	$res = db_fetch_object(db_query($SQL));
 	$output .= astglobal_tech_list($value, $edit);
 	$title = $res->prefix.' '.$res->pid.' - '.$res->company;
-
-	$overmenu = array(url('astglobal/tech/create/'.$res->pid).'">'.t('Create New SIP/IAX Account'));
+	
+	$overmenu = 'FALSE'
+	if ($db_prefix == $res->db_prefix) {
+		$overmenu = array(url('astglobal/tech/create/'.$res->pid).'">'.t('Create New SIP/IAX Account'));
+	}
 	astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu);
 }
 

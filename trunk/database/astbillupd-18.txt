@@ -2228,6 +2228,11 @@ function astbill_update_056() {
 	GROUP BY workflow
 	order by lineno");
 
+    $ret[] = update_sql("INSERT INTO `astacgroup` VALUES ('SIP', 'SIP VOIP Telephone / ATA Box', 'CreateAccount', 0, 1, 20, NULL, '')");
+    $ret[] = update_sql("INSERT INTO `astacgroup` VALUES ('IAX', 'IAX - Single Account', 'CreateAccount', 0, 1, 40, NULL, '')");
+    $ret[] = update_sql("INSERT INTO `astacgroup` VALUES ('IAXSERV', 'IAX - Asterisk Server', 'CreateAccount', 0, 1, 50, NULL, '')");
+    $ret[] = update_sql("INSERT INTO `astacgroup` VALUES ('SIPFAX', 'SIP Fax t.38', 'CreateAccount', 0, 1, 30, NULL, '')");
+
   return $ret;
 
 }
