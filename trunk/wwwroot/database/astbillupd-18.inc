@@ -2186,6 +2186,9 @@ function astbill_update_056() {
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
   return $ret;
+
+}
+
 /*
 function astbill_update_057() {
   $ret = array();
