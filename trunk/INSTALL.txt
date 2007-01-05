@@ -65,7 +65,9 @@ Read INSTALLMYSQL.txt and Prepare MySQL 5 for AstBill.
 You have to edit /etc/asterisk/res_mysql.conf for your OS.
 You have to put the right path to mysql.sock. (See INSTALLMYSQL.txt. You need the same path as in /etc/my.cnf)
 
-Ensure wwwroot of AstBill is visible for the Web Server
+AstBills WebRoot is now in /home/astbill/wwwroot This is what has to be published to the Web server
+
+On Linux Ensure wwwroot of AstBill is visible for the Apache Web Server
 
 ln -s /home/astbill/wwwroot /var/www/html/astbill
 

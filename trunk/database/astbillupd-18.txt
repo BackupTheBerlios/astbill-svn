@@ -1396,5 +1396,9 @@ ALTER TABLE `astcdr` ADD INDEX `invoiceid_account_ccn` ( `invoiceid` , `accountc
 alter table astinvoiceline drop invoiceno;
 ALTER TABLE astinvoiceline ADD `isoid` char(2) NOT NULL default '' AFTER productcode
 ALTER TABLE astinvrecurr ADD `active` tinyint(1) NOT NULL default '1' AFTER invoiceid
+ALTER TABLE astsystem CHANGE value value varchar(2048) NOT NULL default ''
+ALTER TABLE astorderip ADD agentuid int(10) unsigned NOT NULL default '0' after workflow;
+ALTER TABLE astorderip ADD agentremarks text NOT NULL default '' after agentuid;
+
 
 */
