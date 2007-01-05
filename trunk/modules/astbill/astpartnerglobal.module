@@ -464,7 +464,7 @@ function astpartnerglobal_webuser() {
 	// astcore_printtheme($output, $title);
 
 	$overmenu = 'FALSE';
-	if ($db_prefix == $res->db_prefix) {	
+	if ($db_prefix == arg(3)) {	
 		$overmenu = array(url('astpartneradm/usercreate/'.arg(2)).'">'.t('Create New Web User/Agent'));
 	}
 	astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu);
