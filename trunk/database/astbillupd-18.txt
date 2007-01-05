@@ -2186,6 +2186,47 @@ function astbill_update_056() {
     $ret[] = update_sql("ALTER TABLE `astpartner` ADD `isoid` char(2) NOT NULL default '' AFTER `state`");
     $ret[] = update_sql("update astpartner set active = 1 where pid = 30000");
     $ret[] = update_sql("INSERT INTO `astacgroup` VALUES ('pbx_', 'AstBill', 'Site', 0, 1, 0, NULL, '')");
+    $ret[] = update_sql("update astpartner set company = 'Default Customer / Partner' where pid = 30000");
+
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (44, '02071006433', 'pbx_', 1, NULL, NULL, 'AstBillDemo', '70103', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (44, '02081006443', 'pbx_', 1, NULL, NULL, 'AstBillDemo', '70103&70107', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (44, '08700682725', 'pbx_', 2, NULL, NULL, 'AstBillDemo', '70106', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (44, '08700682727', 'pbx_', 2, NULL, NULL, 'AstBillDemo', '70108', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (1, '13602267846', 'pbx_', 2, NULL, NULL, 'AstBillDemo', '70108', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (1, '14324147846', 'pbx_', 2, NULL, NULL, 'AstBillDemo', '70111', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (1, '19950797846', 'pbx_', 2, NULL, NULL, 'AstBillDemo', '70382', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+
+    $ret[] = update_sql("REPLACE INTO `astsumaccount`
+	SELECT `accountcode`, (
+	select count(*) from astcdr cdr where cdr.accountcode = acc.accountcode and `dialstatus` like 'ANSWER%'
+	and `answeredtime` <> 0 and `trunk` <> 'Local'
+	) AS `countcalls`,
+	(select IFNULL(sum(cdr.price),0) from astcdr cdr where cdr.accountcode = acc.accountcode and cdr.dialstatus like 'ANSWER%' and cdr.answeredtime <> 0 
+	and trunk <> 'Local' 
+	) AS `sumcost`,
+	(select IFNULL(sum(pay.paidamount),0) from `astpayment` pay WHERE pay.accountcode = acc.accountcode
+	) AS `sumpaid`
+	FROM astaccount acc");
+    $ret[] = update_sql("REPLACE INTO `astsumpartner`
+	SELECT pid, (select Count(*) from astuser us where partnerid = pid) user,
+	(SELECT Count(*) AS users FROM astaccount ac, astuser us 
+	WHERE ac.db_prefix = us.db_prefix and ac.uid = us.uid and 
+	ac.tech in (select actype from astactype where active = '1') and
+	partnerid = pid) account,
+	(SELECT Count(*) AS msn FROM astacdid did, astuser us,astpartner pa 
+	WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid 
+	and pa.pid = apa.pid) did
+	FROM astpartner apa");
+    $ret[] = update_sql("REPLACE INTO `astsumorderip`
+	SELECT 'ipp_',CONCAT(YEAR(Now()),'/',WEEK(Now())) uke, Count(*) count,ROUND(Count(*) * 100 / (SELECT Count(*) count from astorderip),2) prosent,
+	(SELECT Count(*) count from astorderip) totalt, 
+	(SELECT Count(*) from astacdid where db_prefix = 'ipp_') msn,
+	(SELECT Count(*) from astaccount where db_prefix = 'ipp_' and tech = 'SIP') SIP,
+	workflow WF, Now()
+	FROM astorderip ord
+	left join astacgroup gr on ord.workflow = gr.gtype
+	GROUP BY workflow
+	order by lineno");
 
   return $ret;
 
@@ -2194,6 +2235,7 @@ function astbill_update_056() {
 /*
 function astbill_update_057() {
   $ret = array();
+
 
     $ret[] = update_sql("");
     $ret[] = update_sql("");

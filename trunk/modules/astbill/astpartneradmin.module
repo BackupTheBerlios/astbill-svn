@@ -107,7 +107,7 @@ function astpartneradmin_main() {
 		$output .= astpartneradmin_list($value, $edit);
 	}
 	
-	$title = 'View';
+	$title = 'View SIP/IAX Accounts for this Partners users';
 	astcore_printtheme($output, $title);
 }
 
