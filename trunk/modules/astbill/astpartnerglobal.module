@@ -277,11 +277,7 @@ function astpartnerglobal_tech() {
 	$output .= astglobal_tech_list($value, $edit);
 	$title = $res->prefix.' '.$res->pid.' - '.$res->company;
 	
-	$overmenu = 'FALSE';
-	// if ($db_prefix == $res->db_prefix) {
-	if ($db_prefix == arg(3)) {
-		$overmenu = array(url('astglobal/tech/create/'.$res->pid).'">'.t('Create New SIP/IAX Account'));
-	}
+	$overmenu = array(url('astglobal/tech/create/'.$res->pid).'">'.t('Create New SIP/IAX Account'));
 	astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu);
 }
 
@@ -467,7 +463,10 @@ function astpartnerglobal_webuser() {
 	$title = 'View Web Users / Agents';
 	// astcore_printtheme($output, $title);
 
-	$overmenu = array(url('astpartneradm/usercreate/'.arg(2)).'">'.t('Create New Web User/Agent'));
+	$overmenu = 'FALSE';
+	if ($db_prefix == $res->db_prefix) {	
+		$overmenu = array(url('astpartneradm/usercreate/'.arg(2)).'">'.t('Create New Web User/Agent'));
+	}
 	astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu);
 }
 
