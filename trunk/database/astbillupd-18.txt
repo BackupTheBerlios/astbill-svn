@@ -2183,6 +2183,7 @@ function astbill_update_056() {
   PRIMARY KEY  (`prefix`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `isoid` char(2) NOT NULL default '' AFTER `state`");
   return $ret;
 
 }
@@ -2190,7 +2191,7 @@ function astbill_update_056() {
 /*
 function astbill_update_057() {
   $ret = array();
-    $ret[] = update_sql("");
+
     $ret[] = update_sql("");
     $ret[] = update_sql("");
     $ret[] = update_sql("");
@@ -2212,6 +2213,10 @@ function astbill_update_056() {
     $ret[] = update_sql("");
     $ret[] = update_sql("");
   return $ret;
+
+
+
+
 
 */
 

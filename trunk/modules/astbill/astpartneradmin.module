@@ -373,7 +373,7 @@ function astpartneradmin_user_form() {
 
 if (arg(1) == 'useredit'){ // START CHECK IF PartnerCHANGE
 
-$sql = db_query("SELECT company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,comment,customerstatus,active FROM astpartner WHERE pid = '%s' and db_prefix ='".$db_prefix."'", arg(3));
+$sql = db_query("SELECT company, firstname, lastname, contactperson, address1, address2, zip, city, state, isoid, mobile, phonework, fax,email,comment,customerstatus,active FROM astpartner WHERE pid = '%s' and db_prefix ='".$db_prefix."'", arg(3));
 $sqlout = db_fetch_object($sql);
 
 	$firstname = $sqlout->firstname;
@@ -383,7 +383,7 @@ $sqlout = db_fetch_object($sql);
 	$zip = $sqlout->zip;
 	$city = $sqlout->city;
 	//$state = $sqlout->state;
-	$country = $sqlout->countrycode;
+	$country = $sqlout->isoid;
 	$mobile = $sqlout->mobile;
 	//$phonework = $sqlout->phonework;
 	//$fax = $sqlout->fax;
