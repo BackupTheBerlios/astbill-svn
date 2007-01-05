@@ -1671,9 +1671,7 @@ function astbill_update_055() {
   PRIMARY KEY  (`language`,`isoid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1");
 
-  return $ret;
-}
-/*
+
     $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'hu', 'Hungary', 'Hungary', 1)");
     $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'is', 'Iceland', 'Iceland', 1)");
     $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'in', 'India', 'India', 1)");
@@ -2169,5 +2167,5 @@ function astbill_update_055() {
 
   return $ret;
 }
-*/
+
 
