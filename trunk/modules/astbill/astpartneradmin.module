@@ -222,7 +222,7 @@ function astpartneradmin_webuser_list($value, $edit) {
 
 	$partnerid = astcore_partnerid();
 
-	$sql = "SELECT usr.uid, astuser.partnerid, usr.name, usr.mail, date(astuser.timestamp) created FROM {users} usr INNER JOIN astuser ON usr.uid = astuser.uid WHERE partnerid = '".$partnerid."' and astuser.db_prefix = '".$db_prefix."' AND CONCAT_WS(',', usr.uid, LOWER('usr.name'), LOWER('usr.mail')) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT usr.uid, astuser.partnerid, usr.name, usr.mail, date(astuser.timestamp) created FROM {users} usr INNER JOIN astuser ON usr.uid = astuser.uid WHERE partnerid = '".$partnerid."' and astuser.db_prefix = '".$db_prefix."' and usr.uid <> 0 AND CONCAT_WS(',', usr.uid, LOWER('usr.name'), LOWER('usr.mail')) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 
 
 	$result = pager_query($sql, $maxline);
