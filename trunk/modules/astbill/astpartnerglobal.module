@@ -725,11 +725,11 @@ if (arg(2) == 'change'){
 	}
 	if (arg(2) == 'create'){ 
 		if (user_access('astpartnerglobal Global')) { 					  
-			$group .= form_select(t('Provider'), 'provider', $param, $statusopts);
+			$group .= form_select(t('Provider Database'), 'provider', $param, $statusopts);
 		}
 	}
 	if (arg(2) == 'change') {
-		$group .= t('Provider').' : <B>'.$edit['provider'].'</B><BR>';
+		$group .= t('Provider Database').' : <B>'.$edit['provider'].'</B><BR>';
 	}
 
 	$group .= astcore_form_start();
