@@ -482,7 +482,7 @@ function astpartnerglobal_webuser_list($value, $edit) {
 	//array('data' => t('Operations'), 'colspan' => 2)
 	);
 
-	$sql = "SELECT usr.uid, astuser.partnerid, usr.name, usr.mail, date(astuser.timestamp) created FROM ".arg(3)."users usr INNER JOIN astuser ON usr.uid = astuser.uid WHERE partnerid = '".arg(2)."' AND CONCAT_WS(',', usr.uid, LOWER('usr.name'), LOWER('usr.mail')) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT usr.uid, astuser.partnerid, usr.name, usr.mail, date(astuser.timestamp) created FROM ".arg(3)."users usr INNER JOIN astuser ON usr.uid = astuser.uid WHERE partnerid = '".arg(2)."' and astuser.uid <> 0 AND CONCAT_WS(',', usr.uid, LOWER('usr.name'), LOWER('usr.mail')) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 
 
 	$result = pager_query($sql, $maxline);
