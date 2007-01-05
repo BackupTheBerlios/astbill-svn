@@ -135,7 +135,7 @@ function astpartneradmin_list($value, $edit) {
 
 /*	$sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,5) accountname FROM astaccount, {users} usr WHERE astaccount.uid = usr.uid AND db_prefix ='".$db_prefix."' AND tech IN (select actype from astactype where active = '1' ) AND CONCAT_WS(',', accountcode, tech, usr.uid, LOWER('usr.name'), accountname, usr.name) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 */	
-	$sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,5) accountname, partnerid FROM astaccount aa, astuser au, {users} usr WHERE partnerid = '".$partnerid."' and aa.uid = au.uid and aa.uid = usr.uid AND aa.db_prefix = 'cbk_' AND aa.db_prefix = au.db_prefix AND tech IN (select actype from astactype where active = '1')  AND CONCAT_WS(',', accountcode, tech, usr.uid, LOWER('usr.name'), accountname, usr.name) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,5) accountname, partnerid FROM astaccount aa, astuser au, {users} usr WHERE partnerid = '".$partnerid."' and aa.uid = au.uid and aa.uid = usr.uid AND aa.db_prefix = '$db_prefix' AND aa.db_prefix = au.db_prefix AND tech IN (select actype from astactype where active = '1')  AND CONCAT_WS(',', accountcode, tech, usr.uid, LOWER('usr.name'), accountname, usr.name) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 
 
 	$result = pager_query($sql, $maxline);
