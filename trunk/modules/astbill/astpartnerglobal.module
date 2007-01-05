@@ -466,6 +466,9 @@ function astpartnerglobal_webuser() {
 	
 	$title = 'View';
 	astcore_printtheme($output, $title);
+
+	$overmenu = array(url('astpartneradm/usercreate/'.$res->pid).'">'.t('Create New User'));
+	astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu);
 }
 
 function astpartnerglobal_webuser_list($value, $edit) {
