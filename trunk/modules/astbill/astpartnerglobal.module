@@ -718,7 +718,8 @@ if (arg(2) == 'change'){
 }
 
 	$sql = db_query("select gtype, gname from astacgroup where active = 1 and mastergroup = 'Site' order by gtype");
-	$statusopts['None2'] = t('Choose Provider');
+	$sql = db_query("select distinct db_prefix gtype, LEFT(db_prefix,3) gname from astpartner order by gtype");
+	$statusopts['None2'] = t('Choose Database');
 	while ($item = db_fetch_object($sql)) {
 		$statusopts[$item->gtype] = $item->gname;
 	}

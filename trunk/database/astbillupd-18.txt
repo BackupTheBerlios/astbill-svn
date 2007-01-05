@@ -2184,6 +2184,9 @@ function astbill_update_056() {
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
     $ret[] = update_sql("ALTER TABLE `astpartner` ADD `isoid` char(2) NOT NULL default '' AFTER `state`");
+    $ret[] = update_sql("update astpartner set active = 1 where pid = 30000");
+    $ret[] = update_sql("INSERT INTO `astacgroup` VALUES ('pbx_', 'AstBill', 'Site', 0, 1, 0, NULL, '')");
+
   return $ret;
 
 }
@@ -2192,6 +2195,8 @@ function astbill_update_056() {
 function astbill_update_057() {
   $ret = array();
 
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
     $ret[] = update_sql("");
     $ret[] = update_sql("");
     $ret[] = update_sql("");
