@@ -4,7 +4,7 @@
 
 /* First Modified By Are Casilla for AstBill 6 Nov 2005
    12 Nov 2005    AstBill-0.9.0.12    www.astbill.com
-   01 Jan 2006    AstBill-0.9.0.20    Are Casilla
+   01 Jan 2007    AstBill-0.9.0.20    Are Casilla
 
    Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
    Are Casilla        <areast  [Guess What?] astartelecom.com>
@@ -67,6 +67,7 @@ $sql_updates = array(
   "2006-12-31e" => "astbill_update_053",
   "2007-01-01a" => "astbill_update_054",
   "2007-01-01b" => "astbill_update_055",
+  "2007-01-01c" => "astbill_update_056",
 );
 
 function update_sql($sql) {
@@ -884,7 +885,7 @@ function astbill_update_048() {
   $ret = array();
 //  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `invoiceno` int(11) UNSIGNED DEFAULT NULL AFTER `extension`");
   $ret[] = update_sql("ALTER TABLE `astplans` ADD `addseconds` INT( 10 ) DEFAULT '0' NOT NULL AFTER `connectcharge`");
-  $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceno_id` ( `invoiceno` , `id` )");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceid_id` ( `invoiceid` , `id` )");
   $ret[] = update_sql("ALTER TABLE `astcdr` ADD `priceid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `status` ");
   $ret[] = update_sql("ALTER TABLE `astcdr` ADD `countrycode` INT( 6 ) DEFAULT '0' NOT NULL AFTER `priceid` , ADD `productcode` VARCHAR( 40 ) AFTER `countrycode`");
   $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `productcode` VARCHAR( 40 ) NULL DEFAULT '950'");
@@ -1176,6 +1177,7 @@ ADD `uid` INT( 10 ) NOT NULL DEFAULT '0' AFTER `partnerid`");
 }
 function astbill_update_052() {
   $ret = array();
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `rateplan3` varchar(128) DEFAULT '' NOT NULL AFTER `brand`");
     $ret[] = update_sql("CREATE TABLE `astccnrate` (
   `id` int(11) NOT NULL auto_increment,
   `rateplan` varchar(128) NOT NULL default '',
@@ -1194,7 +1196,6 @@ function astbill_update_052() {
   UNIQUE KEY `rateplanccn` (`rateplan`,`ccn`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=10000");
     $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `language2` varchar(256) DEFAULT '' NOT NULL");
-    $ret[] = update_sql("ALTER TABLE `astccncountry` RENAME `astccnlist`");
     $ret[] = update_sql("ALTER TABLE `astcdr` ADD `ccn` int(11) DEFAULT '0' NOT NULL AFTER `priceid`");
     $ret[] = update_sql("DROP VIEW IF EXISTS `asvcallrate`");
           /* Remember the order of 'case when' is important as the statement close when first match  */
@@ -1387,10 +1388,6 @@ VALUES (
     $ret[] = update_sql("ALTER TABLE astparcontact ADD `date_created` datetime NOT NULL default '0000-00-00 00:00:00' AFTER description");
     $ret[] = update_sql("ALTER TABLE astparcontact ADD `active` tinyint(1) NOT NULL default '1' AFTER description");
     $ret[] = update_sql("ALTER TABLE astparcontact CHANGE description remarks varchar(15360) NOT NULL default ''");
-    $ret[] = update_sql("");
-    $ret[] = update_sql("");
-    $ret[] = update_sql("");
-    $ret[] = update_sql("");
   return $ret;
 }
 
@@ -2167,5 +2164,54 @@ function astbill_update_055() {
 
   return $ret;
 }
+
+function astbill_update_056() {
+  $ret = array();
+    $ret[] = update_sql("CREATE TABLE `astccnlist` (
+  `ccn` int(11) NOT NULL default '0',
+  `isoid` char(2) NOT NULL default '',
+  `mobile` tinyint(1) NOT NULL default '0',
+  `productcode` varchar(40) NOT NULL default '950',
+  `traffictype` varchar(255) NOT NULL default '',
+  PRIMARY KEY  (`ccn`),
+  KEY `productcode` (`productcode`,`ccn`),
+  KEY `countrycode` (`ccn`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+    $ret[] = update_sql("CREATE TABLE `astccnprefix` (
+  `prefix` varchar(40) NOT NULL default '',
+  `ccn` int(11) NOT NULL default '0',
+  `description` varchar(128) NOT NULL default '',
+  PRIMARY KEY  (`prefix`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+  return $ret;
+/*
+function astbill_update_057() {
+  $ret = array();
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+  return $ret;
+*/
+
+/*
+
+function astbill_update_056() {
+  $ret = array();
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+  return $ret;
+
+*/
 
 
