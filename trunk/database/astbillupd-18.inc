@@ -65,7 +65,8 @@ $sql_updates = array(
   "2006-12-31c" => "astbill_update_051",
   "2006-12-31d" => "astbill_update_052",
   "2006-12-31e" => "astbill_update_053",
-  "2007-01-01" => "astbill_update_054",
+  "2007-01-01a" => "astbill_update_054",
+  "2007-01-01b" => "astbill_update_055",
 );
 
 function update_sql($sql) {
@@ -1393,7 +1394,7 @@ VALUES (
   return $ret;
 }
 
-function astbill_update_053() {
+function astbill_update_054() {
   $ret = array();
     $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceid_ccn` ( `invoiceid` , `ccn` )");
     $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceid_account_ccn` ( `invoiceid` , `accountcode`,`ccn` )");
@@ -1659,7 +1660,7 @@ function astbill_update_053() {
   return $ret;
 }
 
-function astbill_update_054() {
+function astbill_update_055() {
   $ret = array();
     $ret[] = update_sql("CREATE TABLE `astccniso` (
   `language` char(2) NOT NULL default '',
