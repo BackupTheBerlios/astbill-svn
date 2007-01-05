@@ -368,6 +368,9 @@ if ($partnerid == '130019' and $db_prefix = 'cbk_') {  // WARNING - Just Tempora
 	db_query("update " . $db_prefix . "users_roles set rid = '6' where uid = ".$newuser->uid);
 }   
 
+$SQL = "REPLACE INTO `astsumpartner` SELECT pid, (select Count(*) from astuser us where partnerid = pid) user, (SELECT Count(*) AS users FROM astaccount ac, astuser us WHERE ac.db_prefix = us.db_prefix and ac.uid = us.uid and ac.tech in (select actype from astactype where active = '1') and partnerid = pid) account, (SELECT Count(*) AS msn FROM astacdid did, astuser us,astpartner pa 	WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid and pa.pid = apa.pid) did FROM astpartner apa WHERE pid = '%s'";
+db_query($SQL,arg(2));
+
 drupal_set_message(t('User '.$name.' Created with id: '.$newuser->uid));
 
 }
