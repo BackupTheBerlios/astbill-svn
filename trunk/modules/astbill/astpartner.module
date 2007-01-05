@@ -338,9 +338,9 @@ if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
 	$paiddate = null;
 
 
-db_query("INSERT INTO astpartner (db_prefix, company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,customerstatus,active) 
-VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
-$db_prefix,$edit['company'], $edit['firstname'],$edit['lastname'],$edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['fax'],$edit['email'], $edit['customerstatus'], $edit['active']);
+db_query("INSERT INTO astpartner (db_prefix, company, firstname, lastname, contactperson, address1, address2, zip, city, state, mobile, phonework, fax,email,customerstatus,active) 
+VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+$db_prefix,$edit['company'], $edit['firstname'],$edit['lastname'],$edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['mobile'], $edit['phonework'], $edit['fax'],$edit['email'], $edit['customerstatus'], $edit['active']);
 
 
 drupal_set_message(t('New Partner added'));
@@ -356,8 +356,8 @@ if (arg(2) == 'change'){ // START CHECK IF PartnerCHANGE
   }
 // if ($edit['company'] == '') { $edit['company'] = null; }
 
-db_query("UPDATE astpartner SET company = '%s',firstname = '%s',lastname = '%s', contactperson = '%s', address1 = '%s', address2 = '%s', zip = '%s', city = '%s', state = '%s', countrycode = '%s', mobile = '%s', phonework = '%s', email = '%s', fax = '%s',comment = '%s', customerstatus = '%s', active = '%s' WHERE pid = '%s' and db_prefix = '%s'"
-, $edit['company'], $edit['firstname'],$edit['lastname'], $edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['email'],$edit['fax'], $edit['comment'], $edit['customerstatus'], $edit['active'], arg(3), $db_prefix);
+db_query("UPDATE astpartner SET company = '%s',firstname = '%s',lastname = '%s', contactperson = '%s', address1 = '%s', address2 = '%s', zip = '%s', city = '%s', state = '%s', mobile = '%s', phonework = '%s', email = '%s', fax = '%s',comment = '%s', customerstatus = '%s', active = '%s' WHERE pid = '%s' and db_prefix = '%s'"
+, $edit['company'], $edit['firstname'],$edit['lastname'], $edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['mobile'], $edit['phonework'], $edit['email'],$edit['fax'], $edit['comment'], $edit['customerstatus'], $edit['active'], arg(3), $db_prefix);
 
 
 drupal_set_message(t('Partner changed'));
@@ -415,7 +415,6 @@ $sqlout = db_fetch_object($sql);
 	$zip = $sqlout->zip;
 	$city = $sqlout->city;
 	$state = $sqlout->state;
-	$country = $sqlout->countrycode;
 	$mobile = $sqlout->mobile;
 	$phonework = $sqlout->phonework;
 	$fax = $sqlout->fax;
