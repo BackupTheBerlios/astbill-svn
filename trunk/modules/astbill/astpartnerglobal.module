@@ -277,7 +277,7 @@ function astpartnerglobal_tech() {
 	$output .= astglobal_tech_list($value, $edit);
 	$title = $res->prefix.' '.$res->pid.' - '.$res->company;
 	
-	$overmenu = 'FALSE'
+	$overmenu = 'FALSE';
 	if ($db_prefix == $res->db_prefix) {
 		$overmenu = array(url('astglobal/tech/create/'.$res->pid).'">'.t('Create New SIP/IAX Account'));
 	}
