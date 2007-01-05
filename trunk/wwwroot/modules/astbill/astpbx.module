@@ -179,7 +179,7 @@ FROM astaccount acc WHERE tech in (select actype from astactype where active = '
 		array('data' => $res->sumpaid, 'align' => 'right'),
 		array('data' => $res->countcalls, 'align' => 'right'),
 		'<a href="'.url('astpbx/account/'.$res->accountcode).'"><img border="0" src="files/astar/view.gif"></a>',
-		'<a href="'.$sql->value.$res->accountcode.'"><img border="0" src="files/astar/topup.gif"></a>'
+		'<a href="'.url($sql->value.$res->accountcode).'"><img border="0" src="files/astar/topup.gif"></a>'
 		);
 	}
 

@@ -107,7 +107,15 @@ function astpartneradmin_main() {
 		$output .= astpartneradmin_list($value, $edit);
 	}
 	
-	$title = 'View';
+	// $title = 'View SIP/IAX Accounts for this Partners users';
+
+	$partnerid = astcore_partnerid();
+	$SQL = "SELECT left(db_prefix,3) prefix,pid,LEFT(IFNULL(company,concat(firstname,' ',lastname)),30) company FROM astpartner pa WHERE pa.pid = '".$partnerid."'";
+	$res = db_fetch_object(db_query($SQL));
+	$output .= astglobal_tech_list($value, $edit);
+	$title = $res->pid.' - ' . $res->company . ' - View SIP/IAX Accounts';
+
+
 	astcore_printtheme($output, $title);
 }
 
@@ -135,7 +143,7 @@ function astpartneradmin_list($value, $edit) {
 
 /*	$sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,5) accountname FROM astaccount, {users} usr WHERE astaccount.uid = usr.uid AND db_prefix ='".$db_prefix."' AND tech IN (select actype from astactype where active = '1' ) AND CONCAT_WS(',', accountcode, tech, usr.uid, LOWER('usr.name'), accountname, usr.name) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 */	
-	$sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,5) accountname, partnerid FROM astaccount aa, astuser au, cbk_users usr WHERE partnerid = '".$partnerid."' and aa.uid = au.uid and aa.uid = usr.uid AND aa.db_prefix = 'cbk_' AND aa.db_prefix = au.db_prefix AND tech IN (select actype from astactype where active = '1')  AND CONCAT_WS(',', accountcode, tech, usr.uid, LOWER('usr.name'), accountname, usr.name) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT accountcode, tech, secret, startingcredit, usr.uid, usr.name, LEFT(accountname,5) accountname, partnerid FROM astaccount aa, astuser au, {users} usr WHERE partnerid = '".$partnerid."' and aa.uid = au.uid and aa.uid = usr.uid AND aa.db_prefix = '$db_prefix' AND aa.db_prefix = au.db_prefix AND tech IN (select actype from astactype where active = '1')  AND CONCAT_WS(',', accountcode, tech, usr.uid, LOWER('usr.name'), accountname, usr.name) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 
 
 	$result = pager_query($sql, $maxline);
@@ -203,7 +211,7 @@ function astpartneradmin_webuser() {
 		$output .= astpartneradmin_webuser_list($value, $edit);
 	}
 	
-	$title = 'View';
+	$title = 'View Web Users for this Customer / Partner';
 	astcore_printtheme($output, $title);
 }
 
@@ -222,7 +230,7 @@ function astpartneradmin_webuser_list($value, $edit) {
 
 	$partnerid = astcore_partnerid();
 
-	$sql = "SELECT usr.uid, astuser.partnerid, usr.name, usr.mail, date(astuser.timestamp) created FROM {users} usr INNER JOIN astuser ON usr.uid = astuser.uid WHERE partnerid = '".$partnerid."' and astuser.db_prefix = '".$db_prefix."' AND CONCAT_WS(',', usr.uid, LOWER('usr.name'), LOWER('usr.mail')) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT usr.uid, astuser.partnerid, usr.name, usr.mail, date(astuser.timestamp) created FROM {users} usr INNER JOIN astuser ON usr.uid = astuser.uid WHERE partnerid = '".$partnerid."' and astuser.db_prefix = '".$db_prefix."' and usr.uid <> 0 AND CONCAT_WS(',', usr.uid, LOWER('usr.name'), LOWER('usr.mail')) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 
 
 	$result = pager_query($sql, $maxline);
@@ -351,14 +359,17 @@ db_query("UPDATE astuser set partnerid = '%s', firstname='%s', lastname='%s', ad
 $edit['firstname'], $edit['lastname'], $edit['address1'], $edit['zip'], $edit['place'], "Norway", $edit['mobile'],$edit['valuecode'],$db_prefix);
 
 if ($partnerid == '30005' and $db_prefix = 'cbk_') {  // WARNING - Just Temporary
-	db_query("update cbk_users_roles set rid = '6' where uid = ".$newuser->uid);
+	db_query("update " . $db_prefix . "users_roles set rid = '6' where uid = ".$newuser->uid);
 }   
 if ($partnerid == '130016' and $db_prefix = 'cbk_') {  // WARNING - Just Temporary
-	db_query("update cbk_users_roles set rid = '6' where uid = ".$newuser->uid);
+	db_query("update " . $db_prefix . "users_roles set rid = '6' where uid = ".$newuser->uid);
 }   
 if ($partnerid == '130019' and $db_prefix = 'cbk_') {  // WARNING - Just Temporary
-	db_query("update cbk_users_roles set rid = '6' where uid = ".$newuser->uid);
+	db_query("update " . $db_prefix . "users_roles set rid = '6' where uid = ".$newuser->uid);
 }   
+
+$SQL = "REPLACE INTO `astsumpartner` SELECT pid, (select Count(*) from astuser us where partnerid = pid) user, (SELECT Count(*) AS users FROM astaccount ac, astuser us WHERE ac.db_prefix = us.db_prefix and ac.uid = us.uid and ac.tech in (select actype from astactype where active = '1') and partnerid = pid) account, (SELECT Count(*) AS msn FROM astacdid did, astuser us,astpartner pa 	WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid and pa.pid = apa.pid) did FROM astpartner apa WHERE pid = '%s'";
+db_query($SQL,arg(2));
 
 drupal_set_message(t('User '.$name.' Created with id: '.$newuser->uid));
 
@@ -373,7 +384,7 @@ function astpartneradmin_user_form() {
 
 if (arg(1) == 'useredit'){ // START CHECK IF PartnerCHANGE
 
-$sql = db_query("SELECT company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,comment,customerstatus,active FROM astpartner WHERE pid = '%s' and db_prefix ='".$db_prefix."'", arg(3));
+$sql = db_query("SELECT company, firstname, lastname, contactperson, address1, address2, zip, city, state, isoid, mobile, phonework, fax,email,comment,customerstatus,active FROM astpartner WHERE pid = '%s' and db_prefix ='".$db_prefix."'", arg(3));
 $sqlout = db_fetch_object($sql);
 
 	$firstname = $sqlout->firstname;
@@ -383,7 +394,7 @@ $sqlout = db_fetch_object($sql);
 	$zip = $sqlout->zip;
 	$city = $sqlout->city;
 	//$state = $sqlout->state;
-	$country = $sqlout->countrycode;
+	$country = $sqlout->isoid;
 	$mobile = $sqlout->mobile;
 	//$phonework = $sqlout->phonework;
 	//$fax = $sqlout->fax;
@@ -439,7 +450,7 @@ $partnerid = astcore_partnerid();
 
 // if (arg(1) == 'useredit'){ 
 
-$SQL = "SELECT name, firstname, lastname, mail FROM cbk_users, astuser WHERE astuser.db_prefix = 'cbk_' and cbk_users.uid = astuser.uid and astuser.uid = %s and partnerid = '%s'";
+$SQL = "SELECT name, firstname, lastname, mail FROM  {users}, astuser WHERE astuser.db_prefix = '$db_prefix' and {users}.uid = astuser.uid and astuser.uid = %s and partnerid = '%s'";
 
 $sqlfetch = db_query($SQL, $userid,$partnerid);
 //$sqlfetch = db_query($SQL);

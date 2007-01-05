@@ -270,17 +270,13 @@ $gettech = db_fetch_object(db_query($SQL));
 }
 
 function astpartnerglobal_tech() {
-/*	global $user;
-	global $db_prefix; 
-	$edit = $_POST["edit"];
-	$op = $_POST["op"];
-*/
+	global $db_prefix;
 	$value = arg(2);   
-	$SQL = "SELECT left(db_prefix,3) prefix,pid,LEFT(IFNULL(company,concat(firstname,' ',lastname)),35) company FROM astpartner pa WHERE pa.pid = '".$value."'";
+	$SQL = "SELECT left(db_prefix,3) prefix,db_prefix,pid,LEFT(IFNULL(company,concat(firstname,' ',lastname)),35) company FROM astpartner pa WHERE pa.pid = '".$value."'";
 	$res = db_fetch_object(db_query($SQL));
 	$output .= astglobal_tech_list($value, $edit);
 	$title = $res->prefix.' '.$res->pid.' - '.$res->company;
-
+	
 	$overmenu = array(url('astglobal/tech/create/'.$res->pid).'">'.t('Create New SIP/IAX Account'));
 	astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu);
 }
@@ -464,8 +460,14 @@ function astpartnerglobal_webuser() {
 		$output .= astpartnerglobal_webuser_list($value, $edit);
 	}
 	
-	$title = 'View';
-	astcore_printtheme($output, $title);
+	$title = 'View Web Users / Agents';
+	// astcore_printtheme($output, $title);
+
+	$overmenu = 'FALSE';
+	if ($db_prefix == arg(3)) {	
+		$overmenu = array(url('astpartneradm/usercreate/'.arg(2)).'">'.t('Create New Web User/Agent'));
+	}
+	astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu);
 }
 
 function astpartnerglobal_webuser_list($value, $edit) {
@@ -479,7 +481,7 @@ function astpartnerglobal_webuser_list($value, $edit) {
 	//array('data' => t('Operations'), 'colspan' => 2)
 	);
 
-	$sql = "SELECT usr.uid, astuser.partnerid, usr.name, usr.mail, date(astuser.timestamp) created FROM ".arg(3)."users usr INNER JOIN astuser ON usr.uid = astuser.uid WHERE partnerid = '".arg(2)."' AND CONCAT_WS(',', usr.uid, LOWER('usr.name'), LOWER('usr.mail')) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT usr.uid, astuser.partnerid, usr.name, usr.mail, date(astuser.timestamp) created FROM ".arg(3)."users usr INNER JOIN astuser ON usr.uid = astuser.uid WHERE partnerid = '".arg(2)."' and astuser.uid <> 0 AND CONCAT_WS(',', usr.uid, LOWER('usr.name'), LOWER('usr.mail')) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 
 
 	$result = pager_query($sql, $maxline);
@@ -631,7 +633,7 @@ if (!user_access('astpartnerglobal Global')) { $edit['provider'] = $db_prefix; }
 	$paiddate = null;
 	$active = "1";
 
-db_query("INSERT INTO astpartner (db_prefix, company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,customerstatus,active, companyno,didnumberserie,valuecode,comment,date_created) 
+db_query("INSERT INTO astpartner (db_prefix, company, firstname, lastname, contactperson, address1, address2, zip, city, state, isoid, mobile, phonework, fax,email,customerstatus,active, companyno,didnumberserie,valuecode,comment,date_created) 
 VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s','%s','%s','%s', '%s',Now())", 
 $edit['provider'],$edit['company'], $edit['firstname'],$edit['lastname'],$edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['fax'],$edit['email'], $edit['customerstatus'], $active,$edit['companyno'],$edit['didnumberserie'],$edit['valuecode'],$edit['comment']);
 
@@ -649,7 +651,7 @@ if (arg(2) == 'change'){ // START CHECK IF PartnerCHANGE
 	  }
 	if (user_access('astpartnerglobal Global')) { $dbprefix = '%';} else { $dbprefix = $db_prefix;}					  
 
-	db_query("UPDATE astpartner SET company = '%s',firstname = '%s',lastname = '%s', contactperson = '%s', address1 = '%s', address2 = '%s', zip = '%s', city = '%s', state = '%s', countrycode = '%s', mobile = '%s', phonework = '%s', email = '%s', fax = '%s',comment = '%s', customerstatus = '%s', companyno = '%s',didnumberserie = '%s',valuecode = '%s' WHERE pid = '%s' and db_prefix like '%s'"
+	db_query("UPDATE astpartner SET company = '%s',firstname = '%s',lastname = '%s', contactperson = '%s', address1 = '%s', address2 = '%s', zip = '%s', city = '%s', state = '%s', isoid = '%s', mobile = '%s', phonework = '%s', email = '%s', fax = '%s',comment = '%s', customerstatus = '%s', companyno = '%s',didnumberserie = '%s',valuecode = '%s' WHERE pid = '%s' and db_prefix like '%s'"
 	, $edit['company'], $edit['firstname'],$edit['lastname'], $edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['email'],$edit['fax'], $edit['comment'], $edit['customerstatus'], $edit['companyno'], $edit['didnumberserie'], $edit['valuecode'], arg(3),$dbprefix);
 	
 	astcore_astlogdb("astpartner","U", $edit,arg(3));
@@ -688,7 +690,7 @@ if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
 */
 if (arg(2) == 'change'){ 
 	if (user_access('astpartnerglobal Global')) { $dbprefix = '%';} else { $dbprefix = $db_prefix;}					  
-	$sql = db_query("SELECT company,companyno, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, didnumberserie, fax,email,comment,customerstatus,active,date_created,LEFT(db_prefix,3) provider,valuecode FROM astpartner WHERE pid = '%s' and db_prefix like '%s'", arg(3),$dbprefix);
+	$sql = db_query("SELECT company,companyno, firstname, lastname, contactperson, address1, address2, zip, city, state, isoid, mobile, phonework, didnumberserie, fax,email,comment,customerstatus,active,date_created,LEFT(db_prefix,3) provider,valuecode FROM astpartner WHERE pid = '%s' and db_prefix like '%s'", arg(3),$dbprefix);
 	$sqlout = db_fetch_object($sql);
 
 	$edit['company'] = $sqlout->company;
@@ -718,17 +720,18 @@ if (arg(2) == 'change'){
 }
 
 	$sql = db_query("select gtype, gname from astacgroup where active = 1 and mastergroup = 'Site' order by gtype");
-	$statusopts['None2'] = t('Choose Provider');
+	$sql = db_query("select distinct db_prefix gtype, LEFT(db_prefix,3) gname from astpartner order by gtype");
+	$statusopts['None2'] = t('Choose Database');
 	while ($item = db_fetch_object($sql)) {
 		$statusopts[$item->gtype] = $item->gname;
 	}
 	if (arg(2) == 'create'){ 
 		if (user_access('astpartnerglobal Global')) { 					  
-			$group .= form_select(t('Provider'), 'provider', $param, $statusopts);
+			$group .= form_select(t('Provider Database'), 'provider', $param, $statusopts);
 		}
 	}
 	if (arg(2) == 'change') {
-		$group .= t('Provider').' : <B>'.$edit['provider'].'</B><BR>';
+		$group .= t('Provider Database').' : <B>'.$edit['provider'].'</B><BR>';
 	}
 
 	$group .= astcore_form_start();
@@ -882,6 +885,10 @@ INSERT INTO ipp_users_roles (uid,rid) SELECT uid,2 FROM ipp_users where uid >1;
 	$SQL = "INSERT INTO ".$par->db_prefix."users_roles (uid,rid) SELECT uid,2 FROM ".$par->db_prefix."users where uid = ".$resuid->id;
 	db_query($SQL);
 
+	$SQL = "REPLACE INTO `astsumpartner` SELECT pid, (select Count(*) from astuser us where partnerid = pid) user, (SELECT Count(*) AS users FROM astaccount ac, astuser us WHERE ac.db_prefix = us.db_prefix and ac.uid = us.uid and ac.tech in (select actype from astactype where active = '1') and partnerid = pid) account, (SELECT Count(*) AS msn FROM astacdid did, astuser us,astpartner pa 	WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid and pa.pid = apa.pid) did FROM astpartner apa WHERE pid = '%s'";
+
+	db_query($SQL,$par->pid);
+
 	return $resuid->id;
 }
 
@@ -939,8 +946,8 @@ function astpartnerglobal_create_account($partnerid,$editech) {
 	(SELECT Count(*) AS msn FROM astacdid did, astuser us,astpartner pa 
 	WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid 
 	and pa.pid = apa.pid) did
-	FROM astpartner apa where pid = ".$partnerid."";
-	db_query($SQL);
+	FROM astpartner apa where pid = '%s'";
+	db_query($SQL,$partnerid);
 
 	return $acc;
 }
