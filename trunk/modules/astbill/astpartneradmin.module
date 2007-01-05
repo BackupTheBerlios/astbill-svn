@@ -110,10 +110,10 @@ function astpartneradmin_main() {
 	// $title = 'View SIP/IAX Accounts for this Partners users';
 
 	$partnerid = astcore_partnerid();
-	$SQL = "SELECT left(db_prefix,3) prefix,pid,LEFT(IFNULL(company,concat(firstname,' ',lastname)),25) company FROM astpartner pa WHERE pa.pid = '".$partnerid."'";
+	$SQL = "SELECT left(db_prefix,3) prefix,pid,LEFT(IFNULL(company,concat(firstname,' ',lastname)),30) company FROM astpartner pa WHERE pa.pid = '".$partnerid."'";
 	$res = db_fetch_object(db_query($SQL));
 	$output .= astglobal_tech_list($value, $edit);
-	$title = $res->prefix . ' ' . $res->pid.' - ' . $res->company . ' - View SIP/IAX Accounts';
+	$title = $res->pid.' - ' . $res->company . ' - View SIP/IAX Accounts';
 
 
 	astcore_printtheme($output, $title);
