@@ -631,7 +631,7 @@ if (!user_access('astpartnerglobal Global')) { $edit['provider'] = $db_prefix; }
 	$paiddate = null;
 	$active = "1";
 
-db_query("INSERT INTO astpartner (db_prefix, company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,customerstatus,active, companyno,didnumberserie,valuecode,comment,date_created) 
+db_query("INSERT INTO astpartner (db_prefix, company, firstname, lastname, contactperson, address1, address2, zip, city, state, isoid, mobile, phonework, fax,email,customerstatus,active, companyno,didnumberserie,valuecode,comment,date_created) 
 VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s','%s','%s','%s', '%s',Now())", 
 $edit['provider'],$edit['company'], $edit['firstname'],$edit['lastname'],$edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['fax'],$edit['email'], $edit['customerstatus'], $active,$edit['companyno'],$edit['didnumberserie'],$edit['valuecode'],$edit['comment']);
 
@@ -649,7 +649,7 @@ if (arg(2) == 'change'){ // START CHECK IF PartnerCHANGE
 	  }
 	if (user_access('astpartnerglobal Global')) { $dbprefix = '%';} else { $dbprefix = $db_prefix;}					  
 
-	db_query("UPDATE astpartner SET company = '%s',firstname = '%s',lastname = '%s', contactperson = '%s', address1 = '%s', address2 = '%s', zip = '%s', city = '%s', state = '%s', countrycode = '%s', mobile = '%s', phonework = '%s', email = '%s', fax = '%s',comment = '%s', customerstatus = '%s', companyno = '%s',didnumberserie = '%s',valuecode = '%s' WHERE pid = '%s' and db_prefix like '%s'"
+	db_query("UPDATE astpartner SET company = '%s',firstname = '%s',lastname = '%s', contactperson = '%s', address1 = '%s', address2 = '%s', zip = '%s', city = '%s', state = '%s', isoid = '%s', mobile = '%s', phonework = '%s', email = '%s', fax = '%s',comment = '%s', customerstatus = '%s', companyno = '%s',didnumberserie = '%s',valuecode = '%s' WHERE pid = '%s' and db_prefix like '%s'"
 	, $edit['company'], $edit['firstname'],$edit['lastname'], $edit['contactperson'], $edit['address1'], $edit['address2'], $edit['zip'], $edit['city'], $edit['state'], $edit['country'], $edit['mobile'], $edit['phonework'], $edit['email'],$edit['fax'], $edit['comment'], $edit['customerstatus'], $edit['companyno'], $edit['didnumberserie'], $edit['valuecode'], arg(3),$dbprefix);
 	
 	astcore_astlogdb("astpartner","U", $edit,arg(3));
@@ -688,7 +688,7 @@ if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
 */
 if (arg(2) == 'change'){ 
 	if (user_access('astpartnerglobal Global')) { $dbprefix = '%';} else { $dbprefix = $db_prefix;}					  
-	$sql = db_query("SELECT company,companyno, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, didnumberserie, fax,email,comment,customerstatus,active,date_created,LEFT(db_prefix,3) provider,valuecode FROM astpartner WHERE pid = '%s' and db_prefix like '%s'", arg(3),$dbprefix);
+	$sql = db_query("SELECT company,companyno, firstname, lastname, contactperson, address1, address2, zip, city, state, isoid, mobile, phonework, didnumberserie, fax,email,comment,customerstatus,active,date_created,LEFT(db_prefix,3) provider,valuecode FROM astpartner WHERE pid = '%s' and db_prefix like '%s'", arg(3),$dbprefix);
 	$sqlout = db_fetch_object($sql);
 
 	$edit['company'] = $sqlout->company;
