@@ -467,7 +467,7 @@ function astpartnerglobal_webuser() {
 	$title = 'View Web Users / Agents';
 	// astcore_printtheme($output, $title);
 
-	$overmenu = array(url('astpartneradm/usercreate/'.$res->pid).'">'.t('Create New Web User/Agent'));
+	$overmenu = array(url('astpartneradm/usercreate/'.arg(2).'">'.t('Create New Web User/Agent'));
 	astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu);
 }
 
