@@ -405,7 +405,7 @@ if (arg(2) == 'create'){ // START CHECK IF PartnerCREATE
 
 if (arg(2) == 'change'){ // START CHECK IF PartnerCHANGE
 
-$sql = db_query("SELECT company, firstname, lastname, contactperson, address1, address2, zip, city, state, countrycode, mobile, phonework, fax,email,comment,customerstatus,active FROM astpartner WHERE pid = '%s' and db_prefix ='".$db_prefix."'", arg(3));
+$sql = db_query("SELECT company, firstname, lastname, contactperson, address1, address2, zip, city, state, mobile, phonework, fax,email,comment,customerstatus,active FROM astpartner WHERE pid = '%s' and db_prefix ='".$db_prefix."'", arg(3));
 $sqlout = db_fetch_object($sql);
 
 	$company = $sqlout->company;
