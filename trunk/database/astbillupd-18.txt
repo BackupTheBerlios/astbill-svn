@@ -2267,9 +2267,10 @@ function astbill_update_056() {
   return $ret;
 
 
+ALTER TABLE `astuser` ADD `isagent` tinyint(1) NOT NULL default '1' AFTER `ordercode`;
+ALTER TABLE `astacgroup` ADD `commission` tinyint(1) NOT NULL default '0' AFTER `active`;
 
-
-
+active
 */
 
 

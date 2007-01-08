@@ -210,8 +210,8 @@ function astpartneradmin_webuser() {
 		$output = astcore_search($edit, $posturl = url('astpartneradm/users'), $value);
 		$output .= astpartneradmin_webuser_list($value, $edit);
 	}
-	
-	$title = 'View Web Users for this Customer / Partner';
+	$partnerid = astcore_partnerid();
+	$title = 'Web Users/Agents for Customer/Partner: '.$partnerid;
 	astcore_printtheme($output, $title);
 }
 
@@ -223,6 +223,8 @@ function astpartneradmin_webuser_list($value, $edit) {
 	$header = array(
 	array('data' => t('User'), 'field' => 'name'),
 	array('data' => t('UID'), 'field' => 'uid', 'sort' => 'desc'),
+	array('data' => t('Agent')),
+	array('data' => t('Zip')),
 	array('data' => t('Created')),
 	array('data' => t('mail'))
 	//array('data' => t('Operations'), 'colspan' => 2)
@@ -230,7 +232,7 @@ function astpartneradmin_webuser_list($value, $edit) {
 
 	$partnerid = astcore_partnerid();
 
-	$sql = "SELECT usr.uid, astuser.partnerid, usr.name, usr.mail, date(astuser.timestamp) created FROM {users} usr INNER JOIN astuser ON usr.uid = astuser.uid WHERE partnerid = '".$partnerid."' and astuser.db_prefix = '".$db_prefix."' and usr.uid <> 0 AND CONCAT_WS(',', usr.uid, LOWER('usr.name'), LOWER('usr.mail')) LIKE LOWER('%".$value."%')". tablesort_sql($header);
+	$sql = "SELECT usr.uid, astuser.partnerid, usr.name, usr.mail, date(astuser.timestamp) created,astuser.isagent,astuser.zip FROM {users} usr INNER JOIN astuser ON usr.uid = astuser.uid WHERE partnerid = '".$partnerid."' and astuser.db_prefix = '".$db_prefix."' and usr.uid <> 0 AND CONCAT_WS(',', usr.uid, LOWER('usr.name'), LOWER('usr.mail')) LIKE LOWER('%".$value."%')". tablesort_sql($header);
 
 
 	$result = pager_query($sql, $maxline);
@@ -240,7 +242,11 @@ function astpartneradmin_webuser_list($value, $edit) {
 		$rows[] = array(
 		'<A HREF="'.url('astpartneradm/useredit/'.$res->uid).'">'.$res->name.'</A>'.'&nbsp;&nbsp;',
 		'<A HREF="'.url('astpartneradm/useredit/'.$res->uid).'">'.$res->uid.'</A>',
+		array('data' => $res->isagent, 'align' => 'center'),
+
 //		'<IMG BORDER="0" SRC="files/astar/'.$res->tech.'.gif">',
+
+		$res->zip.'&nbsp;&nbsp;', 
 		$res->created.'&nbsp;&nbsp;', 
 		$res->mail, 
 
