@@ -885,7 +885,6 @@ function astbill_update_048() {
   $ret = array();
 //  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `invoiceno` int(11) UNSIGNED DEFAULT NULL AFTER `extension`");
   $ret[] = update_sql("ALTER TABLE `astplans` ADD `addseconds` INT( 10 ) DEFAULT '0' NOT NULL AFTER `connectcharge`");
-  $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceid_id` ( `invoiceid` , `id` )");
   $ret[] = update_sql("ALTER TABLE `astcdr` ADD `priceid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `status` ");
   $ret[] = update_sql("ALTER TABLE `astcdr` ADD `countrycode` INT( 6 ) DEFAULT '0' NOT NULL AFTER `priceid` , ADD `productcode` VARCHAR( 40 ) AFTER `countrycode`");
   $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `productcode` VARCHAR( 40 ) NULL DEFAULT '950'");
@@ -1023,6 +1022,7 @@ function astbill_update_050() {
     $ret[] = update_sql("ALTER TABLE `astaccount` ADD `trunkpath` VARCHAR( 128 ) AFTER `shortnumber`");
     $ret[] = update_sql("ALTER TABLE `astacdid` ADD `zipcode` VARCHAR( 128 ) NULL AFTER `batchno`");
     $ret[] = update_sql("ALTER TABLE `astlogsms` ADD `invoiceid` int(11) unsigned AFTER `date_scheduled` ");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceid_id` ( `invoiceid` , `id` )");
     $ret[] = update_sql("ALTER TABLE `astlogsms` ADD `remarks` VARCHAR( 256 ) AFTER `invoiceid` ");
     $ret[] = update_sql("ALTER TABLE `astpartner` ADD `didnumberserie` VARCHAR( 256 ) DEFAULT ' ' NOT NULL AFTER `phonework`");
     $ret[] = update_sql("ALTER TABLE `astpartner` ADD `companyno` VARCHAR( 128 ) AFTER `birthdate` ,
@@ -1221,7 +1221,6 @@ from asvcallrate asv, astccnrate rat
 where asv.ccn = rat.ccn and asv.rateplan3 = rat.rateplan");
     $ret[] = update_sql("ALTER TABLE `astcdr` ADD `billtime3` int(11) DEFAULT '0' NOT NULL AFTER `billtime");
     $ret[] = update_sql("ALTER TABLE `astcdr` ADD `price3` decimal(10,2) DEFAULT '0.00' NOT NULL AFTER `price`");
-    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `rateplan3` varchar(128) DEFAULT '' NOT NULL AFTER `brand`");
     $ret[] = update_sql("ALTER TABLE `astcdr` ADD `invoiceid3` int(11) DEFAULT '0' NOT NULL AFTER `invoiceid`");
     $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `remarks` `remarks` VARCHAR( 1024 ) NOT NULL DEFAULT ''");
     // Show list of PDF reports
@@ -2269,7 +2268,16 @@ function astbill_update_056() {
   return $ret;
 
 
+ALTER TABLE `astuser` ADD `isagent` tinyint(1) NOT NULL default '1' AFTER `ordercode`;
+ALTER TABLE `astacgroup` ADD `commission` tinyint(1) NOT NULL default '0' AFTER `active`;
+ALTER TABLE `astorderip` ADD `date_sendt` date NOT NULL default '0000-00-00' AFTER `date_followup`;
+ALTER TABLE `astorderip` ADD `fieldvendor` varchar(40) NOT NULL default '' AFTER `date_sendt`;
+ALTER TABLE `astorderip` ADD `fieldremarks` text NOT NULL default '' AFTER `fieldvendor`;
+ALTER TABLE `astorderip` ADD `productcode` varchar(40) NOT NULL default '' AFTER `customers_order`;
+ALTER TABLE `astorderip` ADD `sendtref` varchar(256) NOT NULL default '' AFTER `date_sendt`;
 
+ALTER TABLE `astorderip` CHANGE `fieldvendor` `fieldvendor` int(10) NOT NULL default '0';
+ALTER TABLE `astpartner` ADD `isfieldvendor` tinyint(4) NOT NULL default '0' AFTER `isvendor`;
 
 
 */
