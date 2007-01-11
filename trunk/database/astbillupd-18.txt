@@ -66,6 +66,7 @@ $sql_updates = array(
   "2007-01-01a" => "astbill_update_054",
   "2007-01-01b" => "astbill_update_055",
   "2007-01-01c" => "astbill_update_056",
+  "2007-01-11" => "astbill_update_057",
 );
 
 function update_sql($sql) {
