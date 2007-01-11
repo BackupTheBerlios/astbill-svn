@@ -704,7 +704,7 @@ function astcore_formselect_datetime($title, $lateportingdate, $edit, $showtime 
 	$y = (empty($lateportingdate)) ? "" : $edit['astyear'];
 	$yearlist = (empty($lateportingdate)) ?  '<option value=""></option>' : '<option value="" selected="selected"></option>';
 
-	$x = date(Y);
+	$x = date(Y)-1;
 	while ($x <= (date(Y)+2)) {
 		if ($x == $y) {
 			$yearlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
