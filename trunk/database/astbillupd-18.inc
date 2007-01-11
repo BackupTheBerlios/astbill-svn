@@ -2242,8 +2242,6 @@ function astbill_update_056() {
 function astbill_update_057() {
   $reit = array();
     $ret[] = update_sql("ALTER TABLE `astuser` ADD `isagent` tinyint(1) NOT NULL default '1' AFTER `ordercode`");
-    $ret[] = update_sql("ALTER TABLE `astuser` ADD `isagent` tinyint(1) NOT NULL default '1' AFTER `ordercode`");
-    $ret[] = update_sql("ALTER TABLE `astuser` ADD `isagent` tinyint(1) NOT NULL default '1' AFTER `ordercode`");
     $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `commission` tinyint(1) NOT NULL default '0' AFTER `active`");
     $ret[] = update_sql("ALTER TABLE `astorderip` ADD `date_sendt` date NOT NULL default '0000-00-00' AFTER `date_followup`");
     $ret[] = update_sql("ALTER TABLE `astorderip` ADD `fieldvendor` varchar(40) NOT NULL default '' AFTER `date_sendt`");
