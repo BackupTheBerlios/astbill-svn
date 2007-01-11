@@ -2255,6 +2255,8 @@ function astbill_update_057() {
     $ret[] = update_sql("ALTER TABLE `astuser` CHANGE `callbackto` `callbackto` varchar(128) NOT NULL default ''");
   return $ret;
 
+}
+
 /*
 function astbill_update_057() {
   $ret = array();
