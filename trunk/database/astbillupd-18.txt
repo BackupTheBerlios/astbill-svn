@@ -2236,6 +2236,23 @@ function astbill_update_056() {
 
 }
 
+function astbill_update_057() {
+  $reit = array();
+    $ret[] = update_sql("ALTER TABLE `astuser` ADD `isagent` tinyint(1) NOT NULL default '1' AFTER `ordercode`");
+    $ret[] = update_sql("ALTER TABLE `astuser` ADD `isagent` tinyint(1) NOT NULL default '1' AFTER `ordercode`");
+    $ret[] = update_sql("ALTER TABLE `astuser` ADD `isagent` tinyint(1) NOT NULL default '1' AFTER `ordercode`");
+    $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `commission` tinyint(1) NOT NULL default '0' AFTER `active`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `date_sendt` date NOT NULL default '0000-00-00' AFTER `date_followup`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `fieldvendor` varchar(40) NOT NULL default '' AFTER `date_sendt`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `fieldremarks` text NOT NULL default '' AFTER `fieldvendor`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `productcode` varchar(40) NOT NULL default '' AFTER `customers_order`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `sendtref` varchar(256) NOT NULL default '' AFTER `date_sendt`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` CHANGE `fieldvendor` `fieldvendor` int(10) NOT NULL default '0'");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `isfieldvendor` tinyint(4) NOT NULL default '0' AFTER `isvendor`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `rateplan` varchar(128) DEFAULT '' NOT NULL AFTER `due_date`");
+    $ret[] = update_sql("ALTER TABLE `astuser` CHANGE `callbackto` `callbackto` varchar(128) NOT NULL default ''");
+  return $ret;
+
 /*
 function astbill_update_057() {
   $ret = array();
@@ -2254,8 +2271,11 @@ function astbill_update_057() {
 
 /*
 
-function astbill_update_056() {
-  $reit = array();
+function astbill_update_057() {
+  $ret = array();
+
+
+    $ret[] = update_sql("");
     $ret[] = update_sql("");
     $ret[] = update_sql("");
     $ret[] = update_sql("");
@@ -2264,21 +2284,6 @@ function astbill_update_056() {
     $ret[] = update_sql("");
     $ret[] = update_sql("");
   return $ret;
-
-
-ALTER TABLE `astuser` ADD `isagent` tinyint(1) NOT NULL default '1' AFTER `ordercode`;
-ALTER TABLE `astacgroup` ADD `commission` tinyint(1) NOT NULL default '0' AFTER `active`;
-ALTER TABLE `astorderip` ADD `date_sendt` date NOT NULL default '0000-00-00' AFTER `date_followup`;
-ALTER TABLE `astorderip` ADD `fieldvendor` varchar(40) NOT NULL default '' AFTER `date_sendt`;
-ALTER TABLE `astorderip` ADD `fieldremarks` text NOT NULL default '' AFTER `fieldvendor`;
-ALTER TABLE `astorderip` ADD `productcode` varchar(40) NOT NULL default '' AFTER `customers_order`;
-ALTER TABLE `astorderip` ADD `sendtref` varchar(256) NOT NULL default '' AFTER `date_sendt`;
-
-ALTER TABLE `astorderip` CHANGE `fieldvendor` `fieldvendor` int(10) NOT NULL default '0';
-ALTER TABLE `astpartner` ADD `isfieldvendor` tinyint(4) NOT NULL default '0' AFTER `isvendor`;
-
-ALTER TABLE `astinvoice` ADD `rateplan` varchar(128) DEFAULT '' NOT NULL AFTER `due_date`;
-
 
 */
 
