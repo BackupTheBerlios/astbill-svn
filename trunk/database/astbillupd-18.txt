@@ -1020,7 +1020,6 @@ function astbill_update_050() {
     $ret[] = update_sql("ALTER TABLE `astaccount` ADD `trunkpath` VARCHAR( 128 ) AFTER `shortnumber`");
     $ret[] = update_sql("ALTER TABLE `astacdid` ADD `zipcode` VARCHAR( 128 ) NULL AFTER `batchno`");
     $ret[] = update_sql("ALTER TABLE `astlogsms` ADD `invoiceid` int(11) unsigned AFTER `date_scheduled` ");
-    $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceid_id` ( `invoiceid` , `id` )");
     $ret[] = update_sql("ALTER TABLE `astlogsms` ADD `remarks` VARCHAR( 256 ) AFTER `invoiceid` ");
     $ret[] = update_sql("ALTER TABLE `astpartner` ADD `didnumberserie` VARCHAR( 256 ) DEFAULT ' ' NOT NULL AFTER `phonework`");
     $ret[] = update_sql("ALTER TABLE `astpartner` ADD `companyno` VARCHAR( 128 ) AFTER `birthdate` ,
@@ -1069,6 +1068,7 @@ ADD `ordercode` VARCHAR( 128 ) AFTER `valuecode` ");
     $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `workflow` `workflow` VARCHAR(40) NOT NULL DEFAULT '1'");
     $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `invoiceid` INT(11) UNSIGNED NOT NULL DEFAULT '0' FIRST");
     $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD INDEX ( `invoiceid` , `lineno` )");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceid_id` ( `invoiceid` , `id` )");
     $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_firstname` VARCHAR(128) DEFAULT '' NOT NULL AFTER `inv_name` ,
 ADD `inv_lastname` VARCHAR(128) DEFAULT '' NOT NULL AFTER `inv_firstname`");
   return $ret;
@@ -2255,7 +2255,7 @@ function astbill_update_057() {
 /*
 
 function astbill_update_056() {
-  $ret = array();
+  $reit = array();
     $ret[] = update_sql("");
     $ret[] = update_sql("");
     $ret[] = update_sql("");
@@ -2276,6 +2276,8 @@ ALTER TABLE `astorderip` ADD `sendtref` varchar(256) NOT NULL default '' AFTER `
 
 ALTER TABLE `astorderip` CHANGE `fieldvendor` `fieldvendor` int(10) NOT NULL default '0';
 ALTER TABLE `astpartner` ADD `isfieldvendor` tinyint(4) NOT NULL default '0' AFTER `isvendor`;
+
+ALTER TABLE `astinvoice` ADD `rateplan` varchar(128) DEFAULT '' NOT NULL AFTER `due_date`;
 
 
 */
