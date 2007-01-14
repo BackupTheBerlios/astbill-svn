@@ -8,6 +8,9 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
+13 Jan 2007
+# We have now added 9 Modules to AstBill including support for PDF using the library at fpdf.org and ccn = Charge Code Numbers
+
 01 Dec 2006
 # Implemented the last View performance strategy in MyAdmin and compleete AstBill. AstBill can now handle
 # millions of records without constrains.
