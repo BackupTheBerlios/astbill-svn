@@ -1,5 +1,4 @@
 <?php
-require('modules/astprof/invoice/fpdf.php');
 
 /*
  * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
@@ -21,8 +20,11 @@ require('modules/astprof/invoice/fpdf.php');
  *
  * 2007.13.13 Version 0.9.20 Are Casilla
  * 
+ * This work is based on the exelent work to be found on fpdf.org
+ *
  */
 
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'fpdf.php');
 
 class PDFLIST extends FPDF
 {
