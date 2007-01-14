@@ -1,0 +1,259 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2006, CBK TELE AS, OSLO, NORWAY.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ * Uvarajan	      <areast  [Guess What?] astartelecom.com>
+ * Komathi	      <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2005.01.13 Version 0.9.16
+ * 
+ */
+
+// &#229;  = å
+// &#248;  = ø
+// &#230;  = æ
+
+
+
+function astpdfpricelist_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("Price List");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astpdfpricelist_menu($may_cache) {
+	$items = array();
+	$edit = $_POST["edit"];
+	$access = user_access('astpdfpricelist module');
+     
+	$items[] = array('path' => 'astglobal/astpdfpricelist', 'title' => t('Price List'),	
+		'callback' => 'astpdfpricelist_create',
+		'access' => $access);
+
+	$items[] = array('path' => 'astglobal/astpdfpricelist/pdf',
+		'title' => t('PDF Order Status Report'),
+		'access' => $access,
+		'callback' => 'astpdfpricelistpdf_main',
+		'callback arguments' => array(),
+		'type' => MENU_CALLBACK);
+
+	return $items;
+
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+
+
+function astpdfpricelist_perm() {
+	return array('astpdfpricelist module');
+}
+
+function astpdfpricelist_main() {
+	$title = t('PDF Order Status Report');
+	astcore_printtheme($output, $title);
+}
+
+function astpdfpricelist_create()
+{
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	$destination = $edit['destination'];
+	$output .= astpdfpricelist_Order_select();
+	$title = t('Price List');
+	astcore_printtheme($output, $title);
+}
+
+ function astpdfpricelist_Order_save($pre) {
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	$order=$_GET["order"];
+	$search = $edit['workflow'];
+	$pre =$edit['prefix']."_" ;
+	$flow = $edit['prefix'];
+	
+	global $user;
+	global $db_prefix;
+	$op = $_POST["op"];
+	$maxline = 30;
+	$order = "Edit Order";
+
+	$posturl = "astglobal/astpdfpricelist/";
+	$param = arg(2);
+
+   	$header = array(
+   	array('data' => t('CCN')),
+   	array('data' => t('Country')),
+ 	array('data' => t('Connect')),
+ 	array('data' => t('Rate')),
+	);
+	$SQL ="select distinct lis.ccn,concat( iso.country, IF (lis.mobile = '1', '-Mobile', '') ) country, ROUND(connectcharge/100,2) connect, ROUND(rate/100,4) rate from astccnrate rat, astccnlist lis, astccniso iso, astccnprefix pre where rat.ccn = lis.ccn and lis.isoid = iso.isoid and lis.ccn = pre.ccn and iso.language = 'en' and rat.rateplan = 'ippcom'order by country and iso.isoid <> 'no'";
+	$result = pager_query($SQL, $maxline);
+	$count = mysql_num_rows($result);
+	while ($item = db_fetch_object($result)){
+	 	$rows[] = array(
+		$item->ccn."&nbsp;",
+		$item->country."&nbsp;",
+		$item->connect."&nbsp;",
+		$item->rate."&nbsp;",
+		);		
+ }
+	$output = astcore_list($header, $rows, $noresults = t('<br><b>No Search results.'), $maxline);
+	return form($output); 
+}
+
+function astpdfpricelist_Order_select()
+{
+global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	$order=$_GET["order"];
+	$search = $edit['workflow'];	
+	if ($op=="Print Pdf"){
+	$output = astpdfpricelist_print_pdf($op);
+	}
+	//$dbsql = db_query("select name from astplans where status = 1 order by name");  
+	//while ($res = db_fetch_object($dbsql)) {
+	//	$mtypes_display[$res->name] = $res->name;
+	//	}
+		
+		$SQL = "select name from astplans where active = 1 order by name";
+		$ret = db_query($SQL);
+		while ($manufacture = db_fetch_object($ret)) {
+		$mtypes_display[$manufacture->name] = $manufacture->name; }
+
+	$group .= form_select(t('Prefix'), 'name', $edit['name'], $mtypes_display);
+
+	$group .= form_submit(t('Print Pdf'));
+	$group .= $output;
+	return form($group);
+	
+ }
+	
+
+
+function astpdfpricelist_print_pdf($op){
+ global $user;
+ global $db_prefix;
+
+ $edit = $_POST["edit"];
+ $search = $edit['workflow'];
+ $pre =$edit['name'] ;
+
+ // echo$op;
+ if ($op == "Print Pdf") { 
+	drupal_goto('astglobal/astpdfpricelist/pdf/'.$pre);
+ }
+ $op = $_POST["op"];
+drupal_set_title("PDF Report");	
+return form($output); 
+ }
+ 
+
+
+function astpdfpricelistpdf_main() {
+	global $user;
+	$rateplan = arg(3);
+	$search = arg(3);
+	$pre = arg(3);
+	$orderid = arg(4);
+	$download = 1;
+	astpdfpricelistpdf_gen($search,$rateplan,$download);
+
+}
+
+function astpdfpricelistpdf_gen($search,$rateplan,$download) {
+	global $db_prefix;
+	define('FPDF_FONTPATH','modules/astprof/invoice/font/');
+	require('modules/astprof/pdfliste.php');
+
+	$pdf = new PDFLIST( 'P', 'mm', 'A4' );
+	$pdf->Open();
+	
+	$pdf->AliasNbPages();  // Counts Total number of Pages
+	$pdf->AddPage();
+	//$pdf->SetFont("Arial",'b',10);
+     	//$pdf->Cell(185,5,'International Price List',0,0,"C");
+
+	$pdf->SetXY(30,25);
+	//$pdf->SetFont("Arial",'b',8);
+	//$pdf->SetFillColor(200,200,200);
+	//$pdf->Cell(75,5,"International Destinations",1,0,"C",1);
+	//$pdf->Cell(40,5,"Countrycode",1,0,"C",1);
+	//$pdf->Cell(55,5,"Minute price",1,0,"C",1);
+	//$pdf->Ln();
+	
+	//$SQL ="select distinct lis.ccn,concat( iso.country, IF (lis.mobile = '1', '-Mobile', '') ) country, ROUND(connectcharge/100,2) connect, ROUND(rate/100,4) rate from astccnrate rat, astccnlist lis, astccniso iso, astccnprefix pre where rat.ccn = lis.ccn and lis.isoid = iso.isoid and lis.ccn = pre.ccn and iso.language = 'en' and rat.rateplan = 'ippcom' and iso.isoid <> 'no' order by country";
+	$SQL = "select distinct lis.ccn,concat( iso.country, IF (lis.mobile = '1', '-Mobile', '') ) country, ROUND(connectcharge/100,2) connect, ROUND(rate/100,4) rate, cty.countrycode from astccnrate rat, astccnlist lis, astccniso iso, astccnprefix pre, astccnccode cty where rat.ccn = lis.ccn and lis.isoid = iso.isoid and lis.ccn = pre.ccn and iso.language = 'en' and rat.rateplan = 'ippcom' and iso.isoid <> 'no' and cty.isoid=iso.isoid order by country";
+	$ret = mysql_query($SQL);
+	while ($row = db_fetch_array($ret)) {
+		$country	= $row["country"];
+		$connect	= $row["countrycode"];
+		$rate	 	= $row["rate"];
+
+		$pdf->SetX(20);
+		$pdf->SetFont("Arial",'',8);
+		$pdf->Cell(75,5,$country ,1,0,"L");
+		$pdf->Cell(40,5,$connect,1,0,"C");
+		$pdf->Cell(55,5,$rate,1,0,"C");
+		$pdf->Ln();
+	}
+	
+	$pdf->SetXY(10,230);
+	$pdf->SetFont("Arial",'',8);
+
+	$sql = "select value from astsystem where name = 'pricelistfooter' and serverid = 'DEF'";
+	$res = mysql_query($sql);
+	while ($row = db_fetch_array($res)) {
+		$value = $row["value"];
+		//$pdf->MultiCell(160,4,$value,0,0,"J");
+		$pdf->WriteHTML($value);
+		$pdf->Ln();
+	}
+	      
+	$rateplan = "RatePlan : ".$rateplan;
+	$pdf->SetXY(10,250);
+	$pdf->SetFont("Arial",'b',8);
+	$pdf->Cell(75,5,$rateplan,0,0,"L");
+
+
+$file='/tmp/pdforder_'.rand(1000,50000).'.pdf';
+if ($download == '1') {
+	$pdf->Output();
+	exit();
+} else {
+	$pdf->Output($file);
+}
+return $file;
+}
+

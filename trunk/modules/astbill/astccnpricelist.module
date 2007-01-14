@@ -1,0 +1,333 @@
+<?php
+
+/*
+* AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+*
+* www.astbill.com
+*
+* Asterisk -- A telephony toolkit for Linux.
+* Drupal   -- An Open source content management platform.
+*
+*
+* Copyright (C) 2006, CBK TELE AS, OSLO, NORWAY.
+*
+* Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+* Are Casilla        <areast  [Guess What?] astartelecom.com>
+* Uvarajan	      <areast  [Guess What?] astartelecom.com>
+*
+*
+* This program is free software, distributed under the terms of
+* the GNU General Public License
+*
+* 2006 Dec 05 Version 0.9.20
+*
+*/
+
+
+function astccnpricelist_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("CCN Rateplan Module");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astccnpricelist_menu($may_cache) {
+	$items = array();
+	$access = user_access('astccnpricelist module');
+
+	$items[] = array('path' => 'astbilladm/astccnpricelist', 'title' => t('CCN Rateplans'),
+	'callback' => 'astccnpricelist_search',
+	'callback arguments' => 'allccn',
+	'access' => $access,
+	);
+
+	$items[] = array('path' => 'astbilladm/astccnpricelist/allccn', 'title' => t('One Rateplan'),	
+	'callback' => 'astccnpricelist_search',
+	'callback arguments' => 'allccn',
+	'access' => $access,
+    'type' => MENU_DEFAULT_LOCAL_TASK,	
+	'weight' => 2
+	);
+
+	$items[] = array('path' => 'astbilladm/astccnpricelist/allplans', 'title' => t('All Rateplans'),	
+	'callback' => 'astccnpricelist_search',
+	'callback arguments' => 'allplans',
+	'access' => $access,
+	'type' => MENU_LOCAL_TASK,
+	'weight' => 4
+	);
+
+	return $items;
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content
+* or administrate the module:
+*/
+
+
+function astccnpricelist_perm() {
+	return array('astccnpricelist module');
+}
+
+function astccnpricelist_main() {
+
+$title = t('View CCN');
+astcore_printtheme($output, $title);
+
+}
+
+function astccnpricelist_search($action) {
+	global $user;
+	global $db_prefix;
+	$posturl = "astbilladm/astccnpricelist/";
+	$edit = $_POST['edit'];
+	$op = $_POST['op'];
+
+	$value = $edit['search'];
+	$param = $edit['status'];
+	$customerstatus = $edit['customerstatus'];
+	$destination = $edit['destination'];
+
+	$tmp = astcore_flattenArray($_GET);
+	$save = $edit['mysave'];
+	$saveoutput = $op;
+
+	if (!empty($tmp['searchedit'])) {
+		$value = $tmp['searchedit'];
+	}
+
+	$param = arg(2);
+        // echo $param;
+	if (empty($param)) {
+	   $param = 'all';
+
+	   drupal_goto($posturl.$param);
+	}
+
+
+	if ($value!="")	{
+		$param = $value;
+	}
+	$partnerid = astcore_partnerid();
+
+	$overmenu = array(url('astpbx/ccorders/create/').'">');
+
+	$selectValue = db_query("SELECT distinct name brand FROM astplans pla,astccnrate rat where pla.name=rat.rateplan and pla.active = 1 order by pla.name");
+	while ($selectval = db_fetch_object($selectValue)) {
+
+	$mtypes_disp[$selectval->brand] = $selectval->brand; }
+	//$output .= form_select(t('Select Rateplan'), 'customerstatus', $edit->customerstatus, $mtypes_disp);
+	if ($action <> 'allplans') { 
+		$output .= form_select(t('Select Rateplan'), 'customerstatus', $edit['customerstatus'], $mtypes_disp);
+	}
+
+	$SQL = "select distinct iso.isoid, iso.country destination from astccniso iso,astccnlist lis WHERE iso.isoid = lis.isoid and iso.language = 'en' order by iso.country";
+
+	$ret = db_query($SQL);
+
+	while ($manufacture = db_fetch_object($ret)) {
+
+	$mtypes_display[$manufacture->isoid] = $manufacture->destination; }
+	//$output .= form_select(t('Destination'), 'destination', $edit->destination, $mtypes_display);
+	$output .= form_select(t('Select Country'), 'destination', 
+$edit['destination'], $mtypes_display);
+
+	$output .='<input type="submit" name="Submit" value="'.t('Submit').'"/>&#160;&#160;';
+        $output = form($output);
+
+        if($saveoutput == "Save"){
+			if ($action == 'allplans') { astccnpricelist_update_all($edit); }
+			else { astccnpricelist_update($edit); }
+		}
+	if ($param == 'all') { $param = '%';}
+	if ($action == 'allplans') { 
+		$output .= astccnpricelist_list_search_all($edit, $value, $param).'<br />';
+	}
+	else {
+		$output .= astccnpricelist_list_search($edit, $value, $param).'<br />';
+	}
+	$title = t('View and Edit Prices');
+	astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 
+'FALSE', $overmenu);
+}
+
+
+function astccnpricelist_list_search($edit, $value, $param = '%') {
+	global $user;
+	global $db_prefix;
+	$save = $edit['mysave'];
+	$op = $_POST["op"];
+    $maxline = 500;   // WARNING Put to 500. We can not use paging when we are able to edit table lines.
+
+	$destination = $edit['destination'];
+	$customerstatus = $edit['customerstatus'];
+	$manufacture = $edit['manufacture'];
+	$val = $param;
+
+	  $header = array(
+	    array('data' => t('CCN')),
+	    array('data' => t('Destination')),
+	    array('data' => t('RateGroup')),
+	    array('data' => t('Connect Charge')),
+	    array('data' => t('Rate')),
+	    array('data' => t('Rate Off Peak')),
+	    array('data' => t('Rate WeekEnd')),
+	    array('data' => t('Prefix'))
+	     );
+  
+	if ($param != "" && $destination != "" && $customerstatus !="" && $val=="%")
+	{
+
+$sql = "select distinct rat.ccn, rategroup, concat(country,IF(lis.mobile = '1', '-Mobile','')) destination, connectcharge,rate,rateoffpeak,rateweekend from astccnlist lis, astccnrate rat,astccniso iso, astccnprefix fix where lis.isoid = '".$destination."' and lis.ccn = rat.ccn and rat.rateplan = '".$customerstatus."' and lis.isoid = iso.isoid and iso.language = 'en' and lis.ccn = fix.ccn order by ccn";
+
+
+		 $count = db_num_rows(db_query($sql));
+
+	  	 $result = pager_query($sql, $maxline,$count);
+		 while ($item = db_fetch_object($result)) {
+		   $SQL2 = "select LEFT(group_concat(prefix SEPARATOR ','),50) prefix FROM astccnprefix pre where pre.ccn = ".$item->ccn." limit 8";
+		   $res2 = db_fetch_object(db_query($SQL2));
+
+		 $rows[] = array(
+		 	$item->ccn.'&nbsp;&nbsp;',
+		 	$item->destination.'&nbsp;&nbsp;',
+			//form_textfield('', 'ccn]['. $key, $item->ccn, 10, 100),
+			form_textfield('', 'rategroup]['. $key, $item->rategroup, 14, 100),
+			//form_textfield('', 'destination]['. $key, $item->destination, 10, 100),
+			form_textfield('', 'connectcharge]['. $key, $item->connectcharge, 8, 100),
+			form_textfield('', 'rate]['. $key, $item->rate, 8, 100),
+			form_textfield('', 'rateoffpeak]['. $key, $item->rateoffpeak, 8, 100),
+			form_textfield('', 'rateweekend]['. $key, $item->rateweekend, 8, 100),
+			$res2->prefix,
+			//form_textfield('', 'cost]['. $key, $item->cost, 10, 100),
+			form_hidden('ccn][', $item->ccn),
+			//form_hidden('trunk][', $item->trunk),
+		);
+		}
+	}
+
+        if($destination != "" || $customerstatus !="")
+        {
+	  $output = theme('table', $header, $rows).'<br />';
+	  if ($val=="%" && $count>0){
+	    $output .= form_hidden('destination', $destination);
+	    $output .= form_hidden('customerstatus', $customerstatus);
+	    $output .= form_submit(t('Save'));
+	    return form($output,'post');
+	  }
+	  else{
+	    return astcore_list($header, $rows,$noresults = t('<br><b>No Results.'),$maxline).'<br />';
+	  }
+	}
+}
+
+function astccnpricelist_list_search_all($edit, $value, $param = '%') {
+	global $user;
+	global $db_prefix;
+	$save = $edit['mysave'];
+	$op = $_POST["op"];
+    $maxline = 500; // WARNING Put to 500. We can not use paging when we are able to edit table lines.
+
+	$destination = $edit['destination'];
+	$customerstatus = $edit['customerstatus'];
+	$manufacture = $edit['manufacture'];
+	$val = $param;
+
+	$header = array(
+		array('data' => t('CCN')),
+		array('data' => t('Rateplan')),
+		array('data' => t('Destination')),
+		array('data' => t('RateGroup')),
+		array('data' => t('Connect Charge')),
+		array('data' => t('Rate')),
+		array('data' => t('Rate Off Peak')),
+		array('data' => t('Rate WeekEnd')),
+		array('data' => t('Prefix'))
+	);
+
+$sql = "select rat.ccn, rat.rateplan, rategroup, concat(country,IF(lis.mobile = '1', '-Mobile','')) destination, connectcharge,rate,rateoffpeak,rateweekend from astccnlist lis, astccnrate rat,astccniso iso where lis.isoid = '".$destination."' and lis.ccn = rat.ccn and lis.isoid = iso.isoid and iso.language = 'en' order by ccn,rateplan";
+
+$sql = "select distinct rat.ccn, rat.rateplan, rategroup, concat(country,IF(lis.mobile = '1', '-Mobile','')) destination, connectcharge,rate,rateoffpeak,rateweekend from astccnlist lis, astccnrate rat,astccniso iso, astccnprefix fix  where lis.isoid = '".$destination."' and lis.ccn = rat.ccn and lis.isoid = iso.isoid and iso.language = 'en' and lis.ccn = fix.ccn order by ccn,rateplan";
+/*
+$sql = "select distinct rat.ccn, rategroup, concat(country,IF(lis.mobile = '1', '-Mobile','')) destination, connectcharge,rate,rateoffpeak,rateweekend from astccnlist lis, astccnrate rat,astccniso iso, astccnprefix fix where lis.isoid = '".$destination."' and lis.ccn = rat.ccn and rat.rateplan = '".$customerstatus."' and lis.isoid = iso.isoid and iso.language = 'en' and lis.ccn = fix.ccn order by ccn";
+*/
+
+		 $count = db_num_rows(db_query($sql));
+	  	 $result = pager_query($sql, $maxline,$count);
+		 while ($item = db_fetch_object($result)) {
+		   $SQL2 = "select LEFT(group_concat(prefix SEPARATOR ','),50) prefix FROM astccnprefix pre where pre.ccn = ".$item->ccn." limit 8";
+		   $res2 = db_fetch_object(db_query($SQL2));
+
+			 $rows[] = array(
+				$item->ccn.'&nbsp;',
+				$item->rateplan.'&nbsp;',
+				$item->destination.'&nbsp;',
+				//form_textfield('', 'ccn]['. $key, $item->ccn, 10, 100),
+				form_textfield('', 'rategroup]['. $key, $item->rategroup, 14, 100),
+				//form_textfield('', 'destination]['. $key, $item->destination, 10, 100),
+				form_textfield('', 'connectcharge]['. $key, $item->connectcharge, 8, 100),
+				form_textfield('', 'rate]['. $key, $item->rate, 8, 100),
+				form_textfield('', 'rateoffpeak]['. $key, $item->rateoffpeak, 8, 100),
+				form_textfield('', 'rateweekend]['. $key, $item->rateweekend, 8, 100),
+				$res2->prefix,
+				//form_textfield('', 'cost]['. $key, $item->cost, 10, 100),
+				form_hidden('rateplanccn][', $item->rategroup.$item->ccn),
+				form_hidden('ccn][', $item->ccn),
+				form_hidden('rateplan][', $item->rateplan),
+				//form_hidden('trunk][', $item->trunk),
+			);
+		}
+
+        if($destination != "")
+        {
+	  $output = theme('table', $header, $rows).'<br />';
+	  if ($count > 0){
+	    $output .= form_hidden('destination', $destination);
+	    $output .= form_hidden('customerstatus', $customerstatus);
+	    $output .= form_submit(t('Save'));
+	    return form($output,'post');
+	  }
+	  else{
+	    return astcore_list($header, $rows,$noresults = t('<br><b>No Results.'),$maxline).'<br />';
+	  }
+	}
+}
+
+
+function astccnpricelist_update($edit) {
+   global $db_prefix;
+
+   for($i=0; $i < count($edit['ccn']); $i++){
+   $updatequery = "update astccnrate set rategroup = '".$edit['rategroup'][$i]."', connectcharge = '".$edit['connectcharge'][$i]."',  rate = '".$edit['rate'][$i]."', rateoffpeak = '".$edit['rateoffpeak'][$i]."',rateweekend = '".$edit['rateweekend'][$i]."' where ccn = '".$edit[ccn][$i]."'";
+
+   $result = db_query($updatequery);
+
+   }
+       drupal_set_message(t('Changes has been updated!'));
+      // $posturl = "astbilladm/astccnpricelist/".$edit['customerstatus']."/".$edit['destination'];
+      // echo $posturl;
+      // drupal_goto($posturl);
+}
+
+function astccnpricelist_update_all($edit) {
+   global $db_prefix;
+
+   for($i=0; $i < count($edit['rateplanccn']); $i++){
+   $updatequery = "update astccnrate set rategroup = '".$edit['rategroup'][$i]."', connectcharge = '".$edit['connectcharge'][$i]."',  rate = '".$edit['rate'][$i]."', rateoffpeak = '".$edit['rateoffpeak'][$i]."',rateweekend = '".$edit['rateweekend'][$i]."' where ccn = '".$edit[ccn][$i]."' and rateplan = '".$edit[rateplan][$i]."'";
+
+   $result = db_query($updatequery);
+
+   }
+       drupal_set_message(t('Changes has been updated!'));
+      // $posturl = "astbilladm/astccnpricelist/".$edit['customerstatus']."/".$edit['destination'];
+      // echo $posturl;
+      // drupal_goto($posturl);
+}

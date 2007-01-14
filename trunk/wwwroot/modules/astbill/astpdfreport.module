@@ -1,0 +1,246 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2006, CBK TELE AS, NORWAY - www.cbktele.com
+ * 
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ * Uvarajan	          <areast  [Guess What?] astartelecom.com>
+ * Komathi	          <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2006.12.11 Version 0.9.20
+ * 
+ */
+
+
+function astpdfreport_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("Reports");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astpdfreport_menu($may_cache) {
+	$items = array();
+	$edit = $_POST["edit"];
+	$access = user_access('astpdfreport module');
+     
+	$items[] = array('path' => 'astglobal/astpdfreport', 'title' => t('Reports'),	
+	'callback' => 'astpdfreport_lister',
+	'access' => $access);
+	return $items;
+
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+
+
+function astpdfreport_perm() {
+	return array('astpdfreport module');
+}
+
+/*
+function astpdfreport_main() {
+
+$title = t('List of PDF Reports');
+astcore_printtheme($output, $title);
+
+}
+*/
+function astpdfreport_lister()
+{
+	global $user;
+	global $db_prefix;
+	$op = $_POST["op"];
+	$search = $edit['workflow'];
+	$pre =$edit['prefix']."_" ;
+	$flow = $edit['prefix'];
+	$order=$_GET["order"];
+	if(arg(3)){
+		$output .= astpdfreport_Order_printpdf(arg(2));
+	}else {
+	
+	if(arg(2)==""){
+		$output .= astpdfreport_Order_show();
+	}
+	else{
+		 $arg2value =arg(2);
+		 $output .= astpdfreport_Order_select($arg2value);
+		// $title = t('List of Reports');
+		// astcore_printtheme($output, $title);
+	}
+	}
+	$title = t('List of Reports');
+	astcore_printtheme($output, $title);
+}
+
+function astpdftest_eval()
+{
+	astprint_journal(0,1);
+}
+
+ function astpdfreport_Order_show() {
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	$order=$_GET["order"];
+	$search = $edit['workflow'];
+	$pre =$edit['prefix']."_" ;
+	$flow = $edit['prefix'];
+
+	$output = astpdfreport_Order_list();
+	return $output;
+ }
+
+function astpdfreport_print_pdf($op){
+	global $user;
+	global $db_prefix;
+	$op = $_POST["op"];
+	drupal_set_title("PDF Report");	
+	return form($output); 
+ }
+ 
+ 
+function astpdfreport_Order_list(){
+	global $user;
+	global $db_prefix;
+	$op = $_POST["op"];
+	$maxline = 50;
+	$order = "Edit";
+
+	$posturl = "astglobal/astpdfreport/";
+
+   	$header = array(
+   	array('data' => t('Report Group')),
+   	array('data' => t('Report Name')),
+  	array('data' => t('Operations'), 'colspan' => 1), 	
+	);
+	
+	$SQL = "select reportgroup, reportname,repid from astreport order by reportgroup, reportorder, reportname";
+   	$result = pager_query($SQL, $maxline);
+	 
+	while ($item = db_fetch_object($result)){
+	$rows[] = array(
+	$item->reportgroup.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+	l($item->reportname,'astglobal/astpdfreport/'.$item->repid)."&nbsp;",
+	'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',	
+		);		
+	 }
+	$output = astcore_list($header, $rows, $noresults = t('<br><b>No Search results.'), $maxline);
+	return $output; 
+ }
+ 
+ 
+function astpdfreport_Order_select($argval)
+{
+	 global $user;
+	 global $db_prefix;
+	 $op = $_POST["op"];
+	 $edit = $_POST["edit"];	 
+	 $search = $edit['journalno'];
+	 $args = arg(3);
+
+	if ($argval==1 || $argval==6 || $argval==2)
+	{
+		$output = astpdfreport_Order_printpdf($argval,$search);
+	}	
+	if(arg(2)=="3"){
+		 $output .= astpdfreport_Order_journalno($search);
+	}
+	if ($argval==4){
+		$output = astpdfreport_Order_orderlist($search);
+	}
+	if ($argval==5){
+		$output = astpdfreport_Order_payments($search);
+	}
+
+	if ($search){
+	
+		 $path = $_GET['q'] .'/'.$search;
+		 drupal_goto($path);
+	}
+	return $output;
+	//$title = t('Journal Reports');
+	//astcore_printtheme($output, $title);
+}	
+	
+function astpdfreport_Order_journalno($search)
+{
+	 global $db_prefix;
+	/*$sql = db_query("SELECT max(journalno)journalno from astinvoice");  */
+	/*$itemv = db_fetch_object($sql);*/
+	/*$output = $itemv->journalno;*/
+//	$dbsql = db_query("SELECT DISTINCT journalno from astinvoice where journalno <> 0 ORDER BY journalno DESC");  
+	$dbsql = db_query("SELECT DISTINCT journalno from astinvoice where db_prefix = '$db_prefix' ORDER BY journalno DESC");  
+	while ($res = db_fetch_object($dbsql)) {
+		$mtypes_display[$res->journalno] = $res->journalno;
+	}
+	/*$u1 = array(0 => $item->journalno); */
+	/*$mtypes_display = $u1 + $mtypes_display;*/
+	$group .= form_select(t('Journalno'), 'journalno', $search, $mtypes_display);
+	$group .= form_submit(t('Print Pdf'));
+	return form($group);
+}
+
+function astpdfreport_Order_orderlist($search)
+{
+	global $db_prefix;
+	$dbsql = db_query("SELECT DISTINCT journalno from astinvoice where db_prefix = '$db_prefix' ORDER BY journalno DESC");  
+	while ($res = db_fetch_object($dbsql)) {
+		$mtypes_display[$res->journalno] = $res->journalno;
+	}
+	$group .= form_select(t('Order List'), 'journalno', $search, $mtypes_display);
+	$group .= form_submit(t('Print Pdf'));
+	return form($group);	
+}
+
+function astpdfreport_Order_payments($search)
+{
+	global $db_prefix;
+	$dbsql = db_query("SELECT DISTINCT journalno from astpaymentbatch where ORDER BY journalno DESC");  
+	while ($res = db_fetch_object($dbsql)) {
+		$mtypes_display[$res->journalno] = $res->journalno;
+	}
+	$group .= form_select(t('Payments Journal'), 'journalno', $search, $mtypes_display);
+	$group .= form_submit(t('Print Pdf'));
+	return form($group);	
+}
+
+function astpdfreport_Order_printpdf($argval)
+{
+	$funkname = astreport($argval);
+	$phpeval = "function astpdfreport_eval2(){ ".$funkname.";}";
+	eval($phpeval);
+	astpdfreport_eval2(); 
+}
+ function astreport($repid){
+    
+	$result = db_query("select functionname from astreport where repid = %s",$repid); 
+	$item = db_fetch_object($result);
+	$output = $item->functionname;
+	return $output;   
+
+ }

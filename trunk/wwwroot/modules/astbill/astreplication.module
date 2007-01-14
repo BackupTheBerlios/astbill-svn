@@ -1,0 +1,131 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2006, CBK TELE AS, OSLO, NORWAY.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ * Uvarajan	      <areast  [Guess What?] astartelecom.com>
+ * Komathi	      <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2006 Dec 05 Version 0.9.20
+ * 
+ */
+
+
+
+
+function astreplication_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("Server Replication View");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astreplication_menu($may_cache) {
+	$items = array();
+	$edit = $_POST["edit"];
+	$access = user_access('astreplication module');
+     
+	$items[] = array('path' => 'astglobal/voip/astreplication', 'title' => t('Replication'),	
+	'callback' => 'astreplication_create',
+	'access' => $access);
+	//'type' => MENU_CALLBACK);
+	return $items;
+
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+
+
+function astreplication_perm() {
+	return array('astreplication module');
+}
+
+function astreplication_main() {
+
+$title = t('Server Replication View');
+astcore_printtheme($output, $title);
+
+}
+
+function astreplication_create()
+{
+	global $user;
+	global $db_prefix;
+	$op = $_POST["op"];
+	$search = $edit['workflow'];
+	$pre =$edit['prefix']."_" ;
+	$flow = $edit['prefix'];
+	$order=$_GET["order"];
+	$pdfvalue=arg(3);
+	/*if ($pdfvalue=="pdf"){
+		astreplication_admin_emailpdf();
+	}*/
+	$output .=  astreplication_Order_list();
+	$title = t('Verify Server Replication');
+	astcore_printtheme($output, $title);
+
+}
+ 
+function astreplication_Order_list(){
+ global $user;
+ global $db_prefix;
+ $maxline=20;
+ 
+   	$header = array(
+   	array('data' => t('Server ')),
+   	array('data' => t('Tablename ')),
+ 	array('data' => t('Counts')),
+ 	array('data' => t('Date')),
+	);
+/*   	array('data' => t('Server '),'field' => 'server'),
+   	array('data' => t('Tablename '),'field' => 'tbname'),
+ 	array('data' => t('Counts'),'field' => 'counts'),
+ 	array('data' => t('Date'),'field' => 'date'),
+*/
+ 	
+	$SQL = "SELECT server,tbname,counts,date from astreplication order by tbname";  //. tablesort_sql($header);
+	
+	// $SQL = "SELECT left(db_prefix,3) prefix, ord.oid, pa.pid, date(ord.date_followup) date_followup, LEFT(IFNULL(pa.company,concat(firstname,' ',lastname)),35) company,zip,city,IF(ord.pid IS NULL, 'create','change') orderit, IFNULL(workflow,'NA') workflow FROM astpartner pa LEFT JOIN astorderip ord USING (pid) where (pa.active <> '0' or pa.active is null) and db_prefix= '".$pre."'". tablesort_sql($header);
+	// if($pre=="all_"){
+	// 	$SQL = "SELECT left(db_prefix,3) prefix, ord.oid, pa.pid, date(ord.date_followup) date_followup, LEFT(IFNULL(pa.company,concat(firstname,' ',lastname)),35) company,zip,city,IF(ord.pid IS NULL, 'create','change') orderit, IFNULL(workflow,'NA') workflow FROM astpartner pa LEFT JOIN astorderip ord USING (pid) where (pa.active <> '0' or pa.active is null) and db_prefix like '%'". tablesort_sql($header);
+	// }
+	 $result = pager_query($SQL,$maxline);
+	// $count = mysql_num_rows($result);
+	 
+	while ($item = db_fetch_object($result)){
+	$rows[] = array(
+	$item->server."&nbsp;",
+	$item->tbname."&nbsp;",
+	$item->counts."&nbsp;",
+	$item->date."&nbsp;",
+	);		
+	 }
+	
+	$output = astcore_list($header, $rows, $noresults = t('<br><b>No Search results.'), $maxline);
+	
+		return form($output); 
+}

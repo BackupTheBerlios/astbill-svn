@@ -1,0 +1,286 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2006, CBK TELE AS, OSLO, NORWAY.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ * Uvarajan	      <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2005.01.13 Version 0.9.16
+ * 
+ */
+
+// &#229;  = å
+// &#248;  = ø
+// &#230;  = æ
+
+
+
+function astprivate_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("List Private Subscribers");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astprivate_menu($may_cache) {
+	$items = array();
+	$access = user_access('astprivate module');
+
+
+	$items[] = array('path' => 'astglobal/private/astprivate',
+	'title' => t('Subscribers'),
+	'callback' => 'astprivate_search',
+	'access' => $access,
+	);
+
+	$items[] = array('path' => 'astglobal/private/astprivatecreate',
+	'title' => t('New Subscribers'),
+	'callback' => 'createprivate_create',
+	'access' => $access,
+	);
+     
+/*	$items[] = array('path' => 'astglobal/private/astprivate', 'title' => t('Subscribers'),	
+	'access' => $access,
+	'callback' => 'astprivate_search',
+	//'callback arguments' => 'astprivate',
+	'callback arguments' => array(),
+	'access' => $access);
+
+	$items[] = array('path' => 'astglobal/private/astprivatecreate',
+	'title' => t('New Subscribers'),
+	'access' => $access,
+	'callback' => 'createprivate_create',
+	'callback arguments' => array(),
+	//'type' => MENU_CALLBACK
+	);*/
+	
+/*	$items[] = array('path' => 'astglobal/private/astprivatecreate', 'title' => t('New Subscribers'),	
+	'callback' => 'createprivate_create',
+	//'callback arguments' => 'astprivatecreate',
+	'callback arguments' => array(),
+	'access' => $access);*/
+
+	
+	return $items;
+
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+
+
+function astprivate_perm() {
+	return array('astprivate module');
+}
+
+function astprivate_main() {
+
+$title = t('View Partners');
+astcore_printtheme($output, $title);
+
+}
+
+function astprivate_search() {
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$param = arg(3);
+	$args = arg(4);
+	//echo $args;
+	$posturl ="astglobal/private/astprivate/";
+	if ($args==""){
+	$output .= astcore_search($edit, $posturl = url($posturl.$param), $value, 'NO');
+	}
+	$output .= astprivate_list($edit, $value, $param);
+	$title = t('List Private Subscribers');
+	astcore_printtheme($output, $title);
+}
+
+
+function astprivate_list($edit, $value, $param) {
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	//echo $value;
+	$saveoutput=$op;
+	//echo $saveoutput;
+      	 if($saveoutput == "Save"){        	
+      	    astprivate_update($edit);
+      	 }
+        if($saveoutput == "Back"){        	
+           $posturl ="astglobal/private/astprivate";
+           drupal_goto("astglobal/private/astprivate");
+	}
+        
+	
+	$search = $edit['search'];
+        $value ="";
+	$maxline = 20;
+	$args = arg(4);
+	if ($args==""){
+	$header = array(
+	array('data' => t('db_prefix')),
+	array('data' => t('UID'), 'field' => 'uid'),
+	array('data' => t('firstname'), 'field' => 'firstname'),
+	array('data' => t('lastname'), 'field' => 'lastname'),
+	array('data' => t('city'), 'field' => 'city'),
+	array('data' => t('valuecode'), 'field' => 'valuecode'),
+	array('data' => t('ordercode'), 'field' => 'ordercode'),
+	array('data' => t('timestamp'),'field' => 'timestamp', 'sort' => 'desc' ),
+	array('data' => t('Operations'))
+	);
+
+	$value = trim($value);
+	
+	if ($search==""){
+		$sql = "SELECT left(db_prefix,3) db_prefix,uid, firstname, lastname, city, valuecode, ordercode, timestamp FROM astuser WHERE partnerid = 0 and CONCAT_WS(',', uid, LOWER(company), LOWER(firstname), LOWER(lastname), LOWER(city), valuecode, ordercode)". tablesort_sql($header); 
+	}
+	if ($search!=""){
+		//echo $search;
+		$sql = "SELECT left(db_prefix,3) db_prefix,uid, firstname, lastname, city, valuecode, ordercode, timestamp FROM astuser WHERE partnerid = 0 and CONCAT_WS(',', uid, LOWER(company), LOWER(firstname), LOWER(lastname), LOWER(city), valuecode, ordercode)like LOWER('%".$search."%')". tablesort_sql($header); 
+	}
+	$result = pager_query($sql, $maxline);
+	while ($item = db_fetch_object($result)) {
+		$rows[] = array(
+		$item->db_prefix.'&nbsp;&nbsp;',
+		$item->uid.'&nbsp;&nbsp;',
+		$item->firstname.'&nbsp;&nbsp;',
+		$item->lastname.'&nbsp;&nbsp;',
+		$item->city.'&nbsp;&nbsp;',
+		$item->valuecode.'&nbsp;&nbsp;',
+		$item->ordercode.'&nbsp;&nbsp;',
+		$item->timestamp.'&nbsp;&nbsp;',
+		'<A HREF="'.url('astglobal/private/astprivate/all/edit/'.$item->uid.'/'.$item->db_prefix).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		//form_hidden('uid][', $item->uid),
+		//form_hidden('db_prefix][', $item->db_prefix),
+		);
+	}
+	return astcore_list($header, $rows, $noresults = t('No orders'), $maxline);
+    }
+    if ($args=="edit"){
+    	$searchval = arg(5);
+    	$searchval2 = arg(6);
+    	$sql = "SELECT firstname,lastname,address1,zip,city,phone,mobile,birthdate,valuecode,ordercode FROM astuser where uid='".$searchval."'";
+	$result = pager_query($sql, $maxline);
+	while ($item = db_fetch_object($result)){
+	
+	$rows[] = array(
+	astcore_form_textfield('Firstname', 'firstname]['. $key, $item->firstname, 30, 100),
+	astcore_form_textfield('Lastname', 'lastname]['. $key, $item->lastname, 30, 100),
+	astcore_form_textfield('Address1', 'address1]['. $key, $item->address1, 30, 100),
+	astcore_form_textfield('Zip', 'zip]['. $key, $item->zip, 30, 100),
+	astcore_form_textfield('City', 'city]['. $key, $item->city, 30, 100),
+	astcore_form_textfield('Phone', 'phone]['. $key, $item->phone, 30, 100),
+	astcore_form_textfield('Mobile', 'mobile]['. $key, $item->mobile, 30, 100),
+	astcore_form_textfield('Birthdate', 'birthdate]['. $key, $item->birthdate, 30, 100),
+	astcore_form_textfield('Valuecode', 'valuecode]['. $key, $item->valuecode, 30, 100),
+	astcore_form_textfield('Ordercode', 'ordercode]['. $key, $item->ordercode, 30, 100),
+	form_hidden('uid', $searchval),
+	form_hidden('db_prefix', $searchval2),
+	);
+	
+	}
+	$output = theme('table', $header, $rows).'<br />';
+	$output .= form_submit(t('Save'));
+	$output .= form_submit(t('Back'));
+	return form($output,'post');
+	//return astcore_list($header, $rows, $noresults = t('No orders'), $maxline);
+
+    }
+    
+
+}
+function astprivate_update($edit){
+global $db_prefix;
+  $edit['db_prefix'] =$edit['db_prefix']."_" ;
+   for($i=0;$i<count($edit['firstname']);$i++){
+   $updatequery ="UPDATE astuser SET firstname = '".$edit['firstname'][$i]."',lastname = '".$edit['lastname'][$i]."', address1 = '".$edit['address1'][$i]."', zip = '".$edit['zip'][$i]."', city = '".$edit['city'][$i]."',phone = '".$edit['phone'][$i]."', mobile = '".$edit['mobile'][$i]."',birthdate = '".$edit['birthdate'][$i]."',valuecode = '".$edit['valuecode'][$i]."' ,ordercode= '".$edit['ordercode'][$i]."' WHERE uid = ".$edit['uid']." and db_prefix = '".$edit['db_prefix']."'";
+   $upresult = db_query($updatequery);
+ }
+	drupal_set_message(t('Changes has been updated!'));
+	drupal_goto("astglobal/private/astprivate");
+}
+
+function createprivate_create()
+{
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+        if($op == "Save"){        	
+       	    createprivate_save($edit,$db_prefix);
+        }
+	$output .= createprivate_sub();
+	$title = t('Add Private Subscribers');
+	astcore_printtheme($output, $title);
+
+}
+
+function createprivate_sub() {
+	global $user;
+	global $db_prefix;
+	
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	//if ($op=="Save"){
+	//	createprivate_save($edit,$db_prefix);
+	//}
+	drupal_set_title("Add subscribers");
+	//$rows[] = array(
+	
+	$group .= astcore_form_start();
+	$group .= astcore_form_textfield(t('Firstname'), 'firstname', $edit['firstname'], 30, 100);
+	$group .= astcore_form_textfield(t('Lastname'), 'lastname', $edit['lastname'], 30, 100);
+	$group .= astcore_form_textfield(t('Address1'), 'address1', $edit['address1'], 30, 100);
+	$group .= astcore_form_textfield(t('Zip'), 'zip', $edit['zip'], 30, 100);
+	$group .= astcore_form_textfield(t('City'), 'city', $edit['city'], 30, 100);
+	$group .= astcore_form_textfield(t('Phone'), 'phone', $edit['phone'], 30, 100);
+	$group .= astcore_form_textfield(t('Mobile'), 'mobile', $edit['mobile'], 30, 100);
+	$group .= astcore_form_textfield(t('Birthdate'), 'birthdate', $edit['birthdate'], 30, 100);
+	$group .= astcore_form_textfield(t('Valuecode'), 'valuecode', $edit['valuecode'], 30, 100);
+	$group .= astcore_form_textfield(t('Ordercode'), 'ordercode', $edit['ordercode'], 30, 100);
+	$group .= astcore_form_end();
+
+	$group .= form_submit(t('Save'));
+	return form($group);
+}
+
+function createprivate_save($edit,$prefix)   
+{
+        $result = db_query("select max(uid) as maxuid from astuser");
+        $data = db_fetch_object($result);
+        $maxid = $data->maxuid + 1;
+        if ($edit['birthdate']==""){
+        	$edit['birthdate']="0000-00-00";
+        }
+        $edit['provider'] = $prefix;					  
+	db_query("INSERT INTO astuser(db_prefix,uid,firstname,lastname,address1,zip,city,phone,mobile,birthdate,valuecode,ordercode)
+	VALUES ('%s','%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+	$edit['provider'], $maxid, $edit['firstname'],$edit['lastname'],$edit['address1'],$edit['zip'],$edit['city'],$edit['phone'],$edit['mobile'],$edit['birthdate'],$edit['valuecode'],$edit['ordercode']);
+	drupal_set_message(t('Values are Inserted!'));
+	drupal_goto("astglobal/private/astprivate");
+}
