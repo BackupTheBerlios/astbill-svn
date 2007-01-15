@@ -220,7 +220,7 @@ function astpdfreport_Order_orderlist($search)
 function astpdfreport_Order_payments($search)
 {
 	global $db_prefix;
-	$dbsql = db_query("SELECT DISTINCT journalno from astpaymentbatch where ORDER BY journalno DESC");  
+	$dbsql = db_query("SELECT DISTINCT journalno from astpaymentbatch ORDER BY journalno DESC");  
 	while ($res = db_fetch_object($dbsql)) {
 		$mtypes_display[$res->journalno] = $res->journalno;
 	}
