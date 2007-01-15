@@ -2286,6 +2286,18 @@ function astbill_update_057() {
     $ret[] = update_sql("");
   return $ret;
 
+ALTER TABLE `astorderip` ADD `deliverycert` tinyint(1) DEFAULT '0' NOT NULL AFTER `workflow`;
+
+ALTER TABLE `astorderip` ADD `invoiceref` varchar(128) DEFAULT '' NOT NULL AFTER `deliverycert`;
+ALTER TABLE `astorderip` ADD `invoice_date` date DEFAULT '0000-00-00' NOT NULL AFTER `invoiceref`;
+ALTER TABLE `astorderip` ADD `invoiceremarks` text DEFAULT '' NOT NULL AFTER `invoice_date`;
+ALTER TABLE `astorderip` ADD `invoiceref2` varchar(128) DEFAULT '' NOT NULL AFTER `invoiceref`;
+ALTER TABLE `astorderip` ADD `invoiceref3` varchar(128) DEFAULT '' NOT NULL AFTER `invoiceref2`;
+ALTER TABLE `astinvoiceline` ADD `timestamp` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL AFTER `unit`;
+update astinvoiceline set  timestamp = Now();
+ALTER TABLE `astacgroup` ADD `responsible` varchar(128) DEFAULT '' NOT NULL AFTER `partnerid`;
+
+
 */
 
 
