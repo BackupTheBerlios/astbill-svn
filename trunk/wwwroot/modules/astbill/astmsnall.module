@@ -110,16 +110,20 @@ function astmsnall_msn_searchlist($value, $edit) {
   $value = arg(3);     
   if($search == ""){
    $SQL = "SELECT left(did.db_prefix,3) prefix, did.uid,did.did,did.acgroup,did.forwardto,did.active, did.portindate,did.zipcode,did.batchno,did.remarks,pa.pid FROM astacdid did LEFT JOIN astuser us ON  (did.uid = us.uid and did.db_prefix = us.db_prefix) LEFT JOIN astpartner pa ON pa.pid = us.partnerid". tablesort_sql($header);  
+
+   $sqlCount = "select count(*) FROM astacdid did LEFT JOIN astuser us ON  (did.uid = us.uid and did.db_prefix = us.db_prefix) LEFT JOIN astpartner pa ON pa.pid = us.partnerid";
+
   }
   
   if($search != "") {
     $SQL = "SELECT left(did.db_prefix,3) prefix, did.uid,did.did,did.acgroup,did.forwardto,did.active, did.portindate,did.zipcode,did.batchno,did.remarks,pa.pid FROM astacdid did LEFT JOIN astuser us ON  (did.uid = us.uid and did.db_prefix = us.db_prefix) LEFT JOIN astpartner pa ON pa.pid = us.partnerid where CONCAT_WS(',', did.did, did.db_prefix,did.forwardto,pa.pid,did.uid,LOWER(did.acgroup),LOWER(did.zipcode),LOWER(did.remarks),did.portindate) LIKE LOWER('%".$search."%')". tablesort_sql($header);
 	
-	
-	
+	$sqlCount = "select count(*) FROM astacdid did LEFT JOIN astuser us ON  (did.uid = us.uid and did.db_prefix = us.db_prefix) LEFT JOIN astpartner pa ON pa.pid = us.partnerid where CONCAT_WS(',', did.did, did.db_prefix,did.forwardto,pa.pid,did.uid,LOWER(did.acgroup),LOWER(did.zipcode),LOWER(did.remarks),did.portindate) LIKE LOWER('%".$search."%')";
+
+
 	// did.did like '".$search."%'". tablesort_sql($header);
   }
-  $result = pager_query($SQL, $maxline);
+  $result = pager_query($SQL, $maxline, 0, $sqlCount);
   
   while ($res = db_fetch_object($result)) {
   			if($res->active == 1){
@@ -220,7 +224,9 @@ function astmsnall_list_search($edit, $value, $param = '%') {
 	     );
 	
 	$SQL = "Select did,acgroup,fylkekode,active from astacdid where uid = 0". tablesort_sql($header);
-	$result = pager_query($SQL, $maxline);
+	$sqlCount = "Select count(*) from astacdid where uid = 0";
+	$result = pager_query($SQL, $maxline, 0, $sqlCount);
+
 	if ($param != "" && $value == "" && $customerstatus =="") {
 		while ($item = db_fetch_object($result)){
   			if($item->active == 1){

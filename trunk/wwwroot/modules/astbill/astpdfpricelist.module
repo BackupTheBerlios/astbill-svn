@@ -194,9 +194,8 @@ function astpdfpricelistpdf_main() {
 
 function astpdfpricelistpdf_gen($search,$rateplan,$download) {
 	global $db_prefix;
-	// define('FPDF_FONTPATH','modules/astprof/invoice/font/');
-	// require('modules/astprof/pdfliste.php');
-	require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'fpdf' . DIRECTORY_SEPARATOR . 'pdfliste.php');
+	define('FPDF_FONTPATH','modules/astprof/invoice/font/');
+	require('modules/astprof/pdfliste.php');
 
 	$pdf = new PDFLIST( 'P', 'mm', 'A4' );
 	$pdf->Open();

@@ -45,9 +45,10 @@ function astpartnerglobal_menu($may_cache) {
 	$access2 = user_access('astpartnerglobal Account');
 	
 
-	$items[] = array('path' => 'astglobal', 'title' => t('CRM System'),
+	$items[] = array('path' => 'astglobal', 'title' => t('OSS System'),
 	'callback' => 'astpartnerglobal_main',
-	'access' => $access);
+	'access' => $access,
+	'weight' => -5);
 /*
 	$items[] = array('path' => 'astglobal/business', 'title' => t('Business'),
 	'callback' => 'astpglobal_business_main',

@@ -205,7 +205,7 @@ function astccnview_Order_save() {
 		while ($manufacture = db_fetch_object($ret)) {
 		$mtypes_display[$manufacture->isoid] = $manufacture->destination; }
 		$chekdisplay = array(-1 => 'Please select');
-		$mtypes_display = $chekdisplay + $mtypes_display;
+		$mtypes_display = $chekdisplay . $mtypes_display;
 		$group .= '<table border=0 width=500><tr><td><b>Select a Country</td><td>'.form_select(t(''), 'destination',$edit['destination'], $mtypes_display);
 		$group .= '<tr><td></td><td>'.form_submit(t('View'));
 		$group .= '</td></tr>';

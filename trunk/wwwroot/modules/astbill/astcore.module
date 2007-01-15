@@ -244,6 +244,24 @@ function astcore_email($from , $to, $subject, $message, $attachment, $filetype =
 	}
 }
 
+function astcore_email2($to,$from,$bcc,$subject,$message) {
+	$headers = "From: $from\r\n";
+	if (strlen($bcc) > 2) { $headers .= "Bcc: $bcc\r\n"; }
+//	$message = str_replace("%username%", $accountcode, $message);
+	// In case any of our lines are larger than 70 characters, we should use wordwrap()
+	$message = wordwrap($message, 70);
+	
+	// Send
+	$rc = mail($to, $subject, $message, $headers);
+//	if ($rc) {
+//	  print "$result->bcc  $tomail    Mail successfully sent!<br>";
+//	}
+//	else {
+//	  print "Failed to send mail<br>";
+//	}
+}
+
+
 function astcore_import_csvtosql($gotourl, $sqltable, $endform = 'YES', $maxfilesize = '0') {
 	// $_FILES = Array ( [import] => Array ( [name] => WEB_7454.csv [type] => text/comma-separated-values [tmp_name] => /tmp/phpiuFcyF [error] => 0 [size] => 574550 ) )
 	

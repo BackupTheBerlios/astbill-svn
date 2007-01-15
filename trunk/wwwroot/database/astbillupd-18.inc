@@ -2297,7 +2297,7 @@ ALTER TABLE `astorderip` ADD `invoiceref2` varchar(128) DEFAULT '' NOT NULL AFTE
 ALTER TABLE `astorderip` ADD `invoiceref3` varchar(128) DEFAULT '' NOT NULL AFTER `invoiceref2`;
 ALTER TABLE `astinvoiceline` ADD `timestamp` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL AFTER `unit`;
 update astinvoiceline set  timestamp = Now();
-
+ALTER TABLE `astacgroup` ADD `responsible` varchar(128) DEFAULT '' NOT NULL AFTER `partnerid`;
 
 
 */

@@ -102,7 +102,6 @@ function astccnaudit_main() {
 function astccnaudit_list($value, $edit, $param) {
 	global $user;
 	global $db_prefix;
-	$db_prefix = 'ipp_';
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
 	$ccn = $edit['ccn'];
