@@ -9,18 +9,16 @@ For Support:
 http://astbill.com/forum/3
 
 13 Jan 2007
-# We have now added 9 Modules to AstBill including support for PDF using the library at fpdf.org and ccn = Charge Code Numbers
+# We have now added 7 Modules to AstBill including support for PDF using the library at fpdf.org and ccn = Charge Code Numbers
 #      This give us a library for PDF generation and we will se a PDF reports be a natural part of AstBill.
-#      The astpdfreport.module is a Simple reporting engine that will allow for storing PDF report definitions in MySQL
-#      and allow users to create their own PDF reports.
+#      The astccnpricelist.module is the 1st example. Soon we allow users to create their own PDF reports.
+#
 # A    modules\astbill\astmsnall.module
 # A    modules\astbill\astaccountcode.module
 # A    modules\astbill\astpdfpricelist.module
 # U    modules\astbill\astcore.module
 # A    modules\astbill\astccnaudit.module
 # A    modules\astbill\astccnview.module
-# A    modules\astbill\astpdfreport.module
-# A    modules\astbill\astreplication.module
 # A    modules\astbill\astprivate.module
 # A    modules\astbill\astccnpricelist.module
 # A    modules\astbill\fpdf
