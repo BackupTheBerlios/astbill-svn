@@ -14,7 +14,13 @@ drupal_page_header();
 include_once 'includes/common.inc';
 
 fix_gpc_magic();
-drupal_check_token();
+
+/*
+Disabled by AstBill Team - Uvaraj 
+Not compatible med AstBill. 
+Fix to come soon.*/
+
+//drupal_check_token();
 
 $status = menu_execute_active_handler();
 switch ($status) {
