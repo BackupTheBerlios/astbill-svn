@@ -2296,9 +2296,11 @@ ALTER TABLE `astorderip` ADD `invoiceref3` varchar(128) DEFAULT '' NOT NULL AFTE
 ALTER TABLE `astinvoiceline` ADD `timestamp` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL AFTER `unit`;
 update astinvoiceline set  timestamp = Now();
 ALTER TABLE `astacgroup` ADD `responsible` varchar(128) DEFAULT '' NOT NULL AFTER `partnerid`;
-
 ALTER TABLE `astorderip` ADD `install_mobile` varchar(128) DEFAULT '' NOT NULL AFTER `install_date`;
 ALTER TABLE `astorderip` ADD `install_email` varchar(128) DEFAULT '' NOT NULL AFTER `install_mobile`;
+
+ALTER TABLE `astuser` ADD `maxline` int(4) DEFAULT '40' NOT NULL AFTER `comment`;
+ALTER TABLE `astpartner` ADD `masterpid` int(11) DEFAULT '0' NOT NULL AFTER `uid`;
 
 
 */
