@@ -16,7 +16,6 @@ http://astbill.com/forum/3
 # A    modules\astbill\astmsnall.module
 # A    modules\astbill\astaccountcode.module
 # A    modules\astbill\astpdfpricelist.module
-# U    modules\astbill\astcore.module
 # A    modules\astbill\astccnaudit.module
 # A    modules\astbill\astccnview.module
 # A    modules\astbill\astprivate.module
