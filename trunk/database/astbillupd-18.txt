@@ -2300,8 +2300,8 @@ ALTER TABLE `astorderip` ADD `install_mobile` varchar(128) DEFAULT '' NOT NULL A
 ALTER TABLE `astorderip` ADD `install_email` varchar(128) DEFAULT '' NOT NULL AFTER `install_mobile`;
 
 ALTER TABLE `astuser` ADD `maxline` int(4) DEFAULT '40' NOT NULL AFTER `comment`;
-ALTER TABLE `astpartner` ADD `masterpid` int(11) DEFAULT '0' NOT NULL AFTER `uid`;
-
+ALTER TABLE `astpartner` ADD `masterpid` int(11) DEFAULT '30000' NOT NULL AFTER `uid`;
+ALTER TABLE `astpartner` CHANGE `active` `active` tinyint(1) DEFAULT '1' NOT NULL;
 
 */
 
