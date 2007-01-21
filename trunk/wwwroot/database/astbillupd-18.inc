@@ -2299,6 +2299,9 @@ ALTER TABLE `astinvoiceline` ADD `timestamp` timestamp DEFAULT CURRENT_TIMESTAMP
 update astinvoiceline set  timestamp = Now();
 ALTER TABLE `astacgroup` ADD `responsible` varchar(128) DEFAULT '' NOT NULL AFTER `partnerid`;
 
+ALTER TABLE `astorderip` ADD `install_mobile` varchar(128) DEFAULT '' NOT NULL AFTER `install_date`;
+ALTER TABLE `astorderip` ADD `install_email` varchar(128) DEFAULT '' NOT NULL AFTER `install_mobile`;
+
 
 */
 
