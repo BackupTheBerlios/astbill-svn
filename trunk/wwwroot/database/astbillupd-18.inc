@@ -2298,9 +2298,21 @@ ALTER TABLE `astorderip` ADD `invoiceref3` varchar(128) DEFAULT '' NOT NULL AFTE
 ALTER TABLE `astinvoiceline` ADD `timestamp` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL AFTER `unit`;
 update astinvoiceline set  timestamp = Now();
 ALTER TABLE `astacgroup` ADD `responsible` varchar(128) DEFAULT '' NOT NULL AFTER `partnerid`;
-
 ALTER TABLE `astorderip` ADD `install_mobile` varchar(128) DEFAULT '' NOT NULL AFTER `install_date`;
 ALTER TABLE `astorderip` ADD `install_email` varchar(128) DEFAULT '' NOT NULL AFTER `install_mobile`;
+
+ALTER TABLE `astuser` ADD `maxline` int(4) DEFAULT '40' NOT NULL AFTER `comment`;
+ALTER TABLE `astpartner` ADD `masterpid` int(11) DEFAULT '30000' NOT NULL AFTER `uid`;
+ALTER TABLE `astpartner` CHANGE `active` `active` tinyint(1) DEFAULT '1' NOT NULL;
+ALTER TABLE `astpartner` ADD `isreseller` varchar(40) DEFAULT '' NOT NULL AFTER `isprospect`;
+ALTER TABLE `astpartner` ADD `resellerid` varchar(40) DEFAULT 'ast' NOT NULL AFTER `db_prefix`;
+update astpartner set isreseller = 'ast' where pid = 30000;
+ALTER TABLE `astproduct` ADD `reseller` varchar(40) DEFAULT '' NOT NULL FIRST;
+
+$ret[] = update_sql("ALTER TABLE `astproduct` DROP PRIMARY KEY");
+$ret[] = update_sql("ALTER TABLE `astproduct` ADD PRIMARY KEY (`reseller`,`productcode`)");
+
+ALTER TABLE `astacgroup` ADD `inprogress` tinyint(1) DEFAULT '0' NOT NULL AFTER commission;
 
 
 */

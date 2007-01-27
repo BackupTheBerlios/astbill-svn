@@ -2305,6 +2305,13 @@ ALTER TABLE `astpartner` CHANGE `active` `active` tinyint(1) DEFAULT '1' NOT NUL
 ALTER TABLE `astpartner` ADD `isreseller` varchar(40) DEFAULT '' NOT NULL AFTER `isprospect`;
 ALTER TABLE `astpartner` ADD `resellerid` varchar(40) DEFAULT 'ast' NOT NULL AFTER `db_prefix`;
 update astpartner set isreseller = 'ast' where pid = 30000;
+ALTER TABLE `astproduct` ADD `reseller` varchar(40) DEFAULT '' NOT NULL FIRST;
+
+$ret[] = update_sql("ALTER TABLE `astproduct` DROP PRIMARY KEY");
+$ret[] = update_sql("ALTER TABLE `astproduct` ADD PRIMARY KEY (`reseller`,`productcode`)");
+
+ALTER TABLE `astacgroup` ADD `inprogress` tinyint(1) DEFAULT '0' NOT NULL AFTER commission;
+
 
 */
 

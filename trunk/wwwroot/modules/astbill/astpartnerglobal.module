@@ -377,7 +377,7 @@ $SQL = "SELECT did.uid,did.did,did.acgroup,did.forwardto,did.active, did.portind
   $result = pager_query($SQL, $maxline);
   
   while ($res = db_fetch_object($result)) {
-	if ($res>active == 1){ $imagename = "green_dott1.gif";
+	if ($res->active == 1){ $imagename = "green_dott1.gif";
 	} else { $imagename = "red_dott1.gif"; }
 
 	$rows[] = array(
@@ -1228,11 +1228,29 @@ function astpartnerglobal_msn_change_form($edit) {
 		drupal_access_denied();
 		return; 
 	}
-	$SQL = "SELECT forwardto,remarks FROM astacdid WHERE did = '%s'";
+	$SQL = "SELECT forwardto,remarks,active,redirectevent,redirectalways FROM astacdid WHERE did = '%s'";
 	$resq = db_query($SQL, $did);
 	$res = db_fetch_object($resq);
 	$group .= form_textfield(t('Forwardto Account'), 'forwardto', $res->forwardto, 30, 30);
 	$group .= form_textfield(t('Remarks'), 'remarks', $res->remarks, 60, 30);
+
+	$rediropts['N'] = 'None';
+	$rediropts['A'] = 'Always';
+//	$rediropts['B'] = 'When Busy';
+//	$rediropts['T'] = 'After Timeout';
+	$group .= form_select(t('Redirection Event'), 'redirectevent', $res->redirectevent, $rediropts);
+
+   // astcore_form_select	
+  $group .= form_textfield(t("Always Redirect to Number"), "redirectalways", $res->redirectalways, 50, 150, null, null, false);
+
+//  $group .= form_textfield(t("Busy Redirection Number"), "redirec65talways", $edit['redire4ctalways'], 50, 150, null, null, false);
+//  $group .= form_textfield(t("Timeout Redirection Number"), "redire12ctalways", $edit['redi3rectalways'], 50, 150, null, null, false);
+//  $group .= form_textfield(t("Timeout Seconds"), "redirecta999ways", $edit['redirec99talways'], 50, 150, null, null, false);
+  // $group .= form_textfield(t("Comment"), "comment", $edit['comment'], 50, 150, null, null, false);
+
+	$group .= form_checkbox('Active', 'active', '1',$res->active,'UnClick to Disable this MSN number');
+ 	// $group .= astcore_form_checkbox('Leasing er bekreftet', 'leasing_ok', $leasing);
+
 
 	$group .= form_submit(t('Save MSN'));
 	$group .= form_submit(t('Back'));
@@ -1248,8 +1266,8 @@ function astpartnerglobal_msn_change_save($edit) {
 		drupal_access_denied();
 		return; 
 	}
-	$SQL = "UPDATE astacdid SET forwardto = '%s',remarks = '%s' WHERE did = '%s'";
-	$resq = db_query($SQL, trim($edit['forwardto']),trim($edit['remarks']),$did);
+	$SQL = "UPDATE astacdid SET forwardto = '%s',remarks = '%s',active = '%s',redirectevent = '%s',redirectalways = '%s' WHERE did = '%s'";
+	$resq = db_query($SQL, trim($edit['forwardto']),trim($edit['remarks']),$edit['active'],$edit['redirectevent'], trim($edit['redirectalways']),$did);
 
 	drupal_set_message(t('Updated MSN').' '.$did);
 } // end Save function
