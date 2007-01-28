@@ -2313,6 +2313,7 @@ $ret[] = update_sql("ALTER TABLE `astproduct` DROP PRIMARY KEY");
 $ret[] = update_sql("ALTER TABLE `astproduct` ADD PRIMARY KEY (`reseller`,`productcode`)");
 
 ALTER TABLE `astacgroup` ADD `inprogress` tinyint(1) DEFAULT '0' NOT NULL AFTER commission;
+ALTER TABLE `astacgroup` ADD `isproduction` tinyint(1) DEFAULT '0' NOT NULL AFTER inprogress;
 
 
 */
