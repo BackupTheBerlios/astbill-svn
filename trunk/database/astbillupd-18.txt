@@ -2313,7 +2313,47 @@ $ret[] = update_sql("ALTER TABLE `astproduct` ADD PRIMARY KEY (`reseller`,`produ
 ALTER TABLE `astacgroup` ADD `inprogress` tinyint(1) DEFAULT '0' NOT NULL AFTER commission;
 ALTER TABLE `astacgroup` ADD `isproduction` tinyint(1) DEFAULT '0' NOT NULL AFTER inprogress;
 
+CREATE TABLE `astproductip` (
+  `reseller` varchar(40) NOT NULL default '',
+  `productcode` varchar(40) NOT NULL,
+  `categoryid` varchar(6) NOT NULL default '',
+  `description` varchar(50) NOT NULL default '',
+  `longdescription` text NOT NULL,
+  `ourcost` decimal(20,4) NOT NULL default '0.0000',
+  `price1` decimal(20,4) NOT NULL default '0.0000',
+  `price2` decimal(20,4) NOT NULL default '0.0000',
+  `monthlyrent` decimal(20,4) NOT NULL default '0.0000',
+  `monthlyinsurance` decimal(20,4) NOT NULL default '0.0000',
+  `faktor` decimal(20,4) NOT NULL default '0.0000',
+  `rentalperiod` int(4) NOT NULL default '0',
+  `insurancefactor` decimal(20,4) NOT NULL default '0.0000',
+  `setupfee` decimal(20,4) NOT NULL default '0.0000',
+  `setupfaktor` decimal(20,4) NOT NULL default '0.0000',
+  `active` tinyint(1) NOT NULL default '1',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`reseller`,`productcode`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE `astpayagent` (
+  `apaid` int(10) unsigned NOT NULL auto_increment,
+  `uid` int(10) unsigned NOT NULL default '0',
+  `generalledger` varchar(255) NOT NULL default '',
+  `paytype` varchar(255) NOT NULL default '',
+  `payment_status` varchar(255) default NULL,
+  `remarks` varchar(10255) NOT NULL default '',
+  `paidamount` decimal(10,2) NOT NULL default '0.00',
+  `paiddate` datetime NOT NULL default '0000-00-00 00:00:00',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`apaid`)
+) ENGINE=INNODB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+ALTER TABLE `astorderip` ADD `productcode1` varchar(40) DEFAULT '' NOT NULL AFTER delivery_date;
+ALTER TABLE `astorderip` ADD `productcode2` varchar(40) DEFAULT '' NOT NULL AFTER `productcode1`;
+
+// UNDER TESTING
+ALTER TABLE astpartner CONVERT TO CHARACTER SET utf8;
 
 */
-
-
