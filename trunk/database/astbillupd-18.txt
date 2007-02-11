@@ -2355,5 +2355,32 @@ ALTER TABLE `astorderip` ADD `productcode2` varchar(40) DEFAULT '' NOT NULL AFTE
 
 // UNDER TESTING
 ALTER TABLE astpartner CONVERT TO CHARACTER SET utf8;
+ALTER TABLE `astpayagent` ADD `oid` int(10) DEFAULT '0' NOT NULL AFTER `payment_status`;
+update astacdid set serverid = '' where serverid is null;
+ALTER TABLE `astacdid` CHANGE `serverid` `serverid` varchar(40) DEFAULT '' NOT NULL;
+
+CREATE TABLE `astserver` (
+  `serverid` varchar(25) NOT NULL,
+  `pid` int(10) NOT NULL default '0',
+  `asteriskversion` varchar(255) NOT NULL,
+  `asterisk_started` datetime NOT NULL,
+  `host` varchar(128) default NULL,
+  `iaxport` varchar(128) default NULL,
+  `sshport` varchar(128) default NULL,
+  `sshusername` varchar(128) default NULL,
+  `sshpassword` varchar(128) default NULL,
+  `lanhost` varchar(128) default NULL,
+  `laniaxport` varchar(128) default NULL,
+  `lansshport` varchar(128) default NULL,
+  `servertech` varchar(256) default NULL,
+  `voxtech` varchar(128) default NULL,
+  `mysqluser` varchar(128) default NULL,
+  `mysqluser2` varchar(128) default NULL,
+  `dial9` varchar(256) default NULL,
+  `date_created` datetime NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`serverid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
 
 */
