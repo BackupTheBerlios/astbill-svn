@@ -2352,12 +2352,12 @@ CREATE TABLE `astpayagent` (
 
 ALTER TABLE `astorderip` ADD `productcode1` varchar(40) DEFAULT '' NOT NULL AFTER delivery_date;
 ALTER TABLE `astorderip` ADD `productcode2` varchar(40) DEFAULT '' NOT NULL AFTER `productcode1`;
-
-// UNDER TESTING
-ALTER TABLE astpartner CONVERT TO CHARACTER SET utf8;
 ALTER TABLE `astpayagent` ADD `oid` int(10) DEFAULT '0' NOT NULL AFTER `payment_status`;
 update astacdid set serverid = '' where serverid is null;
 ALTER TABLE `astacdid` CHANGE `serverid` `serverid` varchar(40) DEFAULT '' NOT NULL;
+
+// UNDER TESTING
+ALTER TABLE astpartner CONVERT TO CHARACTER SET utf8;
 
 CREATE TABLE `astserver` (
   `serverid` varchar(25) NOT NULL,
