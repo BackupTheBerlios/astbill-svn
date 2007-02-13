@@ -2461,4 +2461,38 @@ ALTER TABLE astsystem                   CONVERT TO CHARACTER SET utf8;
 ALTER TABLE asttrunk                    CONVERT TO CHARACTER SET utf8;
 ALTER TABLE astuser                     CONVERT TO CHARACTER SET utf8;
 
+CREATE TABLE `astcdrinv` (
+  `cvid` int(11) NOT NULL auto_increment,
+  `cdrid` int(10) NOT NULL default '0',
+  `accountcode` varchar(40) NOT NULL,
+  `rpid` varchar(40) NOT NULL default '',
+  `partnerid` int(11) NOT NULL default '0',
+  `uid` int(10) NOT NULL default '0',
+  `callednum` varchar(255) default '',
+  `status` tinyint(3) unsigned NOT NULL default '0',
+  `ccn` int(11) NOT NULL default '0',
+  `trunk` varchar(128) NOT NULL default 'DEF',
+  `rateplan` varchar(40) NOT NULL default '',
+  `rateplan2` varchar(40) NOT NULL default '',
+  `rateplan3` varchar(40) NOT NULL default '',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `answeredtime` int(11) default '0',
+  `billtime` int(11) NOT NULL default '0',
+  `billtime2` int(11) NOT NULL default '0',
+  `billtime3` int(11) NOT NULL default '0',
+  `ourcost` decimal(10,2) default '0.00',
+  `price` decimal(12,2) default '0.00',
+  `price2` decimal(12,2) default '0.00',
+  `price3` decimal(12,2) NOT NULL default '0.00',
+  `invoiceid` int(11) unsigned default NULL,
+  `invoiceid2` int(11) unsigned default NULL,
+  `invoiceid3` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`cvid`),
+  KEY `invoiceid_id` (`invoiceid`,`cvid`),
+  KEY `accountcode` (`accountcode`,`cvid`),
+  KEY `invoiceid_ccn` (`invoiceid`,`ccn`),
+  KEY `invoiceid_account_ccn` (`invoiceid`,`accountcode`,`ccn`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
+
+
 */
