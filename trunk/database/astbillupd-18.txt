@@ -2393,4 +2393,72 @@ CREATE TABLE `astserver` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
+ALTER TABLE astaccount                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astacdid                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astacgroup                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astacname                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astactype                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astanicli                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccnccode                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccniso                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccnlist                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccnprefix                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccnrate                  CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astcdr                      CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astconference               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astcountrycode              CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astcountryprefix            CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astcreditres                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astcurrency                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astdialplan                 CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astemailtext                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astextension                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE asthardware                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE asthardwaretype             CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astinvoice                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astinvoiceline              CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astinvrecurr                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlanguage                 CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astlog                      CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlogdb                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlogemail                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlogsms                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlogsmsbatch              CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astorder                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astorderip                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astorderline                CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astparcontact               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpartner                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpayagent                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpayment                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpaymentbatch             CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astplans                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpricelist                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpricelistcountry         CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astproduct                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astproductip                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astprospect                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astprospect2                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astreplication              CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astreport                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astroute                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astserver                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE aststatus                   CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astsumaccount               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsumorderip               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsumorderweek             CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsumorderweek2            CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsumpartner               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsyslog                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsystem                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE asttrunk                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astuser                     CONVERT TO CHARACTER SET utf8;
+
 */
