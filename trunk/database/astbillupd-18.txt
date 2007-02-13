@@ -2468,6 +2468,7 @@ CREATE TABLE `astcdrinv` (
   `rpid` varchar(40) NOT NULL default '',
   `partnerid` int(11) NOT NULL default '0',
   `uid` int(10) NOT NULL default '0',
+  `resellerid` varchar(40) default '',
   `callednum` varchar(255) default '',
   `status` tinyint(3) unsigned NOT NULL default '0',
   `ccn` int(11) NOT NULL default '0',
@@ -2490,9 +2491,11 @@ CREATE TABLE `astcdrinv` (
   PRIMARY KEY  (`cvid`),
   KEY `invoiceid_id` (`invoiceid`,`cvid`),
   KEY `accountcode` (`accountcode`,`cvid`),
+  KEY `resellerid_par_id` (`resellerid`,`partnerid`,`cvid`),
+  KEY `partnerid_id` (`partnerid`,`cvid`),
   KEY `invoiceid_ccn` (`invoiceid`,`ccn`),
   KEY `invoiceid_account_ccn` (`invoiceid`,`accountcode`,`ccn`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8;
+) ENGINE=MYISAM DEFAULT CHARSET=utf8;
 
 
 */
