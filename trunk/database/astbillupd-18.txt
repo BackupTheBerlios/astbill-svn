@@ -2497,5 +2497,6 @@ CREATE TABLE `astcdrinv` (
   KEY `invoiceid_account_ccn` (`invoiceid`,`accountcode`,`ccn`)
 ) ENGINE=MYISAM DEFAULT CHARSET=utf8;
 
+ALTER TABLE `astuser` ADD `useralias` varchar(40) DEFAULT '' NOT NULL AFTER lastaccount;
 
 */
