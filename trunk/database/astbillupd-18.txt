@@ -2502,5 +2502,7 @@ ALTER TABLE `astuser` ADD `useralias` varchar(40) DEFAULT '' NOT NULL AFTER last
 ALTER TABLE `astinvoice` ADD `resellerid` varchar(40) DEFAULT '' NOT NULL AFTER `db_prefix`;
 update astinvoice set resellerid = LEFT(db_prefix,3);
 ALTER TABLE `astproduct` CHANGE `reseller` `resellerid` varchar(40) DEFAULT '' NOT NULL;
+ALTER TABLE `astinvrecurr` ADD `resellerid` varchar(40) DEFAULT '' NOT NULL AFTER `db_prefix`;
+update `astinvrecurr` set resellerid = LEFT(db_prefix,3);
 
 */
