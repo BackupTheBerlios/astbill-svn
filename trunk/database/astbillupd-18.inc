@@ -2301,10 +2301,10 @@ ALTER TABLE `astacgroup` ADD `responsible` varchar(128) DEFAULT '' NOT NULL AFTE
 ALTER TABLE `astorderip` ADD `install_mobile` varchar(128) DEFAULT '' NOT NULL AFTER `install_date`;
 ALTER TABLE `astorderip` ADD `install_email` varchar(128) DEFAULT '' NOT NULL AFTER `install_mobile`;
 
-<<<<<<< .mine
-ALTER TABLE `astorderip` ADD `install_mobile` varchar(128) DEFAULT '' NOT NULL AFTER `install_date`;
-ALTER TABLE `astorderip` ADD `install_email` varchar(128) DEFAULT '' NOT NULL AFTER `install_mobile`;
-=======
+
+
+ALTER TABLE `astpartner` ADD `resellerid` varchar(40) DEFAULT 'ast' NOT NULL AFTER `db_prefix`;
+
 ALTER TABLE `astuser` ADD `maxline` int(4) DEFAULT '40' NOT NULL AFTER `comment`;
 ALTER TABLE `astpartner` ADD `masterpid` int(11) DEFAULT '30000' NOT NULL AFTER `uid`;
 ALTER TABLE `astpartner` CHANGE `active` `active` tinyint(1) DEFAULT '1' NOT NULL;
@@ -2312,18 +2312,15 @@ ALTER TABLE `astpartner` ADD `isreseller` varchar(40) DEFAULT '' NOT NULL AFTER 
 ALTER TABLE `astpartner` ADD `resellerid` varchar(40) DEFAULT 'ast' NOT NULL AFTER `db_prefix`;
 update astpartner set isreseller = 'ast' where pid = 30000;
 ALTER TABLE `astproduct` ADD `reseller` varchar(40) DEFAULT '' NOT NULL FIRST;
->>>>>>> .r358
 
-<<<<<<< .mine
-26 jan
-ALTER TABLE `astpartner` ADD `resellerid` varchar(40) DEFAULT 'ast' NOT NULL AFTER `db_prefix`;
+
 
 
 */
-=======
+
 $ret[] = update_sql("ALTER TABLE `astproduct` DROP PRIMARY KEY");
 $ret[] = update_sql("ALTER TABLE `astproduct` ADD PRIMARY KEY (`reseller`,`productcode`)");
->>>>>>> .r358
+
 
 ALTER TABLE `astacgroup` ADD `inprogress` tinyint(1) DEFAULT '0' NOT NULL AFTER commission;
 ALTER TABLE `astacgroup` ADD `isproduction` tinyint(1) DEFAULT '0' NOT NULL AFTER inprogress;
@@ -2367,8 +2364,144 @@ CREATE TABLE `astpayagent` (
 
 ALTER TABLE `astorderip` ADD `productcode1` varchar(40) DEFAULT '' NOT NULL AFTER delivery_date;
 ALTER TABLE `astorderip` ADD `productcode2` varchar(40) DEFAULT '' NOT NULL AFTER `productcode1`;
+ALTER TABLE `astpayagent` ADD `oid` int(10) DEFAULT '0' NOT NULL AFTER `payment_status`;
+update astacdid set serverid = '' where serverid is null;
+ALTER TABLE `astacdid` CHANGE `serverid` `serverid` varchar(40) DEFAULT '' NOT NULL;
 
 // UNDER TESTING
 ALTER TABLE astpartner CONVERT TO CHARACTER SET utf8;
+
+CREATE TABLE `astserver` (
+  `serverid` varchar(25) NOT NULL,
+  `pid` int(10) NOT NULL default '0',
+  `asteriskversion` varchar(255) NOT NULL,
+  `asterisk_started` datetime NOT NULL,
+  `host` varchar(128) default NULL,
+  `iaxport` varchar(128) default NULL,
+  `sshport` varchar(128) default NULL,
+  `sshusername` varchar(128) default NULL,
+  `sshpassword` varchar(128) default NULL,
+  `lanhost` varchar(128) default NULL,
+  `laniaxport` varchar(128) default NULL,
+  `lansshport` varchar(128) default NULL,
+  `servertech` varchar(256) default NULL,
+  `voxtech` varchar(128) default NULL,
+  `mysqluser` varchar(128) default NULL,
+  `mysqluser2` varchar(128) default NULL,
+  `dial9` varchar(256) default NULL,
+  `date_created` datetime NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`serverid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
+ALTER TABLE astaccount                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astacdid                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astacgroup                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astacname                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astactype                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astanicli                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccnccode                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccniso                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccnlist                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccnprefix                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccnrate                  CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astcdr                      CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astconference               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astcountrycode              CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astcountryprefix            CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astcreditres                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astcurrency                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astdialplan                 CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astemailtext                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astextension                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE asthardware                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE asthardwaretype             CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astinvoice                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astinvoiceline              CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astinvrecurr                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlanguage                 CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astlog                      CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlogdb                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlogemail                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlogsms                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlogsmsbatch              CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astorder                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astorderip                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astorderline                CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astparcontact               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpartner                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpayagent                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpayment                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpaymentbatch             CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astplans                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpricelist                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpricelistcountry         CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astproduct                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astproductip                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astprospect                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astprospect2                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astreplication              CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astreport                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astroute                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astserver                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE aststatus                   CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astsumaccount               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsumorderip               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsumorderweek             CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsumorderweek2            CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsumpartner               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsyslog                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsystem                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE asttrunk                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astuser                     CONVERT TO CHARACTER SET utf8;
+
+CREATE TABLE `astcdrinv` (
+  `cvid` int(11) NOT NULL auto_increment,
+  `cdrid` int(10) NOT NULL default '0',
+  `accountcode` varchar(40) NOT NULL,
+  `rpid` varchar(40) NOT NULL default '',
+  `partnerid` int(11) NOT NULL default '0',
+  `uid` int(10) NOT NULL default '0',
+  `resellerid` varchar(40) default '',
+  `callednum` varchar(255) default '',
+  `status` tinyint(3) unsigned NOT NULL default '0',
+  `ccn` int(11) NOT NULL default '0',
+  `trunk` varchar(128) NOT NULL default 'DEF',
+  `rateplan` varchar(40) NOT NULL default '',
+  `rateplan2` varchar(40) NOT NULL default '',
+  `rateplan3` varchar(40) NOT NULL default '',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `answeredtime` int(11) default '0',
+  `billtime` int(11) NOT NULL default '0',
+  `billtime2` int(11) NOT NULL default '0',
+  `billtime3` int(11) NOT NULL default '0',
+  `ourcost` decimal(10,2) default '0.00',
+  `price` decimal(12,2) default '0.00',
+  `price2` decimal(12,2) default '0.00',
+  `price3` decimal(12,2) NOT NULL default '0.00',
+  `invoiceid` int(11) unsigned default NULL,
+  `invoiceid2` int(11) unsigned default NULL,
+  `invoiceid3` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`cvid`),
+  KEY `invoiceid_id` (`invoiceid`,`cvid`),
+  KEY `accountcode` (`accountcode`,`cvid`),
+  KEY `resellerid_par_id` (`resellerid`,`partnerid`,`cvid`),
+  KEY `partnerid_id` (`partnerid`,`cvid`),
+  KEY `invoiceid_ccn` (`invoiceid`,`ccn`),
+  KEY `invoiceid_account_ccn` (`invoiceid`,`accountcode`,`ccn`)
+) ENGINE=MYISAM DEFAULT CHARSET=utf8;
+
+
+ALTER TABLE `astuser` ADD `useralias` varchar(40) DEFAULT '' NOT NULL AFTER lastaccount;
+ALTER TABLE `astinvoice` ADD `resellerid` varchar(40) DEFAULT '' NOT NULL AFTER `db_prefix`;
+update astinvoice set resellerid = LEFT(db_prefix,3);
 
 */
