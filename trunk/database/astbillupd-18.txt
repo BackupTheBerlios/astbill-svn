@@ -2507,6 +2507,9 @@ update `astinvrecurr` set resellerid = LEFT(db_prefix,3);
 
 CREATE TABLE `astticket` (
   `tid` int(11) NOT NULL auto_increment,
+  `from` varchar(128) NOT NULL default '',
+  `mobile` varchar(128) NOT NULL default '',
+  `email` varchar(128) NOT NULL default '',
   `partnerid` int(11) NOT NULL default '0',
   `assignqueue` varchar(128) NOT NULL default '',
   `assigneduid` int(10) NOT NULL default '0',
