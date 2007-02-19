@@ -2505,4 +2505,20 @@ ALTER TABLE `astproduct` CHANGE `reseller` `resellerid` varchar(40) DEFAULT '' N
 ALTER TABLE `astinvrecurr` ADD `resellerid` varchar(40) DEFAULT '' NOT NULL AFTER `db_prefix`;
 update `astinvrecurr` set resellerid = LEFT(db_prefix,3);
 
+CREATE TABLE `astticket` (
+  `tid` int(11) NOT NULL auto_increment,
+  `partnerid` int(11) NOT NULL default '0',
+  `assignqueue` varchar(128) NOT NULL default '',
+  `assigneduid` int(10) NOT NULL default '0',
+  `reporteruid` int(10) NOT NULL default '0',
+  `subject` varchar(256) NOT NULL default '',
+  `severity` varchar(128) NOT NULL default '',
+  `priority` varchar(128) NOT NULL default '',
+  `timeunits` int(11) NOT NULL default '0',
+  `pending_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  PRIMARY KEY  (`tid`),
+  KEY `partnerid_tid` (`partnerid`,`tid`)
+) ENGINE=MYISAM DEFAULT CHARSET=utf8;
+
 */
