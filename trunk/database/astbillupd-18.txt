@@ -2524,4 +2524,17 @@ CREATE TABLE `astticket` (
   KEY `partnerid_tid` (`partnerid`,`tid`)
 ) ENGINE=MYISAM DEFAULT CHARSET=utf8;
 
+CREATE TABLE `astticketremarks` (
+  `trid` int(11) NOT NULL auto_increment,
+  `tid` int(11) NOT NULL default '0',
+  `reporteruid` int(10) NOT NULL default '0',
+  `remarks` text NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`trid`)
+) ENGINE=MYISAM DEFAULT CHARSET=utf8;
+
+ALTER TABLE `astinvrecurr` ADD `next_run_date` date DEFAULT '0000-00-00' NOT NULL AFTER `invoice_upto_date`;
+ALTER TABLE `astticket` ADD `closed_date` date DEFAULT '0000-00-00' NOT NULL AFTER `timeunits`;
+ALTER TABLE `astticket` ADD `closeduid` int(10) NOT NULL default '0' AFTER `closed_date`;
+
 */
