@@ -2529,12 +2529,29 @@ CREATE TABLE `astticketremarks` (
   `tid` int(11) NOT NULL default '0',
   `reporteruid` int(10) NOT NULL default '0',
   `remarks` text NOT NULL,
-  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY  (`trid`)
 ) ENGINE=MYISAM DEFAULT CHARSET=utf8;
 
 ALTER TABLE `astinvrecurr` ADD `next_run_date` date DEFAULT '0000-00-00' NOT NULL AFTER `invoice_upto_date`;
 ALTER TABLE `astticket` ADD `closed_date` date DEFAULT '0000-00-00' NOT NULL AFTER `timeunits`;
 ALTER TABLE `astticket` ADD `closeduid` int(10) NOT NULL default '0' AFTER `closed_date`;
+
+ALTER TABLE `astinvoice` CHANGE `timestamp` `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+ALTER TABLE `astinvoice` ADD `cdrlines` int(11) NOT NULL default '0' AFTER `gross`;
+ALTER TABLE `astinvoice` ADD `sumcdr` decimal(12,2) NOT NULL default '0' AFTER `cdrlines`;
+ALTER TABLE `astinvoiceline` CHANGE `timestamp` `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+ALTER TABLE `astpartner` CHANGE `timestamp` `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+ALTER TABLE `astorderip` CHANGE `timestamp` `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+CREATE TABLE `astreseller` (
+  `resellerid` varchar(40) NOT NULL default '',
+  `resellername` varchar(128) default '',
+  PRIMARY KEY  (`resellerid`)
+) ENGINE=MyIsam DEFAULT CHARSET=utf8;
+
+ALTER TABLE `astacdid` ADD `secret` varchar(80) NOT NULL default '' AFTER ,
+$ret[] = update_sql("ALTER TABLE `astuser` ADD `isticketcsr` tinyint(1) NOT NULL default '0' AFTER `isagent`");
+ALTER TABLE `astworkgroupuser` ADD `remarks` varchar(256) NOT NULL default '' AFTER uid;
 
 */
