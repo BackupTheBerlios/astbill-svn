@@ -1,4 +1,4 @@
-You can find more examples in the AstBill manual.
+﻿You can find more examples in the AstBill manual.
 It is still work in progress, but please take a look at
 http://astbill.com/manual
 
@@ -26,7 +26,7 @@ Asterisk - Version 1.2.14
 (Most of AstBill is also working on Asterisk 1.0.9 but 1.2.14 is needed for the REALTIME features)
 Asterisk - Addons Version 1.2.5
 (We are only using the module res_config_mysql from Asterisk - Addons)
-See enclosed file modules.conf for modules to unload to awoid error messages
+See enclosed file modules.conf for modules to unload to avoid error messages
 Asterisk - Sounds Version 1.2.1
 MySQL - Version 5.0.27
 (Astbill is using Views and Stored Procedures, which is only in MySQL 5 and up - See mysql Ver 5 Manual Section 2.7)

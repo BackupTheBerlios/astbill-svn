@@ -2550,8 +2550,30 @@ CREATE TABLE `astreseller` (
   PRIMARY KEY  (`resellerid`)
 ) ENGINE=MyIsam DEFAULT CHARSET=utf8;
 
-ALTER TABLE `astacdid` ADD `secret` varchar(80) NOT NULL default '' AFTER ,
+ALTER TABLE `astacdid` ADD `secret` varchar(80) NOT NULL default '' AFTER serverid;
 $ret[] = update_sql("ALTER TABLE `astuser` ADD `isticketcsr` tinyint(1) NOT NULL default '0' AFTER `isagent`");
 ALTER TABLE `astworkgroupuser` ADD `remarks` varchar(256) NOT NULL default '' AFTER uid;
+
+ALTER TABLE `astuser` ADD `deviceip` varchar(256) NOT NULL default '' AFTER isticketcsr;
+ALTER TABLE `astuser` ADD `devicetype` int(10) unsigned NOT NULL default '0' AFTER deviceip;
+ALTER TABLE `astacdid` ADD `hgid` int(10) unsigned NOT NULL default '0' AFTER serverid;
+$ret[] = update_sql("ALTER TABLE `astpartner` ADD `isdslvendor` tinyint(4) NOT NULL default '0' AFTER `isfieldvendor`");
+$ret[] = update_sql("ALTER TABLE `astorderip` ADD `dsldvendor` int(10) NOT NULL default '0' AFTER `fieldvendor`");
+ALTER TABLE `astorderip` ADD `dsl_delivered_date` date DEFAULT '0000-00-00' NOT NULL AFTER `delivery_date`;
+ALTER TABLE `astorderip` ADD `dsl_vendor_ref` varchar(256) DEFAULT '' NOT NULL AFTER `fieldremarks`;
+ALTER TABLE `astorderip` ADD `dsl_vendor_transid` varchar(256) DEFAULT '' NOT NULL AFTER `dsl_vendor_ref`;
+ALTER TABLE `astorderip` ADD `dsl_vendor_startcost` decimal(12,2) DEFAULT '0' NOT NULL AFTER `dsl_vendor_transid`;
+ALTER TABLE `astorderip` ADD `dsl_vendor_monthcost` decimal(12,2) DEFAULT '0' NOT NULL AFTER `dsl_vendor_startcost`;
+ALTER TABLE `astorderip` ADD `dsl_start_amount` decimal(12,2) DEFAULT '0' NOT NULL AFTER `dsl_vendor_monthcost`;
+ALTER TABLE `astorderip` ADD `dsl_month_amount` decimal(12,2) DEFAULT '0' NOT NULL AFTER `dsl_start_amount`;
+ALTER TABLE `astorderip` ADD `dsl_invoiceref` varchar(128) DEFAULT '' NOT NULL AFTER `dsl_month_amount`;
+ALTER TABLE `astticket` ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+ALTER TABLE `astticket` ADD `ccd` int(10) DEFAULT '0' NOT NULL AFTER assigneduid;
+ALTER TABLE `astaccount` ADD `presenrestricted` tinyint(1) DEFAULT '0' NOT NULL AFTER forcecallerid;
+ALTER TABLE `asttrunk` ADD `pathrestricted` varchar(128) NULL AFTER path;
+ALTER TABLE `asttrunk` DROP  `currency`;
+ALTER TABLE `asttrunk` CHANGE `tenantid` `partnerid` int(11) DEFAULT '0' NOT NULL;
+ALTER TABLE `asttrunk` CHANGE `comment` `remarks` varchar(2048) DEFAULT '' NOT NULL;
+
 
 */
