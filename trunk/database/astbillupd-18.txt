@@ -2574,6 +2574,29 @@ ALTER TABLE `asttrunk` ADD `pathrestricted` varchar(128) NULL AFTER path;
 ALTER TABLE `asttrunk` DROP  `currency`;
 ALTER TABLE `asttrunk` CHANGE `tenantid` `partnerid` int(11) DEFAULT '0' NOT NULL;
 ALTER TABLE `asttrunk` CHANGE `comment` `remarks` varchar(2048) DEFAULT '' NOT NULL;
+ALTER TABLE `asttrunk` ADD `namerestricted` varchar(128) NULL AFTER name;
+ALTER TABLE `astinvoiceline` CHANGE `phoneno` `phoneno` varchar(40) DEFAULT '' NOT NULL;
+ALTER TABLE `astaccount` ADD `regserver` varchar(128) NULL AFTER timestamp;
 
+DROP VIEW IF EXISTS `asvccnratit`;
+CREATE VIEW `asvccnratit` AS select `astcdrinv`.`cvid` AS `cvid`,
+`astcdrinv`.`invoiceid` AS `invoiceid`,`astcdrinv`.`callednum` AS `callednum`,`astcdrinv`.`date_created` AS `date`,
+dayofweek(`astcdrinv`.`date_created`) AS `day`,
+(case when not((`astcdrinv`.`callednum` like '47%')) then 4 
+when not((`astcdrinv`.`ccn` in (11,903,904,924,905,16,901,906,900,897,898,35,902))) then 1 
+when (dayofweek(`astcdrinv`.`date_created`) in (1,7)) then 3 when ((cast(`astcdrinv`.`date_created` as time) 
+< '08:00:00') or (cast(`astcdrinv`.`date_created` as time) > '17:00:00')) then 2  
+else 1 end) AS `callrate`, 
+ccn, rateplan, rateplan3,billtime,billtime3,price,price3
+from `astcdrinv`;
+
+DROP VIEW IF EXISTS `asvccnratit3`;
+CREATE VIEW `asvccnratit3` AS select asv.*, 
+CASE asv.callrate WHEN 1 THEN rat.rate WHEN 2 THEN rat.rateoffpeak WHEN 3 THEN rat.rateweekend ELSE rat.rate END rate,
+connectcharge
+from `asvccnratit` asv, astccnrate rat
+where asv.ccn = rat.ccn and asv.rateplan3 = rat.rateplan;
+
+  
 
 */
