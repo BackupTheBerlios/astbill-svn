@@ -2577,6 +2577,9 @@ ALTER TABLE `asttrunk` CHANGE `comment` `remarks` varchar(2048) DEFAULT '' NOT N
 ALTER TABLE `asttrunk` ADD `namerestricted` varchar(128) NULL AFTER name;
 ALTER TABLE `astinvoiceline` CHANGE `phoneno` `phoneno` varchar(40) DEFAULT '' NOT NULL;
 ALTER TABLE `astaccount` ADD `regserver` varchar(128) NULL AFTER timestamp;
+ALTER TABLE `astcdr` ADD `cvid` int(11) DEFAULT '0' NOT NULL;
+ALTER TABLE `astcdr` ADD KEY `cvid` (`cvid`);
+ALTER TABLE `astccnlist` ADD `calculationstages` tinyint(1) DEFAULT '0' NOT NULL AFTER ccn;
 
 DROP VIEW IF EXISTS `asvccnratit`;
 CREATE VIEW `asvccnratit` AS select `astcdrinv`.`cvid` AS `cvid`,
@@ -2597,6 +2600,24 @@ connectcharge
 from `asvccnratit` asv, astccnrate rat
 where asv.ccn = rat.ccn and asv.rateplan3 = rat.rateplan;
 
-  
+CREATE TABLE `astsumcdrinv` (
+  `sumcode` varchar(40) NOT NULL default '',
+  `tablename` varchar(40) NOT NULL default '',
+  `countcalls` int(11) NOT NULL default '0',
+  `sumamount` decimal(12,4) NOT NULL default '0.0000',  
+  `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`sumcode`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;  
+
+CREATE TABLE `astsumcdrinvi` (
+  `sumcode` int(11) unsigned NOT NULL default '0',
+  `tablename` varchar(40) NOT NULL default '',
+  `countcalls` int(11) NOT NULL default '0',
+  `sumamount` decimal(12,4) NOT NULL default '0.0000',  
+  `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`sumcode`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;  
+
+alter table astinvrecurr drop db_prefix;
 
 */
