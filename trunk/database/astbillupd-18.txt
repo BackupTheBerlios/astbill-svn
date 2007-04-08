@@ -2620,4 +2620,28 @@ CREATE TABLE `astsumcdrinvi` (
 
 alter table astinvrecurr drop db_prefix;
 
+DROP VIEW IF EXISTS `asvccncallrate1`;
+CREATE VIEW `asvccncallrate1` AS 
+SELECT cvid,date_created,
+dayofweek(date_created) AS `day`,
+(case when not((`astcdrinv`.`callednum` like '47%')) then 4 
+when not((`astcdrinv`.`ccn` in (11,903,904,924,905,16,901,906,900,897,898,35,902))) then 1 
+when (dayofweek(`astcdrinv`.`date_created`) in (1,7)) then 3 when ((cast(`astcdrinv`.`date_created` as time) 
+< '08:00:00') or (cast(`astcdrinv`.`date_created` as time) > '17:00:00')) then 2  
+else 1 end) AS `callrate`,
+ccn,callednum
+from `astcdrinv`;
+
+
+ALTER TABLE `astreseller` ADD `sumamount` decimal(12,2) DEFAULT '0' NOT NULL;
+ALTER TABLE `astreseller` ADD `cdrlines`  int(11) DEFAULT '0' NOT NULL;
+ALTER TABLE `astaccount` ADD `sumamount`  decimal(12,2) DEFAULT '0' NOT NULL AFTER startingcredit;
+ALTER TABLE `astaccount` ADD `cdrlines`   decimal(12,2) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `astpartner` ADD `sumamount`  decimal(12,2) DEFAULT '0' NOT NULL AFTER active;
+ALTER TABLE `astpartner` ADD `cdrlines`   decimal(12,2) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `astuser` ADD `sumamount`     decimal(12,2) DEFAULT '0' NOT NULL AFTER creditlimit;
+ALTER TABLE `astuser` ADD `cdrlines`      decimal(12,2) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `asttrunk` ADD `sumamount`    decimal(12,2) DEFAULT '0' NOT NULL;
+ALTER TABLE `asttrunk` ADD `cdrlines`     int(11) DEFAULT '0' NOT NULL;
+
 */
