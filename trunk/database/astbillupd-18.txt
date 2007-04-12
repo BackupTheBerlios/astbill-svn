@@ -2579,7 +2579,7 @@ ALTER TABLE `astinvoiceline` CHANGE `phoneno` `phoneno` varchar(40) DEFAULT '' N
 ALTER TABLE `astaccount` ADD `regserver` varchar(128) NULL AFTER timestamp;
 ALTER TABLE `astcdr` ADD `cvid` int(11) DEFAULT '0' NOT NULL;
 ALTER TABLE `astcdr` ADD KEY `cvid` (`cvid`);
-ALTER TABLE `astccnlist` ADD `calculationstages` tinyint(1) DEFAULT '0' NOT NULL AFTER ccn;
+ALTER TABLE `astccnlist` ADD `calculationstages` tinyint(1) DEFAULT '1' NOT NULL AFTER ccn;
 
 DROP VIEW IF EXISTS `asvccnratit`;
 CREATE VIEW `asvccnratit` AS select `astcdrinv`.`cvid` AS `cvid`,
@@ -2633,15 +2633,56 @@ ccn,callednum
 from `astcdrinv`;
 
 
-ALTER TABLE `astreseller` ADD `sumamount` decimal(12,2) DEFAULT '0' NOT NULL;
-ALTER TABLE `astreseller` ADD `cdrlines`  int(11) DEFAULT '0' NOT NULL;
-ALTER TABLE `astaccount` ADD `sumamount`  decimal(12,2) DEFAULT '0' NOT NULL AFTER startingcredit;
-ALTER TABLE `astaccount` ADD `cdrlines`   decimal(12,2) DEFAULT '0' NOT NULL AFTER `sumamount`;
-ALTER TABLE `astpartner` ADD `sumamount`  decimal(12,2) DEFAULT '0' NOT NULL AFTER active;
-ALTER TABLE `astpartner` ADD `cdrlines`   decimal(12,2) DEFAULT '0' NOT NULL AFTER `sumamount`;
-ALTER TABLE `astuser` ADD `sumamount`     decimal(12,2) DEFAULT '0' NOT NULL AFTER creditlimit;
-ALTER TABLE `astuser` ADD `cdrlines`      decimal(12,2) DEFAULT '0' NOT NULL AFTER `sumamount`;
-ALTER TABLE `asttrunk` ADD `sumamount`    decimal(12,2) DEFAULT '0' NOT NULL;
-ALTER TABLE `asttrunk` ADD `cdrlines`     int(11) DEFAULT '0' NOT NULL;
+ALTER TABLE `asttrunk`    ADD `sumamount`       decimal(12,4) DEFAULT '0' NOT NULL;
+ALTER TABLE `asttrunk`    ADD `cdrlines`        int(11) DEFAULT '0' NOT NULL;
+ALTER TABLE `asttrunk`    ADD `sumansweredtime`	int(11) DEFAULT '0' NOT NULL;
+ALTER TABLE `astreseller` ADD `sumamount`	decimal(12,4) DEFAULT '0' NOT NULL;
+ALTER TABLE `astreseller` ADD `cdrlines`	int(11) DEFAULT '0' NOT NULL;
+ALTER TABLE `astreseller` ADD `sumbilltime`	int(11) DEFAULT '0' NOT NULL;
+ALTER TABLE `astreseller` ADD `sumansweredtime` int(11) DEFAULT '0' NOT NULL;
+ALTER TABLE `astpartner`  ADD `sumamount`	decimal(12,4) DEFAULT '0' NOT NULL AFTER active;
+ALTER TABLE `astpartner`  ADD `cdrlines`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `astpartner`  ADD `sumbilltime`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `astpartner`  ADD `sumansweredtime` int(11) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `astuser`     ADD `sumamount`	decimal(12,4) DEFAULT '0' NOT NULL AFTER creditlimit;
+ALTER TABLE `astuser`     ADD `cdrlines`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `astuser`     ADD `sumbilltime`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `astuser`     ADD `sumansweredtime` int(11) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `astaccount`  ADD `sumamount`	decimal(12,4) DEFAULT '0' NOT NULL AFTER startingcredit;
+ALTER TABLE `astaccount`  ADD `cdrlines`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `astaccount`  ADD `sumbilltime`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `astaccount`  ADD `sumansweredtime` int(11) DEFAULT '0' NOT NULL AFTER `sumamount`;
+
+ALTER TABLE `astaccount`  ADD `sumamount`	decimal(12,4) DEFAULT '0' NOT NULL AFTER startingcredit;
+ALTER TABLE `astaccount`  ADD `cdrlines`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `astaccount`  ADD `sumbilltime`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`;
+ALTER TABLE `astaccount`  ADD `sumansweredtime` int(11) DEFAULT '0' NOT NULL AFTER `sumamount`;
+
+ALTER TABLE `astplans` ADD `calculationstages` tinyint(1) DEFAULT '1' NOT NULL AFTER active;
+
+CREATE TABLE `astuploads` (
+  `docid` int(10) NOT NULL auto_increment,
+  `uid` int(10) DEFAULT '0' NOT NULL,
+  `oid` varchar(128) DEFAULT '' NOT NULL,
+  `upload_files` varchar(128) DEFAULT '' NOT NULL,
+  `upload_path` varchar(128) DEFAULT '' NOT NULL,
+  `filemime` varchar(128) DEFAULT '' NOT NULL,
+  `filesize` bigint(20) DEFAULT '0' NOT NULL,
+  `title` varchar(128) DEFAULT '' NOT NULL,
+  `doccategory` varchar(128) DEFAULT '' NOT NULL,
+  `image` longblob DEFAULT '' NOT NULL,
+  PRIMARY KEY  (`docid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+ALTER TABLE `astccnrate`   ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+ALTER TABLE `astccnccode`  ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+ALTER TABLE `astccniso`    ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+ALTER TABLE `astccnlist`   ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+ALTER TABLE `astccnprefix` ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE `astinvoice`   ADD `printstatus` tinyint(1) DEFAULT '0' NOT NULL AFTER status;
+ALTER TABLE `astcdrinv`    ADD `subacc` varchar(40) DEFAULT '' NOT NULL AFTER rpid;
+
 
 */
