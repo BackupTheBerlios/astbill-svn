@@ -2461,11 +2461,13 @@ ALTER TABLE astsystem                   CONVERT TO CHARACTER SET utf8;
 ALTER TABLE asttrunk                    CONVERT TO CHARACTER SET utf8;
 ALTER TABLE astuser                     CONVERT TO CHARACTER SET utf8;
 
+
 CREATE TABLE `astcdrinv` (
   `cvid` int(11) NOT NULL auto_increment,
   `cdrid` int(10) NOT NULL default '0',
   `accountcode` varchar(40) NOT NULL,
   `rpid` varchar(40) NOT NULL default '',
+  `subacc` varchar(40) NOT NULL default '',
   `partnerid` int(11) NOT NULL default '0',
   `uid` int(10) NOT NULL default '0',
   `resellerid` varchar(40) default '',
@@ -2494,8 +2496,9 @@ CREATE TABLE `astcdrinv` (
   KEY `resellerid_par_id` (`resellerid`,`partnerid`,`cvid`),
   KEY `partnerid_id` (`partnerid`,`cvid`),
   KEY `invoiceid_ccn` (`invoiceid`,`ccn`),
-  KEY `invoiceid_account_ccn` (`invoiceid`,`accountcode`,`ccn`)
-) ENGINE=MYISAM DEFAULT CHARSET=utf8;
+  KEY `invoiceid_account_ccn` (`invoiceid`,`accountcode`,`ccn`),
+  KEY `ccn` (`ccn`,`callednum`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8
 
 
 ALTER TABLE `astuser` ADD `useralias` varchar(40) DEFAULT '' NOT NULL AFTER lastaccount;
@@ -2682,7 +2685,33 @@ ALTER TABLE `astccnlist`   ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP O
 ALTER TABLE `astccnprefix` ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
 
 ALTER TABLE `astinvoice`   ADD `printstatus` tinyint(1) DEFAULT '0' NOT NULL AFTER status;
-ALTER TABLE `astcdrinv`    ADD `subacc` varchar(40) DEFAULT '' NOT NULL AFTER rpid;
+
+ALTER TABLE `astuser`   CHANGE `phone` `phone` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `phone2` `phone2` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `mobile` `mobile` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `fax` `fax` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `country` `country` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `state` `state` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `city` `city` varchar(128) DEFAULT '' NOT NULL;
+
+ALTER TABLE `astuser`   CHANGE `zip` `zip` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `address2` `address2` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `address1` `address1` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `lastname` `lastname` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `firstname` `firstname` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `company` `company` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `birthdate2` `birthdate2` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `valuecode` `valuecode` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `ordercode` `ordercode` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `ipaddr` `ipaddr` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `comment` `comment` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astuser`   CHANGE `companyno` `companyno` varchar(128) DEFAULT '' NOT NULL;
+ALTER TABLE `astinvrecurr` ADD `uid` int(10) unsigned DEFAULT '0' NOT NULL after partnerid;
+ALTER TABLE `astinvrecurr` DROP uid_in;
+ALTER TABLE `astaccount` ADD KEY `forcecallerid` (`forcecallerid`);
+ALTER TABLE astcdrinv DROP KEY `resellerid_par_id`;
+ALTER TABLE astcdrinv DROP  KEY `partnerid_id`;
+ALTER TABLE astcdrinv ADD KEY `status_rpid` (`status`,`rpid`);
 
 
 */
