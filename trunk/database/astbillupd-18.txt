@@ -2707,11 +2707,45 @@ ALTER TABLE `astuser`   CHANGE `ipaddr` `ipaddr` varchar(128) DEFAULT '' NOT NUL
 ALTER TABLE `astuser`   CHANGE `comment` `comment` varchar(128) DEFAULT '' NOT NULL;
 ALTER TABLE `astuser`   CHANGE `companyno` `companyno` varchar(128) DEFAULT '' NOT NULL;
 ALTER TABLE `astinvrecurr` ADD `uid` int(10) unsigned DEFAULT '0' NOT NULL after partnerid;
+
+
+
+
 ALTER TABLE `astinvrecurr` DROP uid_in;
 ALTER TABLE `astaccount` ADD KEY `forcecallerid` (`forcecallerid`);
 ALTER TABLE astcdrinv DROP KEY `resellerid_par_id`;
 ALTER TABLE astcdrinv DROP  KEY `partnerid_id`;
 ALTER TABLE astcdrinv ADD KEY `status_rpid` (`status`,`rpid`);
+ALTER TABLE `astticket` ADD `status` tinyint(1) DEFAULT '0' NOT NULL AFTER priority;
+ALTER TABLE `astpartner`  ADD `sumnotinvoiced`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount;
+ALTER TABLE `astuser`     ADD `sumnotinvoiced`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount;
+ALTER TABLE `astpartner`  ADD `sum24h`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount;
+ALTER TABLE `astuser`     ADD `sum24h`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount;
+ALTER TABLE `astpartner`  ADD `sumweek`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount;
+ALTER TABLE `astuser`     ADD `sumweek`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount;
+ALTER TABLE `astaccount`  ADD `sumnotinvoiced`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount;
+ALTER TABLE `astaccount`  ADD `sum24h`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount;
+ALTER TABLE `astaccount`  ADD `sumweek`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount;
 
+ALTER TABLE `astpartner` ADD `cdrnotinvoiced` int(11) NOT NULL default '0' AFTER `cdrlines`;
+ALTER TABLE `astuser`    ADD `cdrnotinvoiced` int(11) NOT NULL default '0' AFTER `cdrlines`;
+ALTER TABLE `astaccount` ADD `cdrnotinvoiced` int(11) NOT NULL default '0' AFTER `cdrlines`;
+
+ALTER TABLE `astpartner` ADD `creditlimit` decimal(12,4) DEFAULT '0' NOT NULL AFTER active;
+ALTER TABLE `astuser`    CHANGE `creditlimit` `creditlimit` decimal(12,4) DEFAULT '0' NOT NULL;
+ALTER TABLE `astaccount`    CHANGE `creditlimit` `creditlimit` decimal(12,4) DEFAULT '0' NOT NULL;
+
+
+
+CREATE TABLE `astbatch` (
+  `script_name` varchar(128) NOT NULL default '',
+  `Date_script_started` datetime NOT NULL default '0000-00-00 00:00:00',
+  `Date_script_closed` datetime NOT NULL default '0000-00-00 00:00:00',
+  `status` varchar(128) NOT NULL default '',
+  `errorcode` varchar(128) NOT NULL default '0',
+  `errortext` varchar(250) NOT NULL default '',
+  `loginfo` varchar(15000) NOT NULL default '',
+  PRIMARY KEY  (`script_name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 */
