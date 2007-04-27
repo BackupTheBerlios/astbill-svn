@@ -2735,8 +2735,6 @@ ALTER TABLE `astpartner` ADD `creditlimit` decimal(12,4) DEFAULT '0' NOT NULL AF
 ALTER TABLE `astuser`    CHANGE `creditlimit` `creditlimit` decimal(12,4) DEFAULT '0' NOT NULL;
 ALTER TABLE `astaccount`    CHANGE `creditlimit` `creditlimit` decimal(12,4) DEFAULT '0' NOT NULL;
 
-
-
 CREATE TABLE `astbatch` (
   `script_name` varchar(128) NOT NULL default '',
   `Date_script_started` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -2747,5 +2745,9 @@ CREATE TABLE `astbatch` (
   `loginfo` varchar(15000) NOT NULL default '',
   PRIMARY KEY  (`script_name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+ALTER TABLE `astpartner` ADD `isdnvendor` tinyint(1) DEFAULT '0' NOT NULL AFTER havesubaccounts;
+ALTER TABLE `astinvrecurr` ADD `phonenumbers` varchar(256) DEFAULT '' NOT NULL AFTER invoiceid;
+ALTER TABLE `astinvrecurr` ADD `productdesc`  varchar(256) DEFAULT '' NOT NULL AFTER phonenumbers;
 
 */
