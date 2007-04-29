@@ -778,3 +778,6 @@ SET PASSWORD FOR 'astbilluser'@'localhost' = OLD_PASSWORD('astbill419');
 
 GRANT EXECUTE ON *.* TO 'astbilluser'@'localhost';
 
+delete from pbx_sessions;
+delete from pbx_cache;
+

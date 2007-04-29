@@ -71,6 +71,7 @@ $sql_updates = array(
   "2007-04-29" => "astbill_update_059",
   "2007-04-29b" => "astbill_update_060",
   "2007-04-29c" => "astbill_update_061",
+  "2007-04-29d" => "astbill_update_062",
 );
 
 function update_sql($sql) {
@@ -5526,6 +5527,25 @@ function astbill_update_061() {
   return $ret;
 
 }
+
+function astbill_update_062() {
+  $ret = array();
+    $ret[] = update_sql("DROP VIEW IF EXISTS asv_sip");
+    $ret[] = update_sql("create view asv_sip as SELECT accountcode name,username,type,secret,host,
+callerid,context,dtmfmode,mailbox,nat,qualify,fromuser,authuser,fromdomain,fullcontact,
+insecure,canreinvite,disallow,allow,restrictid,ipaddr,port,regseconds,regserver 
+FROM astaccount where (tech = 'SIP' or tech = 'IN-SIP') and active = 1");
+
+    $ret[] = update_sql("DROP VIEW IF EXISTS asv_iax");
+    $ret[] = update_sql("create view asv_iax as SELECT accountcode name,username,type,
+secret,notransfer,inkeys,auth,accountcode,amaflags,callerid,context,defaultip,
+host,language,dtmfmode,mailbox,deny,permit,qualify,disallow,allow,ipaddr,port,
+regseconds FROM astaccount where (tech = 'IAX' or tech = 'IN-IAX' or tech = 'IAX2' ) and active = 1");
+
+  return $ret;
+
+}
+
 
 
 
