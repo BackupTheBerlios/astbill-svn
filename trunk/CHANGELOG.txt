@@ -9,8 +9,13 @@ For Support:
 http://astbill.com/forum/3
 
 29 April 2007
-# We have added 4900 lines to the database update. Our database is becomming more and more compleet
-# and capable of handing all the issues facing a modern telecom.
+# If you are upgrading Remember to enable the new modules. Please visit http://127.0.0.1/?q=admin/modules
+# The new modules are not really used in this version. It is just a preview of what is comming and to
+# give a framework for further development. This is fully developed in the next version of Astbill
+# that is based on Drupal 5.1 and have a lot of new functions and modules.
+# We have added 4900 lines to the database in this release. There may be close to 1000 database changes. 
+# Our database is becomming more and more compleet and capable of handing all the issues facing a modern telecom.
+#
 
 13 Jan 2007
 # We have now added 7 Modules to AstBill including support for PDF using the library at fpdf.org and ccn = Charge Code Numbers
