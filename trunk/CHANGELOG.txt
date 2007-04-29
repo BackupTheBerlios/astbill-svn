@@ -8,6 +8,10 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
+29 April 2007
+# We have added 4900 lines to the database update. Our database is becomming more and more compleet
+# and capable of handing all the issues facing a modern telecom.
+
 13 Jan 2007
 # We have now added 7 Modules to AstBill including support for PDF using the library at fpdf.org and ccn = Charge Code Numbers
 #      This give us a library for PDF generation and we will se a PDF reports be a natural part of AstBill.

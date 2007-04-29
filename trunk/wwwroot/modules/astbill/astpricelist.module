@@ -117,7 +117,8 @@ function _astratetable_all() {
   }
   
 
-_astroute_printtheme_best($output, $title);
+// _astroute_printtheme_best($output, $title);
+astcore_printtheme($output, $title);
 }
 
 
