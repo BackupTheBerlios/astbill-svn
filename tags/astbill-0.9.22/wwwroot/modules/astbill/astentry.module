@@ -1,0 +1,1650 @@
+<?php
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2006.03.17 Version 0.9.18
+ * 
+ */
+
+/**
+* Display help and module information
+* @param section which section of the site we're displaying help
+* @return help text for section
+*/
+
+
+
+function astentry_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Billing and Configuration");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astentry_menu($may_cache) {
+	$items = array();
+	$access = user_access('astentry account settings');
+	
+	$items[] = array('path' => 'astpbx/settings',
+        'title' => t('Settings'),
+        'callback' => '_astentry_all',
+	'callback arguments' => array(),
+        'access' => $access);
+        
+	$items[] = array('path' => 'astpbx/incomingnr', 'title' => t('Incoming Numbers'),
+	'callback' => 'astentry_goto_incomming',
+	'callback arguments' => array(),
+	'access' => user_access('astentry incoming numbers'));
+	
+	$items[] = array('path' => 'astentry/swtech', 'title' => t('Account Setup:'),
+	'callback' => 'page_astentry_swtech',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astentry/createnr', 'title' => t('Create a new account:'),
+	'callback' => 'page_astentry_createnr',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+      
+	$items[] = array('path' => 'astentry/emailme', 'title' => t('Email account info:'),
+	'callback' => 'page_astentry_emailme',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astentry/dialplan', 'title' => t('Dialplan:'),
+	'callback' => 'page_astentry_dialplan',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astentry/dialplancreate', 'title' => t('Create Dialplan:'),
+	'callback' => 'page_astentry_create_dialplan',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astentry/dialplanchange', 'title' => t('Change Dialplan:'),
+	'callback' => 'page_astentry_change_dialplan',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astentry/dialplanremove', 'title' => t('Removing Dialplan:'),
+	'callback' => 'page_astentry_remove_dialplan',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astentry/advset', 'title' => t('Advanced Settings:'),
+	'callback' => 'page_astentry_advset',
+	'callback arguments' => array(),
+	'access' => user_access('astentry advanced settings'),
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astentry/incomingnr', 'title' => t('Incoming Numbers:'),
+	'callback' => 'page_astentry_incomingnr',
+	'callback arguments' => array(),
+	'access' => user_access('astentry incoming numbers'),
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astentry/voicemailchange', 'title' => t('Voicemail Settings:'),
+	'callback' => 'page_astentry_voicemailchange',
+	'callback arguments' => array(),
+	'access' => $access,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astentry/incomingnrchange', 'title' => t('Incoming Number Change:'),
+	'callback' => 'page_astentry_incomingnrchange',
+	'callback arguments' => array(),
+	'access' => user_access('astentry incoming numbers'),
+	'type' => MENU_CALLBACK);
+
+
+	return $items;
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+function astentry_perm() {
+	return array('astentry incoming numbers', 'astentry account settings','astentry advanced settings');
+  // return array('use astentry');
+} // function astentry_perm()
+
+
+// ##########################################################################################################
+
+function _astentry_all() {
+	global $user;
+	global $db_prefix; 
+	$maxline = 40; // This is the number of records to display on a page
+
+	$output = '<b>'.t('Hover over Account to view Accounts Password').'</b><br><br>';
+
+	$header = array(
+	array('data' => t('Account'), 'field' => 'accountcode', 'sort' => 'asc'),
+	array('data' => t('Type'), 'field' => 'tech'),
+	array('data' => t('Name')),
+	array('data' => t('PSTN Number')),
+	array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 6)
+	);
+
+	$sql = "SELECT accountcode, tech, secret, accountname, active, forcecallerid FROM astaccount where (tech = 'SIP' or tech = 'IAX' or tech = 'VIR' or tech = 'H323') and db_prefix ='".$db_prefix."' and uid ='".$user->uid."'". tablesort_sql($header);
+
+	$result = pager_query($sql, $maxline);
+  
+	while ($res = db_fetch_object($result)) {
+		$sql = db_fetch_object(db_query("select value from astsystem where name = 'TopUpURL' and serverid = 'DEF'"));
+		$rows[] = array('<a title="Password: '.$res->secret.'"  href="'.url('astentry/swtech/'.$res->accountcode).'">'. '<b>'.$res->accountcode.'</b>' . '</a>&nbsp;&nbsp;&nbsp;',
+		'<img border="0" src="files/astar/'.$res->tech.'.gif"></a>',
+		$res->accountname.'&nbsp;&nbsp;&nbsp;',
+		$res->forcecallerid,
+		'<A HREF="'.url('astentry/swtech/'.$res->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<a href="'.$sql->value.$res->accountcode.'"><IMG BORDER="0" SRC="files/astar/topup.gif"></A>',
+		'<A HREF="'.url('astentry/voicemailchange/'.$res->accountcode).'">'.t('Voicemail').'</A>',
+		'&nbsp;<A HREF="'.url('astentry/dialplan/'.$res->accountcode).'">'.t('Dialplan').'</A>',
+		'&nbsp;<A HREF="'.url('astentry/emailme/'.$res->accountcode).'">'.t('Email account info').'</A>',
+		);
+	}
+
+  	$output .= astcore_list($header, $rows, t('No Accounts for this User.'), $maxline);
+  	
+	$test = $user->uid;
+	$title = t('View');
+	$undermenutitle = t('My account: ');
+	$undermenu[] = url('astentry/createnr/'.$test).'">'.t('Create a new account');
+	$undermenu[] = url('astentry/incomingnr/'.$test).'">'.t('Incoming Numbers');
+	astcore_printtheme($output, $title, $undermenu, $undermenutitle);
+
+}
+
+// BEGIN EDIT ACCOUNT STUFF
+// BEGIN FORM STUFF
+
+function astentry_validate($edit) {
+  $myerror = 1;
+  $errors = array();
+
+if (valid_email_address($edit['mailboxemail'])){
+	$myerror = 1;
+} else {
+	$errors['mailboxemail'] = t('Please enter a valid email address');
+    $myerror = 0;
+}
+
+if ($edit['tech'] == 2) {
+  if (isset($edit['forwardto']) && !$edit['forwardto']) {
+    $errors['forwardto'] = t('You must supply a forwarding number.');
+    $myerror = 0;
+}}
+/*
+if (!is_numeric($edit['secret'])){
+    $errors['secret'] = t('You must enter a numeric only password.');
+    $myerror = 0;	
+}*/
+
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+function astentry_save($edit, $account) {
+  global $user;
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+  
+  // Uncomment this for SIP/IAX/VIR Change radio menu.
+  $tech = "NONE";
+  if ($edit['tech'] == 0) {$tech = "SIP";} 
+  if ($edit['tech'] == 1) {$tech = "IAX";} 
+  if ($edit['tech'] == 2) {$tech = "VIR";}
+  if ($edit['tech'] == 3) {$tech = "H323";}
+
+
+$sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $user->uid));
+
+if ($sql['mail'] == $edit['mailboxemail']){
+	$mailboxemail = '';
+} else {
+	$mailboxemail = $edit['mailboxemail'];
+}
+
+ db_query("UPDATE astaccount SET language = '%s', secret = '%s', hardwareid = '%s', forwardto = '%s', lowbalance = '%s',
+ lowbalanceemail = '%s', callerid = '%s', accountname = '%s', mailboxemail = '%s', active = '%s' WHERE uid = %s AND accountcode = '%s'",
+ $edit['language'], $edit['secret'], $edit['hardwareid'], $edit['forwardto'], $edit['lowbalance'], $edit['lowbalanceemail'], $edit['callerid'], $edit['accountname'], $mailboxemail,$edit['active'], $user->uid, $account);
+
+// Uncomment this for SIP/IAX/VIR Change radio menu.
+  db_query("UPDATE astaccount SET tech = '%s', forwardto = '%s', accountname = '%s', active = '%s' WHERE uid = %s AND accountcode = '%s'", $tech, $edit['forwardto'], $edit['accountname'],$edit['active'], $user->uid, $account);
+
+  drupal_set_message(t('The Account settings have been updated.'));
+}
+
+function astentry_form($edit = null) {
+  global $user;
+  $tech = 9;
+  if ($edit['tech'] == "SIP") {$tech = 0;} 
+  if ($edit['tech'] == "IAX") {$tech = 1;} 
+  if ($edit['tech'] == "VIR") {$tech = 2;} 
+  if ($edit['tech'] == "H323") {$tech = 3;} 
+
+
+	$sql = db_query("select hid, hardware from asthardwaretype where active = 1");
+
+	$hardwareidlist = array();
+
+	while ($item = db_fetch_object($sql)) {
+		array_push2($hardwareidlist, $item->hardware, $item->hid);
+	}
+	
+	$sql = db_query("select language, languagename from astlanguage");
+
+	$languagelist = array();
+
+	while ($item = db_fetch_object($sql)) {
+		array_push2($languagelist, $item->languagename, $item->language);
+	}
+
+
+// Uncomment this for SIP/IAX/VIR change radio menu ALSO LOOK IN ASTENTRY_SAVE FOR FURTHER UNCOMMENTING
+  $group = form_radios(t('Change account type'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => t('Virtual Account')));
+
+ /* Dont Delete - This is in use in some implementations
+  $group = form_radios(t('Change account type.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account', 3 => 'H323'));   */
+
+
+// Remove the IF CHECK for SIP/IAX/VIR Change radio menu
+  $group .= form_textfield(t("The number you want to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
+
+  $group .= form_select(t("Language"), "language", $edit['language'], $languagelist);
+  
+  $group .= form_textfield(t("The name of your account"), "accountname", $edit['accountname'], 80, 150, null, null, false);
+  
+  $group .= form_textfield(t("Password"), "secret", $edit['secret'], 30, 30, null, null, false);
+
+  $group .= form_textfield(t("Caller ID - Example: My Name <75000><BR><FONT SIZE=1>Note: Please select the number you wish to be dialed back on</FONT>"), "callerid", $edit['callerid'], 80, 150, null, null, false);
+
+  $group .= form_select(t("Your Hardware"), "hardwareid", $edit['hardwareid'], $hardwareidlist);
+
+  //$group .= '<B>Enable or Disable low balance warnings:</B>';
+  $group .= form_textfield(t("Set warning balance"), "lowbalance", $edit['lowbalance'], 5, 150, null, null, false);
+  $group .= form_select('<FONT SIZE=1>'.t("Enable or Disable Warning Balance Email").'</FONT>', "lowbalanceemail", $edit['lowbalanceemail'], array(0 => t('Disabled'), 1 => t('Activate')));
+
+  if(empty($edit['mailboxemail'])){
+  $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $user->uid));
+  $mailboxemail = $sql['mail'];
+  } else {
+	  $mailboxemail = $edit['mailboxemail'];
+  }
+
+  $group .= form_textfield(t("Set notification email"), "mailboxemail", $mailboxemail, 30, 150, null, null, false);
+
+ 
+  $group .= form_select(t("Set Account Status"), "active", $edit['active'], array(0 => t('Disabled'), 1 => t('Activate')));  
+
+ /* Dont Delete - This is in use in some implementations
+ $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI'));   */
+
+
+  // $group .= form_hidden('AmiTest', "JustTesting");
+  $group .= form_submit(t('Save'));
+  $group .= form_submit(t('Back'));
+
+  //$form = form_group(t('Account details'), $group);
+  return form($group);
+}
+
+function astentry_load($account) {
+  global $user;
+//  return db_fetch_array(db_query("SELECT * FROM {bookmarks} WHERE uid = %s AND url = '%s'", $user->uid, $url));
+  return db_fetch_array(db_query("SELECT language, secret, hardwareid, tech, callerid, forwardto, mailboxemail, lowbalance, lowbalanceemail, accountname, active FROM astaccount WHERE uid = %s AND accountcode = '%s'", $user->uid, $account));
+}
+
+// END FORM STUFF
+
+function page_astentry_swtech() {
+
+  global $user;
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+    // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric(arg(2))) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+
+  switch (($op ? $op : arg(2))) {
+    case t('Save'):
+      $title = t('Edit Account');
+      if (astentry_validate($edit)) {
+        astentry_save($edit,arg(2));
+        drupal_goto("astpbx/settings");
+      } else {
+		drupal_goto("astentry/swtech/".arg(2));
+	  }
+	case t('Back'):
+		drupal_goto("astpbx/settings");
+      break;
+    default:
+	  $output = astentry_form(astentry_load(arg(2)));
+      // $output = astentry_form($edit);
+  }
+
+ astcore_printtheme($output, arg(2));
+}
+
+// ##########################################################################################################
+// ##########################################################################################################
+
+// BEGIN CREATENR STUFF
+// FORM STUFF
+function astpbx_validate($edit) {
+  $myerror = 1;
+  $errors = array();
+
+/*if(empty($edit["tech"])) {
+	$errors['tech'] = t("You did not enter your choice.");
+	$myerror = 0;
+}*/
+if ($edit['tech'] == 2) {
+  if (isset($edit['forwardto']) && !$edit['forwardto']) {
+    $errors['forwardto'] = t('You must supply a forwarding number.');
+    $myerror = 0;
+}}
+/*
+if (!is_numeric($edit['secret'])){
+    $errors['secret'] = t('You must enter a numeric only password.');
+    $myerror = 0;	
+}*/
+//  if (isset($edit['url']) && !$edit['url']) {
+//    $errors['url'] = t('You must supply an URL.');
+//  }
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+function astpbx_save($edit, $account) {
+  global $user;
+  global $db_prefix; 
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+  $tech = "NONE";
+  if ($edit['tech'] == 0) {$tech = "SIP";} 
+  if ($edit['tech'] == 1) {$tech = "IAX";} 
+  if ($edit['tech'] == 2) {$tech = "VIR";} 
+  if ($edit['tech'] == 3) {$tech = "H323";} 
+
+// This variables are site specific.
+// variable_set('AstBill Brand', 'SESE');
+// variable_set('AstBill CountryPrefix', 35);
+// variable_set('AstBill Tech', 'IAX');
+
+db_query("CALL astCreateAcc2(@a,%d,'%s','%s','%s','%d')",$user->uid, $tech,$db_prefix,variable_get("AstBill Brand", 'default'),variable_get("AstBill CountryPrefix", '44'));
+
+$sql = db_fetch_object(db_query("SELECT name FROM {users} WHERE uid = '%s'", $user->uid));
+
+$lastaccount = db_fetch_object(db_query("SELECT lastaccount from astuser WHERE uid='%s' and db_prefix ='".$db_prefix."'", $user->uid));
+$callerid = $sql->name.' <'.$lastaccount->lastaccount.'>';
+
+db_query("UPDATE astaccount SET language = '%s', forwardto = '%s' , callerid = '%s' , accountname = '%s', active = '%s' WHERE accountcode = '%s'",
+$edit['language'], $edit['forwardto'],$callerid,$edit['accountname'],$edit['active'],$lastaccount->lastaccount);
+
+/*  db_query("UPDATE astuser SET brand = '%s' WHERE uid='%s' and db_prefix ='".$db_prefix."'", variable_get("AstBill Brand", 'default'), $user->uid);    */
+
+  drupal_set_message(t('The New Account has been Created.'));
+}
+
+function astpbx_form($edit = null) {
+	global $user;
+	global $db_prefix; 
+  $tech = 9;
+  if ($edit['tech'] == "SIP") {$tech = 0;} 
+  if ($edit['tech'] == "IAX") {$tech = 1;} 
+  if ($edit['tech'] == "VIR") {$tech = 2;} 
+  if ($edit['tech'] == "H323") {$tech = 3;} 
+  
+  	$sql = db_query("select language, languagename from astlanguage");
+
+	$languagelist = array();
+
+	while ($item = db_fetch_object($sql)) {
+		array_push2($languagelist, $item->languagename, $item->language);
+	}
+  $sql = db_fetch_object(db_query("SELECT name FROM {users} WHERE uid = '%s'", $user->uid));
+	
+  $callerid = $sql->name.' <>';
+	
+  $group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => t('Virtual Account')));
+
+/* Dont Delete - This is in use in some implementations
+  $group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account', 3 => 'H323'));   */
+
+//  $group = form_textfield(t('Title'), 'title', $edit['title'], 60, 128, null, null, true);
+
+  $group .= form_textfield(t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
+  $group .= form_select(t("Language"), "language", 'enbr', $languagelist);
+  $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);
+//  $group .= form_textfield(t("Change your Caller ID Example: My Name <9000><BR><FONT SIZE=1>Note: Please select a number you wish to be dialed back on</FONT>"), "callerid", $callerid, 80, 150, null, null, false);
+
+/*  $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(1 => t('Activate'), 0 => t('Disabled')));   */
+
+ $group .= form_select(t("Set the Account Status:"), "active", 1, array(1 => t('Activate'), 0 => t('Disabled')));  
+
+ /* Dont Delete - This is in use in some implementations
+ $group .= form_select(t("Set the Account Status:"), "active", $edit['active'], array(0 => 'DISABLED', 1 => 'REALTIME', 5 => 'STATIC', 6 => 'ANI/CLI'));   */
+
+
+  // $group .= form_hidden('AmiTest', "JustTesting");
+  $group .= form_submit(t('Create'));
+  $group .= form_submit(t('Back'));
+ // $form = form_group(t('Account details'), $group);
+  return form($group);
+}
+
+function astpbx_load($account) {
+  global $user;
+  global $db_prefix; 
+//  return db_fetch_array(db_query("SELECT * FROM {bookmarks} WHERE uid = %s AND url = '%s'", $user->uid, $url));
+  return db_fetch_array(db_query("SELECT tech, forwardto, accountname, active FROM astaccount WHERE uid = %s and db_prefix ='".$db_prefix."' AND accountcode = '%s'", $user->uid, $account));
+}
+// END FORM STUFF
+
+
+function page_astentry_createnr() {
+
+  global $user;
+  global $db_prefix; 
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+    // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric(arg(2))) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+
+  switch (($op ? $op : arg(2))) {
+    case t('Create'):
+      $title = t('Edit Account');
+      if (astpbx_validate($edit)) {
+        astpbx_save($edit,arg(2));
+        drupal_goto("astpbx/settings");
+      } else {
+		drupal_goto("astentry/createnr/".arg(2));
+	  }
+	case t('Back'):
+		drupal_goto("astpbx/settings");
+      break;
+    default:
+	  $output = astpbx_form(astpbx_load(arg(2)));
+      // $output = astpbx_form($edit);
+  }
+
+	$title = 'Insert';
+	astcore_printtheme($output, $title);
+}
+
+// END CREATENR STUFF
+
+
+// START EMAILME
+
+function page_astentry_emailme() {
+	global $user;
+
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	
+	switch (($op ? $op : arg(1))) {
+		case t('Confirm'):
+			$accountcode = arg(2);
+			if (!is_numeric($accountcode)) {
+    				drupal_access_denied();
+    				return;
+			}
+			
+			
+			if (valid_email_address($edit['email'])){
+			} else {
+				$message = t('Please enter a valid email address');
+				form_set_error('email', $message);
+				drupal_goto("astentry/emailme/".$accountcode);
+			}
+
+			$sql = db_fetch_object(db_query("SELECT tech FROM astaccount WHERE accountcode = '%s'", $accountcode));
+			
+			if ($sql->tech == 'IAX') {
+				// astpbx_sendemail("ASTARIAX", $edit['email'], $accountcode);
+				astpbx_sendemail($db_prefix."ASTARIAX", $edit['email'], $accountcode,"","");
+				$group .= 'Sent account information for IAX://'.$accountcode.' to '.$edit['email'].'<BR>';
+			}
+			
+			if ($sql->tech == 'SIP') {
+				// astpbx_sendemail("ASTARSIP", $edit['email'], $accountcode);
+				astpbx_sendemail($db_prefix."ASTARSIP", $edit['email'], $accountcode,"","");
+				$group .= 'Sent account information for SIP://'.$accountcode.' to '.$edit['email'].'<BR>';
+			}
+			$group .= form_submit(t('Back'));
+			$title = 'Email sent';
+		break;
+		
+		case t('Back'):
+			drupal_goto("astpbx/settings");
+		break;
+
+		default:
+			$uid = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", arg(2)));
+			$email = db_fetch_object(db_query("SELECT mail FROM {users} WHERE uid = '%s'", $uid->uid));
+			$group .= t('Please check that the email bellow is correct before confirming').'<BR>';
+			$group .= form_textfield(t('Email'), 'email', $email->mail, 30, 100);
+		
+			$group .= form_submit(t('Confirm'));
+			$group .= form_submit(t('Back'));
+			$title = t('Confirm');
+
+	}
+	
+	$output = form($group);
+	
+	astcore_printtheme($output, $title);	
+}
+
+// END EMAILME
+
+// ##########################################################################################################
+
+// BEGIN DIALPLAN STUFF
+// FORM STUFF
+function astdialplan_validate($edit) {
+$myerror = 1;
+$errors = array();
+global $user;
+
+
+if($edit['starthour'] > $edit['endhour']){
+	$errors['test'] = t('Start Hour is set after End Hour.');
+	$myerror = 0;		
+}
+if (arg(1) == 'dialplancreate'){
+$sql = db_query("SELECT * FROM astdialplan WHERE accountcode = '%s'", arg(2));
+}
+if (arg(1) == 'dialplanchange'){
+$sql = db_query("SELECT * FROM astdialplan WHERE accountcode = '%s' AND NOT did = '%s'", arg(3), arg(2));
+}
+
+$items=array();
+$a = 0;
+
+while($item = db_fetch_object($sql)){
+	$items[] = $item;
+	$a++;
+}
+
+//	$errors['test'] = t(' '.$items[0]->did.'-'.$items[0]->mon.' $edit[mon] ->'.$edit['mon'].' '.$items[1]->did.'-'.$items[1]->mon.' arg3 -> '.arg(3).' arg2 -> '.arg(2).' arg1 -> '.arg(1).' arg0 -> '.arg(0));
+//	$myerror = 0;
+
+// First check if conditions are same and if they are check that times don't overlap.
+/*
+$y = 0;
+$z = 1;
+while ($z <= $a){
+	if ($items[$y]->conditions == $items[$z]->conditions){
+	
+	// Fills var with numbers from start hour to end hour
+	$time1 = array();
+	$x = $items[$y]->start_time_hr;
+	while ($x <= $items[$y]->end_time_hr) {
+	array_push2($time1, $x, $x);
+	$x++;
+	};  
+	// Fills var with numbers from start hour to end hour
+	$time2 = array();
+	$x = $items[$z]->start_time_hr;
+	while ($x <= $items[$z]->end_time_hr) {
+	array_push2($time2, $x, $x);
+	$x++;
+	};  
+	if (array_intersect($time1, $time2)){
+		$errors['test'] = t('Your dialplan rules overlap!');
+		$myerror = 0;
+		}
+
+}
+	$y++;
+	$z++;
+}
+*/
+///*
+
+$mon = 0;
+$tue = 0;
+$wed = 0;
+$thu = 0;
+$fri = 0;
+$sat = 0;
+$sun = 0;
+
+
+if ($edit['days'][0] == 0) {$mon = 1;}
+
+if ($edit['days'][0] == 1) {$tue = 1;}
+if ($edit['days'][1] == 1) {$tue = 1;}
+
+if ($edit['days'][0] == 2) {$wed = 1;}
+if ($edit['days'][1] == 2) {$wed = 1;}
+if ($edit['days'][2] == 2) {$wed = 1;}
+
+if ($edit['days'][0] == 3) {$thu = 1;}
+if ($edit['days'][1] == 3) {$thu = 1;}
+if ($edit['days'][2] == 3) {$thu = 1;}
+if ($edit['days'][3] == 3) {$thu = 1;}
+
+if ($edit['days'][0] == 4) {$fri = 1;}
+if ($edit['days'][1] == 4) {$fri = 1;}
+if ($edit['days'][2] == 4) {$fri = 1;}
+if ($edit['days'][3] == 4) {$fri = 1;}
+if ($edit['days'][4] == 4) {$fri = 1;}
+
+if ($edit['days'][0] == 5) {$sat = 1;}
+if ($edit['days'][1] == 5) {$sat = 1;}
+if ($edit['days'][2] == 5) {$sat = 1;}
+if ($edit['days'][3] == 5) {$sat = 1;}
+if ($edit['days'][4] == 5) {$sat = 1;}
+if ($edit['days'][5] == 5) {$sat = 1;}
+
+if ($edit['days'][0] == 6) {$sun = 1;}
+if ($edit['days'][1] == 6) {$sun = 1;}
+if ($edit['days'][2] == 6) {$sun = 1;}
+if ($edit['days'][3] == 6) {$sun = 1;}
+if ($edit['days'][4] == 6) {$sun = 1;}
+if ($edit['days'][5] == 6) {$sun = 1;}
+if ($edit['days'][6] == 6) {$sun = 1;}
+
+if ($edit['dropdown'] == 0) {$conditions = 'Offline';}
+if ($edit['dropdown'] == 1) {$conditions = 'NoAnswer';}
+if ($edit['dropdown'] == 2) {$conditions = 'Busy';}
+
+$y = 0;
+while ($y < $a){
+	// Fills var with numbers from start hour to end hour
+	$time1 = array();
+	$x = $items[$y]->start_time_hr;
+	while ($x <= $items[$y]->end_time_hr) {
+	array_push2($time1, $x, $x);
+	$x++;
+	};  
+
+	// Fills var with numbers from start hour to end hour
+	$time2 = array();
+	$x = $edit['starthour'];
+	while ($x <= $edit['endhour']) {
+	array_push2($time2, $x, $x);
+	$x++;
+	};  
+	if ($items[$y]->conditions == $conditions){
+
+	if ($items[$y]->mon == $mon){
+	if (array_intersect($time1, $time2)){
+		$myerror = 0;
+	}};
+
+	if ($items[$y]->tue == $tue){
+	if (array_intersect($time1, $time2)){
+		$myerror = 0;
+	}};
+
+	if ($items[$y]->wed == $wed){
+	if (array_intersect($time1, $time2)){
+		$myerror = 0;
+	}};
+
+	if ($items[$y]->thu == $thu){
+	if (array_intersect($time1, $time2)){
+		$myerror = 0;
+	}};
+
+	if ($items[$y]->fri == $fri){
+	if (array_intersect($time1, $time2)){
+		$myerror = 0;
+	}};
+
+	if ($items[$y]->sat == $sat){
+	if (array_intersect($time1, $time2)){
+		$myerror = 0;
+	}};
+
+	if ($items[$y]->sun == $sun){
+	if (array_intersect($time1, $time2)){
+		$myerror = 0;
+	}};
+
+	if ($myerror == 0){
+		$errors['test'] = t('Your dialplan rules overlapped');
+	}
+	}
+
+	$y++;
+}
+//*/
+
+  // $edit['starthour'];
+  // $edit['endhour'];
+
+// How to output error :
+//  $errors['test'] = 'Error Message';
+//  $myerror = 0;
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+function astdialplan_save($edit, $account) {
+  global $user;
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+
+
+$mon = 0;
+$tue = 0;
+$wed = 0;
+$thu = 0;
+$fri = 0;
+$sat = 0;
+$sun = 0;
+
+
+if ($edit['days'][0] == 0) {$mon = 1;}
+
+if ($edit['days'][0] == 1) {$tue = 1;}
+if ($edit['days'][1] == 1) {$tue = 1;}
+
+if ($edit['days'][0] == 2) {$wed = 1;}
+if ($edit['days'][1] == 2) {$wed = 1;}
+if ($edit['days'][2] == 2) {$wed = 1;}
+
+if ($edit['days'][0] == 3) {$thu = 1;}
+if ($edit['days'][1] == 3) {$thu = 1;}
+if ($edit['days'][2] == 3) {$thu = 1;}
+if ($edit['days'][3] == 3) {$thu = 1;}
+
+if ($edit['days'][0] == 4) {$fri = 1;}
+if ($edit['days'][1] == 4) {$fri = 1;}
+if ($edit['days'][2] == 4) {$fri = 1;}
+if ($edit['days'][3] == 4) {$fri = 1;}
+if ($edit['days'][4] == 4) {$fri = 1;}
+
+if ($edit['days'][0] == 5) {$sat = 1;}
+if ($edit['days'][1] == 5) {$sat = 1;}
+if ($edit['days'][2] == 5) {$sat = 1;}
+if ($edit['days'][3] == 5) {$sat = 1;}
+if ($edit['days'][4] == 5) {$sat = 1;}
+if ($edit['days'][5] == 5) {$sat = 1;}
+
+if ($edit['days'][0] == 6) {$sun = 1;}
+if ($edit['days'][1] == 6) {$sun = 1;}
+if ($edit['days'][2] == 6) {$sun = 1;}
+if ($edit['days'][3] == 6) {$sun = 1;}
+if ($edit['days'][4] == 6) {$sun = 1;}
+if ($edit['days'][5] == 6) {$sun = 1;}
+if ($edit['days'][6] == 6) {$sun = 1;}
+
+//$accheck = db_fetch_array(db_query("select accountcode FROM astdialplan WHERE accountcode=%s", $account));
+
+if ($edit['dropdown'] == 0) {$conditions = 'Offline';}
+if ($edit['dropdown'] == 1) {$conditions = 'NoAnswer';}
+if ($edit['dropdown'] == 2) {$conditions = 'Busy';}
+if ($edit['action'] == 0) {$action = 'Voicemail';}
+if ($edit['action'] == 1) {$action = 'Forward';}
+if ($edit['action'] == 2) {$action = 'NotAvailable';}
+
+if (arg(1) == 'dialplanchange'){
+db_query("UPDATE astdialplan SET conditions = '%s', action = '%s', mon = '%s', tue = '%s', wed = '%s', thu = '%s', fri = '%s', sat = '%s', sun = '%s', start_time_hr = '%s', start_time_min = '%s', end_time_hr = '%s', end_time_min = '%s' WHERE did = '%s'", $conditions, $action, $mon, $tue, $wed, $thu, $fri, $sat, $sun, $edit['starthour'], $edit['startmin'], $edit['endhour'], $edit['endmin'], $account);
+}
+
+
+if (arg(1) == 'dialplancreate'){
+db_query("INSERT INTO `astdialplan` ( `accountcode` , `conditions` , `action` , `mon` , `tue` , `wed` , `thu` , `fri` , `sat` , `sun` , `start_time_hr` , `start_time_min` , `end_time_hr` , `end_time_min` ) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", $account, $conditions, $action, $mon, $tue, $wed, $thu, $fri, $sat, $sun, $edit['starthour'], $edit['startmin'], $edit['endhour'], $edit['endmin']);
+}
+
+
+
+
+
+
+//  db_query("INSERT INTO `astaccount` VALUES ( '%s', '', '%s', ' ', ' ', 'dynamic', 'default', ' ', '1', '1', '%s', '%s' , '1', '0', '0.00', '0000-00-00 00:00:00', NOW( ))", $user->uid , $tech , $edit['forwardto'] , $edit['comment']);
+//db_query("CALL astCreateAccount(@a,%s,'%s')",$user->uid, $tech);
+//db_query("UPDATE astaccount SET forwardto = '%s' , comment = '%s' WHERE accountcode=(SELECT lastaccount from astuser WHERE uid='%s')",$edit['forwardto'],$edit['comment'],$user->uid);
+//  db_query("UPDATE astaccount SET tech = '%s', forwardto = '%s', comment = '%s' WHERE uid = %s AND accountcode = '%s'", $tech, $edit['forwardto'], $edit['comment'], $user->uid, $account);
+  // tech, forwardto, comment
+  // db_query("UPDATE astaccount SET title = '%s', url = '%s' WHERE uid = %s AND url = '%s'", $edit['title'], 
+  // db_query("INSERT INTO t (fname) VALUES ('%s')", $account.$edit['techsw'].$edit['forsw'].$edit['commentsw']);
+  drupal_set_message(t('The Account settings have been updated.'));
+}
+
+function astdialplan_form($edit) {
+
+if (arg(1) == 'dialplancreate') {
+$edit['mon'] = 1;
+$edit['tue'] = 1;
+$edit['wed'] = 1;
+$edit['thu'] = 1;
+$edit['fri'] = 1;
+$edit['sat'] = 1;
+$edit['sun'] = 1;
+$edit['conditions'] = null;
+$edit['action'] = null;
+$edit['start_time_hr'] = 0;
+$edit['start_time_min'] = 0;
+$edit['end_time_hr'] = 23;
+$edit['end_time_min'] = 59;
+}
+
+
+$days = array();
+if ($edit['mon'] == 1) {$days['0'] = "0";}
+if ($edit['tue'] == 1) {$days['1'] = "1";}
+if ($edit['wed'] == 1) {$days['2'] = "2";}
+if ($edit['thu'] == 1) {$days['3'] = "3";}
+if ($edit['fri'] == 1) {$days['4'] = "4";}
+if ($edit['sat'] == 1) {$days['5'] = "5";}
+if ($edit['sun'] == 1) {$days['6'] = "6";}
+
+$weekdays = array(0 => t('Monday'), 1 => t('Tuesday'), 2 => t('Wednesday'), 3 => t('Thursday'), 4 => t('Friday'), 5 => t('Saturday'), 6 => t('Sunday'));
+
+
+if ($edit['conditions'] == 'Offline') {$conditions = 0;}
+if ($edit['conditions'] == 'NoAnswer') {$conditions = 1;}
+if ($edit['conditions'] == 'Busy') {$conditions = 2;}
+if ($edit['action'] == 'Voicemail') {$action = 0;}
+if ($edit['action'] == 'Forward') {$action = 1;}
+if ($edit['action'] == 'NotAvailable') {$action = 2;}
+
+  $group = form_select(t("Action"), "action", $action, array(0 => t('Voicemail'), 1 => t('Forward Call'), 2 => t('Give Not Available Message')));
+  $group .= form_select(t('conditions'),'dropdown', $conditions, array(0 => t('Offline'), 1 => t('No Answer'), 2 => t('Busy')));
+  $group .= form_checkboxes(t('Days of the week.'), 'days', $days, $weekdays,null ,null ,false);
+
+
+ $sttimehr = array(0 => 0);
+ $x = 0;
+
+  while ($x < 24) {
+     array_push2($sttimehr, $x, $x);
+	$x++;
+  }
+
+ $sttimemin = array(0 => 0);
+ $x = 0;
+
+  while ($x < 60) {
+     array_push2($sttimemin, $x, $x);
+	$x++;
+  }
+
+ $endtimehr = array(0 => 0);
+ $x = 0;
+
+  while ($x < 24) {
+     array_push2($endtimehr, $x, $x);
+	$x++;
+  }
+
+ $endtimemin = array(0 => 0);
+ $x = 0;
+
+  while ($x < 60) {
+     array_push2($endtimemin, $x, $x);
+	$x++;
+  }
+
+  $group .= t('<B>Start Time:</B><BR>');
+  $group .= form_select(t("Hour"), "starthour", $edit['start_time_hr'], $sttimehr);
+  $group .= form_select(t("Min"), "startmin", $edit['start_time_min'], $sttimemin);
+  $group .= t('<B>End Time:</B><BR>');
+  $group .= form_select(t("Hour"), "endhour", $edit['end_time_hr'], $endtimehr);
+  $group .= form_select(t("Min"), "endmin", $edit['end_time_min'], $endtimemin);
+  //$group .= form_textfield(t("Hour"), "starthour", $edit['start_time_hr'], 5, 150, null, null, false);
+  //$group .= form_textfield(t("Min"), "startmin", $edit['start_time_min'], 5, 150, null, null, false);
+  //$group .= form_textfield(t("End Time:<BR>Hour"), "endhour", $edit['end_time_hr'], 5, 150, null, null, false);
+  //$group .= form_textfield(t("Min"), "endmin", $edit['end_time_min'], 5, 150, null, null, false);
+
+
+  // $group .= form_hidden('AmiTest', "JustTesting");
+  if (arg(1) == 'dialplancreate'){
+	$group .= form_submit(t('Create'));
+    $group .= form_submit(t('Back'));
+	}
+  if (arg(1) == 'dialplanchange'){
+	$group .= form_submit(t('Change'));
+	$group .= form_submit(t('Back'));
+	}
+ // $form = form_group(t('Dialplan Settings'), $group);
+   $form = $group;
+
+/*  if (arg(1) == 'dialplan'){
+	  if ($edit['action'] == 1) {$action = 'Voicemail';}
+	  $output = 'hihi<BR>';
+	  return $output;
+  }*/
+
+  return form($form);
+}
+
+function astdialplan_load($account) {
+  global $user;
+//  return db_fetch_array(db_query("SELECT * FROM {bookmarks} WHERE uid = %s AND url = '%s'", $user->uid, $url));
+//  return db_fetch_array(db_query("SELECT conditions, action, mon, tue, wed, thu, fri, sat, sun, start_time_hr, start_time_min, end_time_hr, end_time_min FROM astdialplan , astaccount WHERE astdialplan.accountcode = astaccount.accountcode AND astdialplan.accountcode = '%s' AND astaccount.uid = '%s'", $account, $user->uid));
+return db_fetch_array(db_query("SELECT conditions, action, mon, tue, wed, thu, fri, sat, sun, start_time_hr, start_time_min, end_time_hr, end_time_min FROM astdialplan WHERE did = '%s'", $account));
+}
+
+// END FORM STUFF
+
+
+function page_astentry_dialplan() {
+
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+    // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric(arg(2))) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+  $maxline = 40; // This is the number of records to display on a page
+
+  $header = array(
+    array('data' => t('Condition')),
+    array('data' => t('Action')),
+    array('data' => t('<CENTER>Days</CENTER>')),
+    array('data' => t('Start Hour')),
+    array('data' => t('Start Min')),
+    array('data' => t('End Hour')),
+    array('data' => t('End Min')),
+	array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 2)
+	
+  );
+
+$sql = db_query("SELECT did, conditions, action, mon, tue, wed, thu, fri, sat, sun, start_time_hr, start_time_min, end_time_hr, end_time_min FROM astdialplan WHERE accountcode = '%s'", arg(2));
+
+ // $result = pager_query($sql, $maxline);
+  
+  while ($item = db_fetch_object($sql)) {
+	if($item->mon == 1) {$mon = t('MON');} else $mon = '';
+	if($item->tue == 1) {$tue = t('TUE');} else $tue = '';
+	if($item->wed == 1) {$wed = t('WED');} else $wed = '';
+	if($item->thu == 1) {$thu = t('THU');} else $thu = '';
+	if($item->fri == 1) {$fri = t('FRI');} else $fri = '';
+	if($item->sat == 1) {$sat = t('SAT');} else $sat = '';
+	if($item->sun == 1) {$sun = t('SUN');} else $sun = '';
+	$account = arg(2);
+	  	$rows[] = array($item->conditions.'',
+    	$item->action.'&nbsp;&nbsp;',
+	    $mon.' '.$tue.' '.$wed.' '.$thu.' '.$fri.' '.$sat.' '.$sun.'',
+		$item->start_time_hr,
+		$item->start_time_min,
+		$item->end_time_hr,
+		$item->end_time_min,
+		'<A HREF="'.url('astentry/dialplanchange/'.$item->did.'/'.$account).'">'.t('Change').'</A>',
+		'|<A HREF="'.url('astentry/dialplanremove/'.$item->did.'/'.$account).'">'.t('Remove').'</A>');
+
+
+  }
+
+
+
+  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+  if (!empty($pager)) {
+    $rows[] = array(array('data' => $pager, 'colspan' => 8));
+  }
+
+  $output .= (count($rows) == 0) ? t('No Dialplan for this user.') : theme('table', $header, $rows);
+
+  astcore_printtheme($output, arg(2));
+}
+
+
+function page_astentry_change_dialplan() {
+
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+    // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric(arg(2))) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+
+  switch (($op ? $op : arg(2))) {
+    case t('Change'):
+	  $did = arg(2);
+      $title = t('Edit Account');
+      if (astdialplan_validate($edit)) {
+        astdialplan_save($edit,arg(2));
+        drupal_goto("astentry/dialplan/".arg(3));
+      } else {
+		drupal_goto("astentry/dialplanchange/".$did."/".arg(3));
+	  }
+      break;
+	case t('Back'):
+		drupal_goto("astentry/dialplan/".arg(3));
+    default:
+	  $output = astdialplan_form(astdialplan_load(arg(2)));
+      // $output = astpbx_form($edit);
+  }
+
+	astcore_printtheme($output, arg(3));
+}
+
+function page_astentry_create_dialplan() {
+
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+    // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric(arg(2))) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+  $account = arg(2);
+
+  switch (($op ? $op : arg(2))) {
+    case t('Create'):
+      $title = t('Edit Account');
+      if (astdialplan_validate($edit)) {
+        astdialplan_save($edit,arg(2));
+        drupal_goto("astentry/dialplan/".arg(2));
+      } else {
+		drupal_goto("astentry/dialplancreate/".arg(2));
+	  }
+    case t('Back'):
+		drupal_goto("astentry/dialplan/".$account);
+      break;
+    default:
+	  $output = astdialplan_form(astdialplan_load(arg(2)));
+      // $output = astpbx_form($edit);
+  }
+
+	astcore_printtheme($output, arg(2));
+}
+
+function page_astentry_remove_dialplan($did, $account) {
+global $user;
+db_query("DELETE FROM astdialplan WHERE did=%s", $did);
+drupal_goto("astentry/dialplan/".$account);
+/*
+	$edit = $_POST['edit'];
+
+	$deletedmsg = 'The dialplan was deleted';
+	$confirmmsg = '<P>Are you sure you want to delete this dialplan?</P>';
+	$dbquery = "DELETE FROM astdialplan WHERE did = '".$did."'";
+	$goto = "astentry/dialplan/".$account;
+
+	$output = astadmin_confirm_delete($edit, $deletedmsg, $confirmmsg, $dbquery, $goto);
+
+	print theme('page', $output);
+*/
+}
+// ##########################################################################################################
+// END DIALPLAN STUFF
+
+// BEGIN ADVANCED SETTINGS STUFF
+// FORM STUFF
+function astadvset_validate($edit) {
+  $myerror = 1;
+  $errors = array();
+
+/*if(empty($edit["tech"])) {
+	$errors['tech'] = t("You did not enter your choice.");
+	$myerror = 0;
+}*/
+if ($edit['tech'] == 2)
+  if (isset($edit['forwardto']) && !$edit['forwardto']) {
+    $errors['forwardto'] = t('You must supply a forwarding number.');
+    $myerror = 0;
+}
+//  if (isset($edit['url']) && !$edit['url']) {
+//    $errors['url'] = t('You must supply an URL.');
+//  }
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+function astadvset_save($edit, $account) {
+  global $user;
+  global $db_prefix; 
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+
+if ($edit['qualify'] == 0) {$qualify = 'yes';}
+if ($edit['qualify'] == 1) {$qualify = 'no';}
+if ($edit['nat'] == 0) {$nat = 'yes';}
+if ($edit['nat'] == 1) {$nat = 'no';}
+if ($edit['nat'] == 2) {$nat = 'never';}
+if ($edit['nat'] == 3) {$nat = 'route';}
+
+
+db_query("UPDATE astaccount SET qualify = '%s', nat = '%s' WHERE accountcode = '%s'", $qualify, $nat, $account);
+db_query("UPDATE astuser SET countryprefix = '%s', callbackto = '%s' WHERE uid = '%s' and db_prefix ='".$db_prefix."'", $edit['countryprefix'], $edit['callbackto'], $user->uid);
+//  db_query("INSERT INTO `astaccount` VALUES ( '%s', '', '%s', ' ', ' ', 'dynamic', 'default', ' ', '1', '1', '%s', '%s' , '1', '0', '0.00', '0000-00-00 00:00:00', NOW( ))", $user->uid , $tech , $edit['forwardto'] , $edit['comment']);
+//db_query("CALL astCreateAccount(@a,%s,'%s')",$user->uid, $tech);
+//db_query("UPDATE astaccount SET forwardto = '%s' , accountname = '%s' WHERE accountcode=(SELECT lastaccount from astuser WHERE uid='%s')",$edit['forwardto'],$edit['accountname'],$user->uid);
+//  db_query("UPDATE astaccount SET tech = '%s', forwardto = '%s', comment = '%s' WHERE uid = %s AND accountcode = '%s'", $tech, $edit['forwardto'], $edit['comment'], $user->uid, $account);
+  // tech, forwardto, comment
+  // db_query("UPDATE astaccount SET title = '%s', url = '%s' WHERE uid = %s AND url = '%s'", $edit['title'], 
+  // db_query("INSERT INTO t (fname) VALUES ('%s')", $account.$edit['techsw'].$edit['forsw'].$edit['commentsw']);
+  drupal_set_message(t('The Account settings have been updated.'));
+}
+
+function astadvset_form($edit) {
+  global $user;
+  global $db_prefix; 
+  /*$group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'));
+//  $group = form_textfield(t('Title'), 'title', $edit['title'], 60, 128, null, null, true);
+  $group .= form_textfield(t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
+  $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);*/
+  if ($edit['qualify'] == 'yes') {$qualify = 0;}
+  if ($edit['qualify'] == 'no') {$qualify = 1;}
+  if ($edit['nat'] == 'yes') {$nat = 0;}
+  if ($edit['nat'] == 'no') {$nat = 1;}
+  if ($edit['nat'] == 'never') {$nat = 2;}
+  if ($edit['nat'] == 'route') {$nat = 3;}
+  
+  $uid = db_fetch_object(db_query("SELECT uid FROM astaccount WHERE accountcode = '%s'", $edit['accountcode']));
+  $sql = db_fetch_object(db_query("SELECT astplans.currency from astuser, astplans where astuser.brand = astplans.name and astuser.uid = '%s' and db_prefix ='".$db_prefix."'", $uid->uid));
+  $currency = $sql->currency;
+
+  $group = t('Current credit limit for this account is').' : <B>'.$edit['creditlimit'].'</B><BR>';
+  $group .= t('Currency is').' : <B>'.$currency.'</B><BR><BR>';
+  $group .= t('<B>WARNING!</B> Do not change these settings unless you know what your doing!').'<BR><BR>';
+  $group .= '<B>'.t('NAT').':<BR></B>';
+  $group .= '<B><FONT SIZE=1>'.t('Note: Might take up to 24hours for change to take effect').'</FONT></B><BR>';
+  $group .= t('yes = Always ignore info and assume NAT').'<BR>';
+  $group .= t('no = Use NAT mode only according to RFC3581').'<BR>';
+  $group .= t('never = Never attempt NAT mode or RFC3581 support').'<BR>';
+  $group .= t('route = Assume NAT, dont send rport').'<BR>';
+  $group .= form_select(NULL, 'nat', $nat, array(0 => t('Yes'), 1 => t('No'), 2 => t('Never'), 3 => t('Route')));
+  $group .= '<BR>';
+
+  $group .= '<B>'.t('Qualify').':<BR></B>';
+  $group .= '<B><FONT SIZE=1>'.t('Note: Might take up to 24hours for change to take effect').'</FONT></B><BR>';
+  $group .= t('Only turn this ON if your phone can dial out, but you can not receive calls ');
+  $group .= form_select(NULL, 'qualify', $qualify, array(0 => t('On'), 1 => t('Off')));
+
+
+  $sql = db_fetch_array(db_query("select brand, countryprefix, callbackto FROM astuser WHERE uid = %s and db_prefix ='".$db_prefix."'", $user->uid));
+
+// $lastaccount = db_fetch_object(db_query("SELECT lastaccount from astuser WHERE uid='%s' and db_prefix 
+// ='".$db_prefix."'", $user->uid));
+
+  $group .= '<BR><BR>';
+  $group .= t('Current Rate Plan is: ').'<B>'.$sql['brand'].'</B><BR>';
+  $group .= form_textfield(t("Country Prefix"), "countryprefix", $sql['countryprefix'], 80, 150, null, null, false);
+  $group .= form_textfield(t("Call Back To"), "callbackto", $sql['callbackto'], 80, 150, null, null, false);
+
+  // $group .= form_hidden('AmiTest', "JustTesting");
+  $group .= form_submit(t('Save'));
+  $group .= form_submit(t('Back'));
+  //$form = form_group(t('Account details'), $group);
+  return form($group);
+}
+
+function astadvset_load($account) {
+  global $user;
+//  return db_fetch_array(db_query("SELECT * FROM {bookmarks} WHERE uid = %s AND url = '%s'", $user->uid, $url));
+  return db_fetch_array(db_query("SELECT accountcode, nat, qualify, creditlimit FROM astaccount WHERE uid = %s AND accountcode = '%s'", $user->uid, $account));
+}
+// END FORM STUFF
+
+
+function page_astentry_advset() {
+  global $user; 
+  global $db_prefix; 
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+    // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric(arg(2))) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+
+  switch (($op ? $op : arg(2))) {
+    case t('Save'):
+      $title = t('Advanced Settings');
+      if (astadvset_validate($edit)) {
+        astadvset_save($edit,arg(2));
+        drupal_goto("astentry/swtech/".arg(2));
+      } else {
+		drupal_goto("astentry/advset/".arg(2));
+	  }
+	case t('Back'):
+		drupal_goto("astentry/swtech/".arg(2));
+      break;
+    default:
+	  $output = astadvset_form(astadvset_load(arg(2)));
+      // $output = astpbx_form($edit);
+  }
+
+	astcore_printtheme($output, arg(2));
+
+}
+
+// END ADVANCED SETTINGS STUFF
+// BEGIN VOICEMAIL STUFF
+// FORM STUFF
+function astvoicemail_validate($edit) {
+  $myerror = 1;
+  $errors = array();
+
+/*if(empty($edit["tech"])) {
+	$errors['tech'] = t("You did not enter your choice.");
+	$myerror = 0;
+}*/
+
+/*if (check_email($edit['mailboxemail'])){
+	$myerror = 1;
+} else {
+	$errors['mailboxemail'] = t('Invalid email');
+	$myerror = 0;
+}*/
+
+
+if (empty($edit['mailboxpin'])){
+	$errors['mailboxpin'] = t('Please enter atleast a 4 digit pin number');
+	$myerror = 0;
+}
+
+if (is_numeric($edit['mailboxpin'])){
+	$myerror = 1;
+} else {
+	$errors['mailboxpin'] = t('Please enter atleast a 4 digit pin number');
+    $myerror = 0;
+}
+
+if (valid_email_address($edit['mailboxemail'])){
+	$myerror = 1;
+} else {
+	$errors['mailboxemail'] = t('Please enter a valid email address');
+    $myerror = 0;
+}
+
+if ($edit['mailboxpin'] <= 999){
+	$errors['mailboxpin'] = t('Please enter atleast a 4 digit pin number');
+	$myerror = 0;
+}
+
+
+//  if (isset($edit['mailboxpin']) && !$edit['mailboxpin']) {
+//    $errors['mailboxpin'] = t('Your pin must be 4 numbers.');
+//    $myerror = 0;
+//}
+//  if (isset($edit['url']) && !$edit['url']) {
+//    $errors['url'] = t('You must supply an URL.');
+//  }
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+function astvoicemail_save($edit, $account) {
+  global $user;
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+$sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $user->uid));
+
+if ($sql['mail'] == $edit['mailboxemail']){
+	$mailboxemail = '';
+} else {
+	$mailboxemail = $edit['mailboxemail'];
+}
+
+
+db_query("UPDATE astaccount SET mailbox = '%s', mailboxpin = '%s', mailboxemail = '%s' WHERE accountcode = '%s'",$edit['mailbox'] , $edit['mailboxpin'], $mailboxemail, $account);
+
+
+  drupal_set_message(t('The Account settings have been updated.'));
+}
+
+function astvoicemail_form($edit) {
+  global $user;
+  global $db_prefix; 
+  /*$group = form_radios(t('Select type for your account.'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'Virtual Account'));
+//  $group = form_textfield(t('Title'), 'title', $edit['title'], 60, 128, null, null, true);
+  $group .= form_textfield(t("Enter the number(s) to forward to separated by &<BR>(Example: 9000&8000)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 80, 150, null, null, false);
+  $group .= form_textfield(t("Set the name of your account."), "accountname", $edit['accountname'], 80, 150, null, null, false);*/
+
+  if(empty($edit['mailboxemail'])){
+  $sql = db_fetch_array(db_query("select mail FROM {users} WHERE uid = %s", $user->uid));
+  $mailboxemail = $sql['mail'];
+  } else {
+	  $mailboxemail = $edit['mailboxemail'];
+  }
+ 
+ $account = arg(2);
+
+ $sql = db_query("SELECT accountcode FROM astaccount WHERE uid = %s AND tech in (select actype from astactype where active = '1' ) AND db_prefix = '".$db_prefix."'", $user->uid);
+
+ $sql_output = array($account => $account);
+  
+  while ($model = db_fetch_object($sql)) {
+     array_push2($sql_output, $model->accountcode, $model->accountcode);
+  }
+
+/*  while ($model = db_fetch_object($sql)) {
+	  $sql_output[] = $model->mailbox;
+  }*/
+  
+
+  $group = form_select(t("Route to Mailbox"), "mailbox", $edit['mailbox'], $sql_output);
+  $group .= form_textfield(t("Change your pin"), "mailboxpin", $edit['mailboxpin'], 4, 150, null, null, false);
+  $group .= '<BR><BR>';
+  $group .= form_textfield(t("Set notification email"), "mailboxemail", $mailboxemail, 30, 150, null, null, false);
+
+
+  // $group .= form_hidden('AmiTest', "JustTesting");
+  $group .= form_submit(t('Save'));
+  $group .= form_submit(t('Back'));
+  //$form = form_group(t('Account details'), $group);
+  return form($group);
+}
+
+function astvoicemail_load($account) {
+  global $user;
+//  return db_fetch_array(db_query("SELECT * FROM {bookmarks} WHERE uid = %s AND url = '%s'", $user->uid, $url));
+  return db_fetch_array(db_query("SELECT mailbox, mailboxpin, mailboxemail FROM astaccount WHERE uid = %s AND accountcode = '%s'", $user->uid, $account));
+}
+// END FORM STUFF
+
+function page_astentry_voicemailchange() {
+
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+    // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric(arg(2))) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+
+  switch (($op ? $op : arg(2))) {
+    case t('Save'):
+      $title = t('Advanced Settings');
+      if (astvoicemail_validate($edit)) {
+        astvoicemail_save($edit,arg(2));
+        drupal_goto("astpbx/settings/".arg(2));
+      } else {
+		drupal_goto("astentry/voicemailchange/".arg(2));
+	  }
+	case t('Back'):
+		drupal_goto("astpbx/settings/".arg(2));
+      break;
+    default:
+	  $output = astvoicemail_form(astvoicemail_load(arg(2)));
+      // $output = astpbx_form($edit);
+  }
+
+	$title = t('Mailbox'.' '.arg(2));
+	astcore_printtheme($output, $title);
+
+}
+
+// END Voicemail STUFF
+
+// BEGIN INCOMINGNR STUFF
+// FORM STUFF
+function astincomingnr_validate($edit) {
+  $myerror = 1;
+  $errors = array();
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+function astincomingnr_save($edit, $account) {
+	global $user;
+	global $db_prefix;
+	// Make sure you don't trust the URL to be safe! Always check for exploits.
+	//if (!is_numeric($alice) || !is_numeric($bob)) {
+	if (!is_numeric($account)) {
+		// We will just show a standard "access denied" page in this case.
+		drupal_access_denied();
+		return;
+	}
+	db_query("UPDATE astacdid SET redirectevent = '%s',redirectalways = '%s' WHERE did = '%s' AND uid = '%s' and db_prefix ='".$db_prefix."'", $edit['redirectevent'],$edit['redirectalways'], arg(2), $user->uid);
+	drupal_set_message(t('Forwarding settings have been updated for').' '.arg(2));
+}
+
+function astincomingnr_form($edit) {
+  global $user;
+  global $db_prefix;
+/*
+  $group .= form_textfield(t("Enter the phone number(s) you want to forward to separated by &<BR>(Example: 70500&70501)<BR><FONT size=1>Note: you can not forward to another virtual account</FONT>"), "forwardto", $edit['forwardto'], 50, 150, null, null, false);
+*/  
+
+	$rediropts['N'] = 'None';
+	$rediropts['A'] = 'Always';
+//	$rediropts['B'] = 'When Busy';
+//	$rediropts['T'] = 'After Timeout';
+	$group .= form_select(t('Redirection Event'), 'redirectevent', $edit['redirectevent'], $rediropts);
+
+   // astcore_form_select	
+  $group .= form_textfield(t("Always Redirect to Number"), "redirectalways", $edit['redirectalways'], 50, 150, null, null, false);
+//  $group .= form_textfield(t("Busy Redirection Number"), "redirec65talways", $edit['redire4ctalways'], 50, 150, null, null, false);
+//  $group .= form_textfield(t("Timeout Redirection Number"), "redire12ctalways", $edit['redi3rectalways'], 50, 150, null, null, false);
+//  $group .= form_textfield(t("Timeout Seconds"), "redirecta999ways", $edit['redirec99talways'], 50, 150, null, null, false);
+  // $group .= form_textfield(t("Comment"), "comment", $edit['comment'], 50, 150, null, null, false);
+  $group .= form_submit(t('Save'));
+  $group .= form_submit(t('Back'));
+  return form($group);
+}
+
+function astincomingnr_load($account) {
+  global $user;
+  global $db_prefix;
+  return db_fetch_array(db_query("SELECT redirectalways,redirectevent FROM astacdid WHERE uid = %s and db_prefix ='".$db_prefix."' AND did = '%s'", $user->uid, arg(2)));
+}
+
+function page_astentry_incomingnr() {
+  global $user;
+  global $db_prefix; 
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+    // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric(arg(2))) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+  $maxline = 40; // This is the number of records to display on a page
+
+
+  $header = array(
+    array('data' => t('Phone Number'), 'field' => 'did', 'sort' => 'asc'),
+    array('data' => t('Account')),
+    array('data' => t('Event')),
+    array('data' => t('Forwarded to')),
+//    array('data' => t('Remarks')),
+	array('data' => '<CENTER>'.t('Operations').'</CENTER>', 'colspan' => 1)
+  );
+
+$ret = db_query("SELECT did, forwardto, redirectevent,redirectalways,redirectbusy,redirecttimeout,redirecttimeoutsec FROM astacdid WHERE uid = '%s' and db_prefix ='".$db_prefix."' ", $user->uid);
+
+ // $result = pager_query($sql, $maxline);
+  
+  while ($item = db_fetch_object($ret)) {
+	  	$rows[] = array($item->did,
+	    'sip:'.$item->forwardto,
+	    '&nbsp;&nbsp;'.$item->redirectevent,   //array('data' => $item->redirectevent, 'title' => "blab bla"),
+	    '&nbsp;&nbsp;'.$item->redirectalways,
+		'<A HREF="'.url('astentry/incomingnrchange/'.$item->did).'">'.t('Change').'</A>');
+ }
+
+  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+  if (!empty($pager)) {
+    $rows[] = array(array('data' => $pager, 'colspan' => 8));
+  }
+
+  $output .= (count($rows) == 0) ? t('No incoming Number for this user.') : theme('table', $header, $rows);
+
+	$title = t('List');
+	astcore_printtheme($output, $title);
+}
+
+function page_astentry_incomingnrchange(){
+  global $user;
+  global $db_prefix;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+    // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+  if (!is_numeric(arg(2))) {
+    // We will just show a standard "access denied" page in this case.
+    drupal_access_denied();
+    return;
+  }
+
+  switch (($op ? $op : arg(2))) {
+    case t('Save'):
+      $title = t('Advanced Settings');
+      if (astincomingnr_validate($edit)) {
+        astincomingnr_save($edit,arg(2));
+        drupal_goto("astentry/incomingnr/".arg(2));
+      } else {
+		drupal_goto("astentry/incomingnrchange/".arg(2));
+	  }
+    case t('Back'):
+        drupal_goto("astentry/incomingnr/".arg(2));
+      break;
+    default:
+	  $output = astincomingnr_form(astincomingnr_load(arg(2)));
+      // $output = astpbx_form($edit);
+  }
+	$title = t('Change').' - '.arg(2);
+	astcore_printtheme($output, $title);
+}
+
+// END INCOMINGNR
+
+
+// ##########################################################################################################
+
+function array_push2(&$array,$object,$key=null){
+   $keys = array_keys($array);
+   rsort($keys);
+   $newkey = ($key==null)?$keys[0]+1:$key;
+   $array[$newkey] = $object;
+   return $newkey;
+}
+
+function myRange($low,$high,$step=1)
+{
+$ranArray = range($low,$high);
+$step--;
+$keys = count($ranArray);
+   for($i=0;$i<$keys;$i++)
+   {
+   $retArray[] = $ranArray[$i];
+   $i = $i + $step;
+   }
+return $retArray;
+}
+
+function astentry_goto_incomming()
+{
+	global $user;
+	drupal_goto("astentry/incomingnr/".$user->uid);
+}
+
+// ##########################################################################################################

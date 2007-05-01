@@ -1,0 +1,314 @@
+#!/usr/bin/perl -w
+#
+# AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+#
+# www.astbill.com
+#
+# Asterisk -- A telephony toolkit for Linux.
+# Drupal   -- An Open source content management platform.
+#
+# 
+# Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+#
+# Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+# Are Casilla        <areast  [Guess What?] astartelecom.com>
+#
+#
+# This program is free software, distributed under the terms of
+# the GNU General Public License
+#
+# 2006.03.17 Version 0.9.18
+# 
+#
+
+#use strict;
+
+open(LOG,'>>/home/astbill/logs/agi_err_did.log');
+
+# 4 November 2005 Changed Sub getBalance($)
+# Added field ccopeningbalance to Credit Control Calculation
+# This allows us to process opening balance on Calling Card without entering Payments.
+
+use DBI;
+
+$|=1;
+
+# Setup some variables
+my %AGI; my $tests = 0; my $fail = 0; my $pass = 0;
+
+my $config = &load_config();
+print LOG "config.conf - astbilldid loaded. dbhost = $config{dbhost}\n";
+
+if ($config{odbc} ne "YES") {
+while(<STDIN>) {
+	chomp;
+	last unless length($_);
+	if (/^agi_(\w+)\:\s+(.*)$/) {
+		$AGI{$1} = $2;
+	}
+}}
+
+print LOG "AGI Environment Dump:\n";
+foreach my $i (sort keys %AGI) {
+	print LOG " -- $i = $AGI{$i}\n";
+}
+
+# Remove whitespace from the start and end of the string
+sub trimwhitespace($)
+{
+	my $string = shift;
+	$string =~ s/^\s+//;
+	$string =~ s/\s+$//;
+	return $string;
+}
+
+my $dbh;
+if ($config{odbc} eq "YES") {
+	$dbh= DBI->connect("DBI:ODBC:$config{dbdsn}",$config{dbuser},$config{dbpass}) ||   die "Got error $DBI::errstr when connecting to $config{dbdsn}\n";
+}
+else {
+	#  $dbh = DBI->connect("dbi:mysql:dbname=$config{dbname};server=$config{dbhost}", "$config{dbuser}", "$config{dbpass}"); 
+	 $dbh   = DBI->connect ("DBI:mysql:database=$config{dbname}:host=$config{dbhost}", 
+		$config{dbuser},$config{dbpass}) or die "Can't connect to database: $DBI::errstr\n";
+}
+
+my $defmaxminute = &getMaxMinute();
+my $maxminute = $defmaxminute->{value};
+
+my $strAt = '@';    # Dont work with @ directly in SQL
+
+
+#### END OF CONFIGURATION #######################################################################################################
+
+sub getBalanceani($) {
+	my ($anicli) = @_;
+	my $res;
+	$sth = $dbh->prepare("select (balance + creditlimit + startingcredit) * 100 as bal, usagecount, astanicli.accountcode from asvaccount2, astanicli where asvaccount2.accountcode = astanicli.accountcode and astanicli.anicli = '$anicli'");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
+sub getBalance($) {
+	my ($acc) = @_;
+	my $res;
+	$sth = $dbh->prepare("select (balance + creditlimit + startingcredit) * 100 as bal, usagecount, accountcode from asvaccount2 where accountcode = '$acc'");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
+sub getMaxMinute() {
+	my $res;
+	$sth = $dbh->prepare("select value from astsystem where name = 'MaxMinute' and serverid = 'DEF'");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
+sub getCost($) {
+	my ($uniqueid) = @_;
+	my $res;
+	$dbh->do("CALL RateSale(\@sales,\@rate,\@billtime,'$uniqueid')");
+
+	$sth = $dbh->prepare("select \@sales as sales,\@rate as rate,\@billtime as billtime");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
+sub getNumber($) {
+	my ($uniqueid) = @_;
+	my $res;
+	$sth = $dbh->prepare("select cdr.accountcode, callednum, trunk, IFNULL(addprefix,'') addprefix,IFNULL(removeprefix,'') removeprefix, usstyleprefix, type from astcdr cdr, asttrunk tr where trunk = tr.name and uniqueid = '" . $uniqueid . "' LIMIT 1");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	my $usidd = ""; 
+	if ($res->{removeprefix} ne "0") {
+		$res->{callednum} = substr($res->{callednum}, $res->{removeprefix});
+    }
+	if ($res->{usstyleprefix} eq "1") {
+		$firstVar = substr($res->{callednum}, 0, 1);
+		if ($firstVar ne "1") {$usidd = "011"; print STDERR ("US 011 Appended: = $firstVar\n");}
+    }
+	$res->{callednum} = $res->{addprefix} . $usidd . $res->{callednum};
+	return $res;
+}
+
+sub getLocal($) {
+	my ($callednum) = @_;
+	my $res;
+	$sth = $dbh->prepare("select tech, forwardto, mailbox from astaccount where accountcode = '" . $callednum . "' LIMIT 1");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+sub getPath($) {
+	my ($trunk) = @_;
+	my $res;
+	$sth = $dbh->prepare("select path, tech from asttrunk where name = '" . $trunk . "' LIMIT 1");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
+sub checkresult {
+	my ($res) = @_;
+	my $retval;
+	$tests++;
+	chomp $res;
+	if ($res =~ /^200/) {
+		$res =~ /result=(-?\d+)/;
+		if (!length($1)) {
+			print LOG "FAIL ($res)\n";
+			$fail++;
+		} else {
+			print LOG "PASS ($1)\n";
+			$pass++;
+		}
+	} else {
+		print LOG "FAIL (unexpected result '$res')\n";
+		$fail++;
+	}
+}
+sub getresult {
+	my ($cmd) = @_;
+	my $retval;
+	print "$cmd\n";
+	my $res = <STDIN>;
+	# $result2 = &getresult($result);
+	# print LOG "VOICEMAIL: $result2\n";
+
+	chomp $res;
+	if ($res =~ /^200/) {
+		$res =~ /result=(-?\d+)/;
+		if (!length($1)) {
+			print LOG "FAIL ($res)\n";
+		} else {
+			# print LOG "PASS ($1)\n";
+			$res =~ s/\(/</;   # Have to convert ( to > and ) to >
+			$res =~ s/\)/>/;
+			$x = "<(.+)>";    # IAX2/5004@5004/2    SIP/5003-130f
+			$res =~/$x/;
+			my $tmp = $1;
+			# print LOG "getresult: $1\n";
+			$retval = $1;
+			return $retval;
+		}
+	} else {
+		print LOG "FAIL (unexpected result '$res')\n";
+	}
+}
+
+# This Procedure collects the right dialingstring from the accounts info in the forward field
+sub getForward($) {
+	my ($forward) = @_;
+	my $res = "";
+	my $tech;
+
+	@dial = split(/&/, $forward);
+    # print LOG "@dial\n";
+    my $sqldial = "";
+    for my $dialstr ( @dial ) {
+		# print LOG "dialstr: "  . $dialstr . "\n";
+		$sqldial .= $dialstr . "','"
+	} 
+	chop($sqldial); chop($sqldial); # chop removes the last character - very cool
+	# print LOG $sqldial . "\n";
+	#    Recall that you can join the whole array together with a statement like $text = "@lines";
+	#	($num, $nide,$sec) = split(/&/, $forward,4);
+	#	($tmp, $num)  = split(/=/, $num,2);
+	#	($tmp, $nide) = split(/=/, $nide,2);
+    $SQL = "select tech, accountcode, ccbatchno from astaccount where accountcode in ('" . $sqldial . ") and tech in ('IAX','SIP','REM-SIP','REM-IAX')";
+	my $result = $dbh->selectall_arrayref($SQL);
+	unless ($result) {
+		# check for errors after every single database call
+		print LOG "dbh->selectall_arrayref($SQL) failed!\n";
+		print LOG "DBI::err=[$DBI::err]\n";
+		print LOG "DBI::errstr=[$DBI::errstr]\n";
+		exit; }
+	my @resSet = @{$result};
+	if ( $#resSet == -1 ) {          
+		# print LOG "You Currently have no Forwarding Account\n";
+		print LOG "Forward to PSTN\n";
+		return "77070707";
+		exit; }
+	foreach my $row ( @{ $result } ) {
+		my @result = @{ $row };
+        # print LOG "$result[0]   $result[1] \n";
+		$tech = $result[0];
+		if ($result[0] eq "IAX") {$tech = "IAX2"; }
+		if ($result[2] eq "30004") {$tech = "IAX2/museum1" . $strAt . "dialmuseum"; }
+		$res .= $tech . "/" . $result[1] . "&"; }          
+
+	chop($res);  # chop removes the last character - very cool
+	print LOG  $res . "\n";
+	return $res;
+}
+
+sub load_config() {
+		$runtime = localtime(time);
+		if (-e "astbill.conf"){
+			open(CFG, "<astbill.conf");
+			
+		} else {
+			open(CFG, "</home/astbill/astbill.conf");
+		}
+		# chdir ('../newdir') || die ("Could not set new directory");
+        while(<CFG>) {
+                chomp;
+                my ($var, $val) = split(/\s*\=\s*/);
+                $config{$var} = $val;
+        }
+        close(CFG);
+		if ($config{odbc} eq "YES") {$jobstr = "XP";} # $ENV{"_"};
+        else {$jobstr = $ENV{"_"};}
+		print LOG "Executing: $jobstr    $runtime\n";
+		return $config;
+}
+
+
+#### PROGRAM START HER #######################################################################################################
+
+my $uniqueid = $AGI{'uniqueid'};
+my $exten = $ARGV[0];
+my $callerid = $ARGV[1];
+
+my $channel = $AGI{'channel'};
+my $type = $AGI{'type'};
+# my $strlen = length(trimwhitespace($getcard));
+my $endnow = "0";
+	
+# $language = $AGI{'language'};
+
+# print LOG "dnid=$exten  account=$callerid PhoneNo= $getnumb  Cardno=$getcard   noargs=$#ARGV \n";	
+print LOG "dnid=$exten  account=$callerid noargs=$#ARGV \n";	
+
+# $accountcode = "70105";
+
+my $clocal = &getLocal($exten);
+if (defined($clocal))  {
+	# $clocal->{tech}   $clocal->{forwardto}
+	print STDERR $clocal->{forwardto}."\n";
+	$dialstr = getForward($clocal->{forwardto});
+	$dialstr = "";
+	print "SET VARIABLE DIALSTRING $dialstr\n";
+#	print STDERR "DEBUG: $dialstr\n";
+
+	$dbh->do("CALL RateAddcdr($exten,'$channel','$exten','$type','$uniqueid')");
+	$dbh->do("update astcdr set callerid = '$callerid', extension = '$exten', trunk = 'TEVO', callednum = '$clocal->{forwardto}' where uniqueid = '$uniqueid'");
+	print LOG "CALL RateAddcdr('$accountcode','$channel','xxx','$type','$uniqueid')\n";
+}
+		
+
+
+close(LOG);
+$dbh->disconnect;
+exit 0;

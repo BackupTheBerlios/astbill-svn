@@ -1,0 +1,1973 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2006.03.17 Version 0.9.18
+ * 
+ */
+
+/**
+* Display help and module information
+* @param section which section of the site we're displaying help
+* @return help text for section
+*/
+
+
+function astsettings_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Settings");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astsettings_menu($may_cache) {
+  $items = array();
+  $access = user_access('astsettings plans');
+  $accessmgr = user_access('astsettings manager');
+  $items[] = array('path' => 'astbilladm/settings',
+                                  'title' => t('Settings'),
+                                  'callback' => '_astsettings_all',
+                                  'access' => $access);
+                                 // 'type' => MENU_CALLBACK);
+
+  $items[] = array('path' => 'astbilladm/settings/batch', 'title' => t('Batch Activation'),
+  'callback' => 'page_astsettings_batch',
+  'access' => $access);
+  // 'type' => MENU_CALLBACK);
+  
+  $items[] = array('path' => 'astbilladm/settings/createbatch', 'title' => t("Generate Account PIN's"),
+  'callback' => 'page_astsettings_createbatch',
+  'access' => $access);
+  // 'type' => MENU_CALLBACK);
+				 
+				 
+  $items[] = array('path' => 'astbilladm/settings/plans', 'title' => t('Rate Plans'),
+  'callback' => 'page_astsettings_plans',
+  'access' => $access);
+  // 'type' => MENU_CALLBACK);
+  
+  $items[] = array('path' => 'astbilladm/settings/plans/edit', 'title' => t('Rate Plans'),
+  'callback' => 'page_astsettings_plans',
+  'access' => $access,
+  'type' => MENU_CALLBACK);
+    
+  $items[] = array('path' => 'astbilladm/settings/plans/create', 'title' => t('Rate Plans'),
+  'callback' => 'page_astsettings_plans',
+  'access' => $access,
+  'type' => MENU_CALLBACK);
+  
+  $items[] = array('path' => 'astbilladm/realtime/manager', 'title' => t('Manager'),
+  'callback' => 'page_astsettings_manager',
+  'access' => $accessmgr);
+  //'type' => MENU_CALLBACK);
+  
+  $items[] = array('path' => 'astbilladm/settings/countrylist', 'title' => t('Country List'),
+  'callback' => 'page_astsettings_countrylist',
+  'access' => $access);
+  //'type' => MENU_CALLBACK);
+  /*
+  $items[] = array('path' => 'astbilladm/settings/system', 'title' => t('System Config'),
+  'callback' => 'page_astsettings_system',
+  'access' => $access);
+  //'type' => MENU_CALLBACK);
+  */
+  $items[] = array('path' => 'astbilladm/settings/system',
+                  'title' => t('System Config'),
+                  'callback' => 'page_astsettings_system',
+                  'callback arguments' => 'list',
+                  'access' => $access);
+				  // 'weight' => 5);
+  $items[] = array('path' => 'astbilladm/settings/system/list',
+                    'title' => t('List Settings'),
+                    'type' => MENU_DEFAULT_LOCAL_TASK,
+                    'access' => $access,
+                    'callback' => 'page_astsettings_system',
+                    'callback arguments' => 'list',
+                    'weight' => 5);
+
+  $items[] = array('path' => 'astbilladm/settings/anicli', 'title' => t('ANI/CLI'),
+  'callback' => 'page_astsettings_anicli',
+  'access' => $access);
+  //'type' => MENU_CALLBACK);
+
+
+
+
+
+
+  return $items;
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+function astsettings_perm() {
+	return array('astsettings plans','astsettings manager' );
+  // return array('can use astentry');
+} // function astentry_perm()
+
+
+// ##########################################################################################################
+
+function _astsettings_all() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+//$fetchbrand = db_query("SELECT brand FROM astuser WHERE uid=%s", $user->uid);
+//$brand = db_fetch_object($sql);
+
+
+$title = 'Settings';
+
+
+_astsettings_printtheme_best($output, $title);
+}
+
+
+// BEGING COUNTRYLIST
+
+function page_astsettings_countrylist() {
+	global $user;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+
+
+	switch ($op) {
+		case t('Edit'):
+			$output = page_astsettings_countrylist_form($where = 'edit', $edit);
+			break;
+		
+		case t('Add'):
+			$output = page_astsettings_countrylist_form($where = 'add', $edit);
+			break;
+		
+		case t('Back'):
+			$output = page_astsettings_countrylist_form($where = 'default', $edit);
+			break;
+		
+		case t('Save'):
+			db_query("UPDATE astcountrycode SET country = '%s', usstate = '%s', idd = '%s' WHERE countrycode = '%s'", $edit['savecountry'], $edit['saveusstate'], $edit['saveidd'], $edit['country']);
+			$sql = db_fetch_object(db_query("SELECT country FROM astcountrycode WHERE countrycode = '%s'", $edit['country']));
+			drupal_set_message('Saved '.$sql->country);
+			$output = page_astsettings_countrylist_form($where = 'default', $edit);
+			break;
+			
+		case t('Create'):
+			$sql = db_fetch_object(db_query("SELECT countrycode FROM astcountrycode WHERE countrycode = '%s'", $edit['savecountrycode']));
+			if (empty($sql->countrycode)) {
+				db_query("INSERT INTO astcountrycode SET countrycode = '%s', country = '%s', usstate = '%s', idd = '%s'", $edit['savecountrycode'] , $edit['savecountry'] , $edit['saveusstate'] , $edit['saveidd'] );
+				$output = page_astsettings_countrylist_form($where = 'created', $edit = $edit['savecountrycode']);
+			} else {
+				form_set_error('exists','CountryCode already exists');
+				$output = page_astsettings_countrylist_form($where = 'add', $edit);
+			}
+			
+			break;	
+			
+		default:
+			$output = page_astsettings_countrylist_form($where = 'default', $edit);
+			break;
+	}
+
+
+	$title = t("Country List");
+
+
+	_astsettings_printtheme_best($output, $title);	
+}
+
+
+function page_astsettings_countrylist_form($where,$edit) {
+	
+	$sql = db_query("SELECT countrycode, country FROM astcountrycode");
+	$countrylist = array();
+	while ($fetch = db_fetch_object($sql)) {
+		$countrylist[$fetch->countrycode] = $fetch->country;
+	}
+	
+	if($where == 'created') {
+		$selcountry = $edit;
+	} else {
+		$selcountry = $edit['country'];
+	}
+	
+	$output .= form_select(t('Select Country'), 'country', $selcountry, $countrylist, $description = NULL, $extra = 0, $multiple = FALSE, $required = FALSE);
+	
+	$output .= form_submit(t('Edit'));
+	$output .= form_submit(t('Add'));
+
+	
+	if ($where == 'edit' or $where == 'add') {
+		
+		$sql = db_fetch_object(db_query("SELECT countrycode, country, usstate, idd FROM astcountrycode WHERE countrycode = '%s'", $edit['country']));
+		
+		if ($where == 'edit') {
+			$country = $sql->country;
+			$countrycode = $sql->countrycode;
+			$usstate = $sql->usstate;
+			$idd = $sql->idd;
+			$output .= '<BR><BR>'.t('Edit CountryCode :').'<B>'.$sql->countrycode.'</B>';
+		} else {
+			$output .= form_textfield(t('Country Code'), 'savecountrycode', $countrycode, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
+
+		}
+		
+		$output .= form_textfield(t('Country'), 'savecountry', $country, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
+		$output .= form_textfield(t('USA State'), 'saveusstate', $usstate, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
+		$output .= form_textfield(t('Idd'), 'saveidd', $idd, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
+		
+		
+		if ($where == 'edit') {
+			$output .= form_submit(t('Save'));
+		}
+		if ($where == 'add') {
+			$output .= form_submit(t('Create'));
+		}
+		
+	}	
+	
+
+
+	$group = form($output);
+	return $group;	
+	
+}
+	
+// END COUNTRYLIST
+
+
+
+// BEGIN CREATEBATCH STUFF
+
+function page_astsettings_createbatch() {
+	global $user;
+
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+
+
+	switch ($op) {
+	
+	case t('Generate'):
+		//print_r($edit);
+		if (page_astsettings_createbatch_validate($edit)) {
+			page_astsettings_createbatch_save($edit);
+			//drupal_goto("astbilladm/settings/createbatch");
+			$output = page_astsettings_createbatch_form($edit);
+		} else {
+			$output = page_astsettings_createbatch_form($edit);
+		}
+		break;
+
+	default:
+		$output = page_astsettings_createbatch_form($edit);
+	}
+	
+
+	
+	$title = t("Generate Account Pin's");
+
+
+_astsettings_printtheme_best($output, $title);
+}
+
+// FORM STUFF
+function page_astsettings_createbatch_validate($edit) {
+	$myerror = 1;
+	$errors = array();
+	
+	
+	
+	if(!is_numeric($edit['batchno'])) {
+		$errors['batchno'] = t('Enter a numeric only batch number.');
+		$myerror = 0;
+	} else {
+		$sql = db_fetch_object(db_query("select ccbatchno from astaccount where ccbatchno = '%s'", $edit['batchno']));
+		
+		if(!empty($sql->ccbatchno)) {
+			$errors['batchno'] = t('Batch Number already exists.');
+			$myerror = 0;
+		}
+	}
+	
+	if(!is_numeric($edit['nracc'])) {
+		$errors['nracc'] = t('Enter a numeric value for number of accounts.');
+		$myerror = 0;
+	}
+	
+	if(!is_numeric($edit['credit'])) {
+		$errors['credit'] = t('Enter a numeric value for credit amount.');
+		$myerror = 0;
+	}
+	
+	if(!is_numeric($edit['expdays'])) {
+		$errors['expdays'] = t('Enter a numeric value for expiration days.');
+		$myerror = 0;
+	}
+	
+	if(!is_numeric($edit['fromserial'])) {
+		$errors['fromserial'] = t('Enter a numeric value for serial number.');
+		$myerror = 0;
+	}
+	
+	if($edit['password'] == '2') {
+		if(empty($edit['fixedpass'])) {
+			$errors['fixedpass'] = t('Enter a password.');
+			$myerror = 0;
+		}
+	}
+	
+	if($edit['randcheck'] == 'on') {
+		if(!empty($edit['prefix'])) {
+			if(!is_numeric($edit['prefix'])) {
+				$errors['prefix'] = t("Enter a numeric only prefix.");
+				$myerror = 0;
+			}
+		}
+		
+		if(!empty($edit['fromacc'])) {
+		$errors['fromacc'] = t("Don't use From Account Number, when generating random accounts.");
+		$myerror = 0;
+	}
+	}
+	
+	if($edit['randcheck'] == '0') {
+	if(!is_numeric($edit['fromacc'])) {
+		$errors['fromacc'] = t('Enter a numeric only account number or select random accounts.');
+		$myerror = 0;
+	}
+	}
+	
+	
+	if($edit['month'] == 'January' or $edit['month'] == 'March' or $edit['month'] == 'May' or $edit['month'] == 'July' or $edit['month'] == 'August' or $edit['month'] == 'October' or $edit['month'] == 'December') {
+		if($edit['day'] > 31) {
+			$errors['date'] = t('Invalid date.');
+			$myerror = 0;
+		}
+	}
+  
+	if($edit['month'] == 'April' or $edit['month'] == 'June' or $edit['month'] == 'September' or $edit['month'] == 'November') {
+		if($edit['day'] > 30) {
+			$errors['date'] = t('Invalid date.');
+			$myerror = 0;
+		}
+  	}
+
+	if($edit['month'] == 'February') {
+		if($edit['day'] > 28) {
+			$errors['date'] = t('Invalid date.');
+			$myerror = 0;
+		}  
+	}
+	
+	
+	
+	
+
+	foreach ($errors as $name => $message) {
+		form_set_error($name, $message);
+	} 
+	return $myerror;
+}
+
+function page_astsettings_createbatch_save($edit) {
+  global $user;
+  global $db_prefix; 
+
+/*
+[batchno] => 1
+[credit] => 5 
+[expdays] => 6 
+[day] => 7
+[month] => 12
+[year] => 2006
+[fromserial] => 7
+
+ccbatchno
+cccardvalue
+startingcredit
+ccexpiredate
+ccexpiredays
+ccserialno
+
+[password] => 0 // 0 = pass like nr, 1 = random pass length from passrand, 2 = fixedpass
+[passrand] => 4
+[fixedpass] => 3445
+
+[fromserial] => 7 // Create with increment of +1
+
+accountcode
+secret
+ccserialno
+
+
+[fromacc] => 2 // if not random, start from this account
+[nracc] => 3  //HOW MANY ACCOUNTS TO CREATE
+
+[randcheck] => on // random account nr's
+[accountlength] => 9 //length of account nr
+[prefix] => 4 // prefix(included in total length)
+
+*/
+
+
+
+$accountcode = array();
+
+if($edit['randcheck'] == '0') {
+	$x = 0;
+	while ($x < $edit['nracc']) {
+		
+		$accountcode[] = $edit['fromacc']+$x;		
+		
+		$x++;
+	}
+}
+
+if($edit['randcheck'] == 'on') {
+	
+	$x = 1;
+	while ($x <= $edit['nracc']) {
+	
+		$y = 1;
+		$z = 9;
+		$a = 2;
+		while($a <= $edit['accountlength']) {
+			$y .= 0;
+			$z .= 9;
+			$a++;
+		}
+		
+		$accrand = rand($y,$z);
+		
+		if(!empty($edit['prefix'])) {
+			$accountcode[] = $edit['prefix'].''.$accrand;	
+		} else {
+			$accountcode[] = $accrand;	
+		}
+		
+		$x++;
+	}
+	
+}
+/*
+$x = 1;
+$y = 0;
+while ($x <= $edit['nracc']) {
+	$account = $accountcode[$y];
+	$sql = db_fetch_object(db_query("SELECT accountcode FROM astaccount WHERE accountcode = '%s'", $account));	
+	$pass = 1;
+	
+	foreach ($accountcodechecked as $key => $value) {
+		if ($value == $account) {
+			$pass = 0;
+		}
+	}
+	
+	if (empty($sql->accountcode) and $pass = 1) {
+		$accountcodechecked[] = $account;
+	}
+	
+	if (!empty($sql->accountcode) or $pass = 0) {
+		unset($accounterr);
+		$z = 1;
+		
+		while(empty($accounterr)) {
+			$accountcheck = $account+$z;		
+			$sql = db_fetch_object(db_query("SELECT accountcode FROM astaccount WHERE accountcode = '%s'", $accountcheck));
+			$pass = 1;
+			
+			foreach ($accountcodechecked as $key => $value) {
+				if ($value == $accountcheck) {
+					$pass = 0;
+				}
+			}
+			
+			if(empty($sql->accountcode) and $pass = 1) {
+				$accounterr = 'PASS';
+				$accountcodechecked[] = $accountcheck;
+			}
+			
+			$z++;
+		}
+	}
+	$x++;
+	$y++;
+}
+*/
+$x = 1;
+$y = 0;
+$accountcodechecked = array();
+while ($x <= $edit['nracc']) {
+	$account = $accountcode[$y];
+	$allpass = 0;
+	
+	while ($allpass == 0) {
+		// START SQL CHECK
+		$b = 0;
+		$sqlpass = 0;
+		
+		while ($sqlpass == 0) {
+			$sqlcheck = $account + $b;
+			$sql = db_fetch_object(db_query("SELECT accountcode FROM astaccount WHERE accountcode = '%s'", $sqlcheck));
+			
+			if (empty($sql->accountcode)) {
+				$sqlpass = 1;
+				$account = $sqlcheck;
+			}
+			
+			$b++;
+			
+		}
+		// END SQL CHECK
+		
+		// START ARRAY CHECK
+		$z = 0;
+		$arraypass = 0;
+		
+		while ($arraypass == 0) {
+			$arraypass = 1;
+			$arraycheck = $account + $z;
+			
+			foreach ($accountcodechecked as $value) {
+		
+				if ($arraycheck == $value) {
+					$arraypass = 0;
+				} // END IF
+		
+			} // END FOREACH
+			
+			
+			if ($arraypass == 1) {
+				$account = $arraycheck;
+			} // END IF
+			
+			$z++;
+		} // END WHILE
+
+		// END ARRAY CHECK
+		
+		// START LAST CHECK
+		$sql = db_fetch_object(db_query("SELECT accountcode FROM astaccount WHERE accountcode = '%s'", $account));
+			
+		if (!empty($sql->accountcode)) {
+			$sqlpass = 0;
+		}
+		
+		foreach ($accountcodechecked as $value) {
+		
+			if ($value == $account) {
+				$arraypass = 0;
+			}
+	
+		}
+		
+		
+		// END LAST CHECK
+		
+		
+		// START FINISH CHECK
+		if ($sqlpass == 1 and $arraypass == 1) {			
+			$allpass = 1;
+		} 
+		// END FINISH CHECK
+	
+	} // END ALLPASS WHILE
+	
+	$accountcodechecked[] = $account;
+	$x++;
+	$y++;
+}
+
+
+$secret = array();
+
+if($edit['password'] == '0') {
+	$x = 1;
+	$y = 0;
+	while ($x <= $edit['nracc']) {
+		$secret[] = $accountcodechecked[$y];
+		$x++;
+		$y++;
+	}
+}
+
+if($edit['password'] == '1') {
+	
+	$x = 1;
+	while ($x <= $edit['nracc']) {
+		
+		$y = 1;
+		$z = 9;
+		$a = 2;
+		while($a <= $edit['passrand']) {
+			$y .= 0;
+			$z .= 9;
+			$a++;
+		}
+		
+		$secret[] = rand($y,$z); 
+	
+		$x++;
+	}
+
+}
+
+if($edit['password'] == '2') {
+	$x = 1;
+	while ($x <= $edit['nracc']) {
+		$secret[] = $edit['fixedpass'];
+		$x++;
+	}	
+}
+
+
+
+$ccserialno = array();
+$x = 1;
+$y = 0;
+$n = 0;
+while ($x <= $edit['nracc']) {
+	unset($z);
+	$serial = $edit['fromserial']+$n;
+	$sql = db_fetch_object(db_query("SELECT ccserialno FROM astaccount WHERE ccserialno = '%s'", $serial));	
+	
+	if (empty($sql->ccserialno)) {
+		$ccserialno[] = $serial;
+		//drupal_set_message(t('Empty serial -> '.$ccserialno[$y]));
+		//$y++;
+	}
+	
+	if (!empty($sql->ccserialno)) {
+		
+		unset($serialerr);
+		$z = 1;
+		while(empty($serialerr)) {
+			$serialcheck = $serial+$z;
+			$sql = db_fetch_object(db_query("SELECT ccserialno FROM astaccount WHERE ccserialno = '%s'", $serialcheck));
+	
+			if(empty($sql->ccserialno)) {
+				$serialerr = 'PASS';
+				$ccserialno[] = $serialcheck;
+				//drupal_set_message(t('Empty not serial -> '.$ccserialno[$y]));
+				//$y++;
+				
+			} else {
+				$z++;
+			}
+			
+		}
+		//form_set_error('serial', t('serial match'.$serial));
+	}
+	
+	$n++;
+	if (!empty($z)) {
+		$n = $n+$z;	
+	}
+	
+	$x++;
+}
+
+drupal_set_message(t('Created '.$edit['nracc'].' Accounts :'));
+//drupal_set_message(t('<BR>'));
+$x = 1;
+$y = 0;
+while($x <= $edit['nracc']) {
+
+db_query("INSERT INTO astaccount SET
+accountcode = '".$accountcodechecked[$y]."',
+db_prefix = '".$db_prefix."',
+secret = '".$secret[$y]."',
+ccserialno = '".$ccserialno[$y]."',
+ccbatchno = '".$edit['batchno']."',
+cccardvalue = '".$edit['credit']."',
+startingcredit = '".$edit['credit']."',
+ccexpiredays = '".$edit['expdays']."',
+ccexpiredate = '".$edit['year']."-".$edit['month']."-".$edit['day']." 00:00:00'
+");
+
+/*
+drupal_set_message(t('AccountCode -> '.$accountcodechecked[$y]));
+drupal_set_message(t('Serial -> '.$ccserialno[$y]));
+drupal_set_message(t('Secret -> '.$secret[$y]));
+drupal_set_message('<BR>');
+*/
+$y++;
+$x++;
+
+}
+
+
+
+ // form_set_error('hi', t('test'));
+
+  //drupal_set_message(t('The batch has been created.'));
+}
+
+function page_astsettings_createbatch_form($edit) {
+	global $user;
+/*
+	$x = 1;
+	$daylist = array($x => $x);
+	while ($x < '31') {
+		$x++;
+		array_push2($daylist, $x, $x);	
+	}
+	
+	$monthlist = array(t('January') => 'January'
+,t('February') => 'February'
+,t('March') => 'March'
+,t('April') => 'April'
+,t('May') => 'May'
+,t('June') => 'June'
+,t('July') => 'July'
+,t('August') => 'August'
+,t('September') => 'September'
+,t('October') => 'October'
+,t('November') => 'November'
+,t('December') => 'December'
+);
+	
+	$x = date(Y);
+	$yearlist = array($x => $x);
+	while ($x < 2030) {
+		$x++;
+		array_push2($yearlist, $x, $x);
+	}
+
+	$sql = db_fetch_object(db_query("select max(ccserialno)+1 ccserialno from astaccount"));
+	$fromserial = $sql->ccserialno;
+	
+	$sql = db_fetch_object(db_query("select max(ccbatchno)+1 ccbatchno from astaccount"));
+	$batchno = $sql->ccbatchno;	
+	*/
+	/*
+	$group .= form_textfield(t('Batch Number'), 'batchno', $batchno, 30, 128, null, null, true);
+	$group .= form_textfield(t('From Account Number'), 'fromacc', NULL, 30, 128, null, null, true);
+	$group .= form_textfield(t('Number of accounts'), 'nracc', NULL, 15, 128, null, null, true);
+	$group .= form_checkbox(t('Random Account'), 'randcheck', 0, FALSE, NULL, NULL, FALSE);
+	$group .= form_select(t("Number of account digits"), "accountlength", NULL, array(9 => 9, 10 => 10, 11 => 11, 12 => 12, 13 => 13, 14 => 14, 15 => 15, 16 => 16, 17 => 17, 18 => 18, 19 => 19, 20 => 20));
+	$group .= form_textfield(t('Credit Amount'), 'credit', NULL, 15, 128, null, null, true);
+	$group .= form_textfield(t('Expiration Days'), 'expdays', NULL, 15, 128, null, null, true);
+	$group .= t("Expiration Date:");
+	$group .= form_select(NULL, "day", date(j), $daylist);
+	$group .= form_select(NULL, "month", date(F), $monthlist);
+	$group .= form_select(NULL, "year", date(Y)+5, $yearlist);
+	$group .= form_textfield(t('From serial number'), 'fromserial', $fromserial, 30, 128, null, null, true);
+	
+	$group .= form_radios(t('Password.'), 'password', 0, array(0 => 'Same as ID' , 1 => 'Random', 2 => 'Fixed Value'));
+	$group .= form_select(t("Random digits"), "passrand", NULL, array(4 => 4, 5 => 5, 6 => 6, 7 => 7, 8 => 8, 9 => 9, 10 => 10, 11 => 11, 12 => 12, 13 => 13, 14 => 14, 15 => 15, 16 => 16, 17 => 17, 18 => 18, 19 => 19, 20 => 20));
+	$group .= form_textfield(t('Fixed'), 'fixedpass', NULL, 30, 128, null, null, true);
+	
+	$group .= form_submit(t('Generate'));
+
+
+	return form($group);
+*/
+
+	$x = date(Y);
+	if (empty($edit['year'])) {
+		$y = date(Y)+1;
+	} else {
+		$y = $edit['year'];
+	}
+	while ($x <= 2030) {
+		if ($x == $y) {
+			$yearlist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			
+			$yearlist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+	
+	$x = 1;
+	if (empty($edit['day'])) {
+		$y = date(j)+1;
+	} else {
+		$y = $edit['day'];
+	}
+	while ($x <= '31') {
+		if ($x == $y) {
+			$daylist .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			
+			$daylist .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+
+	$listmonth = array('1' => t('January')
+,'2' => t('February')
+,'3' => t('March')
+,'4' => t('April')
+,'5' => t('May')
+,'6' => t('June')
+,'7' => t('July')
+,'8' => t('August')
+,'9' => t('September')
+,'10' => t('October')
+,'11' => t('November')
+,'12' => t('December')
+);
+
+	$x = 1;
+	if (empty($edit['month'])) {
+		$y = date(n)+1;
+	} else {
+		$y = $edit['month'];
+	}
+	while ($x <= '12') {
+		if ($x == $y) {
+			$monthlist .= '<option value="'.$x.'" selected="selected">'.$listmonth[$x].'</option>';
+		} else {
+			
+			$monthlist .= '<option value="'.$x.'">'.$listmonth[$x].'</option>';
+		}
+		$x++;
+	}
+	
+	
+	
+	$x = 4;
+	if (empty($edit['accountlength'])) {
+		$y = 4;
+	} else {
+		$y = $edit['accountlength'];
+	}
+	while ($x <= '10') {
+		if ($x == $y) {
+			$accountlength .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			
+			$accountlength .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+	
+	
+	$x = 4;
+	if (empty($edit['passrand'])) {
+		$y = 4;
+	} else {
+		$y = $edit['passrand'];
+	}
+	while ($x <= '10') {
+		if ($x == $y) {
+			$passrand .= '<option value="'.$x.'" selected="selected">'.$x.'</option>';
+		} else {
+			
+			$passrand .= '<option value="'.$x.'">'.$x.'</option>';
+		}
+		$x++;
+	}
+	
+	
+	
+
+	
+	// Default and retained values
+	
+	if(empty($edit['fromserial'])) {
+		$sql = db_fetch_object(db_query("select max(ccserialno+1) ccserialno from astaccount"));
+		if (empty($sql->ccserialno)) {
+			$fromserial = '3000000';
+		} else {
+			$fromserial = $sql->ccserialno;
+		}
+	} else {
+		$fromserial = $edit['fromserial'];
+	}
+	
+	if(empty($edit['batchno'])) {
+		
+		$sql = db_fetch_object(db_query("select max(ccbatchno+1) ccbatchno from astaccount"));
+		if (empty($sql->ccbatchno)) {
+			$batchno = '2000';
+		} else {
+			$batchno = $sql->ccbatchno;
+		}
+	} else {
+		$batchno = $edit['batchno'];	
+	}
+	
+
+	
+	$fromacc = $edit['fromacc'];
+	$prefix = $edit['prefix'];
+	$fixedpass = $edit['fixedpass'];
+	if (empty($edit['nracc'])) {
+		$nracc = '10';
+	} else {
+		$nracc = $edit['nracc'];
+	}
+	
+	if (empty($edit['credit'])) {
+		$credit = '10';
+	} else {
+		$credit = $edit['credit'];
+	}
+	
+	if (empty($edit['expdays'])) {
+		$expdays = '90';
+	} else {
+		$expdays = $edit['expdays'];
+	}
+	
+	if ($edit['randcheck'] == 'on') {
+		$randcheck = 'CHECKED';
+	} else {
+		$randcheck = '';
+	}
+	
+	if(empty($edit['password'])) {
+		$radiocheck1 = 'checked="checked"';
+	} else {
+		if($edit['password'] == '0'){ $radiocheck1 = 'checked="checked"';}
+		if($edit['password'] == '1'){ $radiocheck2 = 'checked="checked"';}
+		if($edit['password'] == '2'){ $radiocheck3 = 'checked="checked"';}
+	}
+	
+
+$output = '
+
+<form action="'.url('astbilladm/settings/createbatch').'" method="post">
+
+<div class="form-item">
+ <label for="edit-batchno">Batch Number:</label>
+ <br />
+ <input type="text" maxlength="128" class="form-text required" name="edit[batchno]" id="edit-batchno" size="30" value="'.$batchno.'" />
+</div>
+
+<div class="form-item">
+ <label for="edit-fromacc">From Account Number:</label><br />
+ <input type="text" maxlength="128" class="form-text required" name="edit[fromacc]" id="edit-fromacc" size="30" value="'.$fromacc.'" />
+</div>
+
+<div class="form-item">
+ <label for="edit-nracc">Number of accounts:</label><br />
+ <input type="text" maxlength="128" class="form-text required" name="edit[nracc]" id="edit-nracc" size="15" value="'.$nracc.'" />
+</div>
+
+<input type="hidden" name="edit[randcheck]" value="0" />
+
+<div class="form-item">
+ <label class="option">
+ <input type="checkbox" class="form-checkbox" name="edit[randcheck]" id="edit-randcheck" '.$randcheck.'/> Random Accounts</label>
+<BR>
+ <B>Digits</B>&nbsp;
+ <select name="edit[accountlength]" id="edit-accountlength">
+'.$accountlength.'
+ </select>&nbsp;
+ <B>Prefix</B>&nbsp;
+ <input type="text" maxlength="128" class="form-text required" name="edit[prefix]" id="edit-prefix" size="15" value="'.$prefix.'" />
+</div>
+
+<div class="form-item">
+ <label for="edit-credit">Credit Amount:</label><br />
+ <input type="text" maxlength="128" class="form-text required" name="edit[credit]" id="edit-credit" size="15" value="'.$credit.'" />
+</div>
+
+<div class="form-item">
+ <label for="edit-expdays">Expiration Days:</label><br />
+ <input type="text" maxlength="128" class="form-text required" name="edit[expdays]" id="edit-expdays" size="15" value="'.$expdays.'" />
+</div>
+
+<B>Expiration Date:</B>
+<div class="form-item">
+<select name="edit[day]" id="edit-day">
+'.$daylist.'
+</select>
+
+ <select name="edit[month]" id="edit-month">
+'.$monthlist.'
+ </select>
+
+ <select name="edit[year]" id="edit-year">
+'.$yearlist.'
+</select>
+</div>
+
+<div class="form-item">
+ <label for="edit-fromserial">From serial number:</label><br />
+ <input type="text" maxlength="128" class="form-text required" name="edit[fromserial]" id="edit-fromserial" size="30" value="'.$fromserial.'" />
+</div>
+
+
+<div class="form-item">
+ <label>Password.:</label><br />
+ <label class="option">
+ <input type="radio" class="form-radio" name="edit[password]" value="0" '.$radiocheck1.' /> Same as ID</label><br />
+ <label class="option">
+ <input type="radio" class="form-radio" name="edit[password]" value="1" '.$radiocheck2.' /> Random</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ <select name="edit[passrand]" id="edit-passrand">
+'.$passrand.'
+ </select>
+ <BR>
+ <label class="option">
+ <input type="radio" class="form-radio" name="edit[password]" value="2" '.$radiocheck3.' /> Fixed Value</label>&nbsp;&nbsp;
+ <input type="text" maxlength="128" class="form-text required" name="edit[fixedpass]" id="edit-fixedpass" size="15" value="'.$fixedpass.'" />
+</div>
+
+
+<input type="submit" class="form-submit" name="op" value="Generate"  />
+
+</form>
+';
+
+	return $output;
+
+}
+
+// END FORM STUFF
+// END CREATEBATCH STUFF
+
+
+// BEGIN BATCH STUFF
+
+function page_astsettings_batch() {
+	global $user;
+
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+
+
+		switch (($op ? $op : arg(1))) {
+		case t('Activate'):
+			db_query("update astaccount set active = 1 where ccbatchno = '%s'", $edit['batch']);
+			drupal_set_message(t('Batch '.$edit['batch'].' has been activated.'));
+		break;
+
+		case t('Deactivate'):
+			db_query("update astaccount set active = 0 where ccbatchno = '%s'", $edit['debatch']);
+			drupal_set_message(t('Batch '.$edit['debatch'].' has been deactivated.'));
+		break;
+
+		default:
+	}
+	
+	$sql = db_query("select distinct ccbatchno from astaccount where active = 1");
+	$batchlist = array();
+	while ($model = db_fetch_object($sql)) {
+		if (!empty($model->ccbatchno)) {
+			array_push2($batchlist, $model->ccbatchno, $model->ccbatchno);
+		}
+	}
+	
+	$sql = db_query("select distinct ccbatchno from astaccount where active = 0");
+	$debatchlist = array();
+	while ($model = db_fetch_object($sql)) {
+		if (!empty($model->ccbatchno)) {
+			array_push2($debatchlist, $model->ccbatchno, $model->ccbatchno);
+		}
+	}
+	if (!empty($debatchlist)) {
+	$group .= form_select(t("Activate Batch Number"), "batch", NULL, $debatchlist);
+	$group .= form_submit(t('Activate'));
+	}
+	if (!empty($batchlist)) {
+	$group .= form_select(t("Deactivate Batch Number"), "debatch", NULL, $batchlist);
+	$group .= form_submit(t('Deactivate'));
+	}
+	$output = form($group);
+
+
+
+	$title = 'Batch Activation';
+
+_astsettings_printtheme_best($output, $title);
+}
+
+
+// END BATCH STUFF
+
+
+
+// BEGIN RATE PLANS (BRAND) STUFF
+function page_astsettings_plans() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];	
+  
+  $arg3 = arg(3);
+  $arg4 = arg(4);
+  $pass = 0;
+  
+  if ($arg3 == 'edit') {$pass = 1;}
+  if (empty($arg4)) {$pass = 0;}
+  if ($arg3 == 'create') {$pass = 1;}
+  
+  if ($pass == '1') {
+	  switch (($op ? $op : arg(1))) {
+		  case t('Save'):
+		  if (astsettings_validate($edit)) {
+			  astsettings_save($edit);
+			  drupal_goto("astbilladm/settings/plans/");
+		  } else {
+			  drupal_goto("astbilladm/settings/plans/");
+		  }
+		  break;
+		  
+		  case t('Create'):
+		  if (astsettings_validate($edit)) {
+			  astsettings_save($edit);
+			  drupal_goto("astbilladm/settings/plans/");
+		  } else {
+			  drupal_goto("astbilladm/settings/plans/create");
+		  }
+		  break;
+		  
+		  case t('Back'):
+		  drupal_goto("astbilladm/settings/plans");
+		  default:
+		  $output = astsettings_form($arg4);
+	  }
+  }
+
+if (empty($arg3)) {
+  
+  
+  $maxline = 40;
+  
+  
+  $header = array(
+    array('data' => t('Name'), 'field' => 'name'),
+    array('data' => t('Language'), 'field' => 'language'),
+    array('data' => t('Currency'), 'field' => 'currency'),
+    array('data' => t('Published Number'), 'field' => 'publishednum'),
+    array('data' => t('Did'), 'field' => 'did'),
+    array('data' => t('Markup'), 'field' => 'markup'),
+    array('data' => t('Bill Increment'), 'field' => 'billincrement'),
+    array('data' => t('Connection Charge'), 'field' => 'connectcharge'),
+    array('data' => t('Status'), 'field' => 'status'),
+    array('data' => t('Operations'))
+  );
+
+$sql = "SELECT name, currency, language, publishednum, did, markup, billincrement, connectcharge, active status FROM astplans". tablesort_sql($header);
+$result = pager_query($sql, $maxline);
+
+  
+  while ($item = db_fetch_object($result)) {
+	  if (empty($item->language)) { $item->language = 0 ;}
+	  if (empty($item->publishednum)) { $item->publishednum = 0 ;}
+	  	$rows[] = array(
+		$item->name.'&nbsp;&nbsp;',
+		$item->language.'&nbsp;&nbsp;',
+		$item->currency.'&nbsp;&nbsp;',
+	        $item->publishednum.'&nbsp;&nbsp;',
+		$item->did.'&nbsp;&nbsp;',
+		$item->markup.'&nbsp;&nbsp;',
+		$item->billincrement.'&nbsp;&nbsp;',
+		$item->connectcharge.'&nbsp;&nbsp;',
+		$item->status.'&nbsp;&nbsp;',
+		'<A HREF="'.url("astbilladm/settings/plans/edit/".$item->name).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>'
+		);
+  }
+
+
+
+  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+  if (!empty($pager)) {
+    $rows[] = array(array('data' => $pager, 'colspan' => 8));
+  }
+
+  $output .= (count($rows) == 0) ? t('No Peers.') : theme('table', $header, $rows);
+  $title = t('View');
+  
+  _astplans_printtheme_best($output, $title);
+} else {
+
+
+if ($arg3 == 'edit') {$title = t('Edit');}
+if ($arg3 == 'create') {$title = t('Create');}
+
+_astsettings_printtheme_best($output, $title);
+}
+}
+
+function _astplans_printtheme_best($page_content, $title) {
+	global $user;
+$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+
+$output .= '<div class="nodecontent">';
+$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/settings/plans/create/').'">'.t('Create new').'</A></B><BR>';
+
+  print theme("page", $output);
+}
+
+//END BRAND STUFF
+
+
+// FORM STUFF
+function astsettings_validate($edit) {
+  $myerror = 1;
+  $errors = array();
+
+  if (arg(3) == 'create'){
+	  if(empty($edit['name'])){
+		  $errors['test'] = t('Please enter a unique Rate Plan name');
+		  $myerror = 0;
+	  }
+	  
+	  $sql = db_query("SELECT name FROM astplans");
+
+	  while ($getname = db_fetch_object($sql)){
+		  if ($edit['name'] == $getname->name){
+			  $errors['test'] = t('Please enter a unique Rate Plan name');
+			  $myerror = 0;
+		  }
+	  }
+}
+
+  
+  
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+function astsettings_save($edit) {
+	global $user;
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+//  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+//    drupal_access_denied();
+//    return;
+//  }
+
+	if (arg(3) == 'create') {
+	db_query("INSERT INTO astplans ( name, currency,
+	language, publishednum, did, markup, 
+	billincrement, connectcharge, status ) VALUES ( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
+        $edit['name'], $edit['currency'], $edit['language'],
+	$edit['publishednum'], $edit['did'] , $edit['markup'],
+	$edit['billincrement'], $edit['connectcharge'], $edit['status']);
+
+	drupal_set_message(t('A new Rate Plan has been created.'));
+	}
+
+
+	if (arg(3) == 'edit') {
+	db_query("UPDATE astplans SET currency = '%s', 
+	language = '%s', publishednum = '%s', did = '%s', markup = '%s', 
+	billincrement = '%s', connectcharge = '%s', status = '%s' WHERE name = '%s'",
+        $edit['currency'], $edit['language'],
+	$edit['publishednum'], $edit['did'] , $edit['markup'],
+	$edit['billincrement'], $edit['connectcharge'], $edit['status'], arg(4));
+
+	drupal_set_message(t('The Rate Plan has been updated.'));
+	}
+
+
+}
+
+function astsettings_form($name) {
+	global $user;
+
+	
+	$sql = db_query("SELECT currency FROM astcurrency");
+	$currency = array();
+	while ($model = db_fetch_object($sql)) {
+		array_push2($currency, $model->currency, $model->currency);
+	}
+	
+	if (arg(3) == 'create') {
+		$valuesql->name = NULL;
+		$valuesql->currency = NULL;
+		$valuesql->language = NULL;
+		$valuesql->publishednum = NULL;
+		$valuesql->did = NULL;
+		$valuesql->markup = NULL;
+		$valuesql->billincrement = NULL;
+		$valuesql->connectcharge = NULL;
+		$valuesql->status = NULL;
+	}
+	
+	if (arg(3) == 'edit') {
+		
+	$valuesql = db_fetch_object(db_query("SELECT name, currency, language, publishednum, did, markup, billincrement, connectcharge, status FROM astplans WHERE name = '%s'", $name));
+
+	$group .= '<BR>';
+	$group .= t('Name:').' '.$valuesql->name;	
+	
+		
+	}
+	
+	if (arg(3) == 'create') {
+	$group .= form_textfield(t('Name'), 'name', $valuesql->name, 30, 100);
+	}
+	
+	$group .= form_select(t("Select Currency"), "currency", $valuesql->currency, $currency);
+	$group .= form_textfield(t('Language'), 'language', $valuesql->language, 30, 100);
+	$group .= form_textfield(t('Published Number'), 'publishednum', $valuesql->publishednum, 30, 100);
+	$group .= form_textfield(t('Did'), 'did', $valuesql->did, 30, 100);
+	$group .= form_textfield(t('Markup'), 'markup', $valuesql->markup, 30, 100);
+	$group .= form_textfield(t('Billing Increment'), 'billincrement', $valuesql->billincrement, 30, 100);
+	$group .= form_textfield(t('Connection Charge'), 'connectcharge', $valuesql->connectcharge, 30, 100);
+	$group .= form_textfield(t('Status'), 'status', $valuesql->status, 30, 100);
+
+
+	if (arg(3) == 'edit') {
+	$group .= form_submit(t('Save'));
+	}
+	
+	if (arg(3) == 'create') {
+	$group .= form_submit(t('Create'));
+	}
+		
+	$group .= form_submit(t('Back'));
+	return form($group);
+}
+
+// END FORM STUFF
+
+
+// BEGIN MANAGER
+
+function page_astsettings_manager() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];	
+	
+	switch (($op ? $op : arg(1))) {
+		  case t('Reload'):
+		  	$group .= page_astsettings_manager_reload();
+			$group .= form_submit(t('Back'));
+		  break;
+		  case t('Write'):
+		  	$group = page_astsettings_manager_writeconf();
+			$group .= form_submit(t('Back'));
+		  break;
+		  case t('Back'):
+		  	drupal_goto("astbilladm/realtime/manager");
+		  break;
+		  default:
+		  $group .= t('Click here to write configuration for accounts marked with STATIC:<BR><BR>');
+		  $group .= t('<STRONG>This will overwrite the following files:</STRONG><BR><BR>');
+		  $group .= '/etc/asterisk/sip_additional.conf<BR>';
+		  $group .= '/etc/asterisk/iax_additional.conf<BR>';
+		  $group .= '/etc/asterisk/voicemail_additional.conf<BR>';
+		  $group .= '<BR><BR>';
+		  $group .= form_submit(t('Write'));
+		  $group .= '<BR><BR><BR>';
+		  $group .= t('Click here to Reload  Asterisk: ');
+		  $group .= '<BR><BR>';
+		  $group .= form_submit(t('Reload'));
+	  }
+	  
+	  $output = form($group);
+	
+
+
+$title = t('Manager');
+
+_astsettings_printtheme_best($output, $title);
+}
+
+function page_astsettings_manager_writeconf() {
+/*
+ Must Standard configurations for AstBill REALTIME will not use this program.
+
+ $active = 1 if used with Asterisk REALTIME configuration. Only possible on Asterisk Version 1.2 Beta and above.
+ $active = 5 if used with Static Asterisk configuration. Must be used for Asterisk Version 1.09 and below.
+*/
+$active = "5";
+
+$astpath  = "/etc/asterisk/";
+
+$sip_conf = $astpath."sip_additional.conf";
+$iax_conf = $astpath."iax_additional.conf";
+$voicemail_conf = $astpath."voicemail_additional.conf";
+
+$timecreated = date('Y-m-d H-i-s');
+
+// Write SIP config
+$output .= t("Trying to write SIP Config at")." ".$sip_conf."<BR><BR>";
+$sql = db_query("SELECT accountcode, secret, host, IFNULL(callerid,'') callerid, context, nat, qualify FROM astaccount where tech = 'SIP' and active = '".$active."'");
+
+   if (!$handle = fopen($sip_conf, 'w')) {
+         echo "Error, unable to open file";
+         exit;
+   }
+   
+   $content = "; Generated by AstBill-0.9.0.9
+; Created: ".$timecreated."
+; 	".$sip_conf."
+; 
+";
+   
+   
+   if (fwrite($handle, $content) === FALSE) {
+       echo "Permission denied on file";
+       exit;
+   }
+   fclose($handle);
+
+
+while ($get = db_fetch_object($sql)) {
+
+$content = "[".$get->accountcode."]
+type=friend
+username=".$get->accountcode."
+secret=".$get->secret."
+host=".$get->host."
+callerid=".$get->callerid."
+context=".$get->context."
+dtmfmode=rfc2833
+mailbox=".$get->accountcode."
+nat=".$get->nat."
+qualify=".$get->qualify."
+
+";
+
+   if (!$handle = fopen($sip_conf, 'a')) {
+         echo "Error, unable to open file";
+         exit;
+   }
+
+   if (fwrite($handle, $content) === FALSE) {
+       echo "Permission denied on file";
+       exit;
+   }
+
+fclose($handle);	
+}
+$output .= $sip_conf." was written succesfully<BR><BR>";
+
+// Write IAX config
+$output .= "Trying to write IAX Config at ".$iax_conf."<BR><BR>";
+$sql = db_query("SELECT accountcode, secret, host, IFNULL(callerid,'') callerid, context, nat FROM astaccount where tech = 'IAX' and active = '".$active."'");
+
+   if (!$handle = fopen($iax_conf, 'w')) {
+         echo "Error, unable to open file";
+         exit;
+   }
+   
+   $content = "; Generated by AstBill-0.9.0.9
+; Created: ".$timecreated."
+; 	".$iax_conf."
+; 
+";
+   
+   
+   if (fwrite($handle, $content) === FALSE) {
+       echo "Permission denied on file";
+       exit;
+   }
+   fclose($handle);
+
+while ($get = db_fetch_object($sql)) {
+
+$content = "[".$get->accountcode."]
+type=friend
+username=".$get->accountcode."
+secret=".$get->secret."
+host=".$get->host."
+callerid=".$get->callerid."
+context=".$get->context."
+dtmfmode=rfc2833
+mailbox=".$get->accountcode."
+nat=".$get->nat."
+
+";
+
+
+   if (!$handle = fopen($iax_conf, 'a')) {
+         echo "Error, unable to open file";
+         exit;
+   }
+
+   if (fwrite($handle, $content) === FALSE) {
+       echo "Permission denied on file";
+       exit;
+   }
+fclose($handle);	
+}
+$output .= $iax_conf." was written succesfully<BR><BR>";
+
+
+// Write Voicemail config
+$output .= "Trying to write Voicemail Config at ".$voicemail_conf."<BR><BR>";
+$sql = db_query("SELECT accountcode, mailboxpin, mailboxemail, IFNULL(callerid,'') callerid, mail, name FROM astaccount a, {users} p where a.uid = p.uid and tech in (select actype from astactype where active = '1' ) and active = '". $active . "'");
+
+   if (!$handle = fopen($voicemail_conf, 'w')) {
+         echo "Error, unable to open file";
+         exit;
+   }
+   
+   $content = "; Generated by AstBill-0.9.0.9
+; Created: ".$timecreated."
+; 	".$voicemail_conf."
+;
+[default]
+";
+   
+   
+   if (fwrite($handle, $content) === FALSE) {
+       echo "Permission denied on file";
+       exit;
+   }
+   fclose($handle);
+
+while ($get = db_fetch_object($sql)) {
+
+$callerid = strip_tags($get->callerid);
+$callerid = trim($callerid);
+
+$mailboxemail = trim($get->mailboxemail);
+	
+$content = $get->accountcode." => ".$get->mailboxpin.",".$callerid.",".$mailboxemail."
+";
+
+
+   if (!$handle = fopen($voicemail_conf, 'a')) {
+         echo "Error, unable to open file";
+         exit;
+   }
+
+   if (fwrite($handle, $content) === FALSE) {
+       echo "Permission denied on file";
+       exit;
+   }
+
+fclose($handle);	
+}
+$output .= $voicemail_conf." was written succesfully<BR>";
+
+return $output;
+}
+
+
+function page_astsettings_manager_reload() { 
+	
+	#uses manager api to reload Asterisk
+	#asterisk server manager interface information
+	$user='astbillman';
+	$pass='ab87AstBtii3';
+	$host='127.0.0.1';
+	$port = '5038';
+
+	
+	// open a client connection
+	$fp = fsockopen ($host, $port, $errno, $errstr);
+
+	// if a handle is not returned
+	if (!$fp) {
+		die("Error: could not open socket connection\n");
+	} else {
+	
+		$welcome = fgets ($fp, 150);
+		$output .= $welcome."<BR>";
+		
+		fputs ($fp, "Action: login\r\nUsername: ".$user."\r\nSecret: ".$pass."\r\n\r\n");
+		$welcome = fgets ($fp, 150);
+		$output .= 'Sending login information...';
+		$output .= $welcome."<BR>";
+		
+		fputs ($fp, "Action: command\r\nCommand: reload\r\n\r\n\r\n");
+		$welcome = fgets ($fp, 150);
+		$output .= 'Sending reload command...';
+		$output .= $welcome."<BR>";
+		
+		fputs ($fp, "Action: Logoff\r\n\r\n");
+		$welcome = fgets ($fp, 150);
+		$output .= 'Logging off...';
+		$output .= $welcome."<BR>";
+		
+		fclose($fp);
+	}
+
+	return $output;
+}
+
+// END MANAGER
+
+
+
+
+// START ASTSYSTEM
+
+function page_astsettings_system($action) {
+	$op = $_POST['op'];
+	if (empty($op)) {
+		$op = $action;
+	}
+
+	$edit = $_POST['edit'];
+	$output = '';
+
+		switch ($op) {
+			case 'list':
+				$output = page_astsettings_system_list();
+				break;
+			case 'add':
+			case t('Save Settings'):
+				page_astsettings_system_update($edit);
+				break;
+		}
+		print theme('page', $output);
+
+}
+
+
+
+function page_astsettings_system_list() {
+	$output = '';
+
+	// declares the table header
+	$header = array();
+	$header[] = array('data' => t('Value'));
+	$header[] = array('data' => t('Comment'));
+
+	$categories = page_astsettings_system_get_categories();
+	$rows = array();
+	foreach ($categories as $key => $value) {
+		$sql = db_fetch_object(db_query("SELECT comment FROM astsystem WHERE name = '%s' and serverid = 'DEF'", $key));
+		$rows[] = array(
+				form_textfield('', 'value]['. $key, $value, 20, 100),
+				'&nbsp;&nbsp;'.$sql->comment);
+				//form_textfield('', 'comment]['. $key, $sql->comment, 80, 150));
+	}
+
+    $group .= form_textfield(t('Language'), 'language', $valuesql->language, 30, 100);
+// form_textfield('', 'value]['. $key, $value, 20, 100),
+//	$group .= form_select(t("Select Currency"), "currency", $valuesql->currency, $currency);
+//	$group .= form_textfield(t('Language'), 'language', $valuesql->language, 30, 100);
+
+	$output = theme('table', $header, $rows);
+	$output .= "<BR>";
+    $output .= form_textfield(t('<FONT SIZE=2>The default CountryPrefix to use when creating new accounts</FONT>'), 'countryprefix', variable_get("AstBill CountryPrefix",44), 30, 100);
+    $output .= form_textfield(t('<FONT SIZE=2>The default Rate Plan to use when creating new accounts</FONT>'), 'brand', variable_get("AstBill Brand",'default'), 30, 100);
+    $output .= form_textfield(t('<FONT SIZE=2>The default Channel type to use when creating new accounts (SIP or IAX)</FONT>'), 'tech', variable_get("AstBill Tech",'SIP'), 30, 100);
+
+	
+	$output .= form_submit(t('Save Settings'));
+	return form($output);
+}
+
+
+function page_astsettings_system_get_categories() {
+	global $user;
+	static $contact_dir_categories;
+	if ( !isset($contact_dir_categories) ) {
+		$result = db_query("SELECT name, value FROM astsystem where viewstatus = 'E' ORDER BY name");
+		while ($field = db_fetch_object($result)) {
+			$contact_dir_categories[$field->name] = $field->value;
+		}    
+	}
+	return $contact_dir_categories;
+}
+
+
+function page_astsettings_system_update($edit) {
+	$categories = page_astsettings_system_get_categories();
+	if ( $edit ) {
+		foreach ($categories as $key => $value) {
+			$systemvalue = $edit['value'][$key];
+			
+			if ( $systemvalue == '0' && $key ) {
+				db_query("UPDATE astsystem SET value = '0' WHERE name = '%s' and serverid = 'DEF'", $key);
+			} else {
+			
+			if ( empty($systemvalue) ) {
+				$systemvalue = $value;
+			}
+			
+			if ( $systemvalue && $key ) {
+				db_query("UPDATE astsystem SET value = '%s' WHERE name = '%s' and serverid = 'DEF'", $systemvalue, $key);
+			}
+			}
+			
+		}
+		
+		variable_set("AstBill CountryPrefix",$edit['countryprefix']);
+	    variable_set("AstBill Brand",$edit['brand']);
+	    variable_set("AstBill Tech",$edit['tech']);
+
+		drupal_set_message(t('The changes have been saved.'));
+	}
+	// Redirects the response to the list page
+	drupal_goto("astbilladm/settings/system");
+}
+
+// END ASTSYSTEM
+
+
+
+// START ANICLI
+
+function page_astsettings_anicli() {
+	global $user;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	
+	switch ($op) {
+		case t('Save'):
+			if (page_astsettings_anicli_validate($edit)) {
+				page_astsettings_anicli_save($edit);
+				drupal_goto("astbilladm/settings/anicli/");
+			} else {
+				drupal_goto("astbilladm/settings/anicli/edit/".arg(4));
+			}
+		break;
+		
+		case t('Create'):
+			if (page_astsettings_anicli_validate($edit)) {
+				page_astsettings_anicli_save($edit);
+				drupal_goto("astbilladm/settings/anicli/");
+			} else {
+				drupal_goto("astbilladm/settings/anicli/create/");
+			}
+		break;
+		
+		case t('Confirm'):
+			db_query("DELETE FROM astanicli WHERE accountcode = '%s'", arg(4));
+			drupal_set_message("AccountCode ".arg(4)." deleted from Ani CLI");
+			drupal_goto("astbilladm/settings/anicli/");
+		break;
+		
+		case t('Back'):
+			drupal_goto("astbilladm/settings/anicli");
+		default:
+		$output = page_astsettings_anicli_form($edit);
+	  }
+
+	  if (arg(3) == 'edit') {
+		  $title = t('Edit');
+		  _astsettings_printtheme_best($output, $title);
+	  } 
+	  
+	  if (arg(3) == 'delete') {
+		  $title = t('Delete');
+		  _astsettings_printtheme_best($output, $title);
+	  }
+	  
+	  if (arg(3) == 'create') {
+		  $title = t('Create');
+		  _astsettings_printtheme_best($output, $title);
+	  }
+	  
+	  if (empty($title)) {
+		  $title = t('View');
+		  _astsettings_anicli_printtheme_best($output, $title);
+	  }
+}
+
+  
+function page_astsettings_anicli_form($edit) {
+	global $db_prefix; 
+	$arg3 = arg(3);
+	$arg4 = arg(4);
+	
+	if (empty($arg3)) {
+		$maxline = 40;
+  
+  
+		$header = array(
+		array('data' => t('Accountcode'), 'field' => 'accountcode'),
+		array('data' => t('ANI/CLI'), 'field' => 'anicli'),
+		array('data' => t('Comment'), 'field' => 'comment'),
+		array('data' => t('TimeStamp'), 'field' => 'timestamp'),
+		array('data' => t('Operations'), 'colspan' => 2),
+		);
+
+		$sql = "SELECT accountcode, anicli, comment, timestamp FROM astanicli". tablesort_sql($header);
+		$result = pager_query($sql, $maxline);
+
+  
+		while ($item = db_fetch_object($result)) {
+			$rows[] = array(
+			$item->accountcode.'&nbsp;&nbsp;',
+			$item->anicli.'&nbsp;&nbsp;',
+			$item->comment.'&nbsp;&nbsp;',
+			$item->timestamp.'&nbsp;&nbsp;',
+			'<A HREF="'.url("astbilladm/settings/anicli/edit/".$item->accountcode).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+			'<A HREF="'.url("astbilladm/settings/anicli/delete/".$item->accountcode).'">Remove</A>'
+			);
+		}
+
+
+
+		$pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+		if (!empty($pager)) {
+			$rows[] = array(array('data' => $pager, 'colspan' => 8));
+		}
+
+		$output .= (count($rows) == 0) ? t('No Peers.') : theme('table', $header, $rows);
+  
+		return $output;
+	}
+	
+	if ($arg3 == 'edit' or $arg3 == 'create') {
+		
+		$sql = db_fetch_object(db_query("SELECT accountcode, anicli, comment FROM astanicli WHERE accountcode = '%s'", $arg4));
+		
+		$dropdowncheck = db_fetch_object(db_query("select value from astsystem where name = 'AccountDropDown'"));
+		
+		if ($dropdowncheck->value == 0) {
+			$output .= form_textfield(t('AccountCode'), 'accountcode', $sql->accountcode, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
+		} else {
+			
+			$accountsql = db_query("SELECT accountcode FROM astaccount WHERE uid <> 0 and db_prefix = '".$db_prefix."' and tech in (select actype from astactype where active = '1' )");
+			
+			$accountlist = array();
+			while ($item = db_fetch_object($accountsql)) {
+				if (!empty($item->accountcode) and is_numeric($item->accountcode)) {
+					$accountlist[$item->accountcode] = $item->accountcode;
+				}
+			}
+			
+			$output .= form_select(t("AccountCode"), "accountcode", $sql->accountcode, $accountlist);
+		}
+		
+		$output .= form_textfield(t('ANI/CLI'), 'anicli', $sql->anicli, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
+		$output .= form_textfield(t('Comment'), 'comment', $sql->comment, 30, 128, $description = NULL, $attributes = NULL, $required = FALSE);
+		
+		if ($arg3 == 'edit') {
+			$output .= form_submit(t('Save'));
+		}
+		
+		if ($arg3 == 'create') {
+			$output .= form_submit(t('Create'));
+		}
+		
+		$output .= form_submit(t('Back'));
+		$group = form($output);
+		return $group;	
+		
+	}
+	
+	if ($arg3 == 'delete') {
+		$output .= t('Are you sure you want to delete ANI/CLI for accountcode').' '.$arg4.'?';
+		$output .= '<BR>';
+		$output .= form_submit(t('Confirm'));
+		
+		$group = form($output);
+		return $group;	
+	}
+	
+	
+	
+}
+
+
+
+function page_astsettings_anicli_validate($edit) {
+	$myerror = 1;
+	$errors = array();
+
+	
+	if(empty($edit['accountcode'])){
+		$errors['accountcode'] = t('Please enter a Accountcode');
+		$myerror = 0;
+	}
+	
+	if (arg(3) == 'edit' and arg(4) == $edit['accountcode']) {
+		$myerror = 1;
+	} else {
+	
+		$sql = db_fetch_object(db_query("SELECT accountcode FROM astanicli WHERE accountcode = '%s'", $edit['accountcode']));
+	
+		if(!empty($sql->accountcode)) {
+			$errors['accountcode'] = t('Accountcode is already in table');
+			$myerror = 0;
+		}
+	}
+
+  	foreach ($errors as $name => $message) {
+		form_set_error($name, $message);
+	}
+	
+	return $myerror;
+}
+
+function page_astsettings_anicli_save($edit) {
+	global $user;
+  // Make sure you don't trust the URL to be safe! Always check for exploits.
+  //if (!is_numeric($alice) || !is_numeric($bob)) {
+//  if (!is_numeric($account)) {
+    // We will just show a standard "access denied" page in this case.
+//    drupal_access_denied();
+//    return;
+//  }
+
+	if (arg(3) == 'create') {
+		db_query("INSERT INTO astanicli SET accountcode = '%s', anicli = '%s', comment = '%s'", $edit['accountcode'], $edit['anicli'], $edit['comment']);
+
+		drupal_set_message(t('A new ANI/CLI has been created.'));
+	}
+
+
+	if (arg(3) == 'edit') {
+		db_query("UPDATE astanicli SET accountcode = '%s', anicli = '%s', comment = '%s' WHERE accountcode = '%s'", $edit['accountcode'], $edit['anicli'], $edit['comment'], arg(4));
+
+		drupal_set_message(t('The ANI/CLI has been updated.'));
+	}
+
+
+}
+
+  
+
+// END ANICLI
+
+
+
+// ##########################################################################################################
+
+function _astsettings_anicli_printtheme_best($page_content, $title) {
+	$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+	$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+
+	$output .= '<div class="nodecontent">';
+	$output .= '<B><FONT SIZE=1><A HREF="'.url('astbilladm/settings/anicli/create/').'">'.t('Create new').'</A></B><BR>';
+	print theme("page", $output);
+}
+
+function _astsettings_printtheme_best($page_content, $title) {
+	$output = '<div class="node "><table width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td class="corner_img_l">&#160;</td><td><h1 class="nodetitle">'.$title.'</h1></td><td class="corner_img_r">&#160;</td></tr></table></div>';
+
+	$output .= '<div class="nodecontent">' . $page_content . "</div>\n";
+	// $output .= '<div class="astentry">' . $page_content . "</div>\n";
+	print theme("page", $output);
+}
+
+
+// ##########################################################################################################

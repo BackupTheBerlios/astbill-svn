@@ -1,0 +1,5641 @@
+<?php
+
+/* $Id: updates.inc,v 1.100.2.5 2005/05/07 08:36:24 dries Exp $ */
+
+/* First Modified By Are Casilla for AstBill 6 Nov 2005
+   12 Nov 2005    AstBill-0.9.0.12    www.astbill.com
+   01 Jan 2007    AstBill-0.9.0.20    Are Casilla
+
+   Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+   Are Casilla        <areast  [Guess What?] astartelecom.com>
+
+   This is the file where the AstBill team apply database updates. It is not used by users.
+   This file are copied to update.astbill.com and used by astbillupdatesvn.php
+   When a new version of AstBill is released or when the Team needs it the contents of this file
+   is applied to 
+*/
+
+/**
+ * How to run: http://yoursite.com/astbillupdate.php
+ *
+ * All incremental database updates performed between AstBill releases.
+ */
+
+// Define the various updates in an array("date : comment" => "function");
+$sql_updates = array(
+  "2005-11-09: first update since AstBill-0.9.0.12 release" => "astbill_update_011",
+  "2005-11-10" => "astbill_update_012",
+  "2005-11-17a" => "astbill_update_013",
+  "2005-11-17b" => "astbill_update_014",
+  "2005-11-17c" => "astbill_update_015",
+  "2005-11-17d" => "astbill_update_016",
+  "2005-11-30" => "astbill_update_017",
+  "2005-11-30b" => "astbill_update_018",
+  "2005-11-30d" => "astbill_update_019",
+  "2005-11-30e" => "astbill_update_020",
+  "2005-11-30f" => "astbill_update_021",
+  "2005-12-01" => "astbill_update_022",
+  "2005-12-01b" => "astbill_update_023",
+  "2005-12-09: first update since AstBill-0.9.0.14 release" => "astbill_update_024",
+  "2005-12-15" => "astbill_update_025",
+  "2005-12-16" => "astbill_update_026",
+  "2005-12-17" => "astbill_update_027",
+  "2005-12-18" => "astbill_update_028",
+  "2005-12-19" => "astbill_update_029",
+  "2005-12-31" => "astbill_update_030",
+  "2006-01-02" => "astbill_update_031",
+  "2006-01-03" => "astbill_update_032",
+  "2006-01-06" => "astbill_update_033",
+  "2006-01-07" => "astbill_update_034",
+  "2006-02-14" => "astbill_update_035",
+  "2006-03-04" => "astbill_update_036",
+  "2006-03-12" => "astbill_update_037",
+  "2006-03-14" => "astbill_update_038",
+  "2006-03-15" => "astbill_update_039",
+  "2006-03-17" => "astbill_update_040",
+  "2006-03-18" => "astbill_update_041",
+  "2006-03-25" => "astbill_update_042",
+  "2006-03-26b" => "astbill_update_044",
+  "2006-03-28" => "astbill_update_045",
+  "2006-04-15" => "astbill_update_046",
+  "2006-04-20" => "astbill_update_047",
+  "2006-05-13" => "astbill_update_048",
+  "2006-12-31a" => "astbill_update_049",
+  "2006-12-31b" => "astbill_update_050",
+  "2006-12-31c" => "astbill_update_051",
+  "2006-12-31d" => "astbill_update_052",
+  "2006-12-31e" => "astbill_update_053",
+  "2007-01-01a" => "astbill_update_054",
+  "2007-01-01b" => "astbill_update_055",
+  "2007-01-01c" => "astbill_update_056",
+  "2007-01-11" => "astbill_update_057",
+  "2007-04-28" => "astbill_update_058",
+  "2007-04-29" => "astbill_update_059",
+  "2007-04-29b" => "astbill_update_060",
+  "2007-04-29c" => "astbill_update_061",
+  "2007-04-29d" => "astbill_update_062",
+);
+
+function update_sql($sql) {
+  $edit = $_POST["edit"];
+  $result = db_query($sql);
+  if ($result) {
+    return array('1', nl2br(htmlentities($sql)) ." ", "<div style=\"color: green;\">OK</div>\n");
+  }
+  else {
+    return array('0', nl2br(htmlentities($sql)) ." ", "<div style=\"color: red;\">FAILED</div>\n");
+  }
+}
+
+function astbill_update_011() {
+  $ret = array();
+  $ret[] = update_sql("DROP TABLE IF EXISTS astreseller");
+  $ret[] = update_sql("CREATE TABLE `astcompany` (
+  `accountcode` int(10) NOT NULL,
+  `company` varchar(128) NOT NULL default '',
+  `contactname` varchar(128) NOT NULL default '',
+  `address1` varchar(128) NOT NULL default '',
+  `address2` varchar(128) NOT NULL default '',
+  `zip` varchar(64) NOT NULL default '',
+  `city` varchar(128) NOT NULL default '',
+  `state` varchar(128) default NULL,
+  `country` varchar(128) NOT NULL,
+  `phone` varchar(128) NOT NULL default '',
+  `phone2` varchar(128) NOT NULL default '',
+  `fax` varchar(128) NOT NULL default '',
+  `status` tinyint(1) NOT NULL default '1',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`accountcode`),
+  KEY `company` (`company`),
+  KEY `contactname` (`contactname`)
+)");
+  return $ret;
+}
+
+function astbill_update_012() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `master` VARCHAR( 40 ) AFTER `accountcode` ,
+ADD `submaster` VARCHAR( 40 ) AFTER `master`");
+  return $ret;
+}
+
+function astbill_update_013() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `fullcontact` VARCHAR( 80 ) AFTER `canreinvite`");
+  return $ret;
+}
+
+function astbill_update_014() {
+  $ret = array();
+  $ret[] = update_sql("DROP VIEW IF EXISTS asv_sip");
+  $ret[] = update_sql("create view asv_sip as SELECT accountcode name,accountcode username,type,secret,host,callerid,context,dtmfmode,mailbox,nat,qualify,fromuser,authuser,fromdomain,fullcontact,insecure,canreinvite,disallow,allow,restrictid,ipaddr,port,regseconds FROM astaccount where (tech = 'SIP' or tech = 'IN-SIP') and active = 1");
+  return $ret;
+}
+
+function astbill_update_015() {
+  $ret = array();
+  $ret[] = update_sql("DROP VIEW IF EXISTS asv_iax");
+  $ret[] = update_sql("create view asv_iax as SELECT accountcode name,accountcode username,type,
+secret,notransfer,inkeys,auth,accountcode,amaflags,callerid,context,defaultip,
+host,language,dtmfmode,mailbox,deny,permit,qualify,disallow,allow,ipaddr,port,
+regseconds FROM astaccount where (tech = 'IAX' or tech = 'IN-IAX' ) and active = 1
+  ");
+  return $ret;
+}
+
+function astbill_update_016() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `callerid` VARCHAR( 80 ) AFTER `callednum`");
+  return $ret;
+}
+
+function astbill_update_017() {
+  $ret = array();
+  $ret[] = update_sql("CREATE TABLE `astcountryprefix` (`CountryPrefix` int(3) NOT NULL,`allow00` tinyint(1) 
+  unsigned NOT NULL default '1',`allow011` tinyint(1) unsigned NOT NULL default '1',`locallength` tinyint(2) 
+  unsigned NOT NULL default '0',`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP, PRIMARY KEY  (`CountryPrefix`))");
+  $ret[] = update_sql("INSERT INTO `astcountryprefix` (`CountryPrefix`, `allow00`, `allow011`, `locallength`, `timestamp`) VALUES (44, 1, 0, 0, '2005-11-30 10:40:34')");
+  $ret[] = update_sql("INSERT INTO `astcountryprefix` (`CountryPrefix`, `allow00`, `allow011`, `locallength`, `timestamp`) VALUES (47, 1, 1, 8, '2005-11-30 10:41:02')");
+  return $ret;
+}
+
+function astbill_update_018() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE `astroute` SET `trunk` = 'DEF' WHERE `id` =129 and trunk = 'BUZZBUD' LIMIT 1");
+  return $ret;
+}
+
+function astbill_update_019() {
+  $ret = array();
+  $ret[] = update_sql("select count(*) from astaccount");
+  return $ret;
+}
+
+function astbill_update_020() {
+  $ret = array();
+  $ret[] = update_sql("
+CREATE TABLE astanicli (
+`accountcode` varchar(40) NOT NULL,
+`anicli` varchar(40) NOT NULL,
+`comment` varchar(255) default NULL,
+timestamp timestamp NOT NULL default CURRENT_TIMESTAMP,
+PRIMARY KEY (`accountcode`,`anicli`)
+)");
+  return $ret;
+}
+
+function astbill_update_021() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `master` VARCHAR( 40 ) AFTER `accountcode` ,ADD `submaster` VARCHAR( 40 ) AFTER `master`");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `amaflags` VARCHAR( 80 ) AFTER `callerid`");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX ( `accountcode` )");
+  return $ret;
+}
+
+function astbill_update_022() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astsystem` ADD `viewstatus` VARCHAR( 2 ) DEFAULT 'N' NOT NULL AFTER `comment`");
+
+  $ret[] = update_sql("INSERT INTO `astsystem` ( `serverid` , `name` , `value` , `comment` , `viewstatus` , `timestamp` )
+VALUES ('DEF', 'default-tech', 'IAX', 'The default Channel type to use when creating new accounts', 'E', NOW( )
+), ('DEF', 'default-brand', 'default', 'The default brand to use when creating new accounts', 'N', NOW( ))");
+
+  $ret[] = update_sql("update astsystem set viewstatus = 'E'");
+  $ret[] = update_sql("delete from astsystem WHERE `serverid`= 'DEF' AND `name` = 'AstBill-DB-Version' LIMIT 1 ");
+  $ret[] = update_sql("UPDATE `astsystem` SET `value` = 'AstBill-0.9.0.14', `viewstatus` = 'D' WHERE `serverid` = 'DEF' and `name` = 'AstBill-Version' LIMIT 1 ");
+  $ret[] = update_sql("UPDATE `astsystem` SET `viewstatus` = 'D' WHERE `serverid` = 'DEF' and `name` = 'AstBill-DB-Updated' LIMIT 1 ");
+  $ret[] = update_sql("UPDATE `astsystem` SET `value` = Now(), `viewstatus` = 'D' WHERE `serverid` = 'DEF' and `name` = 'AstBill-GUI-Updated' LIMIT 1 ");
+  $ret[] = update_sql("UPDATE `astsystem` SET `viewstatus` = 'N' WHERE `serverid` = 'DEF' and `name` = 'GlobalDialPrefix' LIMIT 1 ");
+  return $ret;
+}
+
+function astbill_update_023() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `extension` VARCHAR( 80 ) AFTER `price`");
+  return $ret;
+}
+
+function astbill_update_024() {
+  $ret = array();
+  $ret[] = update_sql("DROP VIEW IF EXISTS asvaccount2");
+  $ret[] = update_sql("create view asvaccount2 as
+SELECT asvaccount.accountcode, db_prefix, uid, tech, secret,active,usagecount, LEFT(accountname,15) as accountname,  round((sumprice/100),2) as sumprice, 
+sumpaid, sumpaid - round((sumprice/100),2) as balance, creditlimit,startingcredit, countcalls FROM asvaccount, astaccount
+where asvaccount.accountcode = astaccount.accountcode");
+
+ $ret[] = update_sql("ALTER TABLE `astuser` ADD `db_prefix` VARCHAR( 40 ) NOT NULL default 'pbx_' FIRST");
+ $ret[] = update_sql("ALTER TABLE `astuser` DROP PRIMARY KEY ,ADD PRIMARY KEY ( `db_prefix` , `uid` )");
+ $ret[] = update_sql("DROP VIEW IF EXISTS asv_friend");
+
+ $ret[] = update_sql("create view asv_friend as SELECT uid,db_prefix,astaccount.serverid,astaccount.accountcode,astaccount.username,accountname publicnumber,
+astaccount.tech,type,secret,forwardto,fromuser,authuser,fromdomain,nat,qualify,host,port,callerid,context,dtmfmode,
+insecure,canreinvite,disallow,allow,restrictid,astaccount.comment,active,date_created,
+timestamp FROM astaccount where tech like 'IN%'");
+
+  return $ret;
+}
+
+function astbill_update_025() {
+  $ret = array();
+  $ret[] = update_sql("delete from astsystem WHERE `serverid`= 'DEF' AND `name` = 'CountryPrefix' LIMIT 1 ");
+  $ret[] = update_sql("delete from astsystem WHERE `serverid`= 'DEF' AND `name` = 'default-tech' LIMIT 1 ");
+  $ret[] = update_sql("delete from astsystem WHERE `serverid`= 'DEF' AND `name` = 'default-brand' LIMIT 1 ");
+  return $ret;
+}
+
+function astbill_update_026() {
+  $ret = array();
+  $ret[] = update_sql("CREATE TABLE `astplans` (`name` varchar(40) NOT NULL default '',`currency` varchar(3) NOT NULL default 'USD',
+`language` varchar(10) default NULL,`publishednum` varchar(40) default NULL,`did` varchar(40) default NULL,
+`markup` decimal(10,2) NOT NULL default '0.00',`billincrement` tinyint(8) NOT NULL default '1',`connectcharge` decimal(10,2) NOT NULL default '0.00',
+`status` tinyint(1) NOT NULL default '1',PRIMARY KEY  (`name`))");
+
+  $ret[] = update_sql("INSERT INTO `astplans` SELECT * from astbrand");
+  $ret[] = update_sql("drop table astbrand");
+  $ret[] = update_sql("delete from pbx_cache");
+  return $ret;
+}
+function astbill_update_027() {
+  $ret = array();
+  $ret[] = update_sql("INSERT INTO `astsystem` ( `serverid` , `name` , `value` , `comment` , `viewstatus`)
+VALUES ('DEF','def-password-length',6,'The Password Length to use when creating new accounts','E')");
+
+  $ret[] = update_sql("INSERT INTO `astsystem` ( `serverid` , `name` , `value` , `comment` , `viewstatus`)
+VALUES ('DEF','def-voicemail-pin-length',4,'The Voicemail PIN/Password Length to use when creating new accounts','E')");
+
+ $ret[] = update_sql("INSERT INTO `astemailtext` (`EmailText`, `Subject`, `BodyText`, `BodyHTML`, `SenderEmail`, `bcc`, `Pic1`, `Pic2`, `Pic3`, `Date_Created`) VALUES ('pbx_ASTARREG', 'You VOIP Telephone Account is Activated', 'Thank you for registering at AstBill.com. You may now use your soft phone to make calls.\r\n\r\nYour AstBill VOIP Number is: %username%.\r\n\r\nYou can call your friends using AstBill for free. Just dial their AstBill Telephone number.\r\n\r\nPlease configure your soft phone using the following information:\r\n\r\nNetwork Name: AstBill\r\nNetwork Type: IAX\r\nPlease select external network when the soft phone wizard ask for network.\r\n\r\nServer: iax.astbill.com\r\nUsername: %username%\r\nPassword: %password%\r\n\r\nAfter configuring the soft phone you may wish to dial the following to test the system.\r\n\r\n	500 Speaking Clock\r\n	502 Echo Test\r\n	501 Monkey Test\r\n\r\nHappy Talking ...\r\n\r\n\r\nAstBill.com \r\nCustomer support', NULL, 'noreply@astbill.com', '', NULL, NULL, NULL, NULL)");
+
+  return $ret;
+}
+
+function astbill_update_028() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `forcecallerid` VARCHAR(80) default NULL AFTER `callerid`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `hidecallerid` tinyint(1) NOT NULL default '1' AFTER `forcecallerid`");
+  return $ret;
+}
+
+function astbill_update_029() {
+  $ret = array();
+  $ret[] = update_sql("CREATE TABLE `astacgroup` (
+  `gtype` varchar(40) NOT NULL,
+  `gname` varchar(255) NOT NULL default '',
+  `mastergroup` varchar(40) NOT NULL default 'DID',
+  `active` tinyint(1) NOT NULL default '1',
+  `comment` varchar(255) default NULL,
+  PRIMARY KEY  (`gtype`)
+);");
+
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `acgroup` VARCHAR(40) default NULL AFTER `tech`");
+  $ret[] = update_sql("update astsystem set value = '/topup/'  where name = 'TopUpURL' and serverid = 'DEF'");
+
+  return $ret;
+}
+
+function astbill_update_030() {
+  $ret = array();
+  $ret[] = update_sql("DROP VIEW IF EXISTS `asvcall`");
+  $ret[] = update_sql("create view asvcall as
+SELECT astcdr.uniqueid, astcdr.accountcode, astcdr.callednum, astuser.uid, astuser.brand, astuser.CountryPrefix, astplans.markup, astplans.billincrement
+FROM astcdr, astaccount, astuser, astplans
+WHERE astcdr.accountcode=astaccount.accountcode and astaccount.uid=astuser.uid and astuser.brand=astplans.name");
+
+  $ret[] = update_sql("DROP VIEW IF EXISTS asvprice_uk");
+  $ret[] = update_sql("create view asvprice_uk as
+SELECT astpricelist.name, round((price / 100),4) as price, concat(astcurrency.currencysymbol,' ',
+round((price / 100),4)) as pricecur, astplans.name brand, astcurrency.currencysymbol cur,astcurrency.currency cur2
+FROM (astplans INNER JOIN astpricelist ON astplans.name = astpricelist.brand)
+INNER JOIN astcurrency ON astplans.currency = astcurrency.currency
+where pattern like '44%'
+GROUP BY astpricelist.name, astplans.name, astcurrency.currencysymbol
+ORDER BY weight, name");
+
+  $ret[] = update_sql("DROP VIEW IF EXISTS `asvprice_uk_all`");
+  $ret[] = update_sql("create view asvprice_uk_all as
+SELECT pattern, astpricelist.name, round((price / 100),4) as price, concat(astcurrency.currencysymbol,
+round((price / 100),4)) as pricecur, astplans.name brand, astcurrency.currencysymbol cur,astcurrency.currency cur2
+FROM (astplans INNER JOIN astpricelist ON astplans.name = astpricelist.brand)
+INNER JOIN astcurrency ON astplans.currency = astcurrency.currency
+where pattern like '44%'
+ORDER BY brand, pattern");
+
+  $ret[] = update_sql("DROP VIEW IF EXISTS `asvprice_usa`");
+  $ret[] = update_sql("create view asvprice_usa as
+SELECT pattern, astpricelist.name, round((price / 100),4) as price, concat(astcurrency.currencysymbol,
+round((price / 100),4)) as pricecur, astplans.name brand, astcurrency.currencysymbol cur,astcurrency.currency cur2
+FROM (astplans INNER JOIN astpricelist ON astplans.name = astpricelist.brand)
+INNER JOIN astcurrency ON astplans.currency = astcurrency.currency
+where astpricelist.name like 'USA%'
+ORDER BY weight, name");
+
+  $ret[] = update_sql("DROP VIEW IF EXISTS asvprice");
+  $ret[] = update_sql("create view asvprice as
+SELECT pattern, astpricelist.name, round((price / 100),4) as price, concat(astcurrency.currencysymbol,
+round((price / 100),4)) as pricecur, astplans.name brand, astcurrency.currencysymbol cur,astcurrency.currency cur2
+FROM (astplans INNER JOIN astpricelist ON astplans.name = astpricelist.brand)
+INNER JOIN astcurrency ON astplans.currency = astcurrency.currency
+ORDER BY brand, pattern");
+
+  $ret[] = update_sql("DROP VIEW IF EXISTS asvprice_group");
+  $ret[] = update_sql("create view asvprice_group as
+SELECT astpricelist.name, round((price / 100),4) as price, concat(astcurrency.currencysymbol,
+round((price / 100),4)) as pricecur, astplans.name brand, astcurrency.currencysymbol cur,astcurrency.currency cur2
+FROM (astplans INNER JOIN astpricelist ON astplans.name = astpricelist.brand)
+INNER JOIN astcurrency ON astplans.currency = astcurrency.currency
+where brand = 'default'
+GROUP BY astpricelist.name, astplans.name, astcurrency.currencysymbol
+ORDER BY brand, astpricelist.name;");
+
+  
+  $ret[] = update_sql("DROP VIEW IF EXISTS asvpricecountry");
+  $ret[] = update_sql("create view asvpricecountry as
+SELECT DISTINCT MIN(astpricelist.pattern) AS countrycode, astpricelist.name
+FROM astpricelist GROUP BY astpricelist.name order by astpricelist.name");
+
+  $ret[] = update_sql("DROP VIEW IF EXISTS asvpricecountry2");
+  $ret[] = update_sql("create view asvpricecountry2 as
+SELECT DISTINCT MIN(astpricelist.pattern) AS countrycode
+FROM astpricelist GROUP BY astpricelist.name order by astpricelist.name");
+
+  return $ret;
+}
+
+function astbill_update_031() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astcompany` ADD `firstname` VARCHAR(128) default NULL AFTER `company`");
+  $ret[] = update_sql("ALTER TABLE `astcompany` CHANGE `contactname` `lastname` VARCHAR( 128 ) NULL");
+  return $ret;
+}
+function astbill_update_032() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `company` varchar(128) NULL default NULL AFTER `lastaccount`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `firstname` varchar(128) default NULL AFTER `company`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `lastname` varchar(128) default NULL AFTER `firstname`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `address1` varchar(128) default NULL AFTER `lastname`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `address2` varchar(128) default NULL AFTER `address1`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `zip` varchar(64) NULL default NULL AFTER `address2`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `city` varchar(128) NULL default NULL AFTER `zip`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `state` varchar(128) NULL default NULL AFTER `city`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `country` varchar(128) NULL default NULL AFTER `state`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `phone` varchar(128) NULL default NULL AFTER `country`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `phone2` varchar(128) NULL default NULL AFTER `phone`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `mobile` varchar(128) NULL default NULL AFTER `phone2`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `fax` varchar(128) NULL default NULL AFTER `mobile`");
+
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `birthdate` date NULL default NULL AFTER `fax`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `valuecode` varchar(128) NULL default NULL AFTER `birthdate`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `birthdate2` varchar(128) NULL default NULL AFTER `birthdate`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `ordercode` varchar(128) NULL default NULL AFTER `valuecode`");
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `ipaddr` varchar(128) NULL default NULL AFTER `comment`");
+  return $ret;
+}
+
+function astbill_update_033() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astaccount` CHANGE `restrictcid` `restrictcid` CHAR( 6 ) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL");
+
+  $ret[] = update_sql("ALTER TABLE `asthardwareid` ADD `mac1` varchar(6) NULL default NULL AFTER `hardware`");
+  $ret[] = update_sql("ALTER TABLE `asthardwareid` ADD `mac2` varchar(6) NULL default NULL AFTER `mac1`");
+  $ret[] = update_sql("ALTER TABLE `asthardwareid` ADD `mac3` varchar(6) NULL default NULL AFTER `mac2`");
+
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac4` varchar(6) NULL default NULL AFTER `mac3`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac5` varchar(6) NULL default NULL AFTER `mac4`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac6` varchar(6) NULL default NULL AFTER `mac5`");
+
+  $ret[] = update_sql("ALTER TABLE `asthardware` DROP `uid`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` DROP `name`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` DROP `mac_address`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` DROP `secret`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` DROP `hardwaretype`");
+
+  return $ret;
+}
+
+function astbill_update_034() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `invid` `invoiceno` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `db_prefix` varchar(40) NOT NULL AFTER `invoiceno`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `invoice_date` datetime NOT NULL AFTER `uid`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `due_date` datetime NOT NULL AFTER `invoice_date`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD INDEX `inv_db_prefix` ( `db_prefix` , `uid` , `invoiceno` )");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `freight` decimal(10,2) NOT NULL default 0 AFTER `currency`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `adminfee` decimal(10,2) NOT NULL default 0 AFTER `freight`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `invoicefee` decimal(10,2) NOT NULL default 0 AFTER `adminfee`");
+
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `phoneno` varchar(40) NULL AFTER `lineno`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `ptype` varchar(40) NULL AFTER `phoneno`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `productcode` varchar(40) NULL AFTER `ptype`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` CHANGE `title` `product` varchar(256) NULL");
+
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` CHANGE `invid` `invoiceno` INT( 11 ) UNSIGNED NOT NULL");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` CHANGE `price` `price` decimal(10,4) NOT NULL default 0");
+
+  $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `invoice_date` `invoice_date` date NOT NULL");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `due_date` `due_date` date NOT NULL");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `kid` varchar(128) NULL AFTER `due_date`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `period` varchar(128) NULL AFTER `kid`");
+
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `sumexvat` decimal(10,2) NOT NULL default 0 AFTER `workflow`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `vat` decimal(10,2) NOT NULL default 0 AFTER `sumexvat`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `fromdate` date NULL AFTER `phoneno`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `todate` date NULL AFTER `fromdate`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `minutes` decimal(10,4) NOT NULL default 0 AFTER `qty`");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `amount` decimal(10,2) NOT NULL default 0 AFTER `minutes`");
+
+  $ret[] = update_sql("ALTER TABLE `astcountrycode` ADD `db_prefix` varchar(40) NOT NULL default 'pbx_' FIRST");
+  $ret[] = update_sql("ALTER TABLE `astcountrycode` DROP PRIMARY KEY , ADD PRIMARY KEY ( `db_prefix` , `countrycode` )");
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `ccn` varchar(40) NULL AFTER `pattern`");
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `txtcomment` varchar(256) NULL");
+
+  $ret[] = update_sql("ALTER TABLE `astuser` ADD `companyno` varchar(128) NULL AFTER `birthdate2`");
+
+  return $ret;
+}
+
+function astbill_update_035() {
+  $ret = array();
+
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac4` varchar(6) NULL default NULL AFTER `serialnumber`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac5` varchar(6) NULL default NULL AFTER `mac4`");
+  $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac6` varchar(6) NULL default NULL AFTER `mac5`");
+
+  return $ret;
+}
+
+
+function astbill_update_036() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `timeperiod` varchar(40) NULL default NULL AFTER `pattern`");
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `netvendor` varchar(128) NULL default NULL AFTER `timeperiod`");
+
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `priceevening` decimal(10,4) NOT NULL default 0 AFTER `price`");
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `priceweekend` decimal(10,4) NOT NULL default 0 AFTER `priceevening`");
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `pricereseller` decimal(10,4) NOT NULL default 0 AFTER `priceweekend`");
+
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `pricemobile` decimal(10,4) NOT NULL default 0 AFTER `pricereseller`");
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `ismobile` varchar(2) NULL default NULL AFTER `pricemobile`");
+  return $ret;
+}
+
+function astbill_update_037() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `host` varchar(128) NULL default NULL AFTER `topup_url`");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `iaxport` varchar(128) NULL default NULL AFTER `host`");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `sshport` varchar(128) NULL default NULL AFTER `iaxport`");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `lanhost` varchar(128) NULL default NULL AFTER `sshport`");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `laniaxport` varchar(128) NULL default NULL AFTER `lanhost`");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `lansshport` varchar(128) NULL default NULL AFTER `laniaxport`");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `accountcode` varchar(128) NULL default NULL AFTER `lansshport`");
+  return $ret;
+}
+
+function astbill_update_038() {
+  $ret = array();
+    $ret[] = update_sql("INSERT INTO `astsystem` ( `serverid` , `name` , `value` , `comment` , `viewstatus`)
+VALUES ('DEF','Dial-Timeout-Parameter','|45|tTL(','The Dial Timeout and Dial Parameters','E')");
+    $ret[] = update_sql("INSERT INTO `astsystem` ( `serverid` , `name` , `value` , `comment` , `viewstatus`)
+VALUES ('DEF','DialLocal-Timeout-Parameter','|30|tTL(','The Dial Timeout and Dial Parameters','E')");
+
+  
+  return $ret;
+}
+
+function astbill_update_039() {
+  $ret = array();
+    $ret[] = update_sql("DROP VIEW IF EXISTS asvaccount2");
+    $ret[] = update_sql("CREATE VIEW `asvaccount2` AS select `asvaccount`.`accountcode` AS `accountcode`,
+`astaccount`.`db_prefix` AS `db_prefix`,`astaccount`.`uid` AS `uid`,`astaccount`.`tech` AS `tech`,
+forcecallerid, `astaccount`.`secret` AS `secret`,`astaccount`.`active` AS `active`,`astaccount`.
+`usagecount` AS `usagecount`,left(`astaccount`.`accountname`,15) AS `accountname`,
+round((`asvaccount`.`sumprice` / 100),2) AS `sumprice`,`asvaccount`.`sumpaid` AS `sumpaid`,
+(`asvaccount`.`sumpaid` - round((`asvaccount`.`sumprice` / 100),2)) AS `balance`,
+`astaccount`.`creditlimit` AS `creditlimit`,`astaccount`.`startingcredit` AS `startingcredit`,
+`asvaccount`.`countcalls` AS `countcalls` from (`asvaccount` join `astaccount`) 
+where (`asvaccount`.`accountcode` = `astaccount`.`accountcode`)");
+  
+  return $ret;
+}
+
+function astbill_update_040() {
+  $ret = array();
+    $ret[] = update_sql("CREATE TABLE `astacname` (
+  `accountcode` varchar(40) NOT NULL,
+  `gtype` varchar(40) default NULL,
+  `name` varchar(128) default NULL,
+  `forcecallerid` varchar(80) default NULL,
+  `location` varchar(128) default NULL,
+  `ipaddress` varchar(128) default NULL,
+  `sipport` varchar(40) default NULL,
+  `rtpport` varchar(40) default NULL,
+  `description` varchar(256) default NULL,
+  `rtcp` varchar(40) default NULL,
+
+  `equipment` varchar(256) default NULL,
+  `networkpoint` varchar(256) default NULL,
+  `vlan` varchar(256) default NULL,
+  `macaddr` varchar(256) default NULL,
+
+
+  `dateinstalled` varchar(40) default NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`accountcode`)
+);");
+
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `ipaddress` varchar(128) NULL default NULL AFTER `comment`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `subnet` varchar(128) NULL default NULL AFTER `ipaddress`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `port` varchar(128) NULL default NULL AFTER `subnet`");
+    
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `sip2` varchar(128) NULL default NULL AFTER `port`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `ipaddress2` varchar(128) NULL default NULL AFTER `sip2`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `subnet2` varchar(128) NULL default NULL AFTER `ipaddress2`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `port2` varchar(128) NULL default NULL AFTER `subnet2`");
+
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `sip3` varchar(128) NULL default NULL AFTER `port2`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `ipaddress3` varchar(128) NULL default NULL AFTER `sip3`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `subnet3` varchar(128) NULL default NULL AFTER `ipaddress3`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `port3` varchar(128) NULL default NULL AFTER `subnet3`");
+
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `sip4` varchar(128) NULL default NULL AFTER `port3`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `ipaddress4` varchar(128) NULL default NULL AFTER `sip4`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `subnet4` varchar(128) NULL default NULL AFTER `ipaddress4`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `port4` varchar(128) NULL default NULL AFTER `subnet4`");
+
+    $ret[] = update_sql("ALTER TABLE `astaccount` ADD `register` tinyint(1) NOT NULL default '0' AFTER `ccserialno`");
+    $ret[] = update_sql("ALTER TABLE `astaccount` ADD INDEX `tech_account` ( `tech` , `accountcode` )");
+ 
+  return $ret;
+}
+
+function astbill_update_041() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `call-limit` varchar(4) NULL default NULL AFTER `canreinvite`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `trustrpid` varchar(4) NULL default NULL AFTER `hidecallerid`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `sendrpid` varchar(4) NULL default NULL AFTER `trustrpid`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `setvar` varchar(128) NULL default NULL AFTER `rtptimeout`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `notifyringing` varchar(4) NULL default NULL AFTER `setvar`");
+
+  $ret[] = update_sql("DROP VIEW IF EXISTS `asv_sip`");
+  $ret[] = update_sql("CREATE VIEW `asv_sip` AS select `astaccount`.`accountcode` AS `name`,`astaccount`.`accountcode` AS `username`,
+`astaccount`.`type` AS `type`,`astaccount`.`secret` AS `secret`,`astaccount`.`host` AS `host`,
+`astaccount`.`callerid` AS `callerid`,`astaccount`.`context` AS `context`,`astaccount`.`dtmfmode` AS `dtmfmode`,
+`astaccount`.`mailbox` AS `mailbox`,`astaccount`.`nat` AS `nat`,`astaccount`.`qualify` AS `qualify`,
+`astaccount`.`fromuser` AS `fromuser`,`astaccount`.`authuser` AS `authuser`,`astaccount`.`fromdomain` AS `fromdomain`,
+`astaccount`.`fullcontact` AS `fullcontact`,`astaccount`.`insecure` AS `insecure`,`astaccount`.
+`canreinvite` AS `canreinvite`,`astaccount`.`disallow` AS `disallow`,`astaccount`.`allow` AS `allow`,
+`astaccount`.`restrictid` AS `restrictid`,`astaccount`.`ipaddr` AS `ipaddr`,`astaccount`.`port` AS `port`,
+`astaccount`.`regseconds` AS `regseconds`, `call-limit`, `trustrpid`, `sendrpid`, `setvar`, `notifyringing` from `astaccount` 
+where (((`astaccount`.`tech` = _latin1'SIP') or (`astaccount`.`tech` = _latin1'IN-SIP')) and 
+(`astaccount`.`active` = 1))");
+
+
+  return $ret;
+}
+
+function astbill_update_042() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `tenantid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `mastergroup`");
+  $ret[] = update_sql("ALTER TABLE `astacgroup` DROP PRIMARY KEY");
+  $ret[] = update_sql("ALTER TABLE `astacgroup` ADD PRIMARY KEY ( `gtype` , `mastergroup` , `tenantid` )");
+
+  $ret[] = update_sql("ALTER TABLE `astlog` ADD `uid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `message`");
+  $ret[] = update_sql("ALTER TABLE `astlog` ADD `accountcode` varchar(40) DEFAULT NULL NULL AFTER `uid`");
+  $ret[] = update_sql("ALTER TABLE `astlog` ADD `db_prefix` varchar(40) DEFAULT NULL NULL AFTER `uid`");
+
+  return $ret;
+}
+
+ function astbill_update_044() {
+  $ret = array();
+  $ret[] = update_sql("CREATE TABLE `astlogsms` (
+  `smsid` int(10) NOT NULL auto_increment,
+  `uid` int(10) NOT NULL default '0',
+  `db_prefix` varchar(40) NOT NULL default 'pbx_',
+  `accountcode` varchar(40) default NULL,
+  `txrx` varchar(40) default NULL,
+  `fromnr` varchar(128) default NULL,
+  `destination` varchar(128) default NULL,
+  `product` varchar(128) default NULL,
+  `status` varchar(128) default NULL,
+  `callback` varchar(128) default NULL,
+  `cliid` varchar(128) default NULL,
+  `apimsgid` varchar(128) NULL default NULL,
+  `ourcost` decimal(10,2) NOT NULL default '0',
+  `salesprice` decimal(10,2) NOT NULL default '0',
+  `messagedata` varchar(256) default NULL,
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `date_scheduled` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`smsid`)
+) AUTO_INCREMENT= 20000 ENGINE=InnoDB DEFAULT CHARSET=utf8");
+
+  return $ret;
+}
+
+function astbill_update_045() {
+  $ret = array();
+  $ret[] = update_sql("CREATE TABLE `astlogemail` (
+  `emailid` int(10) NOT NULL auto_increment,
+  `uid` int(10) NOT NULL default '0',
+  `db_prefix` varchar(40) default 'cbk_',
+  `accountcode` varchar(40) default NULL,
+  `txrx` varchar(40) default 'TX',
+  `fromemail` varchar(128) default NULL,
+  `toemail` varchar(128) default NULL,
+  `subject` varchar(128) default NULL,
+  `status` varchar(128) default NULL,
+  `messagedata` varchar(1024),
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `date_scheduled` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`emailid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+
+  return $ret;
+}
+function astbill_update_046() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astlogsms` CHANGE `messagedata` `messagedata` VARCHAR( 1024 ) NULL default NULL");
+  $ret[] = update_sql("ALTER TABLE `astlogsms` ADD `pdu` VARCHAR( 1024 ) NULL default NULL after messagedata");
+  $ret[] = update_sql("DROP TABLE astcompany");
+  
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `anitypenumber` tinyint(8) DEFAULT '2' NOT NULL AFTER `type`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `invfooter` VARCHAR( 1024 ) AFTER `period` , ADD `remarks` VARCHAR( 1024 ) NOT NULL AFTER `invfooter`");
+  $ret[] = update_sql("update `astsystem` set comment = 'Local Dial Timeout and Dial Parameters' where serverid = 'DEF' and name = 'DialLocal-Timeout-Parameter'");
+
+/* extid = If you purchase address lists from extern Provider. 
+This records have an id. This allows you to trace where the partner orginated*/
+/* extsource = The Source of this List - ListName*/
+
+$ret[] = update_sql("CREATE TABLE `astpartner` (
+  `pid` int(10) NOT NULL auto_increment,
+  `prospectid` int(10) NOT NULL default '0',
+  `uid` int(10) NOT NULL default '1',
+  `memberof` int(10) NOT NULL default '0',
+  `extid` varchar(128) default NULL,
+  `extsource` varchar(128) default NULL,
+  `db_prefix` varchar(40) NOT NULL default 'pbx_',
+  `iscustomer` tinyint(4) NOT NULL default '0',
+  `isvendor` tinyint(4) NOT NULL default '0',
+  `isprospect` tinyint(4) NOT NULL default '0',
+  `company` varchar(128) NOT NULL default '',
+  `firstname` varchar(128) default NULL,
+  `lastname` varchar(128) default NULL,
+  `contactperson` varchar(128) default NULL,
+  `sosialsecurityno` varchar(128) NOT NULL default '',
+  `birthdate` date NULL default NULL,
+  `address1` varchar(128) NOT NULL default '',
+  `address2` varchar(128) NOT NULL default '',
+  `zip` varchar(64) NOT NULL default '',
+  `city` varchar(128) NOT NULL default '',
+  `state` varchar(128) default NULL,
+  `countrycode` int(6) NOT NULL DEFAULT '0',
+  `mobile` varchar(128) NOT NULL default '',
+  `phonehome` varchar(128) NOT NULL default '',
+  `phonework` varchar(128) NOT NULL default '',
+  `fax` varchar(128) NOT NULL default '',
+  `email` varchar(128) NOT NULL default '',
+  `email2` varchar(128) NOT NULL default '',
+  `email3` varchar(128) NOT NULL default '',
+  `email4` varchar(128) NOT NULL default '',
+  `website` varchar(128) NOT NULL default '',
+  `status` varchar(128) NOT NULL default '',
+  `customerstatus` varchar(128) NOT NULL default '',
+  `subscriptiontype` varchar(128) NOT NULL default '',
+  `industry` varchar(128) NOT NULL default '',
+  `partnertype` varchar(128) NOT NULL default '',
+  `porteringsno` varchar(128) NOT NULL default '',
+  `lateporting` varchar(128) default NULL,
+  `newno` varchar(128) NOT NULL default '',
+  `voicemail` varchar(128) NOT NULL default '',
+  `leadsource` varchar(128) NOT NULL default '',
+  `date_followup` datetime NOT NULL default '0000-00-00 00:00:00',
+  `comment` varchar(1024) NOT NULL default '',
+  `ref` varchar(1024) default NULL,
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`pid`),
+  KEY `company` (`company`),
+  KEY `contactname` (`lastname`),
+  KEY `contactperson` (`contactperson`)
+) AUTO_INCREMENT=130001 ENGINE=InnoDB DEFAULT CHARSET=utf8");
+
+  $ret[] = update_sql("INSERT INTO astpartner ( pid, company, contactperson, address1, address2, zip, city, state, country, mobile, phonework, fax, status, date_created, timestamp )
+SELECT asttenant.tid, asttenant.company, asttenant.contactname, asttenant.address1, asttenant.address2, asttenant.zip, asttenant.city, asttenant.state, asttenant.country, asttenant.phone, asttenant.phone2, asttenant.fax, asttenant.status, asttenant.date_created, asttenant.timestamp
+FROM asttenant");
+    
+  return $ret;
+}
+
+function astbill_update_047() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE `astlogsms` ADD `pid` int(10) NOT NULL default '0' AFTER `uid`");
+  $ret[] = update_sql("ALTER TABLE `astprospect` ADD `date_to_vendor` datetime NULL default NULL AFTER `date_followup`");
+  $ret[] = update_sql("ALTER TABLE `astpartner` ADD `date_to_vendor` datetime NULL default NULL AFTER `date_followup`");
+  $ret[] = update_sql("CREATE TABLE `astacdid` (
+  `countryprefix` int(4) NOT NULL default '0',
+  `did` varchar(40) NOT NULL,
+  `db_prefix` varchar(40) NOT NULL default 'pbx_',
+  `uid` int(10) NOT NULL default '1',
+  `master` varchar(40) default NULL,
+  `submaster` varchar(40) default NULL,
+  `acgroup` varchar(40) default NULL,
+  `forwardto` varchar(255) default NULL,
+  `serverid` varchar(40) default NULL,
+  `active` tinyint(1) NOT NULL default '1',
+  `usagecount` int(4) NOT NULL default '0',
+  `portindate` datetime NULL default NULL,
+  `portoutdate` datetime NULL default NULL,
+  `batchno` varchar(128) NULL default NULL,
+  `remarks` varchar(1024) NULL default NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`countryprefix`,`did`)  ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+
+  $ret[] = update_sql("CREATE TABLE `astparcontact` (
+  `coid` int(10) NOT NULL auto_increment,
+  `pid` int(10) NOT NULL default '0',
+  `uid` int(10) NOT NULL default '1',
+  `leadsource` varchar(128) default NULL,
+  `memberof` int(10) NOT NULL default '0',
+  `extid` varchar(128) default NULL,
+  `extsource` varchar(128) default NULL,
+  `db_prefix` varchar(40) NOT NULL default 'pbx_',
+  `firstname` varchar(128) default NULL,
+  `lastname` varchar(128) default NULL,
+  `sosialsecurityno` varchar(128) NOT NULL default '',
+  `birthdate` date default NULL,
+  `address1` varchar(128) NOT NULL default '',
+  `address2` varchar(128) NOT NULL default '',
+  `zip` varchar(64) NOT NULL default '',
+  `city` varchar(128) NOT NULL default '',
+  `state` varchar(128) default NULL,
+  `country` varchar(128) NOT NULL,
+  `mobile` varchar(128) NOT NULL default '',
+  `phonehome` varchar(128) NOT NULL default '',
+  `phonework` varchar(128) NOT NULL default '',
+  `fax` varchar(128) NOT NULL default '',
+  `email` varchar(128) NOT NULL default '',
+  `email2` varchar(128) NOT NULL default '',
+  `email3` varchar(128) NOT NULL default '',
+  `email4` varchar(128) NOT NULL default '',
+  `website` varchar(128) NOT NULL default '',
+  `title` varchar(128) NOT NULL default '',
+  `department` varchar(128) NOT NULL default '',
+  `assistant` varchar(128) NOT NULL default '',
+  `assistantphone` varchar(128) NOT NULL default '',
+  `reportsto` int(10) NOT NULL default '0',
+  `yahooid` varchar(128) NULL default NULL,
+  `msnid` varchar(128) NULL default NULL,
+  `status` varchar(128) NULL default NULL,
+  `date_followup` datetime NOT NULL default '0000-00-00 00:00:00',
+  `description` varchar(1024) default NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`coid`),
+  KEY `contactname` (`lastname`),
+  KEY `contactperson` (`firstname`)  ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+
+  $ret[] = update_sql("CREATE TABLE `astorder` (
+  `orderno` int(10) unsigned NOT NULL default '0',
+  `db_prefix` varchar(40) NOT NULL,
+  `uid` int(10) unsigned NOT NULL default '0',
+  `order_date` date NOT NULL,
+  `print_date` date NULL,
+  `closed_date` date NULL,
+  `revisionno` int(10) unsigned NOT NULL default '1',
+  `refperson` varchar(128) default NULL,
+  `refnr` varchar(128) default NULL,
+  `paymentcode` varchar(128) NOT NULL default '',
+  `currency` varchar(3) NOT NULL default 'GBP',
+  `ourref` varchar(128) default NULL,
+  `ourphone` varchar(128) default NULL,
+  `ouremail` varchar(128) default NULL,
+  `freighttype` varchar(128) default NULL,
+  `freightcharge` varchar(128) default NULL,
+  `ordertype` varchar(128) NULL default NULL,
+  `mainservice` varchar(128) NULL default NULL,
+  `servicetype` varchar(128) NULL default NULL,
+  `fromlocation` varchar(128) NULL default '',
+  `shipping_buyername` varchar(128) NOT NULL default '',
+  `shipping_address1` varchar(128) NOT NULL default '',
+  `shipping_address2` varchar(128) NOT NULL default '',
+  `shipping_zip` varchar(64) NOT NULL default '',
+  `shipping_city` varchar(128) NOT NULL default '',
+  `shipping_state` varchar(128) NOT NULL default '',
+  `shipping_countrycode` int(6) NOT NULL default '0',
+  `invoice_buyername` varchar(128) NOT NULL default '',
+  `invoice_address1` varchar(128) NOT NULL default '',
+  `invoice_address2` varchar(128) NOT NULL default '',
+  `invoice_zip` varchar(64) NOT NULL default '',
+  `invoice_city` varchar(128) NOT NULL default '',
+  `invoice_state` varchar(128) NOT NULL default '',
+  `invoice_countrycode` int(6) NOT NULL default '0',
+  `orderby_buyername` varchar(128) NOT NULL default '',
+  `orderby_address1` varchar(128) NOT NULL default '',
+  `orderby_address2` varchar(128) NOT NULL default '',
+  `orderby_zip` varchar(64) NOT NULL default '',
+  `orderby_city` varchar(128) NOT NULL default '',
+  `orderby_state` varchar(128) NOT NULL default '',
+  `orderby_countrycode` int(6) NOT NULL default '0',
+  `email` varchar(128) NOT NULL default '',
+  `email2` varchar(128) NOT NULL default '',
+  `email3` varchar(128) NOT NULL default '',
+  `emailcc` varchar(128) NOT NULL default '',
+  `emailcc2` varchar(128) NOT NULL default '',
+  `emailcc3` varchar(128) NOT NULL default '',
+  `contactphone` varchar(128) NOT NULL default '',
+  `orderfooter` varchar(1024) default NULL,
+  `description` varchar(1024) NOT NULL,
+  `adminfee` decimal(10,2) NOT NULL default '0.00',
+  `frequency` int(4) NOT NULL default '0',
+  `autoinvoice` tinyint(1) NOT NULL default '0',
+  `coupon` varchar(255) default NULL,
+  `workflow` int(10) unsigned NOT NULL default '1',
+  `sumexvat` decimal(10,2) NOT NULL default '0.00',
+  `vat` decimal(10,2) NOT NULL default '0.00',
+  `gross` decimal(10,2) NOT NULL default '0.00',
+  `status` tinyint(1) NOT NULL default '1',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`orderno`),
+  KEY `inv_db_prefix` (`db_prefix`,`uid`,`orderno`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+
+  $ret[] = update_sql("CREATE TABLE `astorderline` (
+  `orderno` int(11) unsigned NOT NULL,
+  `lineno` int(10) unsigned NOT NULL,
+  `productcode` varchar(40) default NULL,
+  `qtyinvoiced` decimal(10,4) NOT NULL default '0.0000',
+  `qtyordered` decimal(10,4) NOT NULL default '0.0000',
+  `qtydelivered` decimal(10,4) NOT NULL default '0.0000',
+  `code` varchar(40) NOT NULL default '',
+  `delivery_date` date NULL,
+  `fromlocation` varchar(128) NULL default '',
+  `completed` tinyint(1) NOT NULL default '0',
+  `phoneno` varchar(40) default NULL,
+  `ptype` varchar(40) default NULL,
+  `product` varchar(256) default NULL,
+  `price` decimal(10,4) NOT NULL default '0.0000',
+  `minutes` decimal(10,4) NOT NULL default '0.0000',
+  `amount` decimal(10,2) NOT NULL default '0.00',
+  `unit` varchar(5) NOT NULL default '',
+  `description` varchar(1024) NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`orderno`),
+  UNIQUE KEY `invid` (`orderno`,`lineno`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ");
+
+  $ret[] = update_sql("ALTER TABLE `astpartner` ADD `users_roles` varchar(256) NOT NULL default '2' AFTER `customerstatus`");
+  return $ret;
+}
+
+function astbill_update_048() {
+  $ret = array();
+//  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `invoiceno` int(11) UNSIGNED DEFAULT NULL AFTER `extension`");
+  $ret[] = update_sql("ALTER TABLE `astplans` ADD `addseconds` INT( 10 ) DEFAULT '0' NOT NULL AFTER `connectcharge`");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `priceid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `status` ");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `countrycode` INT( 6 ) DEFAULT '0' NOT NULL AFTER `priceid` , ADD `productcode` VARCHAR( 40 ) AFTER `countrycode`");
+  $ret[] = update_sql("ALTER TABLE `astpricelist` ADD `productcode` VARCHAR( 40 ) NULL DEFAULT '950'");
+  $ret[] = update_sql("ALTER TABLE `astprospect` ADD `lateportingdate` DATE AFTER `lateporting`");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` DROP `freight`, DROP `adminfee`");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `context` VARCHAR( 80 ) AFTER `extension`,ADD `rdnis` VARCHAR( 80 ) AFTER `context`,ADD `blindtransfer` VARCHAR( 255 ) AFTER `rdnis`");
+  $ret[] = update_sql("ALTER TABLE `astcdr` ADD `dnid` VARCHAR( 80 ) AFTER `rdnis`");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `pid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `serverid`");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `servertech` VARCHAR( 128 ) AFTER `lansshport`");
+  $ret[] = update_sql("ALTER TABLE `astpartner` CHANGE `status` `active` VARCHAR( 128 ) NULL");
+  $ret[] = update_sql("ALTER TABLE `astuser` CHANGE `tid` `partnerid` INT( 11 ) NULL DEFAULT '0'");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `mysqluser` VARCHAR( 128 ) AFTER `servertech` ");
+  $ret[] = update_sql("ALTER TABLE `astacname` ADD `shortnumber` VARCHAR( 128 ) AFTER `accountcode` ");
+  $ret[] = update_sql("drop table astsyslog");
+  $ret[] = update_sql("ALTER TABLE `astcdr` CHANGE `invid` `invoiceno` INT( 11 ) UNSIGNED NULL");
+  $ret[] = update_sql("DROP VIEW IF EXISTS `asvcall`");
+  $ret[] = update_sql("CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcall` AS select `astcdr`.`uniqueid`,
+`astcdr`.`accountcode`,`astcdr`.`callednum`,`astuser`.`uid`,`astuser`.`brand`,`astuser`.`CountryPrefix`,
+`astplans`.`markup`,`astplans`.`billincrement` 
+from `astcdr`, `astaccount`, `astuser`, `astplans`
+where `astcdr`.`accountcode` = `astaccount`.`accountcode` and `astaccount`.`uid` = `astuser`.`uid` and 
+`astaccount`.`db_prefix` = `astuser`.`db_prefix` and `astcdr`.`brand` = `astplans`.`name`");
+  $ret[] = update_sql("DROP VIEW IF EXISTS `asvcallrate`");
+  
+  /* Return 1 = Daytime, 2 = Evening, 3 = Weekend  Day 4 is not Norway */
+  /* CASE statement will return the first value that is true */
+  $ret[] = update_sql("CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcallrate` AS 
+select id, `uniqueid`, invoiceno,callednum, date_created date, dayofweek(date_created) day, CASE 
+WHEN callednum not like '47%'  
+THEN 4 
+WHEN (dayofweek(date_created) in (1,7))  
+THEN 3  
+WHEN (time(date_created) < '07:00:00' or time(date_created) > '16:00:00' ) 
+THEN 2 
+ELSE 1 
+END callrate from astcdr");
+
+  $ret[] = update_sql("DROP VIEW IF EXISTS asvbill");
+  $ret[] = update_sql("CREATE OR REPLACE SQL SECURITY INVOKER VIEW asvbill as
+select accountcode, date_created, DATE_FORMAT(date_created,'%d %b %Y %H:%i:%S') as datec, callednum, answeredtime, billtime, SEC_TO_TIME(billtime) as billtime2, pricerate, 
+price from astcdr where dialstatus like 'ANSWER%' and answeredtime <> 0 and trunk <> 'Local' order by date_created desc");
+  $ret[] = update_sql("CREATE TABLE `astproduct` (
+  `productcode` varchar(40) NOT NULL,
+  `categoryid` varchar(6) NOT NULL default '',
+  `description` varchar(50) NOT NULL default '',
+  `longdescription` text NOT NULL,
+  `units` varchar(20) NOT NULL default 'each',
+  `mbflag` char(1) NOT NULL default 'B',
+  `lastcurcostdate` date NOT NULL default '1800-01-01',
+  `actualcost` decimal(20,4) NOT NULL default '0.0000',
+  `lastcost` decimal(20,4) NOT NULL default '0.0000',
+  `materialcost` decimal(20,4) NOT NULL default '0.0000',
+  `labourcost` decimal(20,4) NOT NULL default '0.0000',
+  `overheadcost` decimal(20,4) NOT NULL default '0.0000',
+  `lowestlevel` smallint(6) NOT NULL default '0',
+  `discontinued` tinyint(4) NOT NULL default '0',
+  `controlled` tinyint(4) NOT NULL default '0',
+  `eoq` double NOT NULL default '0',
+  `volume` decimal(20,4) NOT NULL default '0.0000',
+  `kgs` decimal(20,4) NOT NULL default '0.0000',
+  `barcode` varchar(50) NOT NULL default '',
+  `discountcategory` char(2) NOT NULL default '',
+  `taxcatid` tinyint(4) NOT NULL default '1',
+  `serialised` tinyint(4) NOT NULL default '0',
+  `decimalplaces` tinyint(4) NOT NULL default '0',
+  PRIMARY KEY  (`productcode`),
+  KEY `CategoryID` (`categoryid`),
+  KEY `Description` (`description`),
+  KEY `LastCurCostDate` (`lastcurcostdate`),
+  KEY `MBflag` (`mbflag`),
+  KEY `productcode` (`productcode`,`categoryid`),
+  KEY `Controlled` (`controlled`),
+  KEY `DiscountCategory` (`discountcategory`),
+  KEY `taxcatid` (`taxcatid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+
+  $ret[] = update_sql("drop view asvprice_uk");
+  $ret[] = update_sql("drop view asvprice_uk_all");
+  $ret[] = update_sql("drop view asvprice_usa");
+//  $ret[] = update_sql("");
+  return $ret;
+}
+
+function astbill_update_049() {
+  $ret = array();
+
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `voxtech` VARCHAR( 128 ) AFTER `servertech`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD `shortnumber` VARCHAR( 128 ) AFTER `serverid` ");
+  $ret[] = update_sql("ALTER TABLE `astacname` DROP `shortnumber`");
+  $ret[] = update_sql("ALTER TABLE `astaccount` ADD UNIQUE (`serverid` ,`shortnumber`)");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `dial9` VARCHAR( 256 ) AFTER `mysqluser`");
+  $ret[] = update_sql("ALTER TABLE `aststatus` ADD `mysqluser2` VARCHAR( 128 ) AFTER `mysqluser`");
+  $ret[] = update_sql("ALTER TABLE `astemailtext` ADD `partnerid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `EmailText`");
+  $ret[] = update_sql("CREATE TABLE `astlogsmsbatch` (
+  `batchid` int(10) NOT NULL auto_increment,
+  `pdudata` text(30720) default NULL,
+  `remarks` varchar(1024) default NULL,  
+  `processed_date` DATETIME default NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`batchid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  $ret[] = update_sql("ALTER TABLE `astlogsms` ADD INDEX `fromnr` ( `fromnr` )");
+  $ret[] = update_sql("ALTER TABLE `astacgroup` CHANGE `tenantid` `partnerid` INT( 11 ) NULL DEFAULT '0'");
+  $ret[] = update_sql("ALTER TABLE `astprospect2` CHANGE `tid` `partnerid` INT( 11 ) NULL DEFAULT '0'");
+  $ret[] = update_sql("ALTER TABLE `astemailtext` ADD `db_prefix` VARCHAR( 40 ) NOT NULL FIRST ");
+  $ret[] = update_sql("ALTER TABLE `astemailtext` DROP PRIMARY KEY , ADD PRIMARY KEY ( `db_prefix` , `partnerid` , `EmailText` ) ");
+  $ret[] = update_sql("ALTER TABLE `astpartner` ADD `followuptype` VARCHAR( 100 ) AFTER `leadsource` ;");
+  $ret[] = update_sql("ALTER TABLE `astinvoiceline` CHANGE `ptype` `ptype` VARCHAR( 40 ) NULL DEFAULT 'Normal'");
+  $ret[] = update_sql("ALTER TABLE `astacdid` ADD INDEX `uid` ( `uid` ) ");
+  $ret[] = update_sql("ALTER TABLE `astacdid` ADD INDEX `did` ( `did` ) ");
+  $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `layout` VARCHAR( 40 ) AFTER `workflow` ;");
+  $ret[] = update_sql("ALTER TABLE `astlogsms` ADD INDEX `date_created` ( `date_created` ) ");
+  $ret[] = update_sql("ALTER TABLE `astprospect` ADD INDEX `cust_status_mobile` ( `customerstatus` , `mobile` ) ");
+
+  return $ret;
+}
+
+function astbill_update_050() {
+  $ret = array();
+    $ret[] = update_sql("CREATE TABLE `astpaymentbatch` (
+  `batchid` int(10) NOT NULL auto_increment,
+  `bankaccount` varchar(100) default NULL,
+  `date_paid` varchar(50) default NULL,
+  `totallines` int(11) NOT NULL default '0',
+  `totalprice` decimal(10,2) NOT NULL default '0.0000',
+  `filename` varchar(128) default NULL,
+  `remarks` varchar(1024) default NULL,
+  `date_created` timestamp NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`batchid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("ALTER TABLE `astpayment` ADD `batchid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `paytype`");
+    $ret[] = update_sql("ALTER TABLE `astpayment` ADD `kid` VARCHAR( 128 ) AFTER `batchid`");
+    $ret[] = update_sql("ALTER TABLE `astpayment` ADD `kidbank` VARCHAR( 128 ) AFTER `kid`");
+    $ret[] = update_sql("ALTER TABLE `astpayment` ADD `payment_status` VARCHAR( 255 ) AFTER `kidbank`");
+    $ret[] = update_sql("ALTER TABLE `astaccount` ADD `trunkpath` VARCHAR( 128 ) AFTER `shortnumber`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `zipcode` VARCHAR( 128 ) NULL AFTER `batchno`");
+    $ret[] = update_sql("ALTER TABLE `astlogsms` ADD `invoiceid` int(11) unsigned AFTER `date_scheduled` ");
+    $ret[] = update_sql("ALTER TABLE `astlogsms` ADD `remarks` VARCHAR( 256 ) AFTER `invoiceid` ");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `didnumberserie` VARCHAR( 256 ) DEFAULT ' ' NOT NULL AFTER `phonework`");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `companyno` VARCHAR( 128 ) AFTER `birthdate` ,
+ADD `valuecode` VARCHAR( 128 ) AFTER `companyno` ,
+ADD `ordercode` VARCHAR( 128 ) AFTER `valuecode` ");
+    $ret[] = update_sql("CREATE TABLE `astsumpartner` (
+  `pid` int(10) NOT NULL default '0',
+  `sumusers` int(10) NOT NULL default '0',
+  `sumaccounts` int(10) NOT NULL default '0',
+  `sumdid` int(10) NOT NULL default '0',
+  PRIMARY KEY  (`pid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("CREATE TABLE `astinvrecurr` (
+  `recurrno` int(11) unsigned NOT NULL auto_increment,
+  `db_prefix` varchar(40) NOT NULL default '',
+  `uid_in` varchar(128) NOT NULL default '',
+  `partnerid` int(11) NOT NULL default '0',
+  `invoice_upto_date` date NOT NULL default '0000-00-00',
+  `invtype` varchar(40) NOT NULL default '',
+  `lastrecurrence_date` date NOT NULL default '0000-00-00',
+  `stop_date` date NOT NULL default '0000-00-00',
+  `rateplan` varchar(40) NOT NULL default '',
+  `invoicefee` decimal(10,2) NOT NULL default '0.00',
+  `layout` varchar(40) NOT NULL default '',
+  `update_clip` varchar(40) NOT NULL default '',
+  `frequency` int(4) unsigned NOT NULL default '12',
+  `remarks` varchar(1024) NOT NULL default '',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`recurrno`),
+  KEY `partnerid` (`partnerid`,`recurrno`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("ALTER TABLE `astinvrecurr` ADD `invoiceid` INT( 11 ) DEFAULT '0' NOT NULL AFTER `frequency`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_name` varchar(128) NOT NULL DEFAULT '' AFTER `kid`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_address1` varchar(128) DEFAULT '' NOT NULL AFTER `inv_name` ");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_address2` varchar(128) DEFAULT '' NOT NULL AFTER `inv_address1`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_zip` varchar(64) DEFAULT '' NOT NULL AFTER `inv_address2`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_city` varchar(128) DEFAULT '' NOT NULL AFTER `inv_zip` ");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `invoiceno` `invoiceno` INT( 11 ) UNSIGNED NOT NULL DEFAULT '0'");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `invoiceid` INT(11) NOT NULL FIRST");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` DROP PRIMARY KEY ");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD PRIMARY KEY (`invoiceid`)");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `invoiceid` `invoiceid` INT(11) UNSIGNED NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `partnerid` INT(11) DEFAULT '0' NOT NULL AFTER `uid`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `invoiceid` `invoiceid` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT");
+    $ret[] = update_sql("ALTER TABLE `astcdr` CHANGE `invoiceno` `invoiceid` INT( 11 ) UNSIGNED NULL DEFAULT NULL ");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `workflow` `workflow` VARCHAR(40) NOT NULL DEFAULT '1'");
+    $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `invoiceid` INT(11) UNSIGNED NOT NULL DEFAULT '0' FIRST");
+    $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD INDEX ( `invoiceid` , `lineno` )");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceid_id` ( `invoiceid` , `id` )");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `inv_firstname` VARCHAR(128) DEFAULT '' NOT NULL AFTER `inv_name` ,
+ADD `inv_lastname` VARCHAR(128) DEFAULT '' NOT NULL AFTER `inv_firstname`");
+  return $ret;
+}
+function astbill_update_051() {
+  $ret = array();
+    $ret[] = update_sql("ALTER TABLE `astinvrecurr` ADD `rateplanint` VARCHAR(40) DEFAULT '' NOT NULL AFTER `rateplan`");
+    $ret[] = update_sql("CREATE TABLE `astsumaccount` (
+  `accountcode` varchar(40) NOT NULL,
+  `countcalls` int(10) NOT NULL default '0',
+  `sumcost` decimal(10,2) NOT NULL default '0.00',  
+  `sumpaid` decimal(10,2) NOT NULL default '0.00',  
+  PRIMARY KEY  (`accountcode`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("DROP VIEW IF EXISTS asvcallrate");
+    $ret[] = update_sql("CREATE OR REPLACE SQL SECURITY INVOKER VIEW `asvcallrate` AS 
+select id, `uniqueid`, invoiceid,callednum, date_created date, dayofweek(date_created) day, CASE 
+WHEN callednum not like '47%'  
+THEN 4 /* This is not Norway */
+WHEN (dayofweek(date_created) in (1,7))  /* Day 1 and 7 is weekend */
+THEN 3  /* This is weekend */
+WHEN (time(date_created) < '07:00:00' or time(date_created) > '16:00:00' )  /* This is evening - Remember time differences*/
+THEN 2 /* This is evening */
+ELSE 1 /* This is daytime */
+END callrate
+from astcdr");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `callstatus` TINYINT( 3 ) DEFAULT '0' NOT NULL AFTER `status`");
+    $ret[] = update_sql("ALTER TABLE `astcdr` DROP INDEX `accountcode`");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX ( `callstatus` , `accountcode` , `date_created`)");
+    $ret[] = update_sql("update astcdr set `callstatus` = 1 WHERE `astcdr`.`dialstatus` like 'ANSWER%' and `astcdr`.`answeredtime` <> 0 and `astcdr`.`trunk` <> 'Local'");
+    $ret[] = update_sql("CREATE TABLE `astorderip` (
+  `oid` int(10) NOT NULL auto_increment,
+  `orderno` varchar(40) NOT NULL default '',
+  `pid` int(10) NOT NULL default '0',
+  `order_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `delivery_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `customers_order` varchar(256) NOT NULL default '',
+  `no_bri` varchar(128) NOT NULL default '',
+  `no_pri` varchar(128) NOT NULL default '',
+  `crc4_on` tinyint(1) NOT NULL default '1',
+  `rpid_on` tinyint(1) NOT NULL default '1',
+  `protocol` varchar(40) NOT NULL default '',
+  `fixed_ip` varchar(40) NOT NULL default '',
+  `partners_pbx` varchar(128) NOT NULL default '',
+  `partners_broadband` varchar(128) NOT NULL default '',
+  `broadband_vendor` varchar(128) NOT NULL default '',
+  `speed_in` varchar(40) NOT NULL default '',
+  `speed_out` varchar(40) NOT NULL default '',
+  `want_our_dsl` tinyint(1) NOT NULL default '0',
+  `we_offer_dsl_speed` varchar(128) NOT NULL default '',
+  `active` varchar(128) default NULL,
+  `date_followup` datetime NOT NULL default '0000-00-00 00:00:00',
+  `install_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `install_by` varchar(128) NOT NULL default '',
+  `remarks` varchar(1024) NOT NULL default '',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`oid`),
+  KEY `orderno` (`orderno`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=3000");
+    $ret[] = update_sql("CREATE TABLE `astlogdb` (
+  `logid` int(10) NOT NULL auto_increment,
+  `tablename` varchar(40) NOT NULL default '',
+  `prikey` varchar(40) NOT NULL default '',
+  `action` char(1) NOT NULL default '',
+  `db_prefix` varchar(40) NOT NULL default '',
+  `uid` int(10) NOT NULL default '0',
+  `sql` varchar(1028) NOT NULL default '',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`logid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `lineno` INT DEFAULT '0' NOT NULL AFTER `active`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `workflow` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `active` ,
+ADD `assigned_to_uid` INT( 10 ) DEFAULT '0' NOT NULL AFTER `workflow` , ADD `assigned_to_prefix` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `assigned_to_uid` ");
+    $ret[] = update_sql("ALTER TABLE `astlogdb` ADD `workflow` VARCHAR( 40 ) DEFAULT '' NOT NULL AFTER `uid`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `leasing_ok` TINYINT( 1 ) DEFAULT '0' NOT NULL AFTER `customers_order` ");
+    $ret[] = update_sql("ALTER TABLE `astpartner` CHANGE `comment` `comment` VARCHAR( 15360 ) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astorderip` CHANGE `remarks` `remarks` VARCHAR( 15360 ) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("CREATE TABLE `astsumorderip` (
+  `db_prefix` varchar(40) NOT NULL default '',
+  `period` varchar(40) NOT NULL default '',
+  `qty` int(10) NOT NULL default '0',
+  `percent` decimal(10,2) NOT NULL default '0.00',
+  `total` int(10) NOT NULL default '0',
+  `msn` int(10) NOT NULL default '0',
+  `sip` int(10) NOT NULL default '0',
+  `workflow` varchar(40) NOT NULL default '',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`db_prefix`,`period`,`workflow`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `partnerid` INT( 11 ) NOT NULL DEFAULT '0' AFTER `submaster` ,
+ADD `uid` INT( 10 ) NOT NULL DEFAULT '0' AFTER `partnerid`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `invoiceno`");
+    $ret[] = update_sql("ALTER TABLE `astpaymentbatch` ADD `journalno` INT( 11 ) NOT NULL DEFAULT '0' AFTER `batchid`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `forwardtmp` VARCHAR(255) DEFAULT '' NOT NULL AFTER `forwardto`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `fylkekode` CHAR(2) DEFAULT '' NOT NULL AFTER `zipcode`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` CHANGE `forwardtmp` `redirectalways` VARCHAR( 255 ) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `redirectevent` CHAR(1) DEFAULT 'N' NOT NULL AFTER `forwardto`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `redirectbusy` VARCHAR(255) DEFAULT '' NOT NULL AFTER `redirectalways`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `redirecttimeout` VARCHAR(255) DEFAULT '' NOT NULL AFTER `redirectbusy`");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `redirecttimeoutsec` int(4) DEFAULT '15' NOT NULL AFTER `redirecttimeout`");
+    $ret[] = update_sql("ALTER TABLE `astplans` ADD `remarks` varchar(256) DEFAULT '' NOT NULL");
+  return $ret;
+}
+function astbill_update_052() {
+  $ret = array();
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `rateplan3` varchar(128) DEFAULT '' NOT NULL AFTER `brand`");
+    $ret[] = update_sql("CREATE TABLE `astccnrate` (
+  `id` int(11) NOT NULL auto_increment,
+  `rateplan` varchar(128) NOT NULL default '',
+  `rategroup` varchar(128) NOT NULL default '',
+  `ccn` int(11) NOT NULL default '0',
+  `ratecode` varchar(4) NOT NULL default '',
+  `weight` tinyint(4) NOT NULL default '0',
+  `connectcharge` decimal(12,4) NOT NULL default '0.0000',
+  `includedseconds` decimal(12,4) NOT NULL default '0.0000',
+  `minimumrate` decimal(12,4) NOT NULL default '0.0000',
+  `rate` decimal(12,4) NOT NULL default '0.0000',
+  `rateoffpeak` decimal(12,4) NOT NULL default '0.0000',
+  `rateweekend` decimal(12,4) NOT NULL default '0.0000',
+  `remarks` varchar(256) NOT NULL default '',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `rateplanccn` (`rateplan`,`ccn`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=10000");
+    $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `language2` varchar(256) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `ccn` int(11) DEFAULT '0' NOT NULL AFTER `priceid`");
+    $ret[] = update_sql("DROP VIEW IF EXISTS `asvcallrate`");
+          /* Remember the order of 'case when' is important as the statement close when first match  */
+    $ret[] = update_sql("CREATE VIEW `asvcallrate` AS select `astcdr`.`id` AS `id`,`astcdr`.`uniqueid` AS `uniqueid`,
+`astcdr`.`invoiceid` AS `invoiceid`,`astcdr`.`callednum` AS `callednum`,`astcdr`.`date_created` AS `date`,
+dayofweek(`astcdr`.`date_created`) AS `day`,
+(case when not((`astcdr`.`callednum` like '47%')) then 4 
+when not((`astcdr`.`ccn` in (11,903,904,924,905,16,901,906,900,897,898,35,902))) then 1 
+when (dayofweek(`astcdr`.`date_created`) in (1,7)) then 3 when ((cast(`astcdr`.`date_created` as time) 
+< '08:00:00') or (cast(`astcdr`.`date_created` as time) > '17:00:00')) then 2  
+else 1 end) AS `callrate`, 
+ccn, brand rateplan, rateplan3
+from `astcdr`");
+    $ret[] = update_sql("DROP VIEW IF EXISTS `asvcallrate2`");
+    $ret[] = update_sql("CREATE VIEW `asvcallrate2` AS select asv.*, 
+CASE asv.callrate WHEN 1 THEN rat.rate WHEN 2 THEN rat.rateoffpeak WHEN 3 THEN rat.rateweekend ELSE rat.rate END rate
+from asvcallrate asv, astccnrate rat
+where asv.ccn = rat.ccn and asv.rateplan = rat.rateplan");
+    $ret[] = update_sql("DROP VIEW IF EXISTS `asvcallrate3`");
+    $ret[] = update_sql("CREATE VIEW `asvcallrate3` AS select asv.*, 
+CASE asv.callrate WHEN 1 THEN rat.rate WHEN 2 THEN rat.rateoffpeak WHEN 3 THEN rat.rateweekend ELSE rat.rate END rate
+from asvcallrate asv, astccnrate rat
+where asv.ccn = rat.ccn and asv.rateplan3 = rat.rateplan");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `billtime3` int(11) DEFAULT '0' NOT NULL AFTER `billtime");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `price3` decimal(10,2) DEFAULT '0.00' NOT NULL AFTER `price`");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `invoiceid3` int(11) DEFAULT '0' NOT NULL AFTER `invoiceid`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `remarks` `remarks` VARCHAR( 1024 ) NOT NULL DEFAULT ''");
+    // Show list of PDF reports
+    $ret[] = update_sql("DROP TABLE IF EXISTS `astreport`");
+
+// if `selectbox1` = 0 = Not Used
+// if `selectbox1` = 1 = Normal Text Box
+// if `selectbox1` = 2 = Drop Down List
+// if `selectbox1` = 3 = Date Selector
+
+// in the `classfile` we store the name of the `classfile` to use like pdfliste.php
+// To populate require('modules/astprof/pdfliste.php');
+// `function` is the functon name that starts this report
+
+    $ret[] = update_sql("CREATE TABLE `astreport` (
+  `repid` int(10) NOT NULL auto_increment,
+  `reportgroup` varchar(40) NOT NULL default '',
+  `reportorder` int(6) NOT NULL default '0',
+  `reportname` varchar(256) NOT NULL default '',
+  `reportname2` varchar(256) NOT NULL default '',
+  `classfile` varchar(128) NOT NULL default '',
+  `functionname` varchar(128) NOT NULL default '',
+  `functionphp` varchar(1024) NOT NULL default '',
+  `header` varchar(1024) NOT NULL default '',
+  `footer` varchar(1024) NOT NULL default '',
+  `orientation` char(1) NOT NULL default 'P',
+  `unit` varchar(2) NOT NULL default 'mm',
+  `format` varchar(2) NOT NULL default 'A4',
+  `selectbox1` tinyint(2) NOT NULL default '0',
+  `selectbox2` tinyint(2) NOT NULL default '0',
+  `selectbox3` tinyint(2) NOT NULL default '0',
+  `selectbox4` tinyint(2) NOT NULL default '0',
+  `selectbox5` tinyint(2) NOT NULL default '0',
+  `selectbox6` tinyint(2) NOT NULL default '0',
+  `isfile`     tinyint(1) NOT NULL default '1',
+  `description` varchar(1024) NOT NULL default '',
+  `remarks` varchar(1024) NOT NULL default '',
+   `active` tinyint(1) NOT NULL default '1',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`repid`),
+  KEY `reportgroup` (`reportgroup`,`reportorder`,`reportname`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("CREATE TABLE `astreplication` (
+  `id` int(11) NOT NULL auto_increment,
+  `server` varchar(255) NOT NULL default '',
+  `tbname` varchar(255) NOT NULL default '',
+  `counts` int(11) NOT NULL default '0',
+  `date` datetime NOT NULL default '0000-00-00 00:00:00',
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    $ret[] = update_sql("alter table asthardwareid rename asthardwaretype");
+    $ret[] = update_sql("ALTER TABLE `asthardwaretype` ADD `macoui` varchar(6) DEFAULT '' NOT NULL AFTER `hardware`");
+    $ret[] = update_sql("update asthardwaretype set macoui = concat(mac1,mac2,mac3) where mac1 is not null");
+    $ret[] = update_sql("alter table asthardwaretype drop mac1");
+    $ret[] = update_sql("alter table asthardwaretype drop mac2");
+    $ret[] = update_sql("alter table asthardwaretype drop mac3");
+    $ret[] = update_sql("ALTER TABLE `asthardwaretype` CHANGE `comment` `remarks` varchar(1024) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardwaretype` CHANGE `hardware` `hardware` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardwaretype` ADD `organization` varchar(256) DEFAULT '' NOT NULL AFTER `hardware`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `mac` varchar(12) DEFAULT '' NOT NULL AFTER `hardwareid`");
+    $ret[] = update_sql("update asthardware set mac = concat(mac4,mac5,mac6) where mac4 is not null");
+    $ret[] = update_sql("alter table asthardware drop mac4");
+    $ret[] = update_sql("alter table asthardware drop mac5");
+    $ret[] = update_sql("alter table asthardware drop mac6");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `hardwareid` `hid` int(10) NOT NULL default '0'");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `id` `hardwareid` int(10) unsigned NOT NULL auto_increment");
+    $ret[] = update_sql("update astaccount acc, asthardware hw set acc.hardwareid = hw.hardwareid where acc.accountcode = hw.accountcode");
+    $ret[] = update_sql("alter table asthardware drop accountcode");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `comment` `remarks` varchar(1024) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `serialnumber` `serialnumber` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `wandhcp` tinyint(1) DEFAULT '1' NOT NULL AFTER `remarks`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `ipaddress` `wanip` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `subnet` `wansubnet` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` CHANGE `port` `wangateway` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("alter table asthardware drop sip2");
+    $ret[] = update_sql("alter table asthardware drop ipaddress2");
+    $ret[] = update_sql("alter table asthardware drop subnet2");
+  return $ret;
+}
+
+function astbill_update_053() {
+  $ret = array();
+    $ret[] = update_sql("alter table asthardware drop port2");
+    $ret[] = update_sql("alter table asthardware drop sip3");
+    $ret[] = update_sql("alter table asthardware drop ipaddress3");
+    $ret[] = update_sql("alter table asthardware drop subnet3");
+    $ret[] = update_sql("alter table asthardware drop port3");
+    $ret[] = update_sql("alter table asthardware drop sip4");
+    $ret[] = update_sql("alter table asthardware drop ipaddress4");
+    $ret[] = update_sql("alter table asthardware drop subnet4");
+    $ret[] = update_sql("alter table asthardware drop port4");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `landhcp` tinyint(1) DEFAULT '1' NOT NULL AFTER `wangateway`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `lanip` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `lansubnet` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `langateway` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `telnetport` varchar(4) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `webport` varchar(4) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri0protocol` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri0uniside` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri1protocol` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri1uniside` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri2protocol` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri2uniside` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri3protocol` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri3uniside` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri4protocol` varchar(10) NOT NULL DEFAULT '' AFTER `bri3uniside`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `bri4uniside` varchar(10) NOT NULL DEFAULT '' AFTER `bri4protocol`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `faxclip` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `dialmodem` varchar(10) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `map_rpid_default` varchar(1024) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `map_rpid1` varchar(1024) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `adminuser` varchar(128) DEFAULT '' NOT NULL AFTER `webport`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `adminpassword` varchar(128) DEFAULT '' NOT NULL AFTER `adminuser`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `active` tinyint(1) NOT NULL default '1' AFTER `landhcp`");
+    $ret[] = update_sql("ALTER TABLE `asthardwaretype` ADD `active` tinyint(1) NOT NULL default '1' AFTER `remarks`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `configupdate` int(11) NOT NULL default '60' AFTER `timestamp`");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `digitcollection` tinyint(2) NOT NULL default '4'");
+    $ret[] = update_sql("ALTER TABLE `asthardware` ADD `reglifetime` tinyint(4) NOT NULL default '90'");
+    $ret[] = update_sql("ALTER TABLE `asthardwaretype` ADD `templatefile` varchar(128) NOT NULL default ''");
+    $ret[] = update_sql("ALTER TABLE `astpayment` ADD `generalledger` varchar(255) NOT NULL DEFAULT '' AFTER `accountcode`");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `label1` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `label2` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `label3` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `label4` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `label5` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `label6` varchar(128) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `dropdownsql1` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `dropdownsql2` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `dropdownsql3` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `dropdownsql4` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `dropdownsql5` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astreport` ADD `dropdownsql6` varchar(256) NOT NULL DEFAULT ''");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `partnerclass` varchar(128) NOT NULL DEFAULT '' AFTER extsource");
+    $ret[] = update_sql("ALTER TABLE `astpartner` CHANGE `active` `active` tinyint(1) NOT NULL default '1'");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD INDEX ( `partnerclass` ) ");
+    $ret[] = update_sql("ALTER TABLE `astplans` CHANGE `status` `active` tinyint(1) NOT NULL default '1'");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `fromdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `period`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `todate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `fromdate`");
+    $ret[] = update_sql("ALTER TABLE `astplans` ADD `intconnectcharge` decimal(12,4) NOT NULL default '0.0000' AFTER `connectcharge`");
+    $ret[] = update_sql("alter table astinvoice drop payment_method");
+    $ret[] = update_sql("alter table astinvoice drop is_recurring");
+    $ret[] = update_sql("ALTER TABLE astinvoice ADD reminder tinyint(2) NOT NULL default '0' AFTER payment_status");
+    $ret[] = update_sql("ALTER TABLE astinvoice ADD reminderemail tinyint(2) NOT NULL default '0' AFTER reminder");
+    $ret[] = update_sql("INSERT INTO `astsystem` ( `serverid` , `name` , `value` , `comment` , `viewstatus` , `timestamp` )
+VALUES (
+'DEF', 'pricelistfooter', 'Rates are valid 24 hrs\\nAll amounts are in NOK\\nRates apply worldwide and exclude VAT\\nAll rates are subject to change without notice\\nRates and availability is subject to change without notice\\nWe do not accept liability for any errors or omissions.', 'This will be shown as a footer at the end of the PDF Price Lists', 'E', NOW( )
+)");
+    $ret[] = update_sql("alter table astparcontact drop uid");
+    $ret[] = update_sql("alter table astparcontact drop memberof");
+    $ret[] = update_sql("alter table astparcontact drop status");
+    $ret[] = update_sql("ALTER TABLE astparcontact ADD `date_created` datetime NOT NULL default '0000-00-00 00:00:00' AFTER description");
+    $ret[] = update_sql("ALTER TABLE astparcontact ADD `active` tinyint(1) NOT NULL default '1' AFTER description");
+    $ret[] = update_sql("ALTER TABLE astparcontact CHANGE description remarks varchar(15360) NOT NULL default ''");
+  return $ret;
+}
+
+function astbill_update_054() {
+  $ret = array();
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceid_ccn` ( `invoiceid` , `ccn` )");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD INDEX `invoiceid_account_ccn` ( `invoiceid` , `accountcode`,`ccn` )");
+    $ret[] = update_sql("alter table astinvoiceline drop invoiceno");
+    $ret[] = update_sql("ALTER TABLE astinvoiceline ADD `isoid` char(2) NOT NULL default '' AFTER productcode");
+    $ret[] = update_sql("ALTER TABLE astinvrecurr ADD `active` tinyint(1) NOT NULL default '1' AFTER invoiceid");
+    $ret[] = update_sql("ALTER TABLE astsystem CHANGE value value varchar(2048) NOT NULL default ''");
+    $ret[] = update_sql("ALTER TABLE astorderip ADD agentuid int(10) unsigned NOT NULL default '0' after workflow");
+    $ret[] = update_sql("ALTER TABLE astorderip ADD agentremarks text NOT NULL default '' after agentuid");
+    $ret[] = update_sql("CREATE TABLE `astccnccode` (
+  `isoid` char(2) NOT NULL default '',
+  `countrycode` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`isoid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ad', 376)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ae', 971)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('af', 93)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ag', 1268)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ai', 1264)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('al', 355)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('am', 374)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('an', 599)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ao', 244)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('aq', 6721)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ar', 54)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('as', 684)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('at', 43)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('au', 61)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('aw', 297)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ax', 0)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('az', 994)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ba', 387)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bb', 1246)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bd', 880)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('be', 32)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bf', 226)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bg', 359)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bh', 973)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bi', 257)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bj', 229)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bm', 1441)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bn', 673)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bo', 591)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('br', 55)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bs', 1242)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bt', 975)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bv', 0)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bw', 267)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('by', 375)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('bz', 501)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ca', 1)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cc', 672)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cd', 243)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cf', 236)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cg', 242)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ch', 41)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ci', 225)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ck', 682)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cl', 56)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cm', 237)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cn', 86)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('co', 57)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cr', 506)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cu', 53)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cv', 238)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cx', 672)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cy', 357)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('cz', 420)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('de', 49)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('dj', 253)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('dk', 45)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('dm', 1767)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('do', 1809)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('dz', 213)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ec', 593)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ee', 372)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('eg', 20)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('eh', 0)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('er', 291)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('es', 34)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('et', 251)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('fi', 358)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('fj', 679)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('fk', 500)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('fm', 691)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('fo', 298)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('fr', 33)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ga', 241)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gb', 44)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gd', 1473)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ge', 995)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gf', 594)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gg', 0)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gh', 233)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gi', 350)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gl', 299)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gm', 220)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gn', 224)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gp', 590)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gq', 240)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gr', 30)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gs', 995)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gt', 502)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gu', 671)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gw', 245)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('gy', 592)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('hk', 852)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('hm', 0)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('hn', 504)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('hr', 385)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ht', 509)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('hu', 36)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('id', 62)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ie', 353)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('il', 972)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('im', 44)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('in', 91)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('io', 0)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('iq', 964)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ir', 98)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('is', 354)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('it', 39)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('je', 0)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('jm', 1876)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('jo', 962)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('jp', 81)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ke', 254)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('kg', 996)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('kh', 855)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ki', 686)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('km', 269)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('kn', 1869)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('kp', 82)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('kr', 850)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('kw', 965)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ky', 1345)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('kz', 7)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('la', 856)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('lb', 961)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('lc', 1758)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('li', 423)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('lk', 94)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('lr', 231)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ls', 266)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('lt', 370)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('lu', 352)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('lv', 371)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ly', 218)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ma', 212)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mc', 377)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('md', 373)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('me', 382)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mg', 261)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mh', 692)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mk', 389)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ml', 223)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mm', 95)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mn', 976)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mo', 853)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mp', 1670)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mq', 596)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mr', 222)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ms', 1664)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mt', 356)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mu', 230)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mv', 960)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mw', 265)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mx', 52)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('my', 60)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('mz', 258)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('na', 264)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('nc', 687)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ne', 227)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('nf', 6723)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ng', 234)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ni', 505)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('nl', 31)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('no', 47)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('np', 977)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('nr', 674)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('nu', 683)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('nz', 64)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('om', 968)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('pa', 507)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('pe', 51)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('pf', 689)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('pg', 675)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ph', 63)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('pk', 92)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('pl', 48)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('pm', 508)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('pn', 64)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('pr', 1787)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ps', 970)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('pt', 351)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('pw', 680)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('py', 595)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('qa', 974)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('re', 262)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ro', 40)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('rs', 381)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ru', 7)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('rw', 250)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sa', 966)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sb', 677)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sc', 248)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sd', 249)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('se', 46)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sg', 65)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sh', 290)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('si', 386)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sj', 47)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sk', 421)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sl', 232)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sm', 378)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sn', 221)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('so', 252)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sr', 597)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('st', 239)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sv', 503)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sy', 963)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('sz', 268)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tc', 1649)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('td', 235)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tf', 0)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tg', 228)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('th', 66)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tj', 992)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tk', 690)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tl', 670)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tm', 993)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tn', 216)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('to', 676)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tr', 90)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tt', 1868)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tv', 688)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tw', 886)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('tz', 255)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ua', 380)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ug', 256)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('um', 0)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('us', 1)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('uy', 598)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('uz', 998)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('va', 379)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('vc', 1784)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ve', 58)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('vg', 1284)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('vi', 1340)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('vn', 84)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('vu', 678)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('wf', 681)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ws', 685)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('ye', 967)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('yt', 269)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('yu', 381)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('z8', 247)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('za', 27)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('zm', 260)");
+    $ret[] = update_sql("INSERT INTO `astccnccode` VALUES ('zw', 263)");
+
+  return $ret;
+}
+
+function astbill_update_055() {
+  $ret = array();
+    $ret[] = update_sql("CREATE TABLE `astccniso` (
+  `language` char(2) NOT NULL default '',
+  `isoid` char(2) NOT NULL default '',
+  `country` varchar(128) NOT NULL default '',
+  `country2` varchar(128) NOT NULL default '',
+  `active` tinyint(1) NOT NULL default '1',
+  PRIMARY KEY  (`language`,`isoid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1");
+
+
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'hu', 'Hungary', 'Hungary', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'is', 'Iceland', 'Iceland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'in', 'India', 'India', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'id', 'Indonesia', 'Indonesia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ir', 'Iran (Islamic Republic Of)', 'Iran (Islamic Republic Of)', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'iq', 'Iraq', 'Iraq', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ie', 'Ireland', 'Ireland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'im', 'Isle Of Man', 'Isle Of Man', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'il', 'Israel', 'Israel', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'it', 'Italy', 'Italy', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'jm', 'Jamaica', 'Jamaica', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'jp', 'Japan', 'Japan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'je', 'Jersey', 'Jersey', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'jo', 'Jordan', 'Jordan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'kz', 'Kazakhstan', 'Kazakhstan', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ke', 'Kenya', 'Kenya', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ki', 'Kiribati', 'Kiribati', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'kr', 'Korea (North), Democratic People''S Republic', 'Korea (North), Democratic People''S Republic', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'kp', 'Korea (South), Republic Of', 'Korea (South), Republic Of', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'kw', 'Kuwait', 'Kuwait', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'kg', 'Kyrgyzstan', 'Kyrgyzstan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'la', 'Lao People''S Democratic Republic', 'Lao People''S Democratic Republic', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'lv', 'Latvia', 'Latvia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'lb', 'Lebanon', 'Lebanon', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ls', 'Lesotho', 'Lesotho', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'lr', 'Liberia', 'Liberia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ly', 'Libyan Arab Jamahiriya', 'Libyan Arab Jamahiriya', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'li', 'Liechtenstein', 'Liechtenstein', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'lt', 'Lithuania', 'Lithuania', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'lu', 'Luxembourg', 'Luxembourg', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mo', 'Macao', 'Macao', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mk', 'Macedonia, The Former Yugoslav Republic Of', 'Macedonia, The Former Yugoslav Republic Of', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mg', 'Madagascar', 'Madagascar', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mw', 'Malawi', 'Malawi', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'my', 'Malaysia', 'Malaysia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mv', 'Maldives', 'Maldives', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ml', 'Mali', 'Mali', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mt', 'Malta', 'Malta', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mh', 'Marshall Islands', 'Marshall Islands', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mq', 'Martinique', 'Martinique', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mr', 'Mauritania', 'Mauritania', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mu', 'Mauritius', 'Mauritius', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'yt', 'Mayotte', 'Mayotte', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mx', 'Mexico', 'Mexico', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'fm', 'Micronesia, Federated States Of', 'Micronesia, Federated States Of', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'md', 'Moldova, Republic Of', 'Moldova, Republic Of', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mc', 'Monaco', 'Monaco', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'me', 'Montenegro', 'Montenegro', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mn', 'Mongolia', 'Mongolia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ms', 'Montserrat', 'Montserrat', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ma', 'Morocco', 'Morocco', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mz', 'Mozambique', 'Mozambique', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mm', 'Myanmar', 'Myanmar', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'na', 'Namibia', 'Namibia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'nr', 'Nauru', 'Nauru', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'np', 'Nepal', 'Nepal', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'nl', 'Netherlands', 'Netherlands', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'an', 'Netherlands Antilles', 'Netherlands Antilles', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'nc', 'New Caledonia', 'New Caledonia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'nz', 'New Zealand', 'New Zealand', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ni', 'Nicaragua', 'Nicaragua', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ne', 'Niger', 'Niger', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ng', 'Nigeria', 'Nigeria', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'nu', 'Niue', 'Niue', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'nf', 'Norfolk Island', 'Norfolk Island', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'mp', 'Northern Mariana Islands', 'Northern Mariana Islands', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'no', 'Norway', 'Norway', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'om', 'Oman', 'Oman', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'pk', 'Pakistan', 'Pakistan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'pw', 'Palau', 'Palau', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ps', 'Palestinian Territory', 'Palestinian Territory', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'pa', 'Panama', 'Panama', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'pg', 'Papua New Guinea', 'Papua New Guinea', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'py', 'Paraguay', 'Paraguay', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'pe', 'Peru', 'Peru', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ph', 'Philippines', 'Philippines', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'pn', 'Pitcairn', 'Pitcairn', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'pl', 'Poland', 'Poland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'pt', 'Portugal', 'Portugal', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'pr', 'Puerto Rico', 'Puerto Rico', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'qa', 'Qatar', 'Qatar', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 're', 'Reunion', 'Reunion', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ro', 'Romania', 'Romania', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ru', 'Russian Federation', 'Russian Federation', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'rw', 'Rwanda', 'Rwanda', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sh', 'Saint Helena', 'Saint Helena', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'kn', 'Saint Kitts And Nevis', 'Saint Kitts And Nevis', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'lc', 'Saint Lucia', 'Saint Lucia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'pm', 'Saint Pierre And Miquelon', 'Saint Pierre And Miquelon', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'vc', 'Saint Vincent And The Grenadines', 'Saint Vincent And The Grenadines', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ws', 'Samoa', 'Samoa', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sm', 'San Marino', 'San Marino', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'st', 'Sao Tome And Principe', 'Sao Tome And Principe', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sa', 'Saudi Arabia', 'Saudi Arabia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sn', 'Senegal', 'Senegal', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'rs', 'Serbia', 'Serbia', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sc', 'Seychelles', 'Seychelles', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sl', 'Sierra Leone', 'Sierra Leone', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sg', 'Singapore', 'Singapore', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sk', 'Slovakia', 'Slovakia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'si', 'Slovenia', 'Slovenia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sb', 'Solomon Islands', 'Solomon Islands', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'so', 'Somalia', 'Somalia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'za', 'South Africa', 'South Africa', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gs', 'South Georgia And The South Sandwich Islands', 'South Georgia And The South Sandwich Islands', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'es', 'Spain', 'Spain', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'lk', 'Sri Lanka', 'Sri Lanka', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sd', 'Sudan', 'Sudan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sr', 'Suriname', 'Suriname', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sj', 'Svalbard And Jan Mayen', 'Svalbard And Jan Mayen', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sz', 'Swaziland', 'Swaziland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'se', 'Sweden', 'Sweden', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ch', 'Switzerland', 'Switzerland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sy', 'Syrian Arab Republic', 'Syrian Arab Republic', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tw', 'Taiwan, Province Of China', 'Taiwan, Province Of China', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tj', 'Tajikistan', 'Tajikistan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tz', 'Tanzania, United Republic Of', 'Tanzania, United Republic Of', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'th', 'Thailand', 'Thailand', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tl', 'Timor-leste', 'Timor-leste', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tg', 'Togo', 'Togo', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tk', 'Tokelau', 'Tokelau', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'to', 'Tonga', 'Tonga', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tt', 'Trinidad And Tobago', 'Trinidad And Tobago', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tn', 'Tunisia', 'Tunisia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tr', 'Turkey', 'Turkey', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tm', 'Turkmenistan', 'Turkmenistan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tc', 'Turks And Caicos Islands', 'Turks And Caicos Islands', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tv', 'Tuvalu', 'Tuvalu', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ug', 'Uganda', 'Uganda', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ua', 'Ukraine', 'Ukraine', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ae', 'United Arab Emirates', 'United Arab Emirates', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gb', 'United Kingdom', 'United Kingdom', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'us', 'United States', 'United States', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'um', 'United States Minor Outlying Islands', 'United States Minor Outlying Islands', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'uy', 'Uruguay', 'Uruguay', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'uz', 'Uzbekistan', 'Uzbekistan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'vu', 'Vanuatu', 'Vanuatu', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'va', 'Vatican City State (Holy See)', 'Vatican City State (Holy See)', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 've', 'Venezuela', 'Venezuela', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'vn', 'Viet Nam', 'Viet Nam', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'vg', 'Virgin Islands (British)', 'Virgin Islands (British)', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'vi', 'Virgin Islands (U.S.)', 'Virgin Islands (U.S.)', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'wf', 'Wallis And Futuna', 'Wallis And Futuna', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'eh', 'Western Sahara', 'Western Sahara', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ye', 'Yemen', 'Yemen', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'yu', 'Yugoslavia', 'Yugoslavia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'zm', 'Zambia', 'Zambia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'zw', 'Zimbabwe', 'Zimbabwe', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'af', 'Afghanistan', 'Afghanistan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ax', 'Aland Islands', 'Aland Islands', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'al', 'Albania', 'Albania', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'dz', 'Algeria', 'Algeria', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'as', 'American Samoa', 'American Samoa', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ad', 'Andorra', 'Andorra', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ao', 'Angola', 'Angola', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ai', 'Anguilla', 'Anguilla', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'aq', 'Antarctica', 'Antarctica', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ag', 'Antigua And Barbuda', 'Antigua And Barbuda', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ar', 'Argentina', 'Argentina', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'am', 'Armenia', 'Armenia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'aw', 'Aruba', 'Aruba', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'au', 'Australia', 'Australia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'at', 'Austria', 'Austria', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'az', 'Azerbaijan', 'Azerbaijan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bs', 'Bahamas', 'Bahamas', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bh', 'Bahrain', 'Bahrain', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bd', 'Bangladesh', 'Bangladesh', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bb', 'Barbados', 'Barbados', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'by', 'Belarus', 'Belarus', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'be', 'Belgium', 'Belgium', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bz', 'Belize', 'Belize', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bj', 'Benin', 'Benin', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bm', 'Bermuda', 'Bermuda', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bt', 'Bhutan', 'Bhutan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bo', 'Bolivia', 'Bolivia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ba', 'Bosnia And Herzegovina', 'Bosnia And Herzegovina', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bw', 'Botswana', 'Botswana', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bv', 'Bouvet Island', 'Bouvet Island', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'br', 'Brazil', 'Brazil', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'io', 'British Indian Ocean Territory', 'British Indian Ocean Territory', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bn', 'Brunei Darussalam', 'Brunei Darussalam', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bg', 'Bulgaria', 'Bulgaria', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bf', 'Burkina Faso', 'Burkina Faso', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'bi', 'Burundi', 'Burundi', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'kh', 'Cambodia', 'Cambodia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cm', 'Cameroon', 'Cameroon', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ca', 'Canada', 'Canada', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cv', 'Cape Verde', 'Cape Verde', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ky', 'Cayman Islands', 'Cayman Islands', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cf', 'Central African Republic', 'Central African Republic', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'td', 'Chad', 'Chad', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cl', 'Chile', 'Chile', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cn', 'China', 'China', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cx', 'Christmas Island', 'Christmas Island', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cc', 'Cocos (Keeling) Islands', 'Cocos (Keeling) Islands', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'co', 'Colombia', 'Colombia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'km', 'Comoros', 'Comoros', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cg', 'Congo', 'Congo', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cd', 'Congo, The Democratic Republic Of The', 'Congo, The Democratic Republic Of The', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ck', 'Cook Islands', 'Cook Islands', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cr', 'Costa Rica', 'Costa Rica', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ci', 'Cote D''Ivoire', 'Cote D''Ivoire', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'hr', 'Croatia', 'Croatia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cu', 'Cuba', 'Cuba', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cy', 'Cyprus', 'Cyprus', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'cz', 'Czech Republic', 'Czech Republic', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'dk', 'Denmark', 'Denmark', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'dj', 'Djibouti', 'Djibouti', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'dm', 'Dominica', 'Dominica', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'do', 'Dominican Republic', 'Dominican Republic', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ec', 'Ecuador', 'Ecuador', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'eg', 'Egypt', 'Egypt', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'sv', 'El Salvador', 'El Salvador', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gq', 'Equatorial Guinea', 'Equatorial Guinea', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'er', 'Eritrea', 'Eritrea', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ee', 'Estonia', 'Estonia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'et', 'Ethiopia', 'Ethiopia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'fk', 'Falkland Islands (Malvinas)', 'Falkland Islands (Malvinas)', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'fo', 'Faroe Islands', 'Faroe Islands', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'fj', 'Fiji', 'Fiji', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'fi', 'Finland', 'Finland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'fr', 'France', 'France', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gf', 'French Guiana', 'French Guiana', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'pf', 'French Polynesia', 'French Polynesia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'tf', 'French Southern Territories', 'French Southern Territories', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ga', 'Gabon', 'Gabon', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gm', 'Gambia', 'Gambia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ge', 'Georgia', 'Georgia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'de', 'Germany', 'Germany', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gh', 'Ghana', 'Ghana', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gi', 'Gibraltar', 'Gibraltar', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gr', 'Greece', 'Greece', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gl', 'Greenland', 'Greenland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gd', 'Grenada', 'Grenada', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gp', 'Guadeloupe', 'Guadeloupe', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gu', 'Guam', 'Guam', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gt', 'Guatemala', 'Guatemala', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gg', 'Guernsey', 'Guernsey', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gn', 'Guinea', 'Guinea', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gw', 'Guinea-bissau', 'Guinea-bissau', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'gy', 'Guyana', 'Guyana', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'ht', 'Haiti', 'Haiti', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'hm', 'Heard Island And Mcdonald Islands', 'Heard Island And Mcdonald Islands', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'hn', 'Honduras', 'Honduras', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'hk', 'Hong Kong', 'Hong Kong', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'hu', 'Ungarn', 'Ungarn', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'is', 'Island', 'Island', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'in', 'India', 'India', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'id', 'Indonesia', 'Indonesia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ir', 'Iran', 'Iran', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'iq', 'Irak', 'Irak', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ie', 'Irland', 'Irland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'im', 'Isle Of Man', 'Isle Of Man', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'il', 'Israel', 'Israel', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'it', 'Italia', 'Italia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'jm', 'Jamaica', 'Jamaica', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'jp', 'Japan', 'Japan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'je', 'Jersey', 'Jersey', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'jo', 'Jordan', 'Jordan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'kz', 'Kasakhstan', 'Kasakhstan', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ke', 'Kenya', 'Kenya', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ki', 'Kiribati', 'Kiribati', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'kp', 'Korea, Sør', 'Nord-Korea', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'kr', 'Korea, Nord', 'Korea, Nord', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'kw', 'Kuwait', 'Kuwait', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'kg', 'Kirgistan', 'Kirgistan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'la', 'Laos', 'Laos', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'lv', 'Latvia', 'Latvia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'lb', 'Libanon', 'Libanon', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ls', 'Lesotho', 'Lesotho', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'lr', 'Liberia', 'Liberia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ly', 'Libya', 'Libya', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'li', 'Liechtenstein', 'Liechtenstein', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'lt', 'Litauen', 'Litauen', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'lu', 'Luxembourg', 'Luxembourg', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mo', 'Macao', 'Macao', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mk', 'Makedonia', 'Makedonia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mg', 'Madagaskar', 'Madagaskar', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mw', 'Malawi', 'Malawi', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'my', 'Malaysia', 'Malaysia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mv', 'Maldivene', 'Maldivene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ml', 'Mali', 'Mali', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mt', 'Malta', 'Malta', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mh', 'Marshalløyene', 'Marshalløyene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mq', 'Martinique', 'Martinique', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mr', 'Mauritania', 'Mauritania', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mu', 'Mauritius', 'Mauritius', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'yt', 'Mayotte', 'Mayotte', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mx', 'Mexico', 'Mexico', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'fm', 'Mikronesiaføderasjonen', 'Mikronesiaføderasjonen', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'md', 'Moldova', 'Moldova', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mc', 'Monaco', 'Monaco', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'me', 'Montenegro', 'Montenegro', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mn', 'Mongolia', 'Mongolia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ms', 'Montserrat', 'Montserrat', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ma', 'Marokko', 'Marokko', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mz', 'Mosambik', 'Mosambik', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mm', 'Burma', 'Burma', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'na', 'Namibia', 'Namibia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'nr', 'Nauru', 'Nauru', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'np', 'Nepal', 'Nepal', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'nl', 'Nederland', 'Nederland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'an', 'De nederlandske antiller', 'De nederlandske antiller', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'nc', 'Ny-Caledonia', 'Ny-Caledonia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'nz', 'New Zealand', 'New Zealand', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ni', 'Nicaragua', 'Nicaragua', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ne', 'Niger', 'Niger', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ng', 'Nigeria', 'Nigeria', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'nu', 'Niue', 'Niue', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'nf', 'Norfolk Island', 'Norfolk Island', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'mp', 'Nord-Marianene', 'Nord-Marianene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'no', 'Norge', 'Norge', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'om', 'Oman', 'Oman', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'pk', 'Pakistan', 'Pakistan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'pw', 'Palau', 'Palau', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ps', 'De okkuperte palestinske områdene', 'De okkuperte palestinske områdene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'pa', 'Panama', 'Panama', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'pg', 'Papua Ny-Guinea', 'Papua Ny-Guinea', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'py', 'Paraguay', 'Paraguay', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'pe', 'Peru', 'Peru', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ph', 'Filippinene', 'Filippinene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'pn', 'Pitcairn', 'Pitcairn', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'pl', 'Polen', 'Polen', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'pt', 'Portugal', 'Portugal', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'pr', 'Puerto Rico', 'Puerto Rico', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'qa', 'Qatar', 'Qatar', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 're', 'Réunion', 'Réunion', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ro', 'Romania', 'Romania', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ru', 'Russland', 'Russland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'rw', 'Rwanda', 'Rwanda', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sh', 'St. Helena', 'St. Helena', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'kn', 'Saint Kitts og Nevis', 'Saint Kitts og Nevis', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'lc', 'Saint Lucia', 'Saint Lucia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'pm', 'Saint-Pierre-et-Miquelon', 'Saint-Pierre-et-Miquelon', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'vc', 'Saint Vincent og Grenadinene', 'Saint Vincent og Grenadinene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ws', 'Samoa', 'Samoa', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sm', 'San Marino', 'San Marino', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'st', 'São Tomé og Príncipe', 'São Tomé og Príncipe', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sa', 'Saudi-Arabia', 'Saudi-Arabia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sn', 'Senegal', 'Senegal', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'rs', 'Serbia', 'Serbia', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sc', 'Seychellene', 'Seychellene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sl', 'Sierra Leone', 'Sierra Leone', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sg', 'Singapore', 'Singapore', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sk', 'Slovakia', 'Slovakia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'si', 'Slovenia', 'Slovenia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sb', 'Salomonøyene', 'Salomonøyene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'so', 'Somalia', 'Somalia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'za', 'Sør-Afrika', 'Sør-Afrika', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gs', 'Sør-Georgia og de søre Sandwichøyene', 'Sør-Georgia og de søre Sandwichøyene', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'es', 'Spania', 'Spania', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'lk', 'Sri Lanka', 'Sri Lanka', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sd', 'Sudan', 'Sudan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sr', 'Surinam', 'Surinam', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sj', 'Svalbard og Jan Mayen', 'Svalbard og Jan Mayen', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sz', 'Swaziland', 'Swaziland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'se', 'Sverige', 'Sverige', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ch', 'Sveits', 'Sveits', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sy', 'Syria', 'Syria', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tw', 'Taiwan', 'Taiwan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tj', 'Tadsjikistan', 'Tadsjikistan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tz', 'Tanzania', 'Tanzania', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'th', 'Thailand', 'Thailand', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tl', 'Øst-Timor', 'Øst-Timor', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tg', 'Togo', 'Togo', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tk', 'Tokelau', 'Tokelau', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'to', 'Tonga', 'Tonga', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tt', 'Trinidad og Tobago', 'Trinidad og Tobago', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tn', 'Tunisia', 'Tunisia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tr', 'Tyrkia', 'Tyrkia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tm', 'Turkmenistan', 'Turkmenistan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tc', 'Turks- og Caicosøyene', 'Turks- og Caicosøyene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tv', 'Tuvalu', 'Tuvalu', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ug', 'Uganda', 'Uganda', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ua', 'Ukraina', 'Ukraina', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ae', 'De forente arabiske emirater', 'De forente arabiske emirater', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gb', 'Storbritannia', 'Storbritannia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'us', 'USA', 'USA', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'um', 'USA, mindre, utenforliggende øyer', 'USA, mindre, utenforliggende øyer', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'uy', 'Uruguay', 'Uruguay', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'uz', 'Usbekistan', 'Usbekistan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'vu', 'Vanuatu', 'Vanuatu', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'va', 'Vatikanstaten', 'Vatikanstaten', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 've', 'Venezuela', 'Venezuela', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'vn', 'Vietnam', 'Vietnam', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'vg', 'Jomfruøyene (Britisk)', 'Jomfruøyene (Britisk)', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'vi', 'Jomfruøyene (USA)', 'Jomfruøyene (USA)', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'wf', 'Wallis- og Futunaøyene', 'Wallis- og Futunaøyene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'eh', 'Vest-Sahara', 'Vest-Sahara', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ye', 'Jemen', 'Jemen', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'yu', 'Yugoslavia', 'Yugoslavia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'zm', 'Zambia', 'Zambia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'zw', 'Zimbabwe', 'Zimbabwe', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'af', 'Afghanistan', 'Afghanistan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ax', 'Åland', 'Åland', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'al', 'Albania', 'Albania', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'dz', 'Algerie', 'Algerie', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'as', 'Amerikansk Samoa', 'Amerikansk Samoa', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ad', 'Andorra', 'Andorra', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ao', 'Angola', 'Angola', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ai', 'Anguilla', 'Anguilla', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'aq', 'Antarktika', 'Antarktika', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ag', 'Antigua og Barbuda', 'Antigua og Barbuda', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ar', 'Argentina', 'Argentina', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'am', 'Armenia', 'Armenia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'aw', 'Aruba', 'Aruba', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'au', 'Australia', 'Australia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'at', 'Østerrike', 'Østerrike', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'az', 'Aserbajdsjan', 'Aserbajdsjan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bs', 'Bahamas', 'Bahamas', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bh', 'Bahrain', 'Bahrain', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bd', 'Bangladesh', 'Bangladesh', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bb', 'Barbados', 'Barbados', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'by', 'Hviterussland', 'Hviterussland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'be', 'Belgia', 'Belgia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bz', 'Belize', 'Belize', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bj', 'Benin', 'Benin', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bm', 'Bermuda', 'Bermuda', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bt', 'Bhutan', 'Bhutan', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bo', 'Bolivia', 'Bolivia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ba', 'Bosnia-Hercegovina', 'Bosnia-Hercegovina', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bw', 'Botswana', 'Botswana', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bv', 'Bouvetøya', 'Bouvetøya', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'br', 'Brasil', 'Brasil', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'io', 'Britisk territorium i Indiahavet', 'Britisk territorium i Indiahavet', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bn', 'Brunei', 'Brunei', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bg', 'Bulgaria', 'Bulgaria', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bf', 'Burkina Faso', 'Burkina Faso', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'bi', 'Burundi', 'Burundi', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'kh', 'Kambodsja', 'Kambodsja', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cm', 'Kamerun', 'Kamerun', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ca', 'Canada', 'Canada', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cv', 'Kapp Verde', 'Kapp Verde', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ky', 'Caymanøyene', 'Caymanøyene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cf', 'Den sentralafrikanske republikk', 'Den sentralafrikanske republikk', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'td', 'Tsjad', 'Tsjad', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cl', 'Chile', 'Chile', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cn', 'Kina', 'Kina', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cx', 'Christmasøya', 'Christmasøya', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cc', 'Kokosøyene', 'Kokosøyene', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'co', 'Colombia', 'Colombia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'km', 'Komorene', 'Komorene', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cg', 'Kongo-Brazzaville', 'Kongo-Brazzaville', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cd', 'Kongo', 'Kongo', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ck', 'Cookøyene', 'Cookøyene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cr', 'Costa Rica', 'Costa Rica', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ci', 'Elfenbenskysten', 'Elfenbenskysten', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'hr', 'Kroatia', 'Kroatia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cu', 'Cuba', 'Cuba', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cy', 'Kypros', 'Kypros', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'cz', 'Tsjekkia', 'Tsjekkia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'dk', 'Danmark', 'Danmark', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'dj', 'Djibouti', 'Djibouti', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'dm', 'Dominica', 'Dominica', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'do', 'Den dominikanske republikk', 'Den dominikanske republikk', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ec', 'Ecuador', 'Ecuador', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'eg', 'Egypt', 'Egypt', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'sv', 'El Salvador', 'El Salvador', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gq', 'Ekvatorial-Guinea', 'Ekvatorial-Guinea', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'er', 'Eritrea', 'Eritrea', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ee', 'Estland', 'Estland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'et', 'Etiopia', 'Etiopia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'fk', 'Falklandsøyene', 'Falklandsøyene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'fo', 'Færøyene', 'Færøyene', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'fj', 'Fiji', 'Fiji', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'fi', 'Finland', 'Finland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'fr', 'Frankrike', 'Frankrike', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gf', 'Fransk Guyana', 'Fransk Guyana', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'pf', 'Fransk Polynesia', 'Fransk Polynesia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'tf', 'Søre franske territorier', 'Søre franske territorier', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ga', 'Gabon', 'Gabon', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gm', 'Gambia', 'Gambia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ge', 'Georgia', 'Georgia', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'de', 'Tyskland', 'Tyskland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gh', 'Ghana', 'Ghana', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gi', 'Gibraltar', 'Gibraltar', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gr', 'Hellas', 'Hellas', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gl', 'Grønland', 'Grønland', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gd', 'Grenada', 'Grenada', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gp', 'Guadeloupe', 'Guadeloupe', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gu', 'Guam', 'Guam', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gt', 'Guatemala', 'Guatemala', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gg', 'Guernsey', 'Guernsey', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gn', 'Guinea', 'Guinea', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gw', 'Guinea-Bissau', 'Guinea-Bissau', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'gy', 'Guyana', 'Guyana', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'ht', 'Haiti', 'Haiti', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'hm', 'Heard- og McDonald-øyene', 'Heard- og McDonald-øyene', 0)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'hn', 'Honduras', 'Honduras', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'hk', 'Hongkong', 'Hongkong', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('en', 'z8', 'Satelite & Other', 'Satelite & Other', 1)");
+    $ret[] = update_sql("INSERT INTO `astccniso` VALUES ('no', 'z8', 'Satelite & Other', 'Satelite & Other', 1)");
+
+  return $ret;
+}
+
+
+
+
+function astbill_update_056() {
+  $ret = array();
+    $ret[] = update_sql("CREATE TABLE `astccnlist` (
+  `ccn` int(11) NOT NULL default '0',
+  `isoid` char(2) NOT NULL default '',
+  `mobile` tinyint(1) NOT NULL default '0',
+  `productcode` varchar(40) NOT NULL default '950',
+  `traffictype` varchar(255) NOT NULL default '',
+  PRIMARY KEY  (`ccn`),
+  KEY `productcode` (`productcode`,`ccn`),
+  KEY `countrycode` (`ccn`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+    $ret[] = update_sql("CREATE TABLE `astccnprefix` (
+  `prefix` varchar(40) NOT NULL default '',
+  `ccn` int(11) NOT NULL default '0',
+  `description` varchar(128) NOT NULL default '',
+  PRIMARY KEY  (`prefix`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `isoid` char(2) NOT NULL default '' AFTER `state`");
+    $ret[] = update_sql("update astpartner set active = 1 where pid = 30000");
+    $ret[] = update_sql("INSERT INTO `astacgroup` VALUES ('pbx_', 'AstBill', 'Site', 0, 1, 0, NULL, '')");
+    $ret[] = update_sql("update astpartner set company = 'Default Customer / Partner' where pid = 30000");
+
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (44, '02071006433', 'pbx_', 1, NULL, NULL, 'AstBillDemo', '70103', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (44, '02081006443', 'pbx_', 1, NULL, NULL, 'AstBillDemo', '70103&70107', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (44, '08700682725', 'pbx_', 2, NULL, NULL, 'AstBillDemo', '70106', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (44, '08700682727', 'pbx_', 2, NULL, NULL, 'AstBillDemo', '70108', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (1, '13602267846', 'pbx_', 2, NULL, NULL, 'AstBillDemo', '70108', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (1, '14324147846', 'pbx_', 2, NULL, NULL, 'AstBillDemo', '70111', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+    $ret[] = update_sql("INSERT INTO `astacdid` VALUES (1, '19950797846', 'pbx_', 2, NULL, NULL, 'AstBillDemo', '70382', 'N', '', '', '', 15, '', 1, 0, NULL, NULL, NULL, NULL, '', NULL, '2006-04-29 17:03:47')");
+
+    $ret[] = update_sql("REPLACE INTO `astsumaccount`
+	SELECT `accountcode`, (
+	select count(*) from astcdr cdr where cdr.accountcode = acc.accountcode and `dialstatus` like 'ANSWER%'
+	and `answeredtime` <> 0 and `trunk` <> 'Local'
+	) AS `countcalls`,
+	(select IFNULL(sum(cdr.price),0) from astcdr cdr where cdr.accountcode = acc.accountcode and cdr.dialstatus like 'ANSWER%' and cdr.answeredtime <> 0 
+	and trunk <> 'Local' 
+	) AS `sumcost`,
+	(select IFNULL(sum(pay.paidamount),0) from `astpayment` pay WHERE pay.accountcode = acc.accountcode
+	) AS `sumpaid`
+	FROM astaccount acc");
+    $ret[] = update_sql("REPLACE INTO `astsumpartner`
+	SELECT pid, (select Count(*) from astuser us where partnerid = pid) user,
+	(SELECT Count(*) AS users FROM astaccount ac, astuser us 
+	WHERE ac.db_prefix = us.db_prefix and ac.uid = us.uid and 
+	ac.tech in (select actype from astactype where active = '1') and
+	partnerid = pid) account,
+	(SELECT Count(*) AS msn FROM astacdid did, astuser us,astpartner pa 
+	WHERE did.uid = us.uid and did.db_prefix = us.db_prefix and us.partnerid = pa.pid 
+	and pa.pid = apa.pid) did
+	FROM astpartner apa");
+    $ret[] = update_sql("REPLACE INTO `astsumorderip`
+	SELECT 'ipp_',CONCAT(YEAR(Now()),'/',WEEK(Now())) uke, Count(*) count,ROUND(Count(*) * 100 / (SELECT Count(*) count from astorderip),2) prosent,
+	(SELECT Count(*) count from astorderip) totalt, 
+	(SELECT Count(*) from astacdid where db_prefix = 'ipp_') msn,
+	(SELECT Count(*) from astaccount where db_prefix = 'ipp_' and tech = 'SIP') SIP,
+	workflow WF, Now()
+	FROM astorderip ord
+	left join astacgroup gr on ord.workflow = gr.gtype
+	GROUP BY workflow
+	order by lineno");
+
+    $ret[] = update_sql("INSERT INTO `astacgroup` VALUES ('SIP', 'SIP VOIP Telephone / ATA Box', 'CreateAccount', 0, 1, 20, NULL, '')");
+    $ret[] = update_sql("INSERT INTO `astacgroup` VALUES ('IAX', 'IAX - Single Account', 'CreateAccount', 0, 1, 40, NULL, '')");
+    $ret[] = update_sql("INSERT INTO `astacgroup` VALUES ('IAXSERV', 'IAX - Asterisk Server', 'CreateAccount', 0, 1, 50, NULL, '')");
+    $ret[] = update_sql("INSERT INTO `astacgroup` VALUES ('SIPFAX', 'SIP Fax t.38', 'CreateAccount', 0, 1, 30, NULL, '')");
+
+  return $ret;
+
+}
+
+function astbill_update_057() {
+  $ret = array();
+    $ret[] = update_sql("ALTER TABLE `astuser` ADD `isagent` tinyint(1) NOT NULL default '1' AFTER `ordercode`");
+    $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `commission` tinyint(1) NOT NULL default '0' AFTER `active`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `date_sendt` date NOT NULL default '0000-00-00' AFTER `date_followup`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `fieldvendor` varchar(40) NOT NULL default '' AFTER `date_sendt`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `fieldremarks` text NOT NULL default '' AFTER `fieldvendor`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `productcode` varchar(40) NOT NULL default '' AFTER `customers_order`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `sendtref` varchar(256) NOT NULL default '' AFTER `date_sendt`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` CHANGE `fieldvendor` `fieldvendor` int(10) NOT NULL default '0'");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `isfieldvendor` tinyint(4) NOT NULL default '0' AFTER `isvendor`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `rateplan` varchar(128) DEFAULT '' NOT NULL AFTER `due_date`");
+    $ret[] = update_sql("ALTER TABLE `astuser` CHANGE `callbackto` `callbackto` varchar(128) NOT NULL default ''");
+  return $ret;
+
+}
+
+function astbill_update_058() {
+  $ret = array();
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `deliverycert` tinyint(1) DEFAULT '0' NOT NULL AFTER `workflow`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `invoiceref` varchar(128) DEFAULT '' NOT NULL AFTER `deliverycert`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `invoice_date` date DEFAULT '0000-00-00' NOT NULL AFTER `invoiceref`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `invoiceremarks` text DEFAULT '' NOT NULL AFTER `invoice_date`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `invoiceref2` varchar(128) DEFAULT '' NOT NULL AFTER `invoiceref`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `invoiceref3` varchar(128) DEFAULT '' NOT NULL AFTER `invoiceref2`");
+    $ret[] = update_sql("ALTER TABLE `astinvoiceline` ADD `timestamp` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL AFTER `unit`");
+    $ret[] = update_sql("update astinvoiceline set  timestamp = Now()");
+    $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `responsible` varchar(128) DEFAULT '' NOT NULL AFTER `partnerid`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `install_mobile` varchar(128) DEFAULT '' NOT NULL AFTER `install_date`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `install_email` varchar(128) DEFAULT '' NOT NULL AFTER `install_mobile`");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `resellerid` varchar(40) DEFAULT 'ast' NOT NULL AFTER `db_prefix`");
+    $ret[] = update_sql("ALTER TABLE `astuser` ADD `maxline` int(4) DEFAULT '40' NOT NULL AFTER `comment`");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `masterpid` int(11) DEFAULT '30000' NOT NULL AFTER `uid`");
+    $ret[] = update_sql("ALTER TABLE `astpartner` CHANGE `active` `active` tinyint(1) DEFAULT '1' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `isreseller` varchar(40) DEFAULT '' NOT NULL AFTER `isprospect`");
+    $ret[] = update_sql("update astpartner set isreseller = 'ast' where pid = 30000");
+    $ret[] = update_sql("ALTER TABLE `astproduct` ADD `reseller` varchar(40) DEFAULT '' NOT NULL FIRST");
+    $ret[] = update_sql("ALTER TABLE `astproduct` DROP PRIMARY KEY");
+    $ret[] = update_sql("ALTER TABLE `astproduct` ADD PRIMARY KEY (`reseller`,`productcode`)");
+    $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `inprogress` tinyint(1) DEFAULT '0' NOT NULL AFTER commission");
+    $ret[] = update_sql("ALTER TABLE `astacgroup` ADD `isproduction` tinyint(1) DEFAULT '0' NOT NULL AFTER inprogress");
+    $ret[] = update_sql("CREATE TABLE `astproductip` (
+  `reseller` varchar(40) NOT NULL default '',
+  `productcode` varchar(40) NOT NULL,
+  `categoryid` varchar(6) NOT NULL default '',
+  `description` varchar(50) NOT NULL default '',
+  `longdescription` text NOT NULL,
+  `ourcost` decimal(20,4) NOT NULL default '0.0000',
+  `price1` decimal(20,4) NOT NULL default '0.0000',
+  `price2` decimal(20,4) NOT NULL default '0.0000',
+  `monthlyrent` decimal(20,4) NOT NULL default '0.0000',
+  `monthlyinsurance` decimal(20,4) NOT NULL default '0.0000',
+  `faktor` decimal(20,4) NOT NULL default '0.0000',
+  `rentalperiod` int(4) NOT NULL default '0',
+  `insurancefactor` decimal(20,4) NOT NULL default '0.0000',
+  `setupfee` decimal(20,4) NOT NULL default '0.0000',
+  `setupfaktor` decimal(20,4) NOT NULL default '0.0000',
+  `active` tinyint(1) NOT NULL default '1',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`reseller`,`productcode`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8");
+
+    $ret[] = update_sql("CREATE TABLE `astpayagent` (
+  `apaid` int(10) unsigned NOT NULL auto_increment,
+  `uid` int(10) unsigned NOT NULL default '0',
+  `generalledger` varchar(255) NOT NULL default '',
+  `paytype` varchar(255) NOT NULL default '',
+  `payment_status` varchar(255) default NULL,
+  `remarks` varchar(10255) NOT NULL default '',
+  `paidamount` decimal(10,2) NOT NULL default '0.00',
+  `paiddate` datetime NOT NULL default '0000-00-00 00:00:00',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`apaid`)
+) ENGINE=INNODB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8");
+
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `productcode1` varchar(40) DEFAULT '' NOT NULL AFTER delivery_date");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `productcode2` varchar(40) DEFAULT '' NOT NULL AFTER `productcode1`");
+    $ret[] = update_sql("ALTER TABLE `astpayagent` ADD `oid` int(10) DEFAULT '0' NOT NULL AFTER `payment_status`");
+    $ret[] = update_sql("update astacdid set serverid = '' where serverid is null");
+    $ret[] = update_sql("ALTER TABLE `astacdid` CHANGE `serverid` `serverid` varchar(40) DEFAULT '' NOT NULL");
+
+    $ret[] = update_sql("CREATE TABLE `astserver` (
+  `serverid` varchar(25) NOT NULL,
+  `pid` int(10) NOT NULL default '0',
+  `asteriskversion` varchar(255) NOT NULL,
+  `asterisk_started` datetime NOT NULL,
+  `host` varchar(128) default NULL,
+  `iaxport` varchar(128) default NULL,
+  `sshport` varchar(128) default NULL,
+  `sshusername` varchar(128) default NULL,
+  `sshpassword` varchar(128) default NULL,
+  `lanhost` varchar(128) default NULL,
+  `laniaxport` varchar(128) default NULL,
+  `lansshport` varchar(128) default NULL,
+  `servertech` varchar(256) default NULL,
+  `voxtech` varchar(128) default NULL,
+  `mysqluser` varchar(128) default NULL,
+  `mysqluser2` varchar(128) default NULL,
+  `dial9` varchar(256) default NULL,
+  `date_created` datetime NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`serverid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  return $ret;
+}
+
+function astbill_update_059() {
+  $ret = array();
+    $ret[] = update_sql("CREATE TABLE `astcdrinv` (
+  `cvid` int(11) NOT NULL auto_increment,
+  `cdrid` int(10) NOT NULL default '0',
+  `accountcode` varchar(40) NOT NULL,
+  `rpid` varchar(40) NOT NULL default '',
+  `subacc` varchar(40) NOT NULL default '',
+  `partnerid` int(11) NOT NULL default '0',
+  `uid` int(10) NOT NULL default '0',
+  `resellerid` varchar(40) default '',
+  `callednum` varchar(255) default '',
+  `status` tinyint(3) unsigned NOT NULL default '0',
+  `ccn` int(11) NOT NULL default '0',
+  `trunk` varchar(128) NOT NULL default 'DEF',
+  `rateplan` varchar(40) NOT NULL default '',
+  `rateplan2` varchar(40) NOT NULL default '',
+  `rateplan3` varchar(40) NOT NULL default '',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `answeredtime` int(11) default '0',
+  `billtime` int(11) NOT NULL default '0',
+  `billtime2` int(11) NOT NULL default '0',
+  `billtime3` int(11) NOT NULL default '0',
+  `ourcost` decimal(10,2) default '0.00',
+  `price` decimal(12,2) default '0.00',
+  `price2` decimal(12,2) default '0.00',
+  `price3` decimal(12,2) NOT NULL default '0.00',
+  `invoiceid` int(11) unsigned default NULL,
+  `invoiceid2` int(11) unsigned default NULL,
+  `invoiceid3` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`cvid`),
+  KEY `invoiceid_id` (`invoiceid`,`cvid`),
+  KEY `accountcode` (`accountcode`,`cvid`),
+  KEY `resellerid_par_id` (`resellerid`,`partnerid`,`cvid`),
+  KEY `partnerid_id` (`partnerid`,`cvid`),
+  KEY `invoiceid_ccn` (`invoiceid`,`ccn`),
+  KEY `invoiceid_account_ccn` (`invoiceid`,`accountcode`,`ccn`),
+  KEY `ccn` (`ccn`,`callednum`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8");
+
+    $ret[] = update_sql("ALTER TABLE `astuser` ADD `useralias` varchar(40) DEFAULT '' NOT NULL AFTER lastaccount");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `resellerid` varchar(40) DEFAULT '' NOT NULL AFTER `db_prefix`");
+    $ret[] = update_sql("update astinvoice set resellerid = LEFT(db_prefix,3)");
+    $ret[] = update_sql("ALTER TABLE `astproduct` CHANGE `reseller` `resellerid` varchar(40) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astinvrecurr` ADD `resellerid` varchar(40) DEFAULT '' NOT NULL AFTER `db_prefix`");
+    $ret[] = update_sql("update `astinvrecurr` set resellerid = LEFT(db_prefix,3)");
+
+    $ret[] = update_sql("CREATE TABLE `astticket` (
+  `tid` int(11) NOT NULL auto_increment,
+  `from` varchar(128) NOT NULL default '',
+  `mobile` varchar(128) NOT NULL default '',
+  `email` varchar(128) NOT NULL default '',
+  `partnerid` int(11) NOT NULL default '0',
+  `assignqueue` varchar(128) NOT NULL default '',
+  `assigneduid` int(10) NOT NULL default '0',
+  `reporteruid` int(10) NOT NULL default '0',
+  `subject` varchar(256) NOT NULL default '',
+  `severity` varchar(128) NOT NULL default '',
+  `priority` varchar(128) NOT NULL default '',
+  `timeunits` int(11) NOT NULL default '0',
+  `pending_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `date_created` datetime NOT NULL default '0000-00-00 00:00:00',
+  PRIMARY KEY  (`tid`),
+  KEY `partnerid_tid` (`partnerid`,`tid`)
+) ENGINE=MYISAM DEFAULT CHARSET=utf8");
+
+    $ret[] = update_sql("CREATE TABLE `astticketremarks` (
+  `trid` int(11) NOT NULL auto_increment,
+  `tid` int(11) NOT NULL default '0',
+  `reporteruid` int(10) NOT NULL default '0',
+  `remarks` text NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`trid`)
+) ENGINE=MYISAM DEFAULT CHARSET=utf8");
+
+    $ret[] = update_sql("ALTER TABLE `astinvrecurr` ADD `next_run_date` date DEFAULT '0000-00-00' NOT NULL AFTER `invoice_upto_date`");
+    $ret[] = update_sql("ALTER TABLE `astticket` ADD `closed_date` date DEFAULT '0000-00-00' NOT NULL AFTER `timeunits`");
+    $ret[] = update_sql("ALTER TABLE `astticket` ADD `closeduid` int(10) NOT NULL default '0' AFTER `closed_date`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` CHANGE `timestamp` `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `cdrlines` int(11) NOT NULL default '0' AFTER `gross`");
+    $ret[] = update_sql("ALTER TABLE `astinvoice` ADD `sumcdr` decimal(12,2) NOT NULL default '0' AFTER `cdrlines`");
+    $ret[] = update_sql("ALTER TABLE `astinvoiceline` CHANGE `timestamp` `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+    $ret[] = update_sql("ALTER TABLE `astpartner` CHANGE `timestamp` `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+    $ret[] = update_sql("ALTER TABLE `astorderip` CHANGE `timestamp` `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+    
+    $ret[] = update_sql("CREATE TABLE `astreseller` (
+  `resellerid` varchar(40) NOT NULL default '',
+  `resellername` varchar(128) default '',
+  PRIMARY KEY  (`resellerid`)
+) ENGINE=MyIsam DEFAULT CHARSET=utf8");
+
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `secret` varchar(80) NOT NULL default '' AFTER serverid");
+    $ret[] = update_sql("ALTER TABLE `astuser` ADD `isticketcsr` tinyint(1) NOT NULL default '0' AFTER `isagent`");
+    $ret[] = update_sql("ALTER TABLE `astuser` ADD `deviceip` varchar(256) NOT NULL default '' AFTER isticketcsr");
+    $ret[] = update_sql("ALTER TABLE `astuser` ADD `devicetype` int(10) unsigned NOT NULL default '0' AFTER deviceip");
+    $ret[] = update_sql("ALTER TABLE `astacdid` ADD `hgid` int(10) unsigned NOT NULL default '0' AFTER serverid");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `isdslvendor` tinyint(4) NOT NULL default '0' AFTER `isfieldvendor`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `dsldvendor` int(10) NOT NULL default '0' AFTER `fieldvendor`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `dsl_delivered_date` date DEFAULT '0000-00-00' NOT NULL AFTER `delivery_date`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `dsl_vendor_ref` varchar(256) DEFAULT '' NOT NULL AFTER `fieldremarks`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `dsl_vendor_transid` varchar(256) DEFAULT '' NOT NULL AFTER `dsl_vendor_ref`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `dsl_vendor_startcost` decimal(12,2) DEFAULT '0' NOT NULL AFTER `dsl_vendor_transid`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `dsl_vendor_monthcost` decimal(12,2) DEFAULT '0' NOT NULL AFTER `dsl_vendor_startcost`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `dsl_start_amount` decimal(12,2) DEFAULT '0' NOT NULL AFTER `dsl_vendor_monthcost`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `dsl_month_amount` decimal(12,2) DEFAULT '0' NOT NULL AFTER `dsl_start_amount`");
+    $ret[] = update_sql("ALTER TABLE `astorderip` ADD `dsl_invoiceref` varchar(128) DEFAULT '' NOT NULL AFTER `dsl_month_amount`");
+    $ret[] = update_sql("ALTER TABLE `astticket` ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+    $ret[] = update_sql("ALTER TABLE `astticket` ADD `ccd` int(10) DEFAULT '0' NOT NULL AFTER assigneduid");
+    $ret[] = update_sql("ALTER TABLE `astaccount` ADD `presenrestricted` tinyint(1) DEFAULT '0' NOT NULL AFTER forcecallerid");
+    $ret[] = update_sql("ALTER TABLE `asttrunk` ADD `pathrestricted` varchar(128) NULL AFTER path");
+    $ret[] = update_sql("ALTER TABLE `asttrunk` DROP  `currency`");
+    $ret[] = update_sql("ALTER TABLE `asttrunk` CHANGE `tenantid` `partnerid` int(11) DEFAULT '0' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `asttrunk` CHANGE `comment` `remarks` varchar(2048) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `asttrunk` ADD `namerestricted` varchar(128) NULL AFTER name");
+    $ret[] = update_sql("ALTER TABLE `astinvoiceline` CHANGE `phoneno` `phoneno` varchar(40) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astaccount` ADD `regserver` varchar(128) NULL AFTER timestamp");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD `cvid` int(11) DEFAULT '0' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astcdr` ADD KEY `cvid` (`cvid`)");
+    $ret[] = update_sql("ALTER TABLE `astccnlist` ADD `calculationstages` tinyint(1) DEFAULT '1' NOT NULL AFTER ccn");
+    $ret[] = update_sql("DROP VIEW IF EXISTS `asvccnratit`");
+   
+    $ret[] = update_sql("CREATE VIEW `asvccnratit` AS select `astcdrinv`.`cvid` AS `cvid`,
+`astcdrinv`.`invoiceid` AS `invoiceid`,`astcdrinv`.`callednum` AS `callednum`,`astcdrinv`.`date_created` AS `date`,
+dayofweek(`astcdrinv`.`date_created`) AS `day`,
+(case when not((`astcdrinv`.`callednum` like '47%')) then 4 
+when not((`astcdrinv`.`ccn` in (11,903,904,924,905,16,901,906,900,897,898,35,902))) then 1 
+when (dayofweek(`astcdrinv`.`date_created`) in (1,7)) then 3 when ((cast(`astcdrinv`.`date_created` as time) 
+< '08:00:00') or (cast(`astcdrinv`.`date_created` as time) > '17:00:00')) then 2  
+else 1 end) AS `callrate`, 
+ccn, rateplan, rateplan3,billtime,billtime3,price,price3
+from `astcdrinv`");
+
+    $ret[] = update_sql("DROP VIEW IF EXISTS `asvccnratit3`");
+    $ret[] = update_sql("CREATE VIEW `asvccnratit3` AS select asv.*, 
+CASE asv.callrate WHEN 1 THEN rat.rate WHEN 2 THEN rat.rateoffpeak WHEN 3 THEN rat.rateweekend ELSE rat.rate END rate,
+connectcharge
+from `asvccnratit` asv, astccnrate rat
+where asv.ccn = rat.ccn and asv.rateplan3 = rat.rateplan");
+
+
+    $ret[] = update_sql("DROP VIEW IF EXISTS `asvccncallrate1`");
+    $ret[] = update_sql("CREATE VIEW `asvccncallrate1` AS 
+SELECT cvid,date_created,
+dayofweek(date_created) AS `day`,
+(case when not((`astcdrinv`.`callednum` like '47%')) then 4 
+when not((`astcdrinv`.`ccn` in (11,903,904,924,905,16,901,906,900,897,898,35,902))) then 1 
+when (dayofweek(`astcdrinv`.`date_created`) in (1,7)) then 3 when ((cast(`astcdrinv`.`date_created` as time) 
+< '08:00:00') or (cast(`astcdrinv`.`date_created` as time) > '17:00:00')) then 2  
+else 1 end) AS `callrate`,
+ccn,callednum
+from `astcdrinv`");
+
+    $ret[] = update_sql("ALTER TABLE `asttrunk`    ADD `sumamount`       decimal(12,4) DEFAULT '0' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `asttrunk`    ADD `cdrlines`        int(11) DEFAULT '0' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `asttrunk`    ADD `sumansweredtime`	int(11) DEFAULT '0' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astreseller` ADD `sumamount`	decimal(12,4) DEFAULT '0' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astreseller` ADD `cdrlines`	int(11) DEFAULT '0' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astreseller` ADD `sumbilltime`	int(11) DEFAULT '0' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astreseller` ADD `sumansweredtime` int(11) DEFAULT '0' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astpartner`  ADD `sumamount`	decimal(12,4) DEFAULT '0' NOT NULL AFTER active");
+    $ret[] = update_sql("ALTER TABLE `astpartner`  ADD `cdrlines`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`");
+    $ret[] = update_sql("ALTER TABLE `astpartner`  ADD `sumbilltime`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`");
+    $ret[] = update_sql("ALTER TABLE `astpartner`  ADD `sumansweredtime` int(11) DEFAULT '0' NOT NULL AFTER `sumamount`");
+    $ret[] = update_sql("ALTER TABLE `astuser`     ADD `sumamount`	decimal(12,4) DEFAULT '0' NOT NULL AFTER creditlimit");
+    $ret[] = update_sql("ALTER TABLE `astuser`     ADD `cdrlines`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`");
+    $ret[] = update_sql("ALTER TABLE `astuser`     ADD `sumbilltime`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`");
+    $ret[] = update_sql("ALTER TABLE `astuser`     ADD `sumansweredtime` int(11) DEFAULT '0' NOT NULL AFTER `sumamount`");
+    $ret[] = update_sql("ALTER TABLE `astaccount`  ADD `sumamount`	decimal(12,4) DEFAULT '0' NOT NULL AFTER startingcredit");
+    $ret[] = update_sql("ALTER TABLE `astaccount`  ADD `cdrlines`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`");
+    $ret[] = update_sql("ALTER TABLE `astaccount`  ADD `sumbilltime`	int(11) DEFAULT '0' NOT NULL AFTER `sumamount`");
+    $ret[] = update_sql("ALTER TABLE `astaccount`  ADD `sumansweredtime` int(11) DEFAULT '0' NOT NULL AFTER `sumamount`");
+    $ret[] = update_sql("ALTER TABLE `astplans` ADD `calculationstages` tinyint(1) DEFAULT '1' NOT NULL AFTER active");
+   
+    $ret[] = update_sql("CREATE TABLE `astuploads` (
+  `docid` int(10) NOT NULL auto_increment,
+  `uid` int(10) DEFAULT '0' NOT NULL,
+  `oid` varchar(128) DEFAULT '' NOT NULL,
+  `upload_files` varchar(128) DEFAULT '' NOT NULL,
+  `upload_path` varchar(128) DEFAULT '' NOT NULL,
+  `filemime` varchar(128) DEFAULT '' NOT NULL,
+  `filesize` bigint(20) DEFAULT '0' NOT NULL,
+  `title` varchar(128) DEFAULT '' NOT NULL,
+  `doccategory` varchar(128) DEFAULT '' NOT NULL,
+  `image` longblob DEFAULT '' NOT NULL,
+  PRIMARY KEY  (`docid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+
+    $ret[] = update_sql("ALTER TABLE `astccnrate`   ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+    $ret[] = update_sql("ALTER TABLE `astccnccode`  ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+    $ret[] = update_sql("ALTER TABLE `astccniso`    ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+    $ret[] = update_sql("ALTER TABLE `astccnlist`   ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+    $ret[] = update_sql("ALTER TABLE `astccnprefix` ADD `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+    $ret[] = update_sql("ALTER TABLE `astinvoice`   ADD `printstatus` tinyint(1) DEFAULT '0' NOT NULL AFTER status");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `phone` `phone` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `phone2` `phone2` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `mobile` `mobile` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `fax` `fax` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `country` `country` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `state` `state` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `city` `city` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `zip` `zip` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `address2` `address2` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `address1` `address1` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `lastname` `lastname` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `firstname` `firstname` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `company` `company` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `birthdate2` `birthdate2` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `valuecode` `valuecode` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `ordercode` `ordercode` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `ipaddr` `ipaddr` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `comment` `comment` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astuser`   CHANGE `companyno` `companyno` varchar(128) DEFAULT '' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astinvrecurr` ADD `uid` int(10) unsigned DEFAULT '0' NOT NULL after partnerid");
+    $ret[] = update_sql("ALTER TABLE `astinvrecurr` DROP uid_in");
+    $ret[] = update_sql("ALTER TABLE `astaccount` ADD KEY `forcecallerid` (`forcecallerid`)");
+    $ret[] = update_sql("ALTER TABLE astcdrinv DROP KEY `resellerid_par_id`");
+    $ret[] = update_sql("ALTER TABLE astcdrinv DROP  KEY `partnerid_id`");
+    $ret[] = update_sql("ALTER TABLE astcdrinv ADD KEY `status_rpid` (`status`,`rpid`)");
+    $ret[] = update_sql("ALTER TABLE `astticket` ADD `status` tinyint(1) DEFAULT '0' NOT NULL AFTER priority");
+    $ret[] = update_sql("ALTER TABLE `astpartner`  ADD `sumnotinvoiced`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount");
+    $ret[] = update_sql("ALTER TABLE `astuser`     ADD `sumnotinvoiced`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount");
+    $ret[] = update_sql("ALTER TABLE `astpartner`  ADD `sum24h`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount");
+    $ret[] = update_sql("ALTER TABLE `astuser`     ADD `sum24h`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount");
+    $ret[] = update_sql("ALTER TABLE `astpartner`  ADD `sumweek`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount");
+    $ret[] = update_sql("ALTER TABLE `astuser`     ADD `sumweek`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount");
+    $ret[] = update_sql("ALTER TABLE `astaccount`  ADD `sumnotinvoiced`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount");
+    $ret[] = update_sql("ALTER TABLE `astaccount`  ADD `sum24h`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount");
+    $ret[] = update_sql("ALTER TABLE `astaccount`  ADD `sumweek`	decimal(12,4) DEFAULT '0' NOT NULL AFTER sumamount");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `cdrnotinvoiced` int(11) NOT NULL default '0' AFTER `cdrlines`");
+    $ret[] = update_sql("ALTER TABLE `astuser`    ADD `cdrnotinvoiced` int(11) NOT NULL default '0' AFTER `cdrlines`");
+    $ret[] = update_sql("ALTER TABLE `astaccount` ADD `cdrnotinvoiced` int(11) NOT NULL default '0' AFTER `cdrlines`");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `creditlimit` decimal(12,4) DEFAULT '0' NOT NULL AFTER active");
+    $ret[] = update_sql("ALTER TABLE `astuser`    CHANGE `creditlimit` `creditlimit` decimal(12,4) DEFAULT '0' NOT NULL");
+    $ret[] = update_sql("ALTER TABLE `astaccount`    CHANGE `creditlimit` `creditlimit` decimal(12,4) DEFAULT '0' NOT NULL");
+    $ret[] = update_sql("CREATE TABLE `astbatch` (
+  `script_name` varchar(128) NOT NULL default '',
+  `Date_script_started` datetime NOT NULL default '0000-00-00 00:00:00',
+  `Date_script_closed` datetime NOT NULL default '0000-00-00 00:00:00',
+  `status` varchar(128) NOT NULL default '',
+  `errorcode` varchar(128) NOT NULL default '0',
+  `errortext` varchar(250) NOT NULL default '',
+  `loginfo` varchar(15000) NOT NULL default '',
+  PRIMARY KEY  (`script_name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `havesubaccounts` tinyint(1) DEFAULT '0' NOT NULL AFTER isreseller");
+    $ret[] = update_sql("ALTER TABLE `astpartner` ADD `isdnvendor` tinyint(1) DEFAULT '0' NOT NULL AFTER havesubaccounts");
+    $ret[] = update_sql("ALTER TABLE `astinvrecurr` ADD `phonenumbers` varchar(256) DEFAULT '' NOT NULL AFTER invoiceid");
+    $ret[] = update_sql("ALTER TABLE `astinvrecurr` ADD `productdesc`  varchar(256) DEFAULT '' NOT NULL AFTER phonenumbers");
+  return $ret;
+}
+
+
+function astbill_update_060() {
+  $ret = array();
+    $ret[] = update_sql("INSERT INTO `astccnlist` VALUES (1, 1, 'se', 0, '950', 'Sverige', '0000-00-00 00:00:00'),
+(2, 1, 'se', 1, '950', 'Sverige-mobil (Europolitan)', '0000-00-00 00:00:00'),
+(3, 1, 'se', 1, '950', 'Sverige-mobil (Telia)', '0000-00-00 00:00:00'),
+(4, 1, 'se', 1, '950', 'Sverige-mobil (Tele2)', '0000-00-00 00:00:00'),
+(101, 1, 'af', 0, '950', '', '0000-00-00 00:00:00'),
+(102, 1, 'nl', 0, '950', '', '0000-00-00 00:00:00'),
+(103, 1, 'an', 0, '950', '', '0000-00-00 00:00:00'),
+(105, 1, 'al', 0, '950', '', '0000-00-00 00:00:00'),
+(106, 1, 'dz', 0, '950', '', '0000-00-00 00:00:00'),
+(107, 1, 'vi', 1, '950', '', '0000-00-00 00:00:00'),
+(108, 1, 'as', 1, '950', '', '0000-00-00 00:00:00'),
+(109, 1, 'as', 0, '950', '', '0000-00-00 00:00:00'),
+(110, 1, 'ad', 0, '950', '', '0000-00-00 00:00:00'),
+(111, 1, 'ao', 0, '950', '', '0000-00-00 00:00:00'),
+(112, 1, 'ai', 0, '950', '', '0000-00-00 00:00:00'),
+(113, 1, 'ag', 0, '950', '', '0000-00-00 00:00:00'),
+(114, 1, 'ai', 1, '950', '', '0000-00-00 00:00:00'),
+(115, 1, 'ae', 0, '950', '', '0000-00-00 00:00:00'),
+(116, 1, 'ar', 0, '950', '', '0000-00-00 00:00:00'),
+(117, 1, 'am', 0, '950', '', '0000-00-00 00:00:00'),
+(118, 1, 'aw', 0, '950', '', '0000-00-00 00:00:00'),
+(119, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(120, 1, 'au', 0, '950', '', '0000-00-00 00:00:00'),
+(121, 1, 'bh', 0, '950', '', '0000-00-00 00:00:00'),
+(122, 1, 'bd', 0, '950', '', '0000-00-00 00:00:00'),
+(123, 1, 'bb', 0, '950', '', '0000-00-00 00:00:00'),
+(124, 1, 'be', 0, '950', '', '0000-00-00 00:00:00'),
+(125, 1, 'bz', 0, '950', '', '0000-00-00 00:00:00'),
+(126, 1, 'bj', 0, '950', '', '0000-00-00 00:00:00'),
+(127, 1, 'bt', 0, '950', '', '0000-00-00 00:00:00'),
+(128, 1, 'bo', 0, '950', '', '0000-00-00 00:00:00'),
+(129, 1, 'bw', 0, '950', '', '0000-00-00 00:00:00'),
+(130, 1, 'br', 0, '950', '', '0000-00-00 00:00:00'),
+(131, 1, 'vg', 0, '950', '', '0000-00-00 00:00:00'),
+(134, 1, 'ne', 0, '950', '', '0000-00-00 00:00:00'),
+(135, 1, 'bg', 0, '950', '', '0000-00-00 00:00:00'),
+(136, 1, 'bf', 0, '950', '', '0000-00-00 00:00:00'),
+(137, 1, 'bi', 0, '950', '', '0000-00-00 00:00:00'),
+(139, 1, 'af', 1, '950', '', '0000-00-00 00:00:00'),
+(140, 1, 'ky', 1, '950', '', '0000-00-00 00:00:00'),
+(141, 1, 'cl', 0, '950', '', '0000-00-00 00:00:00'),
+(142, 1, 'ck', 1, '950', '', '0000-00-00 00:00:00'),
+(143, 1, 'cr', 0, '950', '', '0000-00-00 00:00:00'),
+(144, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(145, 1, 'dj', 0, '950', '', '0000-00-00 00:00:00'),
+(146, 1, 'dm', 0, '950', '', '0000-00-00 00:00:00'),
+(147, 1, 'eg', 0, '950', '', '0000-00-00 00:00:00'),
+(148, 1, 'ec', 0, '950', '', '0000-00-00 00:00:00'),
+(149, 1, 'er', 0, '950', '', '0000-00-00 00:00:00'),
+(150, 1, 'es', 0, '950', '', '0000-00-00 00:00:00'),
+(151, 1, 'za', 0, '950', '', '0000-00-00 00:00:00'),
+(152, 1, 'et', 0, '950', '', '0000-00-00 00:00:00'),
+(153, 1, 'fk', 0, '950', '', '0000-00-00 00:00:00'),
+(154, 1, 'fj', 0, '950', '', '0000-00-00 00:00:00'),
+(155, 1, 'ph', 0, '950', 'Filippinene', '0000-00-00 00:00:00'),
+(156, 1, 'fo', 0, '950', '', '0000-00-00 00:00:00'),
+(157, 1, 'ga', 0, '950', '', '0000-00-00 00:00:00'),
+(158, 1, 'gm', 0, '950', '', '0000-00-00 00:00:00'),
+(159, 1, 'ge', 0, '950', '', '0000-00-00 00:00:00'),
+(160, 1, 'gh', 0, '950', '', '0000-00-00 00:00:00'),
+(161, 1, 'gi', 0, '950', '', '0000-00-00 00:00:00'),
+(162, 1, 'gd', 0, '950', '', '0000-00-00 00:00:00'),
+(163, 1, 'gl', 0, '950', '', '0000-00-00 00:00:00'),
+(164, 1, 'gp', 0, '950', '', '0000-00-00 00:00:00'),
+(165, 1, 'gu', 0, '950', 'Guam', '0000-00-00 00:00:00'),
+(166, 1, 'gt', 0, '950', '', '0000-00-00 00:00:00'),
+(167, 1, 'gy', 0, '950', '', '0000-00-00 00:00:00'),
+(168, 1, 'gn', 0, '950', '', '0000-00-00 00:00:00'),
+(169, 1, 'gn', 1, '950', '', '0000-00-00 00:00:00'),
+(170, 1, 'ht', 0, '950', '', '0000-00-00 00:00:00'),
+(171, 1, 'gd', 1, '950', '', '0000-00-00 00:00:00'),
+(172, 1, 'hn', 0, '950', '', '0000-00-00 00:00:00'),
+(173, 1, 'hk', 0, '950', '', '0000-00-00 00:00:00'),
+(174, 1, 'id', 0, '950', '', '0000-00-00 00:00:00'),
+(175, 1, 'cm', 1, '950', '', '0000-00-00 00:00:00'),
+(176, 1, 'ml', 1, '950', '', '0000-00-00 00:00:00'),
+(177, 1, 'bm', 1, '950', '', '0000-00-00 00:00:00'),
+(178, 1, 'gu', 1, '950', 'Guam - Mobile', '0000-00-00 00:00:00'),
+(179, 1, 'in', 0, '950', '', '0000-00-00 00:00:00'),
+(180, 1, 'iq', 0, '950', '', '0000-00-00 00:00:00'),
+(181, 1, 'ir', 0, '950', '', '0000-00-00 00:00:00'),
+(182, 1, 'ie', 0, '950', '', '0000-00-00 00:00:00'),
+(183, 1, 'is', 0, '950', '', '0000-00-00 00:00:00'),
+(184, 1, 'gb', 0, '950', 'UK', '0000-00-00 00:00:00'),
+(185, 1, 'il', 0, '950', '', '0000-00-00 00:00:00'),
+(186, 1, 'it', 0, '950', '', '0000-00-00 00:00:00'),
+(187, 1, 'at', 0, '950', '', '0000-00-00 00:00:00'),
+(188, 1, 'jm', 0, '950', '', '0000-00-00 00:00:00'),
+(189, 1, 'do', 0, '950', '', '0000-00-00 00:00:00'),
+(190, 1, 'z8', 1, '950', '', '0000-00-00 00:00:00'),
+(191, 1, 'vg', 1, '950', '', '0000-00-00 00:00:00'),
+(192, 1, 'ca', 1, '950', '', '0000-00-00 00:00:00'),
+(193, 1, 'cx', 1, '950', '', '0000-00-00 00:00:00'),
+(194, 1, 'z8', 1, '950', '', '0000-00-00 00:00:00'),
+(195, 1, 'er', 1, '950', '', '0000-00-00 00:00:00'),
+(196, 1, 'fk', 1, '950', '', '0000-00-00 00:00:00'),
+(197, 1, 'iq', 1, '950', '', '0000-00-00 00:00:00'),
+(198, 1, 'kr', 1, '950', '', '0000-00-00 00:00:00'),
+(199, 1, 'mp', 1, '950', '', '0000-00-00 00:00:00'),
+(200, 1, 'mh', 1, '950', '', '0000-00-00 00:00:00'),
+(201, 1, 'fm', 1, '950', '', '0000-00-00 00:00:00'),
+(202, 1, 'ge', 1, '950', '', '0000-00-00 00:00:00'),
+(203, 1, 'gm', 1, '950', '', '0000-00-00 00:00:00'),
+(204, 1, 'jp', 0, '950', '', '0000-00-00 00:00:00'),
+(205, 1, 'ye', 0, '950', '', '0000-00-00 00:00:00'),
+(206, 1, 'jo', 0, '950', '', '0000-00-00 00:00:00'),
+(208, 1, 'cm', 0, '950', '', '0000-00-00 00:00:00'),
+(209, 1, 'kh', 0, '950', '', '0000-00-00 00:00:00'),
+(210, 1, 'ca', 0, '950', '', '0000-00-00 00:00:00'),
+(211, 1, 'cv', 0, '950', '', '0000-00-00 00:00:00'),
+(212, 1, 'ke', 0, '950', '', '0000-00-00 00:00:00'),
+(213, 1, 'cf', 0, '950', '', '0000-00-00 00:00:00'),
+(214, 1, 'cn', 0, '950', '', '0000-00-00 00:00:00'),
+(215, 1, 'ki', 0, '950', '', '0000-00-00 00:00:00'),
+(216, 1, 'co', 0, '950', '', '0000-00-00 00:00:00'),
+(217, 1, 'yt', 0, '950', '', '0000-00-00 00:00:00'),
+(218, 1, 'cg', 0, '950', '', '0000-00-00 00:00:00'),
+(220, 1, 'kr', 0, '950', '', '0000-00-00 00:00:00'),
+(221, 1, 'kp', 0, '950', '', '0000-00-00 00:00:00'),
+(222, 1, 'gr', 0, '950', '', '0000-00-00 00:00:00'),
+(223, 1, 'hr', 0, '950', '', '0000-00-00 00:00:00'),
+(224, 1, 'cu', 0, '950', '', '0000-00-00 00:00:00'),
+(225, 1, 'kw', 0, '950', '', '0000-00-00 00:00:00'),
+(226, 1, 'cy', 0, '950', '', '0000-00-00 00:00:00'),
+(227, 1, 'la', 0, '950', '', '0000-00-00 00:00:00'),
+(228, 1, 'lv', 0, '950', '', '0000-00-00 00:00:00'),
+(229, 1, 'ls', 0, '950', '', '0000-00-00 00:00:00'),
+(230, 1, 'lb', 0, '950', '', '0000-00-00 00:00:00'),
+(231, 1, 'lr', 0, '950', '', '0000-00-00 00:00:00'),
+(232, 1, 'ly', 0, '950', '', '0000-00-00 00:00:00'),
+(234, 1, 'li', 0, '950', '', '0000-00-00 00:00:00'),
+(235, 1, 'lt', 0, '950', '', '0000-00-00 00:00:00'),
+(236, 1, 'lu', 0, '950', '', '0000-00-00 00:00:00'),
+(237, 1, 'ws', 0, '950', '', '0000-00-00 00:00:00'),
+(238, 1, 'mo', 0, '950', '', '0000-00-00 00:00:00'),
+(239, 1, 'mg', 0, '950', '', '0000-00-00 00:00:00'),
+(240, 1, 'mw', 0, '950', '', '0000-00-00 00:00:00'),
+(241, 1, 'mv', 0, '950', '', '0000-00-00 00:00:00'),
+(242, 1, 'my', 0, '950', '', '0000-00-00 00:00:00'),
+(243, 1, 'ml', 0, '950', '', '0000-00-00 00:00:00'),
+(244, 1, 'mt', 0, '950', '', '0000-00-00 00:00:00'),
+(245, 1, 'mp', 0, '950', '', '0000-00-00 00:00:00'),
+(246, 1, 'ma', 0, '950', '', '0000-00-00 00:00:00'),
+(247, 1, 'mh', 0, '950', '', '0000-00-00 00:00:00'),
+(248, 1, 'mq', 0, '950', '', '0000-00-00 00:00:00'),
+(249, 1, 'mr', 0, '950', '', '0000-00-00 00:00:00'),
+(250, 1, 'mu', 0, '950', '', '0000-00-00 00:00:00'),
+(252, 1, 'mx', 0, '950', '', '0000-00-00 00:00:00'),
+(253, 1, 'fm', 0, '950', '', '0000-00-00 00:00:00'),
+(254, 1, 'pm', 0, '950', '', '0000-00-00 00:00:00'),
+(255, 1, 'md', 0, '950', '', '0000-00-00 00:00:00'),
+(256, 1, 'mc', 0, '950', '', '0000-00-00 00:00:00'),
+(257, 1, 'mn', 0, '950', '', '0000-00-00 00:00:00'),
+(258, 1, 'ms', 0, '950', '', '0000-00-00 00:00:00'),
+(259, 1, 'ws', 1, '950', '', '0000-00-00 00:00:00'),
+(260, 1, 'mz', 0, '950', '', '0000-00-00 00:00:00'),
+(262, 1, 'mm', 0, '950', '', '0000-00-00 00:00:00'),
+(263, 1, 'na', 0, '950', '', '0000-00-00 00:00:00'),
+(264, 1, 'nr', 0, '950', '', '0000-00-00 00:00:00'),
+(265, 1, 'np', 0, '950', '', '0000-00-00 00:00:00'),
+(266, 1, 'ni', 0, '950', '', '0000-00-00 00:00:00'),
+(267, 1, 'cu', 1, '950', '', '0000-00-00 00:00:00'),
+(268, 1, 'ng', 0, '950', '', '0000-00-00 00:00:00'),
+(269, 1, 'nu', 0, '950', '', '0000-00-00 00:00:00'),
+(270, 1, 'nf', 0, '950', '', '0000-00-00 00:00:00'),
+(272, 1, 'ci', 0, '950', '', '0000-00-00 00:00:00'),
+(273, 1, 'om', 0, '950', '', '0000-00-00 00:00:00'),
+(274, 1, 'pk', 0, '950', '', '0000-00-00 00:00:00'),
+(275, 1, 'la', 1, '950', '', '0000-00-00 00:00:00'),
+(276, 1, 'pa', 0, '950', '', '0000-00-00 00:00:00'),
+(277, 1, 'pg', 0, '950', '', '0000-00-00 00:00:00'),
+(278, 1, 'py', 0, '950', '', '0000-00-00 00:00:00'),
+(279, 1, 'pe', 0, '950', '', '0000-00-00 00:00:00'),
+(281, 1, 'pt', 0, '950', '', '0000-00-00 00:00:00'),
+(282, 1, 'pr', 1, '950', '', '0000-00-00 00:00:00'),
+(283, 1, 'nu', 1, '950', '', '0000-00-00 00:00:00'),
+(284, 1, 'nf', 1, '950', '', '0000-00-00 00:00:00'),
+(285, 1, 'pw', 1, '950', '', '0000-00-00 00:00:00'),
+(286, 1, 'sm', 1, '950', '', '0000-00-00 00:00:00'),
+(287, 1, 'so', 1, '950', '', '0000-00-00 00:00:00'),
+(288, 1, 'sh', 1, '950', '', '0000-00-00 00:00:00'),
+(289, 1, 'kn', 1, '950', '', '0000-00-00 00:00:00'),
+(290, 1, 'pl', 0, '950', '', '0000-00-00 00:00:00'),
+(291, 1, 'gq', 0, '950', '', '0000-00-00 00:00:00'),
+(292, 1, 'qa', 0, '950', '', '0000-00-00 00:00:00'),
+(293, 1, 'fr', 0, '950', '', '0000-00-00 00:00:00'),
+(294, 1, 'gf', 0, '950', '', '0000-00-00 00:00:00'),
+(295, 1, 'pf', 0, '950', '', '0000-00-00 00:00:00'),
+(296, 1, 're', 0, '950', '', '0000-00-00 00:00:00'),
+(297, 1, 'ro', 0, '950', '', '0000-00-00 00:00:00'),
+(298, 1, 'rw', 0, '950', '', '0000-00-00 00:00:00'),
+(299, 1, 'ee', 1, '950', '', '0000-00-00 00:00:00'),
+(300, 1, 'sh', 0, '950', '', '0000-00-00 00:00:00'),
+(301, 1, 'st', 0, '950', '', '0000-00-00 00:00:00'),
+(302, 1, 'de', 0, '950', '', '0000-00-00 00:00:00'),
+(303, 1, 'sb', 0, '950', '', '0000-00-00 00:00:00'),
+(304, 1, 'sv', 0, '950', '', '0000-00-00 00:00:00'),
+(305, 1, 'zm', 0, '950', '', '0000-00-00 00:00:00'),
+(306, 1, 'sm', 0, '950', '', '0000-00-00 00:00:00'),
+(307, 1, 'st', 1, '950', '', '0000-00-00 00:00:00'),
+(308, 1, 'sa', 0, '950', '', '0000-00-00 00:00:00'),
+(309, 1, 'sn', 0, '950', '', '0000-00-00 00:00:00'),
+(310, 1, 'pr', 1, '950', '', '0000-00-00 00:00:00'),
+(311, 1, 'sc', 0, '950', '', '0000-00-00 00:00:00'),
+(312, 1, 'sl', 0, '950', '', '0000-00-00 00:00:00'),
+(313, 1, 'sg', 0, '950', '', '0000-00-00 00:00:00'),
+(314, 1, 'sk', 0, '950', '', '0000-00-00 00:00:00'),
+(315, 1, 'so', 0, '950', '', '0000-00-00 00:00:00'),
+(316, 1, 'lk', 0, '950', '', '0000-00-00 00:00:00'),
+(317, 1, 'lc', 0, '950', '', '0000-00-00 00:00:00'),
+(319, 1, 'sd', 0, '950', '', '0000-00-00 00:00:00'),
+(320, 1, 'sr', 0, '950', '', '0000-00-00 00:00:00'),
+(321, 1, 'ch', 0, '950', '', '0000-00-00 00:00:00'),
+(322, 1, 'sz', 0, '950', '', '0000-00-00 00:00:00'),
+(323, 1, 'sy', 0, '950', '', '0000-00-00 00:00:00'),
+(324, 1, 'tw', 0, '950', '', '0000-00-00 00:00:00'),
+(325, 1, 'tz', 0, '950', '', '0000-00-00 00:00:00'),
+(326, 1, 'dk', 0, '950', 'Denmark', '0000-00-00 00:00:00'),
+(327, 1, 'th', 0, '950', '', '0000-00-00 00:00:00'),
+(328, 1, 'tg', 0, '950', '', '0000-00-00 00:00:00'),
+(329, 1, 'to', 0, '950', '', '0000-00-00 00:00:00'),
+(330, 1, 'tt', 0, '950', '', '0000-00-00 00:00:00'),
+(331, 1, 'sz', 1, '950', '', '0000-00-00 00:00:00'),
+(333, 1, 'pm', 1, '950', '', '0000-00-00 00:00:00'),
+(334, 1, 'tk', 1, '950', '', '0000-00-00 00:00:00'),
+(335, 1, 'va', 1, '950', '', '0000-00-00 00:00:00'),
+(336, 1, 'wf', 1, '950', '', '0000-00-00 00:00:00'),
+(337, 1, 'td', 0, '950', '', '0000-00-00 00:00:00'),
+(338, 1, 'cz', 0, '950', '', '0000-00-00 00:00:00'),
+(339, 1, 'tn', 0, '950', '', '0000-00-00 00:00:00'),
+(340, 1, 'tr', 0, '950', '', '0000-00-00 00:00:00'),
+(341, 1, 'tc', 0, '950', '', '0000-00-00 00:00:00'),
+(342, 1, 'tv', 0, '950', '', '0000-00-00 00:00:00'),
+(343, 1, 'ug', 0, '950', '', '0000-00-00 00:00:00'),
+(344, 1, 'ua', 0, '950', '', '0000-00-00 00:00:00'),
+(345, 1, 'hu', 0, '950', '', '0000-00-00 00:00:00'),
+(346, 1, 'uy', 0, '950', '', '0000-00-00 00:00:00'),
+(347, 1, 'us', 0, '950', '', '0000-00-00 00:00:00'),
+(348, 1, 'nc', 0, '950', '', '0000-00-00 00:00:00'),
+(349, 1, 'nz', 0, '950', '', '0000-00-00 00:00:00'),
+(350, 1, 'by', 0, '950', '', '0000-00-00 00:00:00'),
+(351, 1, 'vu', 0, '950', '', '0000-00-00 00:00:00'),
+(353, 1, 've', 0, '950', '', '0000-00-00 00:00:00'),
+(354, 1, 'ru', 0, '950', '', '0000-00-00 00:00:00'),
+(355, 1, 'vn', 0, '950', '', '0000-00-00 00:00:00'),
+(356, 1, 'ee', 0, '950', '', '0000-00-00 00:00:00'),
+(359, 1, 'wf', 0, '950', '', '0000-00-00 00:00:00'),
+(360, 1, 'cg', 1, '950', '', '0000-00-00 00:00:00'),
+(361, 1, 'zw', 0, '950', '', '0000-00-00 00:00:00'),
+(362, 1, 'cd', 0, '950', '', '0000-00-00 00:00:00'),
+(363, 1, 'fi', 0, '950', 'Finland', '0000-00-00 00:00:00'),
+(364, 1, 'yu', 0, '950', '', '0000-00-00 00:00:00'),
+(365, 1, 'az', 0, '950', '', '0000-00-00 00:00:00'),
+(366, 1, 'bm', 0, '950', '', '0000-00-00 00:00:00'),
+(367, 1, 'ba', 0, '950', '', '0000-00-00 00:00:00'),
+(368, 1, 'bn', 0, '950', '', '0000-00-00 00:00:00'),
+(369, 1, 'mk', 0, '950', '', '0000-00-00 00:00:00'),
+(370, 1, 'vc', 0, '950', '', '0000-00-00 00:00:00'),
+(371, 1, 'kn', 0, '950', '', '0000-00-00 00:00:00'),
+(372, 1, 'si', 0, '950', '', '0000-00-00 00:00:00'),
+(373, 1, 'uz', 0, '950', '', '0000-00-00 00:00:00'),
+(374, 1, 'tj', 0, '950', '', '0000-00-00 00:00:00'),
+(375, 1, 'aq', 0, '950', '', '0000-00-00 00:00:00'),
+(377, 1, 'tm', 0, '950', '', '0000-00-00 00:00:00'),
+(378, 1, 'cx', 0, '950', '', '0000-00-00 00:00:00'),
+(379, 1, 'ru', 0, '950', '', '0000-00-00 00:00:00'),
+(381, 1, 'vi', 0, '950', '', '0000-00-00 00:00:00'),
+(382, 1, 'aq', 1, '950', '', '0000-00-00 00:00:00'),
+(399, 1, 'gq', 1, '950', '', '0000-00-00 00:00:00'),
+(400, 1, 'dz', 1, '950', '', '0000-00-00 00:00:00'),
+(401, 1, 'ad', 1, '950', '', '0000-00-00 00:00:00'),
+(402, 1, 'ao', 1, '950', '', '0000-00-00 00:00:00'),
+(403, 1, 'ag', 1, '950', '', '0000-00-00 00:00:00'),
+(404, 1, 'ar', 1, '950', '', '0000-00-00 00:00:00'),
+(405, 1, 'am', 1, '950', '', '0000-00-00 00:00:00'),
+(406, 1, 'aw', 1, '950', '', '0000-00-00 00:00:00'),
+(407, 1, 'au', 1, '950', '', '0000-00-00 00:00:00'),
+(408, 1, 'at', 1, '950', '', '0000-00-00 00:00:00'),
+(409, 1, 'az', 1, '950', '', '0000-00-00 00:00:00'),
+(410, 1, 'bz', 1, '950', '', '0000-00-00 00:00:00'),
+(411, 1, 'bd', 1, '950', '', '0000-00-00 00:00:00'),
+(412, 1, 'ae', 0, '950', '', '0000-00-00 00:00:00'),
+(413, 1, 'by', 1, '950', '', '0000-00-00 00:00:00'),
+(414, 1, 'be', 1, '950', '', '0000-00-00 00:00:00'),
+(415, 1, 'bo', 1, '950', '', '0000-00-00 00:00:00'),
+(416, 1, 'ba', 1, '950', '', '0000-00-00 00:00:00'),
+(417, 1, 'bw', 1, '950', '', '0000-00-00 00:00:00'),
+(418, 1, 'br', 1, '950', '', '0000-00-00 00:00:00'),
+(419, 1, 'bn', 1, '950', '', '0000-00-00 00:00:00'),
+(420, 1, 'bg', 1, '950', '', '0000-00-00 00:00:00'),
+(421, 1, 'bi', 1, '950', '', '0000-00-00 00:00:00'),
+(422, 1, 'kh', 1, '950', '', '0000-00-00 00:00:00'),
+(424, 1, 'cl', 1, '950', '', '0000-00-00 00:00:00'),
+(425, 1, 'cn', 1, '950', '', '0000-00-00 00:00:00'),
+(426, 1, 'co', 1, '950', '', '0000-00-00 00:00:00'),
+(427, 1, 'cd', 1, '950', '', '0000-00-00 00:00:00'),
+(429, 1, 'cr', 1, '950', '', '0000-00-00 00:00:00'),
+(430, 1, 'hr', 1, '950', '', '0000-00-00 00:00:00'),
+(431, 1, 'cy', 1, '950', '', '0000-00-00 00:00:00'),
+(432, 1, 'cz', 1, '950', '', '0000-00-00 00:00:00'),
+(433, 1, 'dk', 1, '950', 'Danmark-mobil (Orange)', '0000-00-00 00:00:00'),
+(434, 1, 'dj', 1, '950', '', '0000-00-00 00:00:00'),
+(436, 1, 'do', 1, '950', '', '0000-00-00 00:00:00'),
+(437, 1, 'ec', 1, '950', '', '0000-00-00 00:00:00'),
+(438, 1, 'eg', 1, '950', '', '0000-00-00 00:00:00'),
+(439, 1, 'sv', 1, '950', '', '0000-00-00 00:00:00'),
+(441, 1, 'et', 1, '950', '', '0000-00-00 00:00:00'),
+(443, 1, 'fi', 1, '950', 'Finland-mobil (Others) ', '0000-00-00 00:00:00'),
+(444, 1, 'fr', 1, '950', '', '0000-00-00 00:00:00'),
+(445, 1, 'pf', 1, '950', '', '0000-00-00 00:00:00'),
+(446, 1, 'ga', 1, '950', '', '0000-00-00 00:00:00'),
+(447, 1, 'de', 1, '950', '', '0000-00-00 00:00:00'),
+(448, 1, 'gh', 1, '950', '', '0000-00-00 00:00:00'),
+(449, 1, 'gi', 1, '950', '', '0000-00-00 00:00:00'),
+(450, 1, 'gr', 1, '950', '', '0000-00-00 00:00:00'),
+(451, 1, 'gl', 1, '950', '', '0000-00-00 00:00:00'),
+(452, 1, 'gp', 1, '950', '', '0000-00-00 00:00:00'),
+(453, 1, 'gt', 1, '950', '', '0000-00-00 00:00:00'),
+(454, 1, 'ht', 1, '950', '', '0000-00-00 00:00:00'),
+(455, 1, 'hn', 1, '950', '', '0000-00-00 00:00:00'),
+(456, 1, 'hk', 1, '950', '', '0000-00-00 00:00:00'),
+(457, 1, 'hu', 1, '950', '', '0000-00-00 00:00:00'),
+(458, 1, 'is', 1, '950', '', '0000-00-00 00:00:00'),
+(459, 1, 'in', 1, '950', '', '0000-00-00 00:00:00'),
+(460, 1, 'id', 1, '950', '', '0000-00-00 00:00:00'),
+(462, 1, 'ie', 1, '950', '', '0000-00-00 00:00:00'),
+(463, 1, 'il', 1, '950', '', '0000-00-00 00:00:00'),
+(464, 1, 'it', 1, '950', '', '0000-00-00 00:00:00'),
+(465, 1, 'ci', 1, '950', '', '0000-00-00 00:00:00'),
+(466, 1, 'jm', 1, '950', '', '0000-00-00 00:00:00'),
+(467, 1, 'jp', 1, '950', '', '0000-00-00 00:00:00'),
+(468, 1, 'jo', 1, '950', '', '0000-00-00 00:00:00'),
+(469, 1, 'ru', 1, '950', '', '0000-00-00 00:00:00'),
+(470, 1, 'ke', 1, '950', '', '0000-00-00 00:00:00'),
+(471, 1, 'ki', 1, '950', '', '0000-00-00 00:00:00'),
+(472, 1, 'kp', 1, '950', '', '0000-00-00 00:00:00'),
+(473, 1, 'kw', 1, '950', '', '0000-00-00 00:00:00'),
+(474, 1, 'kg', 1, '950', '', '0000-00-00 00:00:00'),
+(475, 1, 'lv', 1, '950', '', '0000-00-00 00:00:00'),
+(476, 1, 'lb', 1, '950', '', '0000-00-00 00:00:00'),
+(477, 1, 'ls', 1, '950', '', '0000-00-00 00:00:00'),
+(478, 1, 'lr', 1, '950', '', '0000-00-00 00:00:00'),
+(480, 1, 'li', 0, '950', '', '0000-00-00 00:00:00'),
+(481, 1, 'lt', 1, '950', '', '0000-00-00 00:00:00'),
+(482, 1, 'lu', 1, '950', '', '0000-00-00 00:00:00'),
+(483, 1, 'mo', 1, '950', '', '0000-00-00 00:00:00'),
+(484, 1, 'mk', 1, '950', '', '0000-00-00 00:00:00'),
+(485, 1, 'mg', 1, '950', '', '0000-00-00 00:00:00'),
+(486, 1, 'mw', 1, '950', '', '0000-00-00 00:00:00'),
+(487, 1, 'my', 1, '950', '', '0000-00-00 00:00:00'),
+(488, 1, 'mv', 1, '950', '', '0000-00-00 00:00:00'),
+(489, 1, 'mt', 1, '950', '', '0000-00-00 00:00:00'),
+(490, 1, 'mq', 1, '950', '', '0000-00-00 00:00:00'),
+(492, 1, 'md', 1, '950', '', '0000-00-00 00:00:00'),
+(493, 1, 'mc', 1, '950', '', '0000-00-00 00:00:00'),
+(494, 1, 'mn', 1, '950', '', '0000-00-00 00:00:00'),
+(495, 1, 'ms', 1, '950', '', '0000-00-00 00:00:00'),
+(496, 1, 'ma', 1, '950', '', '0000-00-00 00:00:00'),
+(497, 1, 'mz', 1, '950', '', '0000-00-00 00:00:00'),
+(498, 1, 'na', 1, '950', '', '0000-00-00 00:00:00'),
+(499, 1, 'np', 1, '950', '', '0000-00-00 00:00:00'),
+(500, 1, 'nl', 1, '950', '', '0000-00-00 00:00:00'),
+(501, 1, 'an', 1, '950', '', '0000-00-00 00:00:00'),
+(502, 1, 'nc', 1, '950', '', '0000-00-00 00:00:00'),
+(503, 1, 'nz', 1, '950', '', '0000-00-00 00:00:00'),
+(504, 1, 'ni', 1, '950', '', '0000-00-00 00:00:00'),
+(505, 1, 'ne', 1, '950', '', '0000-00-00 00:00:00'),
+(506, 1, 'ng', 1, '950', '', '0000-00-00 00:00:00'),
+(507, 1, 'pk', 1, '950', '', '0000-00-00 00:00:00'),
+(508, 1, 'ps', 1, '950', '', '0000-00-00 00:00:00'),
+(509, 1, 'pa', 1, '950', '', '0000-00-00 00:00:00'),
+(510, 1, 'pg', 1, '950', '', '0000-00-00 00:00:00'),
+(511, 1, 'py', 0, '950', '', '0000-00-00 00:00:00'),
+(512, 1, 'pe', 1, '950', '', '0000-00-00 00:00:00'),
+(513, 1, 'ph', 1, '950', 'Filippinene-mobil', '0000-00-00 00:00:00'),
+(514, 1, 'pl', 1, '950', '', '0000-00-00 00:00:00'),
+(515, 1, 'pt', 1, '950', '', '0000-00-00 00:00:00'),
+(516, 1, 'qa', 1, '950', '', '0000-00-00 00:00:00'),
+(517, 1, 'ro', 1, '950', '', '0000-00-00 00:00:00'),
+(518, 1, 'ru', 1, '950', '', '0000-00-00 00:00:00'),
+(519, 1, 'rw', 1, '950', '', '0000-00-00 00:00:00'),
+(520, 1, 'sa', 1, '950', '', '0000-00-00 00:00:00'),
+(521, 1, 'sn', 1, '950', '', '0000-00-00 00:00:00'),
+(522, 1, 'sc', 1, '950', '', '0000-00-00 00:00:00'),
+(523, 1, 'sl', 1, '950', '', '0000-00-00 00:00:00'),
+(524, 1, 'sg', 1, '950', '', '0000-00-00 00:00:00'),
+(525, 1, 'sk', 1, '950', '', '0000-00-00 00:00:00'),
+(526, 1, 'si', 1, '950', '', '0000-00-00 00:00:00'),
+(527, 1, 'sb', 1, '950', '', '0000-00-00 00:00:00'),
+(528, 1, 'za', 1, '950', '', '0000-00-00 00:00:00'),
+(529, 1, 'es', 1, '950', '', '0000-00-00 00:00:00'),
+(530, 1, 'lk', 1, '950', '', '0000-00-00 00:00:00'),
+(531, 1, 'lc', 1, '950', '', '0000-00-00 00:00:00'),
+(532, 1, 'vc', 1, '950', '', '0000-00-00 00:00:00'),
+(533, 1, 'sr', 1, '950', '', '0000-00-00 00:00:00'),
+(535, 1, 'ch', 1, '950', '', '0000-00-00 00:00:00'),
+(536, 1, 'sy', 1, '950', '', '0000-00-00 00:00:00'),
+(537, 1, 'tw', 1, '950', '', '0000-00-00 00:00:00'),
+(538, 1, 'tj', 1, '950', '', '0000-00-00 00:00:00'),
+(539, 1, 'tz', 1, '950', '', '0000-00-00 00:00:00'),
+(540, 1, 'th', 1, '950', '', '0000-00-00 00:00:00'),
+(541, 1, 'tg', 1, '950', '', '0000-00-00 00:00:00'),
+(542, 1, 'tt', 1, '950', '', '0000-00-00 00:00:00'),
+(543, 1, 'tn', 1, '950', '', '0000-00-00 00:00:00'),
+(544, 1, 'tr', 1, '950', '', '0000-00-00 00:00:00'),
+(546, 1, 'tc', 1, '950', '', '0000-00-00 00:00:00'),
+(547, 1, 'tv', 1, '950', '', '0000-00-00 00:00:00'),
+(549, 1, 'ua', 1, '950', '', '0000-00-00 00:00:00'),
+(550, 1, 're', 1, '950', '', '0000-00-00 00:00:00'),
+(551, 1, 'gb', 1, '950', '', '0000-00-00 00:00:00'),
+(552, 1, 'us', 1, '950', '', '0000-00-00 00:00:00'),
+(553, 1, 'uy', 1, '950', '', '0000-00-00 00:00:00'),
+(555, 1, 've', 1, '950', '', '0000-00-00 00:00:00'),
+(556, 1, 'vn', 1, '950', '', '0000-00-00 00:00:00'),
+(557, 1, 'ye', 1, '950', '', '0000-00-00 00:00:00'),
+(558, 1, 'yu', 1, '950', '', '0000-00-00 00:00:00'),
+(559, 1, 'zm', 1, '950', '', '0000-00-00 00:00:00'),
+(560, 1, 'zw', 1, '950', '', '0000-00-00 00:00:00'),
+(561, 1, 'al', 1, '950', '', '0000-00-00 00:00:00'),
+(562, 1, 'bs', 1, '950', '', '0000-00-00 00:00:00'),
+(563, 1, 'bh', 1, '950', '', '0000-00-00 00:00:00'),
+(564, 1, 'bb', 1, '950', '', '0000-00-00 00:00:00'),
+(565, 1, 'bj', 1, '950', '', '0000-00-00 00:00:00'),
+(566, 1, 'bt', 1, '950', '', '0000-00-00 00:00:00'),
+(567, 1, 'bf', 1, '950', '', '0000-00-00 00:00:00'),
+(568, 1, 'cv', 1, '950', '', '0000-00-00 00:00:00'),
+(569, 1, 'ky', 0, '950', '', '0000-00-00 00:00:00'),
+(570, 1, 'cf', 1, '950', '', '0000-00-00 00:00:00'),
+(571, 1, 'yt', 1, '950', '', '0000-00-00 00:00:00'),
+(572, 1, 'ck', 0, '950', '', '0000-00-00 00:00:00'),
+(573, 1, 'dm', 1, '950', '', '0000-00-00 00:00:00'),
+(574, 1, 'tl', 1, '950', '', '0000-00-00 00:00:00'),
+(575, 1, 'fo', 1, '950', '', '0000-00-00 00:00:00'),
+(576, 1, 'fj', 1, '950', '', '0000-00-00 00:00:00'),
+(577, 1, 'gf', 1, '950', '', '0000-00-00 00:00:00'),
+(578, 1, 'gw', 1, '950', '', '0000-00-00 00:00:00'),
+(579, 1, 'gy', 1, '950', '', '0000-00-00 00:00:00'),
+(580, 1, 'ir', 1, '950', '', '0000-00-00 00:00:00'),
+(581, 1, 'ly', 1, '950', '', '0000-00-00 00:00:00'),
+(582, 1, 'mr', 1, '950', '', '0000-00-00 00:00:00'),
+(583, 1, 'mu', 1, '950', '', '0000-00-00 00:00:00'),
+(585, 1, 'mm', 1, '950', '', '0000-00-00 00:00:00'),
+(586, 1, 'nr', 1, '950', '', '0000-00-00 00:00:00'),
+(587, 1, 'om', 1, '950', '', '0000-00-00 00:00:00'),
+(588, 1, 'gw', 0, '950', '', '0000-00-00 00:00:00'),
+(590, 1, 'sd', 1, '950', '', '0000-00-00 00:00:00'),
+(592, 1, 'to', 1, '950', '', '0000-00-00 00:00:00'),
+(593, 1, 'tm', 1, '950', '', '0000-00-00 00:00:00'),
+(594, 1, 'ug', 1, '950', '', '0000-00-00 00:00:00'),
+(595, 1, 'uz', 1, '950', '', '0000-00-00 00:00:00'),
+(596, 1, 'vu', 1, '950', '', '0000-00-00 00:00:00'),
+(597, 1, 'va', 0, '950', '', '0000-00-00 00:00:00'),
+(598, 1, 'td', 1, '950', '', '0000-00-00 00:00:00'),
+(599, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(600, 1, 'z8', 1, '950', '', '0000-00-00 00:00:00'),
+(680, 1, 'pw', 0, '950', '', '0000-00-00 00:00:00'),
+(690, 1, 'tk', 0, '950', '', '0000-00-00 00:00:00'),
+(698, 1, 'dk', 1, '950', 'Danmark-mobil (Others)', '0000-00-00 00:00:00'),
+(699, 1, 'dk', 1, '950', 'Danmark-mobil (Sonofon)', '0000-00-00 00:00:00'),
+(870, 1, 'dk', 1, '950', 'Danmark-mobil (TDC)', '0000-00-00 00:00:00'),
+(873, 1, 'fi', 1, '950', 'Finland-mobil (Radiolinja) ', '0000-00-00 00:00:00'),
+(874, 1, 'fi', 1, '950', 'Finland-mobil (Sonera, RSLCom, Jippii) ', '0000-00-00 00:00:00'),
+(875, 1, 'kg', 0, '950', '', '0000-00-00 00:00:00'),
+(876, 1, 'bs', 0, '950', '', '0000-00-00 00:00:00'),
+(878, 1, 'tl', 0, '950', '', '0000-00-00 00:00:00'),
+(879, 1, 'mc', 1, '950', '', '0000-00-00 00:00:00'),
+(880, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(881, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(882, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(940, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(950, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(951, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(952, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(953, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(970, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(971, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(972, 1, 'ps', 0, '950', '', '0000-00-00 00:00:00'),
+(980, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(981, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(990, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(992, 1, 'z8', 0, '950', '', '0000-00-00 00:00:00'),
+(800, 1, 'z8', 0, '950', 'International Freephone', '0000-00-00 00:00:00')
+");
+  return $ret;
+}
+
+function astbill_update_061() {
+  $ret = array();
+    $ret[] = update_sql("INSERT INTO `astccnprefix` VALUES ('1', 347, 'USA', '0000-00-00 00:00:00'),
+('1204', 210, 'Canada', '0000-00-00 00:00:00'),
+('1242', 876, 'Bahamas', '0000-00-00 00:00:00'),
+('1246', 123, 'Barbados', '0000-00-00 00:00:00'),
+('1250', 210, 'Canada', '0000-00-00 00:00:00'),
+('1264', 112, 'Anguilla', '0000-00-00 00:00:00'),
+('1268', 113, 'Antigua & Barbuda', '0000-00-00 00:00:00'),
+('1284', 131, 'Britiske Jomfruøyer', '0000-00-00 00:00:00'),
+('1289', 210, 'Canada', '0000-00-00 00:00:00'),
+('1306', 210, 'Canada', '0000-00-00 00:00:00'),
+('1340', 381, 'Am. Jomfruøyene', '0000-00-00 00:00:00'),
+('1345', 569, 'Cayman-øyene', '0000-00-00 00:00:00'),
+('1403', 210, 'Canada', '0000-00-00 00:00:00'),
+('1416', 210, 'Canada', '0000-00-00 00:00:00'),
+('1418', 210, 'Canada', '0000-00-00 00:00:00'),
+('1441', 366, 'Bermuda', '0000-00-00 00:00:00'),
+('1450', 210, 'Canada', '0000-00-00 00:00:00'),
+('1473', 162, 'Grenada', '0000-00-00 00:00:00'),
+('1506', 210, 'Canada', '0000-00-00 00:00:00'),
+('1514', 210, 'Canada', '0000-00-00 00:00:00'),
+('1519', 210, 'Canada', '0000-00-00 00:00:00'),
+('1604', 210, 'Canada', '0000-00-00 00:00:00'),
+('1613', 210, 'Canada', '0000-00-00 00:00:00'),
+('1647', 210, 'Canada', '0000-00-00 00:00:00'),
+('1649', 341, 'Turks & Caicosøyene', '0000-00-00 00:00:00'),
+('1664', 258, 'Monserrat', '0000-00-00 00:00:00'),
+('1670', 245, 'Marianerne', '0000-00-00 00:00:00'),
+('1705', 210, 'Canada', '0000-00-00 00:00:00'),
+('1709', 210, 'Canada', '0000-00-00 00:00:00'),
+('1758', 317, 'St. Lucia', '0000-00-00 00:00:00'),
+('1767', 146, 'Dominica', '0000-00-00 00:00:00'),
+('1778', 210, 'Canada', '0000-00-00 00:00:00'),
+('1780', 210, 'Canada', '0000-00-00 00:00:00'),
+('1784', 370, 'St. Vincent/Grenadines', '0000-00-00 00:00:00'),
+('1787', 282, 'Puerto Rico', '0000-00-00 00:00:00'),
+('1807', 210, 'Canada', '0000-00-00 00:00:00'),
+('1808', 347, 'USA Hawaii', '0000-00-00 00:00:00'),
+('1809', 189, 'Dominikanske Rep.', '0000-00-00 00:00:00'),
+('1819', 210, 'Canada', '0000-00-00 00:00:00'),
+('1867', 210, 'Canada', '0000-00-00 00:00:00'),
+('1868', 330, 'Trinidad & Tobago', '0000-00-00 00:00:00'),
+('1869', 371, 'St. Kitts (St. Christopher - Nevis)', '0000-00-00 00:00:00'),
+('1876', 188, 'Jamaica', '0000-00-00 00:00:00'),
+('1902', 210, 'Canada', '0000-00-00 00:00:00'),
+('1905', 210, 'Canada', '0000-00-00 00:00:00'),
+('1907', 347, 'USA Alaska', '0000-00-00 00:00:00'),
+('20', 147, 'Egypt', '0000-00-00 00:00:00'),
+('212', 246, 'Marokko', '0000-00-00 00:00:00'),
+('213', 106, 'Algerie', '0000-00-00 00:00:00'),
+('216', 339, 'Tunisia', '0000-00-00 00:00:00'),
+('218', 232, 'Libya', '0000-00-00 00:00:00'),
+('220', 158, 'Gambia', '0000-00-00 00:00:00'),
+('2215', 521, 'Senegal Mobile', '0000-00-00 00:00:00'),
+('2216', 521, 'Senegal Mobile', '0000-00-00 00:00:00'),
+('221', 309, 'Senegal', '0000-00-00 00:00:00'),
+('222', 249, 'Mauretania', '0000-00-00 00:00:00'),
+('2236', 176, 'Mali Mobil', '0000-00-00 00:00:00'),
+('223', 243, 'Mali', '0000-00-00 00:00:00'),
+('224', 168, 'Guinea', '0000-00-00 00:00:00'),
+('225', 272, 'Elfenbenskysten', '0000-00-00 00:00:00'),
+('226', 136, 'Burkina Faso', '0000-00-00 00:00:00'),
+('227', 134, 'Niger', '0000-00-00 00:00:00'),
+('2280', 541, 'Togo Mobil', '0000-00-00 00:00:00'),
+('2281', 541, 'Togo Mobil', '0000-00-00 00:00:00'),
+('2282', 541, 'Togo Mobil', '0000-00-00 00:00:00'),
+('2283', 541, 'Togo Mobil', '0000-00-00 00:00:00'),
+('2284', 541, 'Togo Mobil', '0000-00-00 00:00:00'),
+('2285', 541, 'Togo Mobil', '0000-00-00 00:00:00'),
+('2286', 541, 'Togo Mobil', '0000-00-00 00:00:00'),
+('2287', 541, 'Togo Mobil', '0000-00-00 00:00:00'),
+('22890', 541, 'Togo Mobil', '0000-00-00 00:00:00'),
+('22894', 541, 'Togo Mobil', '0000-00-00 00:00:00'),
+('228', 328, 'Togo', '0000-00-00 00:00:00'),
+('229', 126, 'Benin', '0000-00-00 00:00:00'),
+('230', 250, 'Mauritius', '0000-00-00 00:00:00'),
+('231', 231, 'Liberia', '0000-00-00 00:00:00'),
+('232', 312, 'Sierra Leone', '0000-00-00 00:00:00'),
+('233', 160, 'Ghana', '0000-00-00 00:00:00'),
+('234', 268, 'Nigeria', '0000-00-00 00:00:00'),
+('235', 337, 'Tchad', '0000-00-00 00:00:00'),
+('236', 213, 'Sentralafrikanske rep.', '0000-00-00 00:00:00'),
+('237', 208, 'Kamerun', '0000-00-00 00:00:00'),
+('238', 211, 'Kapp Verde', '0000-00-00 00:00:00'),
+('239', 301, 'Sao Tome & Principe', '0000-00-00 00:00:00'),
+('240', 291, 'Ekvatorialguinea', '0000-00-00 00:00:00'),
+('241', 157, 'Gabon', '0000-00-00 00:00:00'),
+('242', 218, 'Kongo', '0000-00-00 00:00:00'),
+('243', 362, 'Kongo, Dem. Rep. (tidl. Zaire)', '0000-00-00 00:00:00'),
+('244', 111, 'Angola', '0000-00-00 00:00:00'),
+('245', 588, 'Guinea-Bissau', '0000-00-00 00:00:00'),
+('246', 144, 'Diego Garcia', '0000-00-00 00:00:00'),
+('247', 119, 'Ascension', '0000-00-00 00:00:00'),
+('248', 311, 'Seychellene', '0000-00-00 00:00:00'),
+('249', 319, 'Sudan', '0000-00-00 00:00:00'),
+('250', 298, 'Rwanda', '0000-00-00 00:00:00'),
+('2511', 152, 'Ethiopia Addis Ababa', '0000-00-00 00:00:00'),
+('2519', 441, 'Ethiopia Mobil', '0000-00-00 00:00:00'),
+('251', 152, 'Etiopia', '0000-00-00 00:00:00'),
+('252', 315, 'Somalia', '0000-00-00 00:00:00'),
+('253', 145, 'Djibouti', '0000-00-00 00:00:00'),
+('254', 212, 'Kenya', '0000-00-00 00:00:00'),
+('255', 325, 'Tanzania', '0000-00-00 00:00:00'),
+('256', 343, 'Uganda', '0000-00-00 00:00:00'),
+('257', 137, 'Burundi', '0000-00-00 00:00:00'),
+('258', 260, 'Mosambik', '0000-00-00 00:00:00'),
+('260', 305, 'Zambia', '0000-00-00 00:00:00'),
+('261', 239, 'Madagaskar', '0000-00-00 00:00:00'),
+('262', 296, 'Reunion', '0000-00-00 00:00:00'),
+('263', 361, 'Zimbabwe', '0000-00-00 00:00:00'),
+('264', 263, 'Namibia', '0000-00-00 00:00:00'),
+('265', 240, 'Malawi', '0000-00-00 00:00:00'),
+('266', 229, 'Leshoto', '0000-00-00 00:00:00'),
+('267', 129, 'Botswana', '0000-00-00 00:00:00'),
+('268', 322, 'Swaziland', '0000-00-00 00:00:00'),
+('269', 217, 'Komorerne & Mayotte', '0000-00-00 00:00:00'),
+('27', 151, 'Sør-Afrika', '0000-00-00 00:00:00'),
+('289', 599, 'Tristan da Cunha', '0000-00-00 00:00:00'),
+('290', 300, 'St. Helena', '0000-00-00 00:00:00'),
+('291', 149, 'Eritrea', '0000-00-00 00:00:00'),
+('297', 118, 'Aruba', '0000-00-00 00:00:00'),
+('298', 156, 'Færøyene', '0000-00-00 00:00:00'),
+('299', 163, 'Grønland', '0000-00-00 00:00:00'),
+('30', 222, 'Hellas', '0000-00-00 00:00:00'),
+('3161', 500, 'Nederland Mobil', '0000-00-00 00:00:00'),
+('3162', 500, 'Nederland Mobil', '0000-00-00 00:00:00'),
+('3163', 500, 'Nederland Mobil', '0000-00-00 00:00:00'),
+('3164', 500, 'Nederland Mobil', '0000-00-00 00:00:00'),
+('3165', 500, 'Nederland Mobil', '0000-00-00 00:00:00'),
+('31', 102, 'Nederland', '0000-00-00 00:00:00'),
+('3217', 414, 'Belgia Mobile', '0000-00-00 00:00:00'),
+('3218', 414, 'Belgia Mobile', '0000-00-00 00:00:00'),
+('3244', 414, 'Belgia Mobile', '0000-00-00 00:00:00'),
+('3247', 414, 'Belgia Mobile', '0000-00-00 00:00:00'),
+('3248', 414, 'Belgia Mobile', '0000-00-00 00:00:00'),
+('3249', 414, 'Belgia Mobile', '0000-00-00 00:00:00'),
+('3275', 414, 'Belgia Mobile', '0000-00-00 00:00:00'),
+('32', 124, 'Belgia', '0000-00-00 00:00:00'),
+('336', 444, 'Frankrike Mobil', '0000-00-00 00:00:00'),
+('33', 293, 'Frankrike', '0000-00-00 00:00:00'),
+('346', 529, 'Spania Mobil', '0000-00-00 00:00:00'),
+('34822', 150, 'Spania - Canary Islands', '0000-00-00 00:00:00'),
+('34828', 150, 'Spania - Canary Islands', '0000-00-00 00:00:00'),
+('34922', 150, 'Spania - Canary Islands', '0000-00-00 00:00:00'),
+('34928', 150, 'Spania - Canary Islands', '0000-00-00 00:00:00'),
+('34', 150, 'Spania', '0000-00-00 00:00:00'),
+('350', 161, 'Gibraltar', '0000-00-00 00:00:00'),
+('35121', 281, 'Portugal Lisbon', '0000-00-00 00:00:00'),
+('351292', 281, 'Portugal Azores', '0000-00-00 00:00:00'),
+('351295', 281, 'Portugal Azores', '0000-00-00 00:00:00'),
+('351296', 281, 'Portugal Azores', '0000-00-00 00:00:00'),
+('3519', 515, 'Portugal Mobile', '0000-00-00 00:00:00'),
+('351', 281, 'Portugal', '0000-00-00 00:00:00'),
+('352', 236, 'Luxemburg', '0000-00-00 00:00:00'),
+('124623', 564, 'Barbados Mobile', '0000-00-00 00:00:00'),
+('3538', 462, 'Ireland Mobile', '0000-00-00 00:00:00'),
+('353', 182, 'Irland', '0000-00-00 00:00:00'),
+('3543', 458, 'Island Mobil', '0000-00-00 00:00:00'),
+('3546', 458, 'Island Mobil', '0000-00-00 00:00:00'),
+('3548', 458, 'Island Mobil', '0000-00-00 00:00:00'),
+('3549', 458, 'Island Mobil', '0000-00-00 00:00:00'),
+('354', 183, 'Island', '0000-00-00 00:00:00'),
+('35538', 561, 'Albania Mobile', '0000-00-00 00:00:00'),
+('3554', 105, 'Albania Tirana', '0000-00-00 00:00:00'),
+('35568', 561, 'Albania Mobile', '0000-00-00 00:00:00'),
+('35569', 561, 'Albania Mobile', '0000-00-00 00:00:00'),
+('355', 105, 'Albania', '0000-00-00 00:00:00'),
+('356', 244, 'Malta', '0000-00-00 00:00:00'),
+('357', 226, 'Kypros', '0000-00-00 00:00:00'),
+('358', 363, 'Finland ', '0000-00-00 00:00:00'),
+('3584', 443, 'Finland Mobil', '0000-00-00 00:00:00'),
+('35850', 443, 'Finland Mobil', '0000-00-00 00:00:00'),
+('3589', 363, 'Finland Helsinki', '0000-00-00 00:00:00'),
+('3592', 135, 'Bulgaria Sofia', '0000-00-00 00:00:00'),
+('35948', 420, 'Bulgaria Mobil', '0000-00-00 00:00:00'),
+('35987', 420, 'Bulgaria Mobil', '0000-00-00 00:00:00'),
+('35988', 420, 'Bulgaria Mobil', '0000-00-00 00:00:00'),
+('35989', 420, 'Bulgaria Mobil', '0000-00-00 00:00:00'),
+('359', 135, 'Bulgaria', '0000-00-00 00:00:00'),
+('361', 345, 'Ungarn Budapest', '0000-00-00 00:00:00'),
+('3620', 457, 'Ungarn Mobil', '0000-00-00 00:00:00'),
+('3630', 457, 'Ungarn Mobil', '0000-00-00 00:00:00'),
+('3670', 457, 'Ungarn Mobil', '0000-00-00 00:00:00'),
+('36', 345, 'Ungarn', '0000-00-00 00:00:00'),
+('37022', 481, 'Litauen Mobil', '0000-00-00 00:00:00'),
+('3706', 481, 'Litauen Mobil', '0000-00-00 00:00:00'),
+('37079', 481, 'Litauen Mobil', '0000-00-00 00:00:00'),
+('3708', 481, 'Litauen Mobil', '0000-00-00 00:00:00'),
+('37098', 481, 'Litauen Mobil', '0000-00-00 00:00:00'),
+('37099', 481, 'Litauen Mobil', '0000-00-00 00:00:00'),
+('370', 235, 'Litauen', '0000-00-00 00:00:00'),
+('3712', 228, 'Latvia Riga', '0000-00-00 00:00:00'),
+('37159', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37160', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37161', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37162', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37163', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37164', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37165', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37166', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37167', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37168', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37191', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37192', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37193', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37194', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37195', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37196', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37197', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37198', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('37199', 475, 'Latvia Mobile', '0000-00-00 00:00:00'),
+('371', 228, 'Latvia', '0000-00-00 00:00:00'),
+('3725', 299, 'Estland Mobil', '0000-00-00 00:00:00'),
+('372', 356, 'Estland', '0000-00-00 00:00:00'),
+('373', 255, 'Moldova', '0000-00-00 00:00:00'),
+('374', 117, 'Armenia', '0000-00-00 00:00:00'),
+('375', 350, 'Hviterussland', '0000-00-00 00:00:00'),
+('376', 110, 'Andorra', '0000-00-00 00:00:00'),
+('377', 256, 'Monaco', '0000-00-00 00:00:00'),
+('378', 306, 'San Marino', '0000-00-00 00:00:00'),
+('379', 597, 'Vatikanstaten', '0000-00-00 00:00:00'),
+('380', 344, 'Ukraina', '0000-00-00 00:00:00'),
+('38111', 364, 'Jugoslavia (Belgrade)', '0000-00-00 00:00:00'),
+('3816', 558, 'Jugoslavia - Montenegro Mobile', '0000-00-00 00:00:00'),
+('381', 364, 'Jugoslavia', '0000-00-00 00:00:00'),
+('385', 223, 'Kroatia', '0000-00-00 00:00:00'),
+('38619', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('38620', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('38629', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('38630', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('38631', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('38639', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('38640', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('38641', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('38649', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('38650', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('386503', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('386505', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('386506', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('386507', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('3866', 526, 'Slovenia Mobile', '0000-00-00 00:00:00'),
+('386', 372, 'Slovenia', '0000-00-00 00:00:00'),
+('387', 367, 'Bosnia-Hercegovina', '0000-00-00 00:00:00'),
+('389', 369, 'Makedonia', '0000-00-00 00:00:00'),
+('3906682', 597, 'Vatikanstaten', '0000-00-00 00:00:00'),
+('393', 464, 'Italia Mobil', '0000-00-00 00:00:00'),
+('3932', 464, 'Italia Mobil', '0000-00-00 00:00:00'),
+('3933', 464, 'Italia Mobil', '0000-00-00 00:00:00'),
+('3934', 464, 'Italia Mobil', '0000-00-00 00:00:00'),
+('3936', 464, 'Italia Mobil', '0000-00-00 00:00:00'),
+('3938', 464, 'Italia Mobil', '0000-00-00 00:00:00'),
+('39', 186, 'Italia', '0000-00-00 00:00:00'),
+('40', 297, 'Romania', '0000-00-00 00:00:00'),
+('4120', 535, 'Sveits Mobil', '0000-00-00 00:00:00'),
+('4176', 535, 'Sveits Mobil', '0000-00-00 00:00:00'),
+('4177', 535, 'Sveits Mobil', '0000-00-00 00:00:00'),
+('4178', 535, 'Sveits Mobil', '0000-00-00 00:00:00'),
+('4179', 535, 'Sveits Mobil', '0000-00-00 00:00:00'),
+('41', 321, 'Sveits', '0000-00-00 00:00:00'),
+('420', 338, 'Tsjekkia', '0000-00-00 00:00:00'),
+('421', 314, 'Slovakia', '0000-00-00 00:00:00'),
+('423', 234, 'Liechtenstein', '0000-00-00 00:00:00'),
+('431', 187, 'Østerrike Vienna', '0000-00-00 00:00:00'),
+('4320', 187, 'Østerrike Vienna', '0000-00-00 00:00:00'),
+('43650', 408, 'Østerrike Mobile', '0000-00-00 00:00:00'),
+('43663', 408, 'Østerrike Mobile', '0000-00-00 00:00:00'),
+('43664', 408, 'Østerrike Mobile', '0000-00-00 00:00:00'),
+('43666', 408, 'Østerrike Mobile', '0000-00-00 00:00:00'),
+('43669', 408, 'Østerrike Mobile', '0000-00-00 00:00:00'),
+('43676', 408, 'Østerrike Mobile', '0000-00-00 00:00:00'),
+('43678', 408, 'Østerrike Mobile', '0000-00-00 00:00:00'),
+('43686', 408, 'Østerrike Mobile', '0000-00-00 00:00:00'),
+('43688', 408, 'Østerrike Mobile', '0000-00-00 00:00:00'),
+('43699', 408, 'Østerrike Mobile', '0000-00-00 00:00:00'),
+('43', 187, 'Østerrike', '0000-00-00 00:00:00'),
+('441', 184, 'Storbritannia', '0000-00-00 00:00:00'),
+('442', 184, 'Storbritannia', '0000-00-00 00:00:00'),
+('447', 551, 'Storbritannia Mobil', '0000-00-00 00:00:00'),
+('44', 184, 'Storbritannia', '0000-00-00 00:00:00'),
+('452', 433, 'Danmark Mobil', '0000-00-00 00:00:00'),
+('453', 326, 'Danmark Kjøpenhavn', '0000-00-00 00:00:00'),
+('4530', 433, 'Danmark Mobil', '0000-00-00 00:00:00'),
+('4531', 433, 'Danmark Mobil', '0000-00-00 00:00:00'),
+('4540', 433, 'Danmark Mobil', '0000-00-00 00:00:00'),
+('4541', 433, 'Danmark Mobil', '0000-00-00 00:00:00'),
+('4550', 433, 'Danmark Mobil', '0000-00-00 00:00:00'),
+('4551', 433, 'Danmark Mobil', '0000-00-00 00:00:00'),
+('4560', 433, 'Danmark Mobil', '0000-00-00 00:00:00'),
+('4561', 433, 'Danmark Mobil', '0000-00-00 00:00:00'),
+('4596', 326, 'Danmark', '0000-00-00 00:00:00'),
+('4597', 326, 'Danmark', '0000-00-00 00:00:00'),
+('4598', 326, 'Danmark', '0000-00-00 00:00:00'),
+('4599', 326, 'Danmark', '0000-00-00 00:00:00'),
+('45', 326, 'Danmark ', '0000-00-00 00:00:00'),
+('4610', 2, 'Sverige Mobil', '0000-00-00 00:00:00'),
+('467', 2, 'Sverige Mobil', '0000-00-00 00:00:00'),
+('4670', 2, 'Sverige Mobil', '0000-00-00 00:00:00'),
+('4673', 2, 'Sverige Mobil', '0000-00-00 00:00:00'),
+('4676', 2, 'Sverige Mobil', '0000-00-00 00:00:00'),
+('46', 1, 'Sverige ', '0000-00-00 00:00:00'),
+('4822', 290, 'Polen Warsawa', '0000-00-00 00:00:00'),
+('4850', 514, 'Polen Mobil', '0000-00-00 00:00:00'),
+('4860', 514, 'Polen Mobil', '0000-00-00 00:00:00'),
+('4869', 514, 'Polen Mobil', '0000-00-00 00:00:00'),
+('4870', 514, 'Polen - Premium Rate', '0000-00-00 00:00:00'),
+('4888', 514, 'Polen Mobil', '0000-00-00 00:00:00'),
+('48', 290, 'Polen', '0000-00-00 00:00:00'),
+('491', 447, 'Tyskland Mobil', '0000-00-00 00:00:00'),
+('49', 302, 'Tyskland', '0000-00-00 00:00:00'),
+('500', 153, 'Falklandsøyene', '0000-00-00 00:00:00'),
+('501', 125, 'Belize', '0000-00-00 00:00:00'),
+('502', 166, 'Guatemala', '0000-00-00 00:00:00'),
+('503', 304, 'El Salvador', '0000-00-00 00:00:00'),
+('504', 172, 'Honduras', '0000-00-00 00:00:00'),
+('505', 266, 'Nicaragua', '0000-00-00 00:00:00'),
+('506', 143, 'Costa Rica', '0000-00-00 00:00:00'),
+('507', 276, 'Panama', '0000-00-00 00:00:00'),
+('508', 254, 'St. Pierre/Miquelon', '0000-00-00 00:00:00'),
+('509', 170, 'Haiti', '0000-00-00 00:00:00'),
+('51', 279, 'Peru', '0000-00-00 00:00:00'),
+('52', 252, 'Mexico', '0000-00-00 00:00:00'),
+('53', 224, 'Cuba', '0000-00-00 00:00:00'),
+('54', 116, 'Argentina', '0000-00-00 00:00:00'),
+('55', 130, 'Brasil', '0000-00-00 00:00:00'),
+('56', 141, 'Chile', '0000-00-00 00:00:00'),
+('57', 216, 'Colombia', '0000-00-00 00:00:00'),
+('58', 353, 'Venezuela', '0000-00-00 00:00:00'),
+('590', 164, 'Guadeloupe', '0000-00-00 00:00:00'),
+('591', 128, 'Bolivia', '0000-00-00 00:00:00'),
+('592', 167, 'Guyana', '0000-00-00 00:00:00'),
+('593', 148, 'Ecuador', '0000-00-00 00:00:00'),
+('594', 294, 'Fransk Guyana', '0000-00-00 00:00:00'),
+('595', 278, 'Paraguay', '0000-00-00 00:00:00'),
+('596', 248, 'Martinique', '0000-00-00 00:00:00'),
+('597', 320, 'Surinam', '0000-00-00 00:00:00'),
+('598', 346, 'Uruguay', '0000-00-00 00:00:00'),
+('599', 103, 'Nederlandske Ant.', '0000-00-00 00:00:00'),
+('60', 242, 'Malaysia', '0000-00-00 00:00:00'),
+('61', 120, 'Australia', '0000-00-00 00:00:00'),
+('6221', 174, 'Indonesia Jakarta', '0000-00-00 00:00:00'),
+('6228', 460, 'Indonesia Mobile', '0000-00-00 00:00:00'),
+('6231', 174, 'Indonesia Surabaya', '0000-00-00 00:00:00'),
+('6281', 460, 'Indonesia Mobile', '0000-00-00 00:00:00'),
+('6282', 460, 'Indonesia Mobile', '0000-00-00 00:00:00'),
+('628681', 460, 'Indonesia Mobile', '0000-00-00 00:00:00'),
+('62', 174, 'Indonesia', '0000-00-00 00:00:00'),
+('63', 155, 'Filippinene', '0000-00-00 00:00:00'),
+('639', 513, 'Filippinene-mobil', '0000-00-00 00:00:00'),
+('64', 349, 'New Zealand', '0000-00-00 00:00:00'),
+('661', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('65', 313, 'Singapore', '0000-00-00 00:00:00'),
+('66', 327, 'Thailand', '0000-00-00 00:00:00'),
+('670', 878, 'Øst Timor', '0000-00-00 00:00:00'),
+('671', 165, 'Guam', '0000-00-00 00:00:00'),
+('6721', 375, 'Antarktis', '0000-00-00 00:00:00'),
+('6723', 270, 'Norfolk øyene', '0000-00-00 00:00:00'),
+('672', 378, 'Christmas- & Cocosøyene', '0000-00-00 00:00:00'),
+('673', 368, 'Brunei', '0000-00-00 00:00:00'),
+('674', 264, 'Nauru', '0000-00-00 00:00:00'),
+('675', 277, 'Papua, Ny Guinea', '0000-00-00 00:00:00'),
+('676', 329, 'Tonga', '0000-00-00 00:00:00'),
+('677', 303, 'Salomonøyene', '0000-00-00 00:00:00'),
+('678', 351, 'Vanatu', '0000-00-00 00:00:00'),
+('679', 154, 'Fiji', '0000-00-00 00:00:00'),
+('680', 285, 'Palau-mobil', '0000-00-00 00:00:00'),
+('681', 359, 'Wallis & Futuna', '0000-00-00 00:00:00'),
+('682', 572, 'Cook-øyene', '0000-00-00 00:00:00'),
+('683', 269, 'Niue', '0000-00-00 00:00:00'),
+('684', 109, 'Am. Samoaøyene', '0000-00-00 00:00:00'),
+('685', 237, 'Vestre Samoa', '0000-00-00 00:00:00'),
+('686', 215, 'Kiribati', '0000-00-00 00:00:00'),
+('687', 348, 'Ny Caledonia', '0000-00-00 00:00:00'),
+('688', 342, 'Tuvalu', '0000-00-00 00:00:00'),
+('689', 295, 'Fransk Polynesia', '0000-00-00 00:00:00'),
+('690', 690, 'Tokelau', '0000-00-00 00:00:00'),
+('691', 253, 'Mikronesia', '0000-00-00 00:00:00'),
+('692', 247, 'Marshalløyene', '0000-00-00 00:00:00'),
+('7', 354, 'Russland', '0000-00-00 00:00:00'),
+('8166', 204, 'Japan Osaka', '0000-00-00 00:00:00'),
+('8180', 467, 'Japan Mobile', '0000-00-00 00:00:00'),
+('8190', 467, 'Japan Mobile', '0000-00-00 00:00:00'),
+('81', 204, 'Japan', '0000-00-00 00:00:00'),
+('82', 221, 'Korea, Syd', '0000-00-00 00:00:00'),
+('84', 355, 'Vietnam', '0000-00-00 00:00:00'),
+('850', 220, 'Korea, Nord', '0000-00-00 00:00:00'),
+('8521', 456, 'Hong Kong Mobile', '0000-00-00 00:00:00'),
+('8524', 456, 'Hong Kong Mobile', '0000-00-00 00:00:00'),
+('8526', 456, 'Hong Kong Mobile', '0000-00-00 00:00:00'),
+('8529', 456, 'Hong Kong Mobile', '0000-00-00 00:00:00'),
+('852', 173, 'Hong Kong', '0000-00-00 00:00:00'),
+('853', 238, 'Macao', '0000-00-00 00:00:00'),
+('855', 209, 'Kambodsja', '0000-00-00 00:00:00'),
+('856', 227, 'Laos', '0000-00-00 00:00:00'),
+('86', 214, 'Kina', '0000-00-00 00:00:00'),
+('871', 940, 'Inmarsat', '0000-00-00 00:00:00'),
+('880', 122, 'Bangladesh', '0000-00-00 00:00:00'),
+('881', 882, 'Globalstar', '0000-00-00 00:00:00'),
+('882', 880, 'Thuraya satellite', '0000-00-00 00:00:00'),
+('886', 324, 'Taiwan', '0000-00-00 00:00:00'),
+('90', 340, 'Tyrkia', '0000-00-00 00:00:00'),
+('91', 179, 'India', '0000-00-00 00:00:00'),
+('9221', 274, 'Pakistan Karachi', '0000-00-00 00:00:00'),
+('9242', 274, 'Pakistan Lahore', '0000-00-00 00:00:00'),
+('92', 274, 'Pakistan', '0000-00-00 00:00:00'),
+('937', 139, 'Afghanistan Mobil', '0000-00-00 00:00:00'),
+('93', 101, 'Afghanistan', '0000-00-00 00:00:00'),
+('94', 316, 'Sri Lanka', '0000-00-00 00:00:00'),
+('95', 262, 'Myanmar (tidl. Burma)', '0000-00-00 00:00:00'),
+('960', 241, 'Maldivene', '0000-00-00 00:00:00'),
+('961', 230, 'Libanon', '0000-00-00 00:00:00'),
+('962', 206, 'Jordan', '0000-00-00 00:00:00'),
+('963', 323, 'Syria', '0000-00-00 00:00:00'),
+('964', 180, 'Irak', '0000-00-00 00:00:00'),
+('965', 225, 'Kuwait', '0000-00-00 00:00:00'),
+('9661', 308, 'Saudi Arabia Riyadh', '0000-00-00 00:00:00'),
+('9662', 308, 'Saudi Arabia Jeddah', '0000-00-00 00:00:00'),
+('9665', 520, 'Saudi Arabia Mobil', '0000-00-00 00:00:00'),
+('966', 308, 'Saudi Arabia', '0000-00-00 00:00:00'),
+('967', 205, 'Jemen, Arab. Rep', '0000-00-00 00:00:00'),
+('968', 273, 'Oman', '0000-00-00 00:00:00'),
+('970', 972, 'Palestina', '0000-00-00 00:00:00'),
+('97150', 412, 'Forente Arabiske Emirater', '0000-00-00 00:00:00'),
+('971', 115, 'Forente Arabiske Emirater', '0000-00-00 00:00:00'),
+('9725', 463, 'Israel Mobile', '0000-00-00 00:00:00'),
+('9726', 463, 'Israel Mobile', '0000-00-00 00:00:00'),
+('972', 185, 'Israel', '0000-00-00 00:00:00'),
+('973', 121, 'Bahrain', '0000-00-00 00:00:00'),
+('974', 292, 'Quatar', '0000-00-00 00:00:00'),
+('975', 127, 'Bhutan', '0000-00-00 00:00:00'),
+('976', 257, 'Mongolia', '0000-00-00 00:00:00'),
+('977', 265, 'Nepal', '0000-00-00 00:00:00'),
+('98', 181, 'Iran', '0000-00-00 00:00:00'),
+('992', 374, 'Tadzjikistan', '0000-00-00 00:00:00'),
+('993', 377, 'Turkmenistan', '0000-00-00 00:00:00'),
+('994', 365, 'Azerbadjan', '0000-00-00 00:00:00'),
+('995', 159, 'Georgia', '0000-00-00 00:00:00'),
+('996', 875, 'Kyrgyzstan', '0000-00-00 00:00:00'),
+('998', 373, 'Uzbekistan', '0000-00-00 00:00:00'),
+('3520', 482, 'Luxemburg-mobil', '0000-00-00 00:00:00'),
+('3526', 482, 'Luxemburg-mobil', '0000-00-00 00:00:00'),
+('35268', 482, 'Luxemburg-mobil', '0000-00-00 00:00:00'),
+('124624', 564, 'Barbados Mobile', '0000-00-00 00:00:00'),
+('124625', 564, 'Barbados Mobile', '0000-00-00 00:00:00'),
+('124626', 564, 'Barbados Mobile', '0000-00-00 00:00:00'),
+('124645', 564, 'Barbados Mobile', '0000-00-00 00:00:00'),
+('124682', 564, 'Barbados Mobile', '0000-00-00 00:00:00'),
+('1664492', 495, 'Montserrat Mobile', '0000-00-00 00:00:00'),
+('1664724', 495, 'Montserrat Pager', '0000-00-00 00:00:00'),
+('1671', 165, 'Guam', '0000-00-00 00:00:00'),
+('1758284', 531, 'St Lucia Mobile', '0000-00-00 00:00:00'),
+('1758384', 531, 'St Lucia Mobile', '0000-00-00 00:00:00'),
+('1758484', 531, 'St Lucia Mobile', '0000-00-00 00:00:00'),
+('1758485', 531, 'St Lucia Mobile', '0000-00-00 00:00:00'),
+('1758486', 531, 'St Lucia Mobile', '0000-00-00 00:00:00'),
+('1758487', 531, 'St Lucia Mobile', '0000-00-00 00:00:00'),
+('1758584', 531, 'St Lucia Mobile', '0000-00-00 00:00:00'),
+('1767225', 573, 'Dominica Mobile', '0000-00-00 00:00:00'),
+('1767235', 573, 'Dominica Mobile', '0000-00-00 00:00:00'),
+('1767245', 573, 'Dominica Mobile', '0000-00-00 00:00:00'),
+('1767265', 573, 'Dominica Mobile', '0000-00-00 00:00:00'),
+('1767275', 573, 'Dominica Mobile', '0000-00-00 00:00:00'),
+('1767276', 573, 'Dominica Mobile', '0000-00-00 00:00:00'),
+('1767277', 573, 'Dominica Mobile', '0000-00-00 00:00:00'),
+('1784454', 532, 'St Vincent & Grenadines Mobile', '0000-00-00 00:00:00'),
+('1784455', 532, 'St Vincent & Grenadines Mobile', '0000-00-00 00:00:00'),
+('1784492', 532, 'St Vincent & Grenadines Mobile', '0000-00-00 00:00:00'),
+('1784493', 532, 'St Vincent & Grenadines Mobile', '0000-00-00 00:00:00'),
+('1784593', 532, 'St Vincent & Grenadines Mobile', '0000-00-00 00:00:00'),
+('1787307', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787311', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787343', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787354', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787355', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787357', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787359', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787369', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787411', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787434', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787435', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787438', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787452', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787453', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787454', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787456', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787464', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787465', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787471', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787474', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787511', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787513', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787524', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787534', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787535', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787537', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787544', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787545', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787546', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787579', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787580', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787585', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787588', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787589', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787609', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787611', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787641', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1787968', 282, 'Puerto Rico - Not Mobile', '0000-00-00 00:00:00'),
+('1809204', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809208', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809209', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('18092223', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('18092224', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('18092225', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809223', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('18092243', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('18092244', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('18092245', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809249', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('180925', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809267', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809268', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809269', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809270', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809271', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809272', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809280', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809283', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809292', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809293', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809299', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809301', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809302', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809303', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809304', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809305', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809306', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809307', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809308', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809309', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809310', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809321', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809322', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809323', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809324', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809325', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809326', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809327', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809330', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809340', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809341', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809342', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809343', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809344', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809345', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809348', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809350', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809360', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809366', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809370', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809371', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809374', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809376', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809377', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809383', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809386', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809387', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809390', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809392', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809393', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809394', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809395', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809396', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809399', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809415', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809416', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809417', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809418', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809419', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809420', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809421', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809423', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809424', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809428', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809429', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('180943', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('180944', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809451', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809452', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809453', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809454', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809456', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809457', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809458', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809459', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809460', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809461', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809462', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809463', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809464', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809465', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809470', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809477', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809478', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809479', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809481', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809486', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('180949', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809504', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809506', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809512', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809515', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809519', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809520', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809542', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809543', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809545', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809546', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809604', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809606', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809615', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809624', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809628', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809629', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809630', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809631', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809632', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809633', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809634', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809635', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809637', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809639', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('180964', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809650', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809651', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809652', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809653', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809656', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809658', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809659', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809670', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809671', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809696', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809697', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809698', 436, 'Dominican Republic Pager', '0000-00-00 00:00:00'),
+('1809707', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809710', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809723', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809727', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809729', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809749', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809750', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809751', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809752', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809753', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809754', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809756', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809757', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809758', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809759', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809760', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809761', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809762', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809763', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809764', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809765', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809767', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809768', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809769', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809771', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809772', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809773', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809774', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809775', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809776', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809777', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809785', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809786', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809787', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809796', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809801', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809802', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809803', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809804', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809805', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809815', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809816', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809817', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809818', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809829', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809834', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809835', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809836', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809837', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809838', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809839', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('180984', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809850', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809851', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809852', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809853', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809854', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809855', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809856', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809857', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809858', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('180986', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809871', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809873', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809874', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809875', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809876', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809877', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809878', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809879', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('180988', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809890', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809912', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809913', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809914', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809915', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809916', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809917', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809918', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809928', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809929', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809932', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809938', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809939', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809940', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809941', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809942', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809943', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809944', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809945', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809946', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809952', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809953', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809956', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809957', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809958', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809972', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809973', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809974', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809975', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809977', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809978', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809979', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809980', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809981', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809982', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809985', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809986', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809987', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809988', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1809989', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('180999', 436, 'Dominican Republic Mobile', '0000-00-00 00:00:00'),
+('1868620', 542, 'Trinidad & Tobago Mobile', '0000-00-00 00:00:00'),
+('1868678', 542, 'Trinidad & Tobago Mobile', '0000-00-00 00:00:00'),
+('186868', 542, 'Trinidad & Tobago Mobile', '0000-00-00 00:00:00'),
+('18687', 542, 'Trinidad & Tobago Mobile', '0000-00-00 00:00:00'),
+('187621', 466, 'Jamaica Mobile', '0000-00-00 00:00:00'),
+('1876781', 466, 'Jamaica Mobile', '0000-00-00 00:00:00'),
+('1876782', 466, 'Jamaica Mobile', '0000-00-00 00:00:00'),
+('1876783', 466, 'Jamaica Mobile', '0000-00-00 00:00:00'),
+('1876784', 466, 'Jamaica Mobile', '0000-00-00 00:00:00'),
+('187679', 466, 'Jamaica Mobile', '0000-00-00 00:00:00'),
+('2010', 438, 'Egypt Mobile', '0000-00-00 00:00:00'),
+('2012', 438, 'Egypt Mobile', '0000-00-00 00:00:00'),
+('21222', 246, 'Morocco Casablanca', '0000-00-00 00:00:00'),
+('2126', 496, 'Morocco Mobile', '0000-00-00 00:00:00'),
+('2127', 496, 'Morocco Mobile', '0000-00-00 00:00:00'),
+('2132', 106, 'Algeria; Algiers', '0000-00-00 00:00:00'),
+('21361', 400, 'Algeria Mobile', '0000-00-00 00:00:00'),
+('21398', 400, 'Algeria Mobile', '0000-00-00 00:00:00'),
+('21399', 400, 'Algeria Mobile', '0000-00-00 00:00:00'),
+('21698', 543, 'Tunisia Mobile', '0000-00-00 00:00:00'),
+('21891', 581, 'Libya Mobile', '0000-00-00 00:00:00'),
+('22070', 203, 'Gambia Mobile', '0000-00-00 00:00:00'),
+('22075', 203, 'Gambia Mobile', '0000-00-00 00:00:00'),
+('22076', 203, 'Gambia Mobile', '0000-00-00 00:00:00'),
+('22077', 203, 'Gambia Mobile', '0000-00-00 00:00:00'),
+('22078', 203, 'Gambia Mobile', '0000-00-00 00:00:00'),
+('22079', 203, 'Gambia Mobile', '0000-00-00 00:00:00'),
+('2209', 203, 'Gambia Mobile', '0000-00-00 00:00:00'),
+('2241', 169, 'Guinea Mobile', '0000-00-00 00:00:00'),
+('22440', 169, 'Guinea Mobile', '0000-00-00 00:00:00'),
+('2250', 465, 'Cote d''Ivoire Mobile', '0000-00-00 00:00:00'),
+('22520', 272, 'Cote d''Ivoire Abidjan', '0000-00-00 00:00:00'),
+('22521', 272, 'Cote d''Ivoire Abidjan', '0000-00-00 00:00:00'),
+('22522', 272, 'Cote d''Ivoire Abidjan', '0000-00-00 00:00:00'),
+('22523', 272, 'Cote d''Ivoire Abidjan', '0000-00-00 00:00:00'),
+('22524', 272, 'Cote d''Ivoire Abidjan', '0000-00-00 00:00:00'),
+('22530', 465, 'Cote d''Ivoire Mobile', '0000-00-00 00:00:00'),
+('2255', 465, 'Cote d''Ivoire Mobile', '0000-00-00 00:00:00'),
+('2257', 465, 'Cote d''Ivoire Mobile', '0000-00-00 00:00:00'),
+('2258', 465, 'Cote d''Ivoire Mobile', '0000-00-00 00:00:00'),
+('2259', 465, 'Cote d''Ivoire Mobile', '0000-00-00 00:00:00'),
+('2267', 567, 'Burkina Faso Mobile', '0000-00-00 00:00:00'),
+('23230', 523, 'Sierre Leone Mobile', '0000-00-00 00:00:00'),
+('23235', 523, 'Sierre Leone Mobile', '0000-00-00 00:00:00'),
+('2325', 523, 'Sierre Leone Mobile', '0000-00-00 00:00:00'),
+('23276', 523, 'Sierre Leone Mobile', '0000-00-00 00:00:00'),
+('23320', 448, 'Ghana Mobile', '0000-00-00 00:00:00'),
+('23321', 160, 'Ghana Accra', '0000-00-00 00:00:00'),
+('23324', 448, 'Ghana Mobile', '0000-00-00 00:00:00'),
+('23327', 448, 'Ghana Mobile', '0000-00-00 00:00:00'),
+('23328', 448, 'Ghana Mobile', '0000-00-00 00:00:00'),
+('2341', 268, 'Nigeria Lagos', '0000-00-00 00:00:00'),
+('2341320', 506, 'Nigeria Mobile', '0000-00-00 00:00:00'),
+('23480', 506, 'Nigeria Mobile', '0000-00-00 00:00:00'),
+('23490', 506, 'Nigeria Mobile', '0000-00-00 00:00:00'),
+('2358', 598, 'Chad Mobile', '0000-00-00 00:00:00'),
+('2360', 570, 'Central African Republic Mobile', '0000-00-00 00:00:00'),
+('23620', 570, 'Central African Republic Mobile', '0000-00-00 00:00:00'),
+('23660', 570, 'Central African Republic Mobile', '0000-00-00 00:00:00'),
+('2376', 175, 'Cameroon Mobile', '0000-00-00 00:00:00'),
+('2377', 175, 'Cameroon Mobile', '0000-00-00 00:00:00'),
+('2378', 175, 'Cameroon Mobile', '0000-00-00 00:00:00'),
+('2379', 175, 'Cameroon Mobile', '0000-00-00 00:00:00'),
+('24008', 291, 'Equatorial Guinea Bata', '0000-00-00 00:00:00'),
+('2410', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('2411', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('2412', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('2413', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24141', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24151', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24152', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24153', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24157', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24161', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24163', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24168', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24175', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24180', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24181', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24184', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24185', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24187', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24189', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24191', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24194', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24195', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24197', 446, 'Gabon Mobile', '0000-00-00 00:00:00'),
+('24312', 362, 'Congo (Democratic Republic of)', '0000-00-00 00:00:00'),
+('2436', 362, 'Congo (Democratic Republic of)', '0000-00-00 00:00:00'),
+('2438', 362, 'Congo (Democratic Republic of)', '0000-00-00 00:00:00'),
+('2439', 362, 'Congo (Democratic Republic of)', '0000-00-00 00:00:00'),
+('24491', 402, 'Angola Mobile', '0000-00-00 00:00:00'),
+('24492', 402, 'Angola Mobile', '0000-00-00 00:00:00'),
+('24566', 578, 'Guinea Bissau Mobile', '0000-00-00 00:00:00'),
+('2485', 522, 'Seychelles Mobile', '0000-00-00 00:00:00'),
+('2499', 590, 'Sudan Mobile', '0000-00-00 00:00:00'),
+('2500', 519, 'Rwanda Mobile', '0000-00-00 00:00:00'),
+('2505', 519, 'Rwanda Mobile', '0000-00-00 00:00:00'),
+('2506', 519, 'Rwanda Mobile', '0000-00-00 00:00:00'),
+('2508', 519, 'Rwanda Mobile', '0000-00-00 00:00:00'),
+('25325', 145, 'Dijibouti Djibouti-ville', '0000-00-00 00:00:00'),
+('25330', 145, 'Dijibouti Djibouti-ville', '0000-00-00 00:00:00'),
+('25380', 434, 'Djibouti Mobile', '0000-00-00 00:00:00'),
+('25420', 212, 'Kenya Nairobi', '0000-00-00 00:00:00'),
+('2547', 470, 'Kenya Mobile', '0000-00-00 00:00:00'),
+('25522', 325, 'Tanzania Dar es Salaam', '0000-00-00 00:00:00'),
+('25573', 539, 'Tanzania Mobile', '0000-00-00 00:00:00'),
+('25574', 539, 'Tanzania Mobile', '0000-00-00 00:00:00'),
+('25576', 539, 'Tanzania Mobile', '0000-00-00 00:00:00'),
+('25578', 539, 'Tanzania Mobile', '0000-00-00 00:00:00'),
+('25581', 539, 'Tanzania Mobile', '0000-00-00 00:00:00'),
+('25582', 539, 'Tanzania Mobile', '0000-00-00 00:00:00'),
+('25675', 594, 'Uganda Mobile', '0000-00-00 00:00:00'),
+('2588', 497, 'Mozambique Mobile', '0000-00-00 00:00:00'),
+('2609', 559, 'Zambia Mobile', '0000-00-00 00:00:00'),
+('2613', 485, 'Madagascar Mobile', '0000-00-00 00:00:00'),
+('2615', 485, 'Madagascar Pager', '0000-00-00 00:00:00'),
+('262692', 550, 'Reunion Mobile', '0000-00-00 00:00:00'),
+('26311', 560, 'Zimbabwe Mobile', '0000-00-00 00:00:00'),
+('26323', 560, 'Zimbabwe Mobile', '0000-00-00 00:00:00'),
+('26391', 560, 'Zimbabwe Mobile', '0000-00-00 00:00:00'),
+('26481', 498, 'Namibia Mobile', '0000-00-00 00:00:00'),
+('2658', 486, 'Malawi Mobile(telekom)', '0000-00-00 00:00:00'),
+('2659', 486, 'Malawi Mobile(celtel)', '0000-00-00 00:00:00'),
+('266212', 477, 'Lesotho Mobile', '0000-00-00 00:00:00'),
+('2668', 477, 'Lesotho Mobile', '0000-00-00 00:00:00'),
+('2677', 417, 'Botswana Mobile', '0000-00-00 00:00:00'),
+('2686', 331, 'Swaziland Mobile', '0000-00-00 00:00:00'),
+('2693', 571, 'Comoros Mobile', '0000-00-00 00:00:00'),
+('2696', 217, 'Mayotte', '0000-00-00 00:00:00'),
+('26965', 571, 'Mayotte Mobile', '0000-00-00 00:00:00'),
+('26966', 571, 'Mayotte Mobile', '0000-00-00 00:00:00'),
+('26967', 571, 'Mayotte Mobile', '0000-00-00 00:00:00'),
+('26968', 571, 'Mayotte Mobile', '0000-00-00 00:00:00'),
+('26969', 571, 'Mayotte Mobile', '0000-00-00 00:00:00'),
+('2697', 217, 'Comoros', '0000-00-00 00:00:00'),
+('2711', 151, 'South Africa Johannesburg', '0000-00-00 00:00:00'),
+('2721', 151, 'South Africa Cape Town', '0000-00-00 00:00:00'),
+('2772', 528, 'South Africa Vodacom Mbl', '0000-00-00 00:00:00'),
+('2773', 528, 'South Africa MTN MBL', '0000-00-00 00:00:00'),
+('2774', 528, 'South Africa Mobile', '0000-00-00 00:00:00'),
+('2782', 528, 'South Africa Vodacom MBL', '0000-00-00 00:00:00'),
+('2783', 528, 'South Africa MTN MBL', '0000-00-00 00:00:00'),
+('2784', 528, 'South Africa Cell C MBL', '0000-00-00 00:00:00'),
+('2994', 451, 'Greenland Mobile', '0000-00-00 00:00:00'),
+('2995', 451, 'Greenland Mobile', '0000-00-00 00:00:00'),
+('3021', 222, 'Greece Athens', '0000-00-00 00:00:00'),
+('306', 450, 'Greece Mobile', '0000-00-00 00:00:00'),
+('31660', 500, 'Netherlands Pager', '0000-00-00 00:00:00'),
+('31661', 500, 'Netherlands Pager', '0000-00-00 00:00:00'),
+('31665', 500, 'Netherlands Pager', '0000-00-00 00:00:00'),
+('3245', 414, 'Belgium Pager', '0000-00-00 00:00:00'),
+('3313', 293, 'France Paris Central', '0000-00-00 00:00:00'),
+('3314', 293, 'France Paris Central', '0000-00-00 00:00:00'),
+('3315', 293, 'France Paris Central', '0000-00-00 00:00:00'),
+('3316', 293, 'France Paris Central', '0000-00-00 00:00:00'),
+('3317', 293, 'France Paris Central', '0000-00-00 00:00:00'),
+('338', 444, 'France Premuim', '0000-00-00 00:00:00'),
+('3491', 150, 'Spain Madrid', '0000-00-00 00:00:00'),
+('35054', 449, 'Gibraltar Mobile', '0000-00-00 00:00:00'),
+('35056', 449, 'Gibraltar Mobile', '0000-00-00 00:00:00'),
+('35057', 449, 'Gibraltar Mobile', '0000-00-00 00:00:00'),
+('35058', 449, 'Gibraltar Mobile', '0000-00-00 00:00:00'),
+('35122', 281, 'Portugal Oporto', '0000-00-00 00:00:00'),
+('3531', 182, 'Ireland Dublin', '0000-00-00 00:00:00'),
+('353818', 182, 'Ireland National non-geo', '0000-00-00 00:00:00'),
+('35383', 462, 'Ireland H3G Mbl', '0000-00-00 00:00:00'),
+('353835', 462, 'Ireland H3G Mbl', '0000-00-00 00:00:00'),
+('35384', 462, 'Ireland Imagine Mbl', '0000-00-00 00:00:00'),
+('353845', 462, 'Ireland Imagine Mbl', '0000-00-00 00:00:00'),
+('35385', 462, 'Ireland Meteor Mbl', '0000-00-00 00:00:00'),
+('353855', 462, 'Ireland Meteor Mbl', '0000-00-00 00:00:00'),
+('35386', 462, 'Ireland O2 Mbl', '0000-00-00 00:00:00'),
+('353865', 462, 'Ireland O2 Mbl', '0000-00-00 00:00:00'),
+('35387', 462, 'Ireland Vodafone Mbl', '0000-00-00 00:00:00'),
+('353875', 462, 'Ireland Vodafone Mbl', '0000-00-00 00:00:00'),
+('35388', 462, 'Ireland Vodafone Mbl', '0000-00-00 00:00:00'),
+('353885', 462, 'Ireland Vodafone Mbl', '0000-00-00 00:00:00'),
+('3567', 489, 'Malta Mobile', '0000-00-00 00:00:00'),
+('3569', 489, 'Malta Mobile', '0000-00-00 00:00:00'),
+('3579', 431, 'Cyprus Mobile', '0000-00-00 00:00:00'),
+('35917', 420, 'Bulgaria Pager', '0000-00-00 00:00:00'),
+('373690', 492, 'Moldova Mobile', '0000-00-00 00:00:00'),
+('373691', 492, 'Moldova Mobile', '0000-00-00 00:00:00'),
+('373692', 492, 'Moldova Mobile', '0000-00-00 00:00:00'),
+('373693', 492, 'Moldova Mobile', '0000-00-00 00:00:00'),
+('373794', 492, 'Moldova Mobile', '0000-00-00 00:00:00'),
+('373795', 492, 'Moldova Mobile', '0000-00-00 00:00:00'),
+('373796', 492, 'Moldova Mobile', '0000-00-00 00:00:00'),
+('3739', 492, 'Moldova MBL OLD', '0000-00-00 00:00:00'),
+('37410', 117, 'Armenia Yerevan', '0000-00-00 00:00:00'),
+('3749', 405, 'Armenia Mobile', '0000-00-00 00:00:00'),
+('37517', 350, 'Belarus Minsk', '0000-00-00 00:00:00'),
+('37529', 413, 'Belarus Mobile', '0000-00-00 00:00:00'),
+('3763', 401, 'Andorra Mobile', '0000-00-00 00:00:00'),
+('3764', 401, 'Andorra Mobile', '0000-00-00 00:00:00'),
+('3766', 401, 'Andorra Mobile', '0000-00-00 00:00:00'),
+('3774', 493, 'Monaco Mobile', '0000-00-00 00:00:00'),
+('37744', 493, 'Monaco - Kosovo Mobile', '0000-00-00 00:00:00'),
+('37745', 493, 'Monaco - Kosovo Mobile', '0000-00-00 00:00:00'),
+('3776', 493, 'Monaco Mobile', '0000-00-00 00:00:00'),
+('3783', 286, 'San Marino Mobile', '0000-00-00 00:00:00'),
+('38032', 344, 'Ukraine Lviv', '0000-00-00 00:00:00'),
+('38039', 549, 'Ukraine Mobile', '0000-00-00 00:00:00'),
+('38044', 344, 'Ukraine Kiev', '0000-00-00 00:00:00'),
+('38048', 344, 'Ukraine Odessa', '0000-00-00 00:00:00'),
+('38050', 549, 'Ukraine Mobile', '0000-00-00 00:00:00'),
+('38056', 344, 'Ukraine Dnipropetrovsk', '0000-00-00 00:00:00'),
+('38057', 344, 'Ukraine Kharkiv', '0000-00-00 00:00:00'),
+('38062', 344, 'Ukraine Donetsk', '0000-00-00 00:00:00'),
+('38066', 549, 'Ukraine Mobile', '0000-00-00 00:00:00'),
+('38067', 549, 'Ukraine Mobile', '0000-00-00 00:00:00'),
+('38068', 549, 'Ukraine Mobile', '0000-00-00 00:00:00'),
+('38097', 549, 'Ukraine Mobile', '0000-00-00 00:00:00'),
+('38509', 430, 'Croatia Mobile', '0000-00-00 00:00:00'),
+('3859', 430, 'Croatia Mobile', '0000-00-00 00:00:00'),
+('38766', 416, 'Bosnia & Herzegovina Mobile', '0000-00-00 00:00:00'),
+('3897', 484, 'Macedonia Mobile', '0000-00-00 00:00:00'),
+('4021', 297, 'Romania Bucharest', '0000-00-00 00:00:00'),
+('407', 517, 'Romania Mobile', '0000-00-00 00:00:00'),
+('411', 321, 'Switzerland Zurich', '0000-00-00 00:00:00'),
+('4143', 321, 'Switzerland Zurich', '0000-00-00 00:00:00'),
+('4144', 321, 'Switzerland Zurich', '0000-00-00 00:00:00'),
+('4202', 338, 'Czech Prague', '0000-00-00 00:00:00'),
+('42060', 432, 'Czech Republic Mobile', '0000-00-00 00:00:00'),
+('42072', 432, 'Czech Republic Mobile', '0000-00-00 00:00:00'),
+('42073', 432, 'Czech Republic Mobile', '0000-00-00 00:00:00'),
+('42077', 432, 'Czech Republic Mobile', '0000-00-00 00:00:00'),
+('4209', 432, 'Czech Republic Mobile', '0000-00-00 00:00:00'),
+('4212', 314, 'Slovakia Bratislava', '0000-00-00 00:00:00'),
+('421901', 525, 'Slovakia Mobile', '0000-00-00 00:00:00'),
+('421902', 525, 'Slovakia Mobile', '0000-00-00 00:00:00'),
+('421903', 525, 'Slovakia Mobile', '0000-00-00 00:00:00'),
+('421904', 525, 'Slovakia Mobile', '0000-00-00 00:00:00'),
+('421905', 525, 'Slovakia Mobile', '0000-00-00 00:00:00'),
+('421906', 525, 'Slovakia Mobile', '0000-00-00 00:00:00'),
+('421907', 525, 'Slovakia Mobile', '0000-00-00 00:00:00'),
+('421908', 525, 'Slovakia Mobile', '0000-00-00 00:00:00'),
+('421909', 525, 'Slovakia Mobile', '0000-00-00 00:00:00'),
+('4236', 480, 'Liechtenstein personal', '0000-00-00 00:00:00'),
+('4237', 480, 'Liechtenstein Mobile', '0000-00-00 00:00:00'),
+('4674', 2, 'Sweden Pager', '0000-00-00 00:00:00'),
+('4851', 514, 'Poland Mobile', '0000-00-00 00:00:00'),
+('4864', 514, 'Poland Paging', '0000-00-00 00:00:00'),
+('4866', 514, 'Poland Mobile', '0000-00-00 00:00:00'),
+('5016', 410, 'Belize Mobile', '0000-00-00 00:00:00'),
+('5025', 453, 'Guatemala Mobile', '0000-00-00 00:00:00'),
+('5037', 439, 'El Salvador Mobile', '0000-00-00 00:00:00'),
+('5038', 439, 'El Salvador Mobile', '0000-00-00 00:00:00'),
+('5039', 439, 'El Salvador Mobile', '0000-00-00 00:00:00'),
+('5049', 455, 'Honduras Mobile', '0000-00-00 00:00:00'),
+('5056', 504, 'Nicaragua Mobile', '0000-00-00 00:00:00'),
+('5058', 504, 'Nicaragua Mobile', '0000-00-00 00:00:00'),
+('5072', 276, 'Panama City', '0000-00-00 00:00:00'),
+('50720', 509, 'Panama Mobile', '0000-00-00 00:00:00'),
+('50721', 509, 'Panama Mobile', '0000-00-00 00:00:00'),
+('50740', 509, 'Panama Mobile', '0000-00-00 00:00:00'),
+('50741', 509, 'Panama Mobile', '0000-00-00 00:00:00'),
+('5075', 509, 'Panama Mobile', '0000-00-00 00:00:00'),
+('5076', 509, 'Panama Mobile', '0000-00-00 00:00:00'),
+('50770', 509, 'Panama Mobile', '0000-00-00 00:00:00'),
+('50771', 509, 'Panama Mobile', '0000-00-00 00:00:00'),
+('5092', 454, 'Haiti Mobile', '0000-00-00 00:00:00'),
+('5093', 454, 'Haiti Mobile', '0000-00-00 00:00:00'),
+('5094', 454, 'Haiti Mobile', '0000-00-00 00:00:00'),
+('5095', 454, 'Haiti Mobile', '0000-00-00 00:00:00'),
+('5098', 454, 'Haiti Mobile', '0000-00-00 00:00:00'),
+('511', 279, 'Peru Lima', '0000-00-00 00:00:00'),
+('5119', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51419', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51429', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51439', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51449', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51519', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51529', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51539', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51549', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51569', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51619', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51629', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51639', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51649', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51659', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51669', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51679', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51729', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51739', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51749', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51769', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51829', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51839', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('51849', 512, 'Peru Mobile', '0000-00-00 00:00:00'),
+('5236', 252, 'Mexico Guadalajara', '0000-00-00 00:00:00'),
+('525', 252, 'Mexico Mexico City', '0000-00-00 00:00:00'),
+('5281', 252, 'Mexico Monterrey', '0000-00-00 00:00:00'),
+('5399', 224, 'Cuba Guantanamo Bay', '0000-00-00 00:00:00'),
+('5411', 116, 'Argentina Buenos Aires', '0000-00-00 00:00:00'),
+('549', 404, 'Argentina Mobile', '0000-00-00 00:00:00'),
+('551081', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('5511', 130, 'Brazil Spo Paulo', '0000-00-00 00:00:00'),
+('551177', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551178', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551181', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55119', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551278', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551281', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55129', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551378', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551381', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55139', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551481', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55149', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551581', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55159', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551681', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55169', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551781', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55179', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551881', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55189', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551978', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('551981', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55199', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55209', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('5521', 130, 'Brazil Rio de Janeiro', '0000-00-00 00:00:00'),
+('552178', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552181', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552188', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552189', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55219', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552281', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552288', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552289', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55229', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55239', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552481', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552488', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552489', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55249', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55259', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55269', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552781', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552788', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552789', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55279', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('552888', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55289', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55299', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55309', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('553178', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('553188', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55319', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('553288', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55329', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('553388', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55339', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('553488', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55349', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('553588', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55359', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55369', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('553788', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55379', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('553888', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55389', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55399', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55409', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('554178', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55419', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55429', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55439', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55449', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55459', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55469', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55479', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55489', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55499', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55509', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('555178', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('555181', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('555189', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55519', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55529', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('555381', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('555389', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55539', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('555481', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('555489', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55549', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('555581', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('555589', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55559', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55569', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55579', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55589', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55599', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556081', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556089', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55609', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('5561', 130, 'Brazil Brasilia', '0000-00-00 00:00:00'),
+('556178', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556181', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556189', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55619', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556281', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556289', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55629', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556381', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556389', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55639', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556481', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556489', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55649', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556581', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556589', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55659', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556681', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556689', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55669', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556781', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556789', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55679', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556881', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556889', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55689', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556981', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('556989', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55699', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55709', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('557188', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55719', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55729', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('557388', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55739', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('557488', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55749', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('557588', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55759', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55769', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('557788', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55779', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55789', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('557988', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55799', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('558088', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55809', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('558188', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55819', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('558288', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55829', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('558388', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55839', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('558488', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55849', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('558588', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55859', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('558688', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55869', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('558788', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55879', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('558888', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55889', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('558988', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55899', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559088', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55909', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559181', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559188', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559189', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55919', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559281', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559288', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559289', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55929', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559381', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559388', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559389', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55939', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559481', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559488', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559489', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55949', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559581', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559588', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559589', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55959', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559681', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559688', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559689', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55969', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559788', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55979', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559881', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559888', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559889', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55989', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559981', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559988', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('559989', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('55999', 418, 'Brazil Mobile', '0000-00-00 00:00:00'),
+('562', 141, 'Chile Santiago', '0000-00-00 00:00:00'),
+('562261', 424, 'Chile Mobile', '0000-00-00 00:00:00'),
+('563239', 424, 'Chile Mobile', '0000-00-00 00:00:00'),
+('564129', 424, 'Chile Mobile', '0000-00-00 00:00:00'),
+('564231', 424, 'Chile Mobile', '0000-00-00 00:00:00'),
+('567234', 424, 'Chile Mobile', '0000-00-00 00:00:00'),
+('569', 424, 'Chile Mobile', '0000-00-00 00:00:00'),
+('571', 216, 'Colombia Bogota', '0000-00-00 00:00:00'),
+('572', 216, 'Colombia Cali', '0000-00-00 00:00:00'),
+('573', 426, 'Colombia Mobile', '0000-00-00 00:00:00'),
+('574', 216, 'Colombia Medellin', '0000-00-00 00:00:00'),
+('57532', 216, 'Colombia Baranguilla', '0000-00-00 00:00:00'),
+('57533', 216, 'Colombia Baranguilla', '0000-00-00 00:00:00'),
+('57534', 216, 'Colombia Baranguilla', '0000-00-00 00:00:00'),
+('57535', 216, 'Colombia Baranguilla', '0000-00-00 00:00:00'),
+('57536', 216, 'Colombia Baranguilla', '0000-00-00 00:00:00'),
+('57537', 216, 'Colombia Baranguilla', '0000-00-00 00:00:00'),
+('575420', 216, 'Colombia Baranguilla', '0000-00-00 00:00:00'),
+('575421', 216, 'Colombia Baranguilla', '0000-00-00 00:00:00'),
+('575422', 216, 'Colombia Baranguilla', '0000-00-00 00:00:00'),
+('57543', 216, 'Colombia Baranguilla', '0000-00-00 00:00:00'),
+('5763', 216, 'Colombia Pereira', '0000-00-00 00:00:00'),
+('5812', 555, 'Venezuela Mobile', '0000-00-00 00:00:00'),
+('5814', 555, 'Venezuela Mobile', '0000-00-00 00:00:00'),
+('5815', 555, 'Venezuela Mobile', '0000-00-00 00:00:00'),
+('5816', 555, 'Venezuela Mobile', '0000-00-00 00:00:00'),
+('5817', 555, 'Venezuela Mobile', '0000-00-00 00:00:00'),
+('5818', 555, 'Venezuela Mobile', '0000-00-00 00:00:00'),
+('58212', 353, 'Venezuela Caracas', '0000-00-00 00:00:00'),
+('5841', 555, 'Venezuela Mobile', '0000-00-00 00:00:00'),
+('590690', 452, 'Guadaloupe Mobile', '0000-00-00 00:00:00'),
+('5906903', 164, 'Guadaloupe - Not Mobile', '0000-00-00 00:00:00'),
+('5906904', 164, 'Guadaloupe - Not Mobile', '0000-00-00 00:00:00'),
+('5906905', 164, 'Guadaloupe - Not Mobile', '0000-00-00 00:00:00'),
+('5906906', 164, 'Guadaloupe - Not Mobile', '0000-00-00 00:00:00'),
+('59069069', 452, 'Guadaloupe Mobile', '0000-00-00 00:00:00'),
+('5906907', 164, 'Guadaloupe - Not Mobile', '0000-00-00 00:00:00'),
+('5911', 415, 'Bolivia Mobile', '0000-00-00 00:00:00'),
+('5912', 128, 'Bolivia La Paz', '0000-00-00 00:00:00'),
+('5917', 415, 'Bolivia Mobile', '0000-00-00 00:00:00'),
+('59332', 148, 'Ecuador Quito', '0000-00-00 00:00:00'),
+('5934', 148, 'Ecuador Guayas', '0000-00-00 00:00:00'),
+('593803', 437, 'Ecuador Pager', '0000-00-00 00:00:00'),
+('5939', 437, 'Ecuador Mobile', '0000-00-00 00:00:00'),
+('5946', 577, 'French Guiana Mobile', '0000-00-00 00:00:00'),
+('59521', 278, 'Paraguay Asuncion', '0000-00-00 00:00:00'),
+('5959', 278, 'Paraguay Mobile', '0000-00-00 00:00:00'),
+('5966962', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('5966963', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('5966964', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('59669670', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('59669671', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('59669672', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('59669673', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('59669674', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('59669680', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('59669681', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('59669682', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('59669683', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('59669684', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('59669685', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('59669686', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('5966969', 490, 'Martinique Mobile', '0000-00-00 00:00:00'),
+('5989', 553, 'Uruguay Mobile', '0000-00-00 00:00:00'),
+('599318', 501, 'Netherlands Antilles Mobile', '0000-00-00 00:00:00'),
+('599416', 501, 'Netherlands Antilles Mobile', '0000-00-00 00:00:00'),
+('5995', 501, 'Netherlands Antilles Mobile', '0000-00-00 00:00:00'),
+('5996', 501, 'Netherlands Antilles Mobile', '0000-00-00 00:00:00'),
+('59978', 501, 'Netherlands Antilles Mobile', '0000-00-00 00:00:00'),
+('59979', 501, 'Netherlands Antilles Mobile', '0000-00-00 00:00:00'),
+('59995', 501, 'Netherlands Antilles Mobile', '0000-00-00 00:00:00'),
+('59996', 501, 'Netherlands Antilles Mobile', '0000-00-00 00:00:00'),
+('601', 487, 'Malaysia Mobile', '0000-00-00 00:00:00'),
+('61140', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61144', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61145', 407, 'Australia Satellite', '0000-00-00 00:00:00'),
+('61146', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61147', 407, 'Australia Satellite', '0000-00-00 00:00:00'),
+('61148', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61149', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('6115', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('6116', 407, 'Australia Pager', '0000-00-00 00:00:00'),
+('61170', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61171', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61172', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61174', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61177', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61178', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61179', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('611801', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('611802', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('611803', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('611804', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('611805', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('611806', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('611807', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('611808', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('611809', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61181', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61182', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61183', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61184', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61185', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61186', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61187', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61188', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61189', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61191', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61193', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61194', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61196', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('61199', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('6126', 120, 'Australia Canberra', '0000-00-00 00:00:00'),
+('6128', 120, 'Australia Sydney', '0000-00-00 00:00:00'),
+('6129', 120, 'Australia Sydney', '0000-00-00 00:00:00'),
+('6138', 120, 'Australia Melbourne', '0000-00-00 00:00:00'),
+('6139', 120, 'Australia Melbourne', '0000-00-00 00:00:00'),
+('614', 407, 'Australia Mobile', '0000-00-00 00:00:00'),
+('6189100', 378, 'Christmas Island', '0000-00-00 00:00:00'),
+('6189101', 378, 'Cocos (Keeling) Islands', '0000-00-00 00:00:00'),
+('642', 503, 'New Zealand Mobile', '0000-00-00 00:00:00'),
+('6424', 349, 'New Zealand Scott Base Antartic', '0000-00-00 00:00:00'),
+('643305', 349, 'New Zealand Chatham Island', '0000-00-00 00:00:00'),
+('659', 524, 'Singapore Mobile', '0000-00-00 00:00:00'),
+('662', 327, 'Thailand Bangkok', '0000-00-00 00:00:00'),
+('675115', 510, 'Papua New Guinea Mobile VM', '0000-00-00 00:00:00'),
+('67568', 510, 'Papua New Guinea Mobile', '0000-00-00 00:00:00'),
+('67569', 510, 'Papua New Guinea Mobile', '0000-00-00 00:00:00'),
+('6778', 527, 'Solomon Islands Mobile', '0000-00-00 00:00:00'),
+('67848', 351, 'Vanuatu not mobile', '0000-00-00 00:00:00'),
+('6799', 576, 'Fiji Mobile', '0000-00-00 00:00:00'),
+('6857', 259, 'Samoa Mobile', '0000-00-00 00:00:00'),
+('68630', 471, 'Kiribati Mobile(Analogue)', '0000-00-00 00:00:00'),
+('6869', 471, 'Kiribati Mobile(GSM)', '0000-00-00 00:00:00'),
+('6877', 502, 'New Caledonia Mobile', '0000-00-00 00:00:00'),
+('6878', 502, 'New Caledonia Mobile', '0000-00-00 00:00:00'),
+('6886', 547, 'Tuvalu Mobile', '0000-00-00 00:00:00'),
+('6998', 247, 'Midway Islands', '0000-00-00 00:00:00'),
+('7095', 354, 'Russia Moscow (Central)', '0000-00-00 00:00:00'),
+('7300', 469, 'Kazakstan Mobile', '0000-00-00 00:00:00'),
+('731', 379, 'Kazakstan', '0000-00-00 00:00:00'),
+('732', 379, 'Kazakstan', '0000-00-00 00:00:00'),
+('733', 379, 'Kazakstan', '0000-00-00 00:00:00'),
+('7333', 469, 'Kazakstan Mobile', '0000-00-00 00:00:00'),
+('7336', 469, 'Kazakstan Mobile', '0000-00-00 00:00:00'),
+('733622', 379, 'Kazakstan', '0000-00-00 00:00:00'),
+('7338', 469, 'Kazakstan Mobile', '0000-00-00 00:00:00'),
+('734348', 518, 'Russia Mobile', '0000-00-00 00:00:00'),
+('7700', 469, 'Kazakstan Mobile', '0000-00-00 00:00:00'),
+('7812', 354, 'Russia St Petersburg', '0000-00-00 00:00:00'),
+('790', 518, 'Russia Mobile', '0000-00-00 00:00:00'),
+('791', 518, 'Russia Mobile', '0000-00-00 00:00:00'),
+('792', 518, 'Russia Mobile', '0000-00-00 00:00:00'),
+('800', 800, 'International Freephone', '0000-00-00 00:00:00'),
+('8081', 247, 'Wake Island', '0000-00-00 00:00:00'),
+('821', 472, 'Korea (South) Mobile', '0000-00-00 00:00:00'),
+('848', 355, 'Vietnam Ho Chi Minh City', '0000-00-00 00:00:00'),
+('8527', 456, 'Hong Kong Pager', '0000-00-00 00:00:00'),
+('8610', 214, 'China Beijing', '0000-00-00 00:00:00'),
+('8613', 425, 'China Mobile', '0000-00-00 00:00:00'),
+('8620', 214, 'China Guangzhou', '0000-00-00 00:00:00'),
+('8621', 214, 'China Shanghai', '0000-00-00 00:00:00'),
+('86591', 214, 'China Fuzhou', '0000-00-00 00:00:00'),
+('8802', 122, 'Bangladesh Dhaka', '0000-00-00 00:00:00'),
+('88030', 122, 'Bangladesh Chittagong', '0000-00-00 00:00:00'),
+('88031', 122, 'Bangladesh Chittagong', '0000-00-00 00:00:00'),
+('8816', 881, 'Iridium', '0000-00-00 00:00:00'),
+('88216', 880, 'Thuraya (Satellite)', '0000-00-00 00:00:00'),
+('88670', 537, 'Taiwan Pager', '0000-00-00 00:00:00'),
+('88691', 537, 'Taiwan Mobile', '0000-00-00 00:00:00'),
+('88692', 537, 'Taiwan Mobile', '0000-00-00 00:00:00'),
+('88693', 537, 'Taiwan Mobile', '0000-00-00 00:00:00'),
+('88694', 537, 'Taiwan Mobile', '0000-00-00 00:00:00'),
+('88695', 537, 'Taiwan Mobile', '0000-00-00 00:00:00'),
+('88696', 537, 'Taiwan Mobile', '0000-00-00 00:00:00'),
+('90212', 340, 'Turkey Istanbul (Europe)', '0000-00-00 00:00:00'),
+('90216', 340, 'Turkey Istanbul (Asia)', '0000-00-00 00:00:00'),
+('90392', 226, 'Cyprus (North)', '0000-00-00 00:00:00'),
+('9039285', 431, 'Cyprus (North) Mobile', '0000-00-00 00:00:00'),
+('905', 544, 'Turkey Mobile', '0000-00-00 00:00:00'),
+('905338', 431, 'Cyprus (North) Mobile', '0000-00-00 00:00:00'),
+('905428', 431, 'Cyprus (North) Mobile', '0000-00-00 00:00:00'),
+('9111', 179, 'India Delhi', '0000-00-00 00:00:00'),
+('9122', 179, 'India Bombay', '0000-00-00 00:00:00'),
+('9133', 179, 'India Calcutta', '0000-00-00 00:00:00'),
+('9140', 179, 'India Hydrabad', '0000-00-00 00:00:00'),
+('9144', 179, 'India Madras', '0000-00-00 00:00:00'),
+('9180', 179, 'India Bangalore', '0000-00-00 00:00:00'),
+('919', 459, 'India Mobile', '0000-00-00 00:00:00'),
+('923', 507, 'Pakistan Mobile', '0000-00-00 00:00:00'),
+('9251', 274, 'Pakistan Islamabad', '0000-00-00 00:00:00'),
+('947', 530, 'Sri Lanka Mobile', '0000-00-00 00:00:00'),
+('9607', 488, 'Maldives Mobile', '0000-00-00 00:00:00'),
+('9608', 488, 'Maldives Mobile', '0000-00-00 00:00:00'),
+('9609', 488, 'Maldives Mobile', '0000-00-00 00:00:00'),
+('9613', 476, 'Lebanon Mobile', '0000-00-00 00:00:00'),
+('96170', 476, 'Lebanon Mobile', '0000-00-00 00:00:00'),
+('96171', 476, 'Lebanon Mobile', '0000-00-00 00:00:00'),
+('9626', 206, 'Jordan Amman', '0000-00-00 00:00:00'),
+('9627', 468, 'Jordan Mobile', '0000-00-00 00:00:00'),
+('96295', 468, 'Jordan Mobile', '0000-00-00 00:00:00'),
+('96296', 468, 'Jordan Mobile', '0000-00-00 00:00:00'),
+('9639', 536, 'Syria Mobile', '0000-00-00 00:00:00'),
+('9641', 180, 'Iraq Baghdad', '0000-00-00 00:00:00'),
+('9656', 473, 'Kuwait Mobile', '0000-00-00 00:00:00'),
+('9657', 473, 'Kuwait Mobile', '0000-00-00 00:00:00'),
+('9658', 473, 'Kuwait Mobile', '0000-00-00 00:00:00'),
+('9659', 473, 'Kuwait Mobile', '0000-00-00 00:00:00'),
+('96758', 557, 'Yemen Pager', '0000-00-00 00:00:00'),
+('96771', 557, 'Yemen Mobile', '0000-00-00 00:00:00'),
+('96773', 557, 'Yemen Mobile', '0000-00-00 00:00:00'),
+('96779', 557, 'Yemen Mobile', '0000-00-00 00:00:00'),
+('967858', 557, 'Yemen Pager', '0000-00-00 00:00:00'),
+('967879', 557, 'Yemen Mobile', '0000-00-00 00:00:00'),
+('9712', 115, 'United Arab Emirates Abu Dhabi', '0000-00-00 00:00:00'),
+('9714', 115, 'United Arab Emirates Dubai', '0000-00-00 00:00:00'),
+('9733', 563, 'Bahrain Mobile', '0000-00-00 00:00:00'),
+('9742', 516, 'Qatar Mobile', '0000-00-00 00:00:00'),
+('9745', 516, 'Qatar Mobile', '0000-00-00 00:00:00'),
+('9751', 566, 'Bhutan Mobile', '0000-00-00 00:00:00'),
+('9759', 566, 'Bhutan Mobile', '0000-00-00 00:00:00'),
+('9771', 265, 'Nepal Bhaktapur / Kathmandu', '0000-00-00 00:00:00'),
+('9821', 181, 'Iran Tehran', '0000-00-00 00:00:00'),
+('989', 580, 'Iran Mobile', '0000-00-00 00:00:00'),
+('9929', 538, 'Tajikistan Mobile', '0000-00-00 00:00:00'),
+('9936', 593, 'Turkmenistan Mobile', '0000-00-00 00:00:00'),
+('99450', 409, 'Azerbaijan Mobile', '0000-00-00 00:00:00'),
+('99455', 409, 'Azerbaijan Mobile', '0000-00-00 00:00:00'),
+('99532', 159, 'Georgia Tbilisi', '0000-00-00 00:00:00'),
+('99577', 202, 'Georgia Mobile', '0000-00-00 00:00:00'),
+('9959', 202, 'Georgia Mobile', '0000-00-00 00:00:00'),
+('996502', 474, 'Kyrgyzstan Mobile', '0000-00-00 00:00:00'),
+('996517', 474, 'Kyrgyzstan Mobile', '0000-00-00 00:00:00'),
+('9989', 595, 'Uzbekistan Mobile', '0000-00-00 00:00:00'),
+('6630', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6640', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6646', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6658', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('666', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6670', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6671', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6672', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6678', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6679', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('669', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6641', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6647', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6648', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6649', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6650', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6651', 540, 'Thailand Mobil', '0000-00-00 00:00:00'),
+('6659', 540, 'Thailand Mobil', '0000-00-00 00:00:00')
+");
+
+    $ret[] = update_sql("INSERT INTO `astccnrate` VALUES (753, 'default', '', 347, '', 0, '3.6900', '0.0000', '0.0000', '1.1354', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(752, 'default', '', 210, '', 0, '3.6900', '0.0000', '0.0000', '1.1354', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(751, 'default', '', 192, '', 0, '3.6900', '0.0000', '0.0000', '1.1354', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(754, 'default', '', 552, '', 0, '3.6900', '0.0000', '0.0000', '1.1354', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(781, 'default', '', 102, '', 0, '3.6900', '0.0000', '0.0000', '1.4192', '1.4192', '0.0000', '', '0000-00-00 00:00:00'),
+(782, 'default', '', 500, '', 0, '3.6900', '0.0000', '0.0000', '21.3833', '21.3833', '0.0000', '', '0000-00-00 00:00:00'),
+(787, 'default', '', 124, '', 0, '3.6900', '0.0000', '0.0000', '1.9869', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(789, 'default', '', 414, '', 0, '3.6900', '0.0000', '0.0000', '23.2756', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(796, 'default', '', 293, '', 0, '3.6900', '0.0000', '0.0000', '1.4192', '1.4192', '1.4192', '', '0000-00-00 00:00:00'),
+(798, 'default', '', 444, '', 0, '3.6900', '0.0000', '0.0000', '14.9494', '14.9494', '14.9494', '', '0000-00-00 00:00:00'),
+(799, 'default', '', 150, '', 0, '3.6900', '0.0000', '0.0000', '1.4192', '1.4192', '1.4192', '', '0000-00-00 00:00:00'),
+(801, 'default', '', 529, '', 0, '3.6900', '0.0000', '0.0000', '19.3017', '19.3017', '19.3017', '', '0000-00-00 00:00:00'),
+(806, 'default', '', 281, '', 0, '3.6900', '0.0000', '0.0000', '2.2708', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(812, 'default', '', 515, '', 0, '3.6900', '0.0000', '0.0000', '23.0864', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(813, 'default', '', 183, '', 0, '3.6900', '0.0000', '0.0000', '2.5546', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(815, 'default', '', 458, '', 0, '3.6900', '0.0000', '0.0000', '18.9233', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(819, 'default', '', 155, '', 0, '3.6900', '0.0000', '0.0000', '54.8992', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(821, 'default', '', 513, '', 0, '3.6900', '0.0000', '0.0000', '69.1456', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(825, 'default', '', 443, '', 0, '2.0816', '0.0000', '0.0000', '16.8417', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(826, 'default', '', 363, '', 0, '2.0816', '0.0000', '0.0000', '2.8385', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(827, 'default', '', 135, '', 0, '3.6900', '0.0000', '0.0000', '5.4877', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(830, 'default', '', 420, '', 0, '3.6900', '0.0000', '0.0000', '22.6133', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(834, 'default', '', 345, '', 0, '3.6900', '0.0000', '0.0000', '2.2708', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(839, 'default', '', 457, '', 0, '3.6900', '0.0000', '0.0000', '20.4371', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(840, 'default', '', 235, '', 0, '3.6900', '0.0000', '0.0000', '6.8124', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(847, 'default', '', 481, '', 0, '3.6900', '0.0000', '0.0000', '16.1794', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(849, 'default', '', 356, '', 0, '3.6900', '0.0000', '0.0000', '2.7439', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(850, 'default', '', 299, '', 0, '3.6900', '0.0000', '0.0000', '24.7895', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(853, 'default', '', 364, '', 0, '3.6900', '0.0000', '0.0000', '2.7439', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(854, 'default', '', 558, '', 0, '3.6900', '0.0000', '0.0000', '24.7895', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(855, 'default', '', 372, '', 0, '3.6900', '0.0000', '0.0000', '0.0435', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(857, 'default', '', 526, '', 0, '3.6900', '0.0000', '0.0000', '24.6002', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(872, 'default', '', 186, '', 0, '3.6900', '0.0000', '0.0000', '1.4192', '1.4192', '0.0000', '', '0000-00-00 00:00:00'),
+(874, 'default', '', 597, '', 0, '3.6900', '0.0000', '0.0000', '1.4192', '1.4192', '0.0000', '', '0000-00-00 00:00:00'),
+(880, 'default', '', 464, '', 0, '3.6900', '0.0000', '0.0000', '22.7079', '22.7079', '0.0000', '', '0000-00-00 00:00:00'),
+(881, 'default', '', 321, '', 0, '3.6900', '0.0000', '0.0000', '1.8923', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(887, 'default', '', 535, '', 0, '3.6900', '0.0000', '0.0000', '25.8303', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(891, 'default', '', 187, '', 0, '3.6900', '0.0000', '0.0000', '1.7031', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(901, 'default', '', 408, '', 0, '3.6900', '0.0000', '0.0000', '21.5725', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(902, 'default', '', 184, '', 0, '3.6900', '0.0000', '0.0000', '1.4192', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(904, 'default', '', 551, '', 0, '3.6900', '0.0000', '0.0000', '16.8417', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(905, 'default', '', 326, '', 0, '3.6900', '0.0000', '0.0000', '1.7031', '1.7031', '0.0000', '', '0000-00-00 00:00:00'),
+(907, 'default', '', 698, '', 0, '3.6900', '0.0000', '0.0000', '1.7031', '1.7031', '0.0000', '', '0000-00-00 00:00:00'),
+(908, 'default', '', 699, '', 0, '3.6900', '0.0000', '0.0000', '1.7031', '1.7031', '0.0000', '', '0000-00-00 00:00:00'),
+(909, 'default', '', 870, '', 0, '3.6900', '0.0000', '0.0000', '1.7031', '1.7031', '0.0000', '', '0000-00-00 00:00:00'),
+(919, 'default', '', 433, '', 0, '3.6900', '0.0000', '0.0000', '18.5448', '18.5448', '0.0000', '', '0000-00-00 00:00:00'),
+(924, 'default', '', 1, '', 0, '3.6900', '0.0000', '0.0000', '1.4192', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(926, 'default', '', 3, '', 0, '3.6900', '0.0000', '0.0000', '9.4888', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(927, 'default', '', 4, '', 0, '3.6900', '0.0000', '0.0000', '13.6032', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(928, 'default', '', 2, '', 0, '3.6900', '0.0000', '0.0000', '19.5856', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(936, 'default', '', 290, '', 0, '3.6900', '0.0000', '0.0000', '2.4600', '2.4600', '0.0000', '', '0000-00-00 00:00:00'),
+(943, 'default', '', 514, '', 0, '3.6900', '0.0000', '0.0000', '19.9640', '19.9640', '0.0000', '', '0000-00-00 00:00:00'),
+(944, 'default', '', 302, '', 0, '3.6900', '0.0000', '0.0000', '1.4192', '1.4192', '0.0000', '', '0000-00-00 00:00:00'),
+(946, 'default', '', 447, '', 0, '3.6900', '0.0000', '0.0000', '21.3833', '21.3833', '0.0000', '', '0000-00-00 00:00:00'),
+(947, 'default', '', 224, '', 0, '3.6900', '0.0000', '0.0000', '82.6001', '82.6001', '82.6001', '', '0000-00-00 00:00:00'),
+(948, 'default', '', 267, '', 0, '3.6900', '0.0000', '0.0000', '82.6001', '82.6001', '82.6001', '', '0000-00-00 00:00:00'),
+(949, 'default', '', 204, '', 0, '3.6900', '0.0000', '0.0000', '4.1631', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(952, 'default', '', 467, '', 0, '3.6900', '0.0000', '0.0000', '22.1402', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(954, 'default', '', 214, '', 0, '3.6900', '0.0000', '0.0000', '4.6362', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(955, 'default', '', 425, '', 0, '3.6900', '0.0000', '0.0000', '4.6362', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(956, 'default', '', 274, '', 0, '3.6900', '0.0000', '0.0000', '0.1315', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(958, 'default', '', 507, '', 0, '3.6900', '0.0000', '0.0000', '18.8286', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(960, 'default', '', 185, '', 0, '3.6900', '0.0000', '0.0000', '0.0530', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(962, 'default', '', 463, '', 0, '3.6900', '0.0000', '0.0000', '18.8286', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1898, 'Star', '', 408, '', 0, '3.6900', '0.0000', '0.0000', '32.6426', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1897, 'Star', '', 187, '', 0, '3.6900', '0.0000', '0.0000', '3.4062', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1896, 'Star', '', 574, '', 0, '3.6900', '0.0000', '0.0000', '43.1274', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1895, 'Star', '', 878, '', 0, '3.6900', '0.0000', '0.0000', '43.1274', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1894, 'Star', '', 560, '', 0, '3.6900', '0.0000', '0.0000', '39.1626', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1893, 'Star', '', 361, '', 0, '3.6900', '0.0000', '0.0000', '28.0159', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1892, 'Star', '', 559, '', 0, '3.6900', '0.0000', '0.0000', '35.9438', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1891, 'Star', '', 305, '', 0, '3.6900', '0.0000', '0.0000', '24.2078', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1890, 'Star', '', 336, '', 0, '3.6900', '0.0000', '0.0000', '156.0988', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1889, 'Star', '', 359, '', 0, '3.6900', '0.0000', '0.0000', '156.0988', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1888, 'Star', '', 556, '', 0, '3.6900', '0.0000', '0.0000', '58.5864', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1887, 'Star', '', 355, '', 0, '3.6900', '0.0000', '0.0000', '47.2941', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1886, 'Star', '', 259, '', 0, '3.6900', '0.0000', '0.0000', '141.4505', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1885, 'Star', '', 237, '', 0, '3.6900', '0.0000', '0.0000', '92.9532', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1884, 'Star', '', 555, '', 0, '3.6900', '0.0000', '0.0000', '88.1011', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1883, 'Star', '', 353, '', 0, '3.6900', '0.0000', '0.0000', '9.1626', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1882, 'Star', '', 335, '', 0, '3.6900', '0.0000', '0.0000', '3.9171', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1881, 'Star', '', 597, '', 0, '3.6900', '0.0000', '0.0000', '3.8793', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1880, 'Star', '', 596, '', 0, '3.6900', '0.0000', '0.0000', '160.7039', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1879, 'Star', '', 351, '', 0, '3.6900', '0.0000', '0.0000', '157.0006', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1878, 'Star', '', 595, '', 0, '3.6900', '0.0000', '0.0000', '30.3968', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1877, 'Star', '', 373, '', 0, '3.6900', '0.0000', '0.0000', '26.1936', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1876, 'Star', '', 552, '', 0, '3.6900', '0.0000', '0.0000', '2.5744', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1875, 'Star', '', 347, '', 0, '3.6900', '0.0000', '0.0000', '2.5546', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1874, 'Star', '', 553, '', 0, '3.6900', '0.0000', '0.0000', '65.6883', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1873, 'Star', '', 346, '', 0, '3.6900', '0.0000', '0.0000', '55.7337', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1872, 'Star', '', 457, '', 0, '3.6900', '0.0000', '0.0000', '42.0097', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1871, 'Star', '', 345, '', 0, '3.6900', '0.0000', '0.0000', '5.8662', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1870, 'Star', '', 549, '', 0, '3.6900', '0.0000', '0.0000', '43.0968', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1869, 'Star', '', 344, '', 0, '3.6900', '0.0000', '0.0000', '27.0792', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1868, 'Star', '', 594, '', 0, '3.6900', '0.0000', '0.0000', '50.3690', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1867, 'Star', '', 343, '', 0, '3.6900', '0.0000', '0.0000', '29.7020', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1866, 'Star', '', 447, '', 0, '3.6900', '0.0000', '0.0000', '24.3164', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1865, 'Star', '', 302, '', 0, '3.6900', '0.0000', '0.0000', '2.5546', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1864, 'Star', '', 544, '', 0, '3.6900', '0.0000', '0.0000', '31.9790', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1863, 'Star', '', 340, '', 0, '3.6900', '0.0000', '0.0000', '23.1272', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1862, 'Star', '', 547, '', 0, '3.6900', '0.0000', '0.0000', '143.2472', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1861, 'Star', '', 342, '', 0, '3.6900', '0.0000', '0.0000', '143.2472', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1860, 'Star', '', 546, '', 0, '3.6900', '0.0000', '0.0000', '71.1723', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1859, 'Star', '', 341, '', 0, '3.6900', '0.0000', '0.0000', '71.1723', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1858, 'Star', '', 593, '', 0, '3.6900', '0.0000', '0.0000', '69.5033', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1857, 'Star', '', 377, '', 0, '3.6900', '0.0000', '0.0000', '34.1428', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1856, 'Star', '', 543, '', 0, '3.6900', '0.0000', '0.0000', '42.3389', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1855, 'Star', '', 339, '', 0, '3.6900', '0.0000', '0.0000', '34.9296', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1854, 'Star', '', 432, '', 0, '3.6900', '0.0000', '0.0000', '27.9324', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1853, 'Star', '', 338, '', 0, '3.6900', '0.0000', '0.0000', '5.4840', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1852, 'Star', '', 600, '', 0, '3.6900', '0.0000', '0.0000', '208.2288', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1851, 'Star', '', 599, '', 0, '3.6900', '0.0000', '0.0000', '208.2288', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1850, 'Star', '', 542, '', 0, '3.6900', '0.0000', '0.0000', '52.6341', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1849, 'Star', '', 330, '', 0, '3.6900', '0.0000', '0.0000', '52.6341', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1848, 'Star', '', 592, '', 0, '3.6900', '0.0000', '0.0000', '103.9739', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1847, 'Star', '', 329, '', 0, '3.6900', '0.0000', '0.0000', '103.9739', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1846, 'Star', '', 334, '', 0, '3.6900', '0.0000', '0.0000', '125.2455', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1845, 'Star', '', 690, '', 0, '3.6900', '0.0000', '0.0000', '125.2455', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1844, 'Star', '', 541, '', 0, '3.6900', '0.0000', '0.0000', '76.2608', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1843, 'Star', '', 328, '', 0, '3.6900', '0.0000', '0.0000', '50.1467', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1842, 'Star', '', 540, '', 0, '3.6900', '0.0000', '0.0000', '32.1289', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1841, 'Star', '', 327, '', 0, '3.6900', '0.0000', '0.0000', '24.3798', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1840, 'Star', '', 598, '', 0, '3.6900', '0.0000', '0.0000', '57.3466', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1839, 'Star', '', 337, '', 0, '3.6900', '0.0000', '0.0000', '57.3466', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1838, 'Star', '', 539, '', 0, '3.6900', '0.0000', '0.0000', '95.2540', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1837, 'Star', '', 325, '', 0, '3.6900', '0.0000', '0.0000', '74.1527', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1836, 'Star', '', 537, '', 0, '3.6900', '0.0000', '0.0000', '34.3344', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1835, 'Star', '', 324, '', 0, '3.6900', '0.0000', '0.0000', '7.3318', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1834, 'Star', '', 538, '', 0, '3.6900', '0.0000', '0.0000', '43.6367', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1833, 'Star', '', 374, '', 0, '3.6900', '0.0000', '0.0000', '37.8427', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1832, 'Star', '', 528, '', 0, '3.6900', '0.0000', '0.0000', '68.4899', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1831, 'Star', '', 151, '', 0, '3.6900', '0.0000', '0.0000', '16.1777', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1830, 'Star', '', 536, '', 0, '3.6900', '0.0000', '0.0000', '64.3429', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1829, 'Star', '', 323, '', 0, '3.6900', '0.0000', '0.0000', '64.3429', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1828, 'Star', '', 331, '', 0, '3.6900', '0.0000', '0.0000', '20.0812', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1827, 'Star', '', 322, '', 0, '3.6900', '0.0000', '0.0000', '25.4877', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1826, 'Star', '', 3, '', 0, '3.6900', '0.0000', '0.0000', '9.4888', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1825, 'Star', '', 4, '', 0, '3.6900', '0.0000', '0.0000', '13.6032', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1824, 'Star', '', 2, '', 0, '3.6900', '0.0000', '0.0000', '22.7079', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1823, 'Star', '', 1, '', 0, '3.6900', '0.0000', '0.0000', '0.0000', '0.0000', '0.0000', 'Sverige Fast tlf', '0000-00-00 00:00:00'),
+(1822, 'Star', '', 535, '', 0, '3.6900', '0.0000', '0.0000', '23.0864', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1821, 'Star', '', 321, '', 0, '3.6900', '0.0000', '0.0000', '3.5008', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1820, 'Star', '', 533, '', 0, '3.6900', '0.0000', '0.0000', '97.8768', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1819, 'Star', '', 320, '', 0, '3.6900', '0.0000', '0.0000', '54.9077', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1818, 'Star', '', 590, '', 0, '3.6900', '0.0000', '0.0000', '74.6602', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1817, 'Star', '', 319, '', 0, '3.6900', '0.0000', '0.0000', '74.6602', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1816, 'Star', '', 551, '', 0, '3.6900', '0.0000', '0.0000', '29.1418', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1815, 'Star', '', 184, '', 0, '3.6900', '0.0000', '0.0000', '0.0000', '0.0000', '0.0000', 'UK Fast Tlf', '0000-00-00 00:00:00'),
+(1814, 'Star', '', 532, '', 0, '3.6900', '0.0000', '0.0000', '76.0602', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1813, 'Star', '', 370, '', 0, '3.6900', '0.0000', '0.0000', '49.9824', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1812, 'Star', '', 333, '', 0, '3.6900', '0.0000', '0.0000', '35.8007', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1811, 'Star', '', 254, '', 0, '3.6900', '0.0000', '0.0000', '35.8007', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1810, 'Star', '', 531, '', 0, '3.6900', '0.0000', '0.0000', '74.3911', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1809, 'Star', '', 317, '', 0, '3.6900', '0.0000', '0.0000', '74.3911', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1808, 'Star', '', 289, '', 0, '3.6900', '0.0000', '0.0000', '62.7914', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1807, 'Star', '', 371, '', 0, '3.6900', '0.0000', '0.0000', '62.7914', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1806, 'Star', '', 288, '', 0, '3.6900', '0.0000', '0.0000', '91.7712', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1805, 'Star', '', 300, '', 0, '3.6900', '0.0000', '0.0000', '91.7712', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1804, 'Star', '', 530, '', 0, '3.6900', '0.0000', '0.0000', '63.1848', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1803, 'Star', '', 316, '', 0, '3.6900', '0.0000', '0.0000', '58.5353', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1802, 'Star', '', 529, '', 0, '3.6900', '0.0000', '0.0000', '33.0211', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1801, 'Star', '', 150, '', 0, '3.6900', '0.0000', '0.0000', '4.1631', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1800, 'Star', '', 287, '', 0, '3.6900', '0.0000', '0.0000', '71.6246', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1799, 'Star', '', 315, '', 0, '3.6900', '0.0000', '0.0000', '71.6246', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1798, 'Star', '', 526, '', 0, '3.6900', '0.0000', '0.0000', '27.7196', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1797, 'Star', '', 372, '', 0, '3.6900', '0.0000', '0.0000', '7.8964', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1796, 'Star', '', 525, '', 0, '3.6900', '0.0000', '0.0000', '33.3278', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1795, 'Star', '', 314, '', 0, '3.6900', '0.0000', '0.0000', '8.0812', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1794, 'Star', '', 524, '', 0, '3.6900', '0.0000', '0.0000', '4.6494', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1793, 'Star', '', 313, '', 0, '3.6900', '0.0000', '0.0000', '5.9608', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1792, 'Star', '', 523, '', 0, '3.6900', '0.0000', '0.0000', '121.4221', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1791, 'Star', '', 312, '', 0, '3.6900', '0.0000', '0.0000', '91.2688', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1790, 'Star', '', 522, '', 0, '3.6900', '0.0000', '0.0000', '78.9810', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1789, 'Star', '', 311, '', 0, '3.6900', '0.0000', '0.0000', '86.1340', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1788, 'Star', '', 570, '', 0, '3.6900', '0.0000', '0.0000', '45.2819', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1787, 'Star', '', 213, '', 0, '3.6900', '0.0000', '0.0000', '45.2819', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1786, 'Star', '', 521, '', 0, '3.6900', '0.0000', '0.0000', '80.8023', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1785, 'Star', '', 309, '', 0, '3.6900', '0.0000', '0.0000', '51.6605', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1784, 'Star', '', 520, '', 0, '3.6900', '0.0000', '0.0000', '83.4516', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1783, 'Star', '', 308, '', 0, '3.6900', '0.0000', '0.0000', '59.8921', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1782, 'Star', '', 307, '', 0, '3.6900', '0.0000', '0.0000', '219.3585', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1781, 'Star', '', 301, '', 0, '3.6900', '0.0000', '0.0000', '219.3585', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1780, 'Star', '', 286, '', 0, '3.6900', '0.0000', '0.0000', '8.4048', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1779, 'Star', '', 306, '', 0, '3.6900', '0.0000', '0.0000', '8.4048', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1778, 'Star', '', 527, '', 0, '3.6900', '0.0000', '0.0000', '207.9205', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1777, 'Star', '', 303, '', 0, '3.6900', '0.0000', '0.0000', '125.6900', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1776, 'Star', '', 519, '', 0, '3.6900', '0.0000', '0.0000', '58.1181', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1775, 'Star', '', 298, '', 0, '3.6900', '0.0000', '0.0000', '57.8796', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1774, 'Star', '', 518, '', 0, '3.6900', '0.0000', '0.0000', '11.3596', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1773, 'Star', '', 354, '', 0, '3.6900', '0.0000', '0.0000', '8.1493', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1772, 'Star', '', 517, '', 0, '3.6900', '0.0000', '0.0000', '40.9713', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1771, 'Star', '', 297, '', 0, '3.6900', '0.0000', '0.0000', '20.3009', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1770, 'Star', '', 550, '', 0, '3.6900', '0.0000', '0.0000', '45.6089', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1769, 'Star', '', 296, '', 0, '3.6900', '0.0000', '0.0000', '47.0905', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1768, 'Star', '', 516, '', 0, '3.6900', '0.0000', '0.0000', '62.0948', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1767, 'Star', '', 292, '', 0, '3.6900', '0.0000', '0.0000', '52.2169', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1766, 'Star', '', 310, '', 0, '3.6900', '0.0000', '0.0000', '11.2404', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1765, 'Star', '', 282, '', 0, '3.6900', '0.0000', '0.0000', '11.2404', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1764, 'Star', '', 515, '', 0, '3.6900', '0.0000', '0.0000', '53.6475', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1763, 'Star', '', 281, '', 0, '3.6900', '0.0000', '0.0000', '5.2039', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1762, 'Star', '', 514, '', 0, '3.6900', '0.0000', '0.0000', '53.6475', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1761, 'Star', '', 290, '', 0, '3.6900', '0.0000', '0.0000', '5.6770', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1760, 'Star', '', 512, '', 0, '3.6900', '0.0000', '0.0000', '87.6242', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1759, 'Star', '', 279, '', 0, '3.6900', '0.0000', '0.0000', '41.8450', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1758, 'Star', '', 511, '', 0, '3.6900', '0.0000', '0.0000', '68.3707', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1757, 'Star', '', 278, '', 0, '3.6900', '0.0000', '0.0000', '55.8530', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1756, 'Star', '', 510, '', 0, '3.6900', '0.0000', '0.0000', '88.7567', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1755, 'Star', '', 277, '', 0, '3.6900', '0.0000', '0.0000', '129.6301', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1754, 'Star', '', 509, '', 0, '3.6900', '0.0000', '0.0000', '53.5470', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1753, 'Star', '', 276, '', 0, '3.6900', '0.0000', '0.0000', '32.9821', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1752, 'Star', '', 508, '', 0, '3.6900', '0.0000', '0.0000', '19.7900', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1751, 'Star', '', 972, '', 0, '3.6900', '0.0000', '0.0000', '41.6577', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1750, 'Star', '', 285, '', 0, '3.6900', '0.0000', '0.0000', '182.5802', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1749, 'Star', '', 680, '', 0, '3.6900', '0.0000', '0.0000', '182.5802', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1748, 'Star', '', 507, '', 0, '3.6900', '0.0000', '0.0000', '26.0387', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1747, 'Star', '', 274, '', 0, '3.6900', '0.0000', '0.0000', '20.5154', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1746, 'Star', '', 587, '', 0, '3.6900', '0.0000', '0.0000', '62.0948', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1745, 'Star', '', 273, '', 0, '3.6900', '0.0000', '0.0000', '62.0948', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1744, 'Star', '', 502, '', 0, '3.6900', '0.0000', '0.0000', '113.4346', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1743, 'Star', '', 348, '', 0, '3.6900', '0.0000', '0.0000', '134.5359', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1742, 'Star', '', 284, '', 0, '3.6900', '0.0000', '0.0000', '122.7232', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1741, 'Star', '', 270, '', 0, '3.6900', '0.0000', '0.0000', '122.7232', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1740, 'Star', '', 283, '', 0, '3.6900', '0.0000', '0.0000', '152.4201', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1739, 'Star', '', 269, '', 0, '3.6900', '0.0000', '0.0000', '152.4201', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1738, 'Star', '', 506, '', 0, '3.6900', '0.0000', '0.0000', '72.4241', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1737, 'Star', '', 268, '', 0, '3.6900', '0.0000', '0.0000', '26.9429', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1736, 'Star', '', 505, '', 0, '3.6900', '0.0000', '0.0000', '56.9855', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1735, 'Star', '', 134, '', 0, '3.6900', '0.0000', '0.0000', '40.4246', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1734, 'Star', '', 504, '', 0, '3.6900', '0.0000', '0.0000', '73.0798', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1733, 'Star', '', 266, '', 0, '3.6900', '0.0000', '0.0000', '47.0837', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1732, 'Star', '', 503, '', 0, '3.6900', '0.0000', '0.0000', '32.1033', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1731, 'Star', '', 349, '', 0, '3.6900', '0.0000', '0.0000', '7.5600', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1730, 'Star', '', 499, '', 0, '3.6900', '0.0000', '0.0000', '124.5813', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1729, 'Star', '', 265, '', 0, '3.6900', '0.0000', '0.0000', '97.8104', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1728, 'Star', '', 501, '', 0, '3.6900', '0.0000', '0.0000', '6.7374', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1727, 'Star', '', 103, '', 0, '3.6900', '0.0000', '0.0000', '44.7232', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1726, 'Star', '', 500, '', 0, '3.6900', '0.0000', '0.0000', '32.5480', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1725, 'Star', '', 102, '', 0, '3.6900', '0.0000', '0.0000', '3.1223', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1724, 'Star', '', 586, '', 0, '3.6900', '0.0000', '0.0000', '135.1439', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1723, 'Star', '', 264, '', 0, '3.6900', '0.0000', '0.0000', '135.1439', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1722, 'Star', '', 498, '', 0, '3.6900', '0.0000', '0.0000', '52.2765', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1721, 'Star', '', 263, '', 0, '3.6900', '0.0000', '0.0000', '39.3278', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1720, 'Star', '', 585, '', 0, '3.6900', '0.0000', '0.0000', '64.9219', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1719, 'Star', '', 262, '', 0, '3.6900', '0.0000', '0.0000', '64.9219', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1718, 'Star', '', 497, '', 0, '3.6900', '0.0000', '0.0000', '59.6679', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1717, 'Star', '', 260, '', 0, '3.6900', '0.0000', '0.0000', '60.9197', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1716, 'Star', '', 495, '', 0, '3.6900', '0.0000', '0.0000', '84.3457', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1715, 'Star', '', 258, '', 0, '3.6900', '0.0000', '0.0000', '57.5424', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1714, 'Star', '', 494, '', 0, '3.6900', '0.0000', '0.0000', '48.1039', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1713, 'Star', '', 257, '', 0, '3.6900', '0.0000', '0.0000', '31.9500', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1712, 'Star', '', 879, '', 0, '3.6900', '0.0000', '0.0000', '44.2804', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1711, 'Star', '', 493, '', 0, '3.6900', '0.0000', '0.0000', '9.1661', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1710, 'Star', '', 256, '', 0, '3.6900', '0.0000', '0.0000', '6.3227', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1709, 'Star', '', 492, '', 0, '3.6900', '0.0000', '0.0000', '20.8510', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1708, 'Star', '', 255, '', 0, '3.6900', '0.0000', '0.0000', '17.0292', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1707, 'Star', '', 201, '', 0, '3.6900', '0.0000', '0.0000', '130.9100', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1706, 'Star', '', 253, '', 0, '3.6900', '0.0000', '0.0000', '130.9100', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1705, 'Star', '', 252, '', 0, '3.6900', '0.0000', '0.0000', '30.6710', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1704, 'Star', '', 583, '', 0, '3.6900', '0.0000', '0.0000', '93.4062', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1703, 'Star', '', 250, '', 0, '3.6900', '0.0000', '0.0000', '93.4062', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1702, 'Star', '', 582, '', 0, '3.6900', '0.0000', '0.0000', '96.6250', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1701, 'Star', '', 249, '', 0, '3.6900', '0.0000', '0.0000', '63.4965', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1700, 'Star', '', 490, '', 0, '3.6900', '0.0000', '0.0000', '50.4882', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1699, 'Star', '', 248, '', 0, '3.6900', '0.0000', '0.0000', '32.4337', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1698, 'Star', '', 200, '', 0, '3.6900', '0.0000', '0.0000', '89.3511', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1697, 'Star', '', 247, '', 0, '3.6900', '0.0000', '0.0000', '89.3511', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1696, 'Star', '', 496, '', 0, '3.6900', '0.0000', '0.0000', '66.5518', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1695, 'Star', '', 246, '', 0, '3.6900', '0.0000', '0.0000', '33.7775', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1694, 'Star', '', 199, '', 0, '3.6900', '0.0000', '0.0000', '25.9313', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1693, 'Star', '', 245, '', 0, '3.6900', '0.0000', '0.0000', '25.9313', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1692, 'Star', '', 489, '', 0, '3.6900', '0.0000', '0.0000', '45.6344', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1691, 'Star', '', 244, '', 0, '3.6900', '0.0000', '0.0000', '18.1771', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1690, 'Star', '', 176, '', 0, '3.6900', '0.0000', '0.0000', '40.9689', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1689, 'Star', '', 243, '', 0, '3.6900', '0.0000', '0.0000', '42.5773', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1688, 'Star', '', 488, '', 0, '3.6900', '0.0000', '0.0000', '54.7689', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1687, 'Star', '', 241, '', 0, '3.6900', '0.0000', '0.0000', '58.0006', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1686, 'Star', '', 487, '', 0, '3.6900', '0.0000', '0.0000', '17.2864', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1685, 'Star', '', 242, '', 0, '3.6900', '0.0000', '0.0000', '10.6699', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1684, 'Star', '', 486, '', 0, '3.6900', '0.0000', '0.0000', '29.9830', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1683, 'Star', '', 240, '', 0, '3.6900', '0.0000', '0.0000', '18.8703', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1682, 'Star', '', 484, '', 0, '3.6900', '0.0000', '0.0000', '47.4346', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1681, 'Star', '', 369, '', 0, '3.6900', '0.0000', '0.0000', '28.3173', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1680, 'Star', '', 485, '', 0, '3.6900', '0.0000', '0.0000', '86.0148', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1679, 'Star', '', 239, '', 0, '3.6900', '0.0000', '0.0000', '94.8964', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1678, 'Star', '', 483, '', 0, '3.6900', '0.0000', '0.0000', '16.5302', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1677, 'Star', '', 238, '', 0, '3.6900', '0.0000', '0.0000', '22.2100', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1676, 'Star', '', 482, '', 0, '3.6900', '0.0000', '0.0000', '29.7028', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1675, 'Star', '', 236, '', 0, '3.6900', '0.0000', '0.0000', '5.3137', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1674, 'Star', '', 481, '', 0, '3.6900', '0.0000', '0.0000', '29.1418', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1673, 'Star', '', 235, '', 0, '3.6900', '0.0000', '0.0000', '11.2593', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1672, 'Star', '', 480, '', 0, '3.6900', '0.0000', '0.0000', '11.4090', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1671, 'Star', '', 234, '', 0, '3.6900', '0.0000', '0.0000', '8.1774', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1670, 'Star', '', 581, '', 0, '3.6900', '0.0000', '0.0000', '34.0006', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1669, 'Star', '', 232, '', 0, '3.6900', '0.0000', '0.0000', '23.7565', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1668, 'Star', '', 478, '', 0, '3.6900', '0.0000', '0.0000', '51.7996', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1667, 'Star', '', 231, '', 0, '3.6900', '0.0000', '0.0000', '47.8280', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1666, 'Star', '', 476, '', 0, '3.6900', '0.0000', '0.0000', '80.8884', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1665, 'Star', '', 230, '', 0, '3.6900', '0.0000', '0.0000', '42.8584', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1664, 'Star', '', 477, '', 0, '3.6900', '0.0000', '0.0000', '35.9438', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1663, 'Star', '', 229, '', 0, '3.6900', '0.0000', '0.0000', '39.3278', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1662, 'Star', '', 475, '', 0, '3.6900', '0.0000', '0.0000', '39.2658', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1661, 'Star', '', 228, '', 0, '3.6900', '0.0000', '0.0000', '18.6394', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1660, 'Star', '', 275, '', 0, '3.6900', '0.0000', '0.0000', '46.2560', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1659, 'Star', '', 227, '', 0, '3.6900', '0.0000', '0.0000', '46.2560', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1658, 'Star', '', 431, '', 0, '3.6900', '0.0000', '0.0000', '18.3594', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1657, 'Star', '', 226, '', 0, '3.6900', '0.0000', '0.0000', '8.2089', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1656, 'Star', '', 473, '', 0, '3.6900', '0.0000', '0.0000', '45.3619', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1655, 'Star', '', 225, '', 0, '3.6900', '0.0000', '0.0000', '42.5007', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1654, 'Star', '', 430, '', 0, '3.6900', '0.0000', '0.0000', '34.5081', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1653, 'Star', '', 223, '', 0, '3.6900', '0.0000', '0.0000', '9.6310', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1652, 'Star', '', 472, '', 0, '3.6900', '0.0000', '0.0000', '23.3068', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1651, 'Star', '', 221, '', 0, '3.6900', '0.0000', '0.0000', '10.3718', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1650, 'Star', '', 198, '', 0, '3.6900', '0.0000', '0.0000', '87.7979', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1649, 'Star', '', 220, '', 0, '3.6900', '0.0000', '0.0000', '87.7979', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1648, 'Star', '', 427, '', 0, '3.6900', '0.0000', '0.0000', '103.7184', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1647, 'Star', '', 362, '', 0, '3.6900', '0.0000', '0.0000', '85.2995', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1646, 'Star', '', 360, '', 0, '3.6900', '0.0000', '0.0000', '54.3628', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1645, 'Star', '', 218, '', 0, '3.6900', '0.0000', '0.0000', '54.8396', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1644, 'Star', '', 571, '', 0, '3.6900', '0.0000', '0.0000', '72.3491', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1643, 'Star', '', 217, '', 0, '3.6900', '0.0000', '0.0000', '72.3491', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1642, 'Star', '', 471, '', 0, '3.6900', '0.0000', '0.0000', '140.6415', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1641, 'Star', '', 215, '', 0, '3.6900', '0.0000', '0.0000', '124.5158', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1640, 'Star', '', 474, '', 0, '3.6900', '0.0000', '0.0000', '52.4553', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1639, 'Star', '', 875, '', 0, '3.6900', '0.0000', '0.0000', '26.6679', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1638, 'Star', '', 425, '', 0, '3.6900', '0.0000', '0.0000', '6.9146', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1637, 'Star', '', 214, '', 0, '3.6900', '0.0000', '0.0000', '4.5439', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1636, 'Star', '', 470, '', 0, '3.6900', '0.0000', '0.0000', '92.6313', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1635, 'Star', '', 212, '', 0, '3.6900', '0.0000', '0.0000', '48.8856', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1634, 'Star', '', 469, '', 0, '3.6900', '0.0000', '0.0000', '45.4385', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1633, 'Star', '', 379, '', 0, '3.6900', '0.0000', '0.0000', '24.4479', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1632, 'Star', '', 568, '', 0, '3.6900', '0.0000', '0.0000', '114.3883', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1631, 'Star', '', 211, '', 0, '3.6900', '0.0000', '0.0000', '75.1695', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1630, 'Star', '', 175, '', 0, '3.6900', '0.0000', '0.0000', '95.7309', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1629, 'Star', '', 208, '', 0, '3.6900', '0.0000', '0.0000', '79.5175', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1628, 'Star', '', 422, '', 0, '3.6900', '0.0000', '0.0000', '117.3687', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1627, 'Star', '', 209, '', 0, '3.6900', '0.0000', '0.0000', '76.5711', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1626, 'Star', '', 558, '', 0, '3.6900', '0.0000', '0.0000', '41.6312', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1625, 'Star', '', 364, '', 0, '3.6900', '0.0000', '0.0000', '13.6248', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1624, 'Star', '', 468, '', 0, '3.6900', '0.0000', '0.0000', '76.7159', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1623, 'Star', '', 206, '', 0, '3.6900', '0.0000', '0.0000', '58.0585', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1622, 'Star', '', 557, '', 0, '3.6900', '0.0000', '0.0000', '50.6875', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1621, 'Star', '', 205, '', 0, '3.6900', '0.0000', '0.0000', '36.1380', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1620, 'Star', '', 467, '', 0, '3.6900', '0.0000', '0.0000', '24.7749', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1619, 'Star', '', 204, '', 0, '3.6900', '0.0000', '0.0000', '4.6648', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1618, 'Star', '', 466, '', 0, '3.6900', '0.0000', '0.0000', '74.0335', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1617, 'Star', '', 188, '', 0, '3.6900', '0.0000', '0.0000', '52.2765', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1616, 'Star', '', 464, '', 0, '3.6900', '0.0000', '0.0000', '26.1141', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1615, 'Star', '', 186, '', 0, '3.6900', '0.0000', '0.0000', '2.6493', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1614, 'Star', '', 463, '', 0, '3.6900', '0.0000', '0.0000', '18.3594', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1613, 'Star', '', 185, '', 0, '3.6900', '0.0000', '0.0000', '9.3585', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1612, 'Star', '', 458, '', 0, '3.6900', '0.0000', '0.0000', '47.2135', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1611, 'Star', '', 183, '', 0, '3.6900', '0.0000', '0.0000', '6.2447', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1610, 'Star', '', 462, '', 0, '3.6900', '0.0000', '0.0000', '22.9918', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1609, 'Star', '', 182, '', 0, '3.6900', '0.0000', '0.0000', '3.8793', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1608, 'Star', '', 580, '', 0, '3.6900', '0.0000', '0.0000', '31.1292', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1607, 'Star', '', 181, '', 0, '3.6900', '0.0000', '0.0000', '18.2878', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1606, 'Star', '', 197, '', 0, '3.6900', '0.0000', '0.0000', '67.6673', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1605, 'Star', '', 180, '', 0, '3.6900', '0.0000', '0.0000', '67.6673', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1604, 'Star', '', 460, '', 0, '3.6900', '0.0000', '0.0000', '57.7160', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1603, 'Star', '', 174, '', 0, '3.6900', '0.0000', '0.0000', '36.9950', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1602, 'Star', '', 459, '', 0, '3.6900', '0.0000', '0.0000', '29.6338', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1601, 'Star', '', 179, '', 0, '3.6900', '0.0000', '0.0000', '24.4479', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1600, 'Star', '', 413, '', 0, '3.6900', '0.0000', '0.0000', '84.3457', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1599, 'Star', '', 350, '', 0, '3.6900', '0.0000', '0.0000', '46.8691', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1598, 'Star', '', 456, '', 0, '3.6900', '0.0000', '0.0000', '6.8124', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1597, 'Star', '', 173, '', 0, '3.6900', '0.0000', '0.0000', '6.8124', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1596, 'Star', '', 455, '', 0, '3.6900', '0.0000', '0.0000', '54.6565', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1595, 'Star', '', 172, '', 0, '3.6900', '0.0000', '0.0000', '55.1062', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1594, 'Star', '', 450, '', 0, '3.6900', '0.0000', '0.0000', '40.5064', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1593, 'Star', '', 222, '', 0, '3.6900', '0.0000', '0.0000', '5.0752', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1592, 'Star', '', 454, '', 0, '3.6900', '0.0000', '0.0000', '72.9759', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1591, 'Star', '', 170, '', 0, '3.6900', '0.0000', '0.0000', '33.0605', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1590, 'Star', '', 579, '', 0, '3.6900', '0.0000', '0.0000', '46.9569', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1589, 'Star', '', 167, '', 0, '3.6900', '0.0000', '0.0000', '50.1042', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1588, 'Star', '', 578, '', 0, '3.6900', '0.0000', '0.0000', '114.2870', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1587, 'Star', '', 588, '', 0, '3.6900', '0.0000', '0.0000', '114.2870', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1586, 'Star', '', 169, '', 0, '3.6900', '0.0000', '0.0000', '54.4224', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1585, 'Star', '', 168, '', 0, '3.6900', '0.0000', '0.0000', '54.4224', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1584, 'Star', '', 453, '', 0, '3.6900', '0.0000', '0.0000', '37.7610', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1583, 'Star', '', 166, '', 0, '3.6900', '0.0000', '0.0000', '30.8601', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1582, 'Star', '', 178, '', 0, '3.6900', '0.0000', '0.0000', '26.2276', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1581, 'Star', '', 165, '', 0, '3.6900', '0.0000', '0.0000', '26.2276', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1580, 'Star', '', 452, '', 0, '3.6900', '0.0000', '0.0000', '75.9410', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1579, 'Star', '', 164, '', 0, '3.6900', '0.0000', '0.0000', '25.5123', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1578, 'Star', '', 451, '', 0, '3.6900', '0.0000', '0.0000', '81.7460', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1577, 'Star', '', 163, '', 0, '3.6900', '0.0000', '0.0000', '74.1033', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1576, 'Star', '', 171, '', 0, '3.6900', '0.0000', '0.0000', '71.0531', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1575, 'Star', '', 162, '', 0, '3.6900', '0.0000', '0.0000', '46.6920', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1574, 'Star', '', 449, '', 0, '3.6900', '0.0000', '0.0000', '34.6665', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1573, 'Star', '', 161, '', 0, '3.6900', '0.0000', '0.0000', '28.6120', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1572, 'Star', '', 448, '', 0, '3.6900', '0.0000', '0.0000', '48.3423', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1571, 'Star', '', 160, '', 0, '3.6900', '0.0000', '0.0000', '32.9429', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1570, 'Star', '', 202, '', 0, '3.6900', '0.0000', '0.0000', '39.9376', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1569, 'Star', '', 159, '', 0, '3.6900', '0.0000', '0.0000', '29.4465', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1568, 'Star', '', 203, '', 0, '3.6900', '0.0000', '0.0000', '44.8595', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1567, 'Star', '', 158, '', 0, '3.6900', '0.0000', '0.0000', '43.5651', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1566, 'Star', '', 446, '', 0, '3.6900', '0.0000', '0.0000', '59.6083', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1565, 'Star', '', 157, '', 0, '3.6900', '0.0000', '0.0000', '36.7817', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1564, 'Star', '', 575, '', 0, '3.6900', '0.0000', '0.0000', '18.6591', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1563, 'Star', '', 156, '', 0, '3.6900', '0.0000', '0.0000', '19.2722', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1562, 'Star', '', 445, '', 0, '3.6900', '0.0000', '0.0000', '34.5166', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1561, 'Star', '', 295, '', 0, '3.6900', '0.0000', '0.0000', '34.5166', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1560, 'Star', '', 577, '', 0, '3.6900', '0.0000', '0.0000', '60.2044', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1559, 'Star', '', 294, '', 0, '3.6900', '0.0000', '0.0000', '55.9722', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1558, 'Star', '', 444, '', 0, '3.6900', '0.0000', '0.0000', '22.1402', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1557, 'Star', '', 293, '', 0, '3.6900', '0.0000', '0.0000', '2.5546', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1556, 'Star', '', 412, '', 0, '3.6900', '0.0000', '0.0000', '29.3311', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1555, 'Star', '', 115, '', 0, '3.6900', '0.0000', '0.0000', '51.9444', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1552, 'Star', '', 443, '', 0, '2.0816', '0.0000', '0.0000', '18.3556', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1551, 'Star', '', 363, '', 0, '2.0816', '0.0000', '0.0000', '0.0000', '0.0000', '0.0000', 'Finland Fast tlf', '0000-00-00 00:00:00'),
+(1550, 'Star', '', 513, '', 0, '3.6900', '0.0000', '0.0000', '69.1456', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1549, 'Star', '', 155, '', 0, '3.6900', '0.0000', '0.0000', '54.8992', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1548, 'Star', '', 576, '', 0, '3.6900', '0.0000', '0.0000', '48.6991', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1547, 'Star', '', 154, '', 0, '3.6900', '0.0000', '0.0000', '49.4859', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1546, 'Star', '', 196, '', 0, '3.6900', '0.0000', '0.0000', '97.8479', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1545, 'Star', '', 153, '', 0, '3.6900', '0.0000', '0.0000', '97.8479', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1544, 'Star', '', 441, '', 0, '3.6900', '0.0000', '0.0000', '98.5902', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1543, 'Star', '', 152, '', 0, '3.6900', '0.0000', '0.0000', '83.5462', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1542, 'Star', '', 299, '', 0, '3.6900', '0.0000', '0.0000', '39.4550', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1541, 'Star', '', 356, '', 0, '3.6900', '0.0000', '0.0000', '5.0147', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1540, 'Star', '', 195, '', 0, '3.6900', '0.0000', '0.0000', '63.8175', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1539, 'Star', '', 149, '', 0, '3.6900', '0.0000', '0.0000', '63.8175', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1538, 'Star', '', 465, '', 0, '3.6900', '0.0000', '0.0000', '69.4437', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1537, 'Star', '', 272, '', 0, '3.6900', '0.0000', '0.0000', '60.2044', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1536, 'Star', '', 439, '', 0, '3.6900', '0.0000', '0.0000', '52.2765', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1535, 'Star', '', 304, '', 0, '3.6900', '0.0000', '0.0000', '49.0576', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1534, 'Star', '', 399, '', 0, '3.6900', '0.0000', '0.0000', '111.5867', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1533, 'Star', '', 291, '', 0, '3.6900', '0.0000', '0.0000', '73.3284', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1532, 'Star', '', 438, '', 0, '3.6900', '0.0000', '0.0000', '59.6679', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1531, 'Star', '', 147, '', 0, '3.6900', '0.0000', '0.0000', '44.8254', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1530, 'Star', '', 437, '', 0, '3.6900', '0.0000', '0.0000', '58.7142', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1529, 'Star', '', 148, '', 0, '3.6900', '0.0000', '0.0000', '68.4303', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1528, 'Star', '', 436, '', 0, '3.6900', '0.0000', '0.0000', '41.0701', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1527, 'Star', '', 189, '', 0, '3.6900', '0.0000', '0.0000', '32.0693', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1526, 'Star', '', 573, '', 0, '3.6900', '0.0000', '0.0000', '69.2648', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1525, 'Star', '', 146, '', 0, '3.6900', '0.0000', '0.0000', '48.4939', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1524, 'Star', '', 434, '', 0, '3.6900', '0.0000', '0.0000', '73.9160', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1523, 'Star', '', 145, '', 0, '3.6900', '0.0000', '0.0000', '103.4119', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1522, 'Star', '', 194, '', 0, '3.6900', '0.0000', '0.0000', '182.7011', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1521, 'Star', '', 144, '', 0, '3.6900', '0.0000', '0.0000', '182.7011', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1520, 'Star', '', 870, '', 0, '3.6900', '0.0000', '0.0000', '19.6260', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1519, 'Star', '', 699, '', 0, '3.6900', '0.0000', '0.0000', '18.2418', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1518, 'Star', '', 698, '', 0, '3.6900', '0.0000', '0.0000', '19.6260', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1517, 'Star', '', 433, '', 0, '3.6900', '0.0000', '0.0000', '18.5448', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1516, 'Star', '', 326, '', 0, '3.6900', '0.0000', '0.0000', '0.0000', '0.0000', '0.0000', 'Denmark Fast tlf', '0000-00-00 00:00:00'),
+(1515, 'Star', '', 267, '', 0, '3.6900', '0.0000', '0.0000', '107.6679', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1514, 'Star', '', 224, '', 0, '3.6900', '0.0000', '0.0000', '107.6734', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1513, 'Star', '', 429, '', 0, '3.6900', '0.0000', '0.0000', '21.0417', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1512, 'Star', '', 143, '', 0, '3.6900', '0.0000', '0.0000', '20.2668', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1511, 'Star', '', 142, '', 0, '3.6900', '0.0000', '0.0000', '151.8479', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1510, 'Star', '', 572, '', 0, '3.6900', '0.0000', '0.0000', '154.8453', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1509, 'Star', '', 426, '', 0, '3.6900', '0.0000', '0.0000', '33.5595', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1508, 'Star', '', 216, '', 0, '3.6900', '0.0000', '0.0000', '33.9767', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1507, 'Star', '', 193, '', 0, '3.6900', '0.0000', '0.0000', '20.6543', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1506, 'Star', '', 378, '', 0, '3.6900', '0.0000', '0.0000', '20.6543', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1505, 'Star', '', 424, '', 0, '3.6900', '0.0000', '0.0000', '62.7675', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1504, 'Star', '', 141, '', 0, '3.6900', '0.0000', '0.0000', '5.9608', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1503, 'Star', '', 140, '', 0, '3.6900', '0.0000', '0.0000', '45.6599', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1502, 'Star', '', 569, '', 0, '3.6900', '0.0000', '0.0000', '45.6599', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1501, 'Star', '', 192, '', 0, '3.6900', '0.0000', '0.0000', '3.0996', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1500, 'Star', '', 210, '', 0, '3.6900', '0.0000', '0.0000', '3.1223', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1499, 'Star', '', 421, '', 0, '3.6900', '0.0000', '0.0000', '28.2714', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1498, 'Star', '', 137, '', 0, '3.6900', '0.0000', '0.0000', '28.2373', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1497, 'Star', '', 567, '', 0, '3.6900', '0.0000', '0.0000', '41.5214', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1496, 'Star', '', 136, '', 0, '3.6900', '0.0000', '0.0000', '43.4800', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1495, 'Star', '', 420, '', 0, '3.6900', '0.0000', '0.0000', '39.8335', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1494, 'Star', '', 135, '', 0, '3.6900', '0.0000', '0.0000', '12.5840', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1493, 'Star', '', 419, '', 0, '3.6900', '0.0000', '0.0000', '30.8175', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1492, 'Star', '', 368, '', 0, '3.6900', '0.0000', '0.0000', '22.3667', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1491, 'Star', '', 191, '', 0, '3.6900', '0.0000', '0.0000', '56.2106', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1490, 'Star', '', 131, '', 0, '3.6900', '0.0000', '0.0000', '56.2106', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1489, 'Star', '', 418, '', 0, '3.6900', '0.0000', '0.0000', '34.6273', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1488, 'Star', '', 130, '', 0, '3.6900', '0.0000', '0.0000', '10.4570', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1487, 'Star', '', 417, '', 0, '3.6900', '0.0000', '0.0000', '46.6733', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1486, 'Star', '', 129, '', 0, '3.6900', '0.0000', '0.0000', '29.1825', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1485, 'Star', '', 416, '', 0, '3.6900', '0.0000', '0.0000', '33.0264', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1484, 'Star', '', 367, '', 0, '3.6900', '0.0000', '0.0000', '26.0216', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1483, 'Star', '', 415, '', 0, '3.6900', '0.0000', '0.0000', '69.1456', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1482, 'Star', '', 128, '', 0, '3.6900', '0.0000', '0.0000', '64.9134', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1481, 'Star', '', 566, '', 0, '3.6900', '0.0000', '0.0000', '33.8575', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1480, 'Star', '', 127, '', 0, '3.6900', '0.0000', '0.0000', '33.8575', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1479, 'Star', '', 177, '', 0, '3.6900', '0.0000', '0.0000', '20.0284', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1478, 'Star', '', 366, '', 0, '3.6900', '0.0000', '0.0000', '20.0284', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1477, 'Star', '', 565, '', 0, '3.6900', '0.0000', '0.0000', '33.0060', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1476, 'Star', '', 126, '', 0, '3.6900', '0.0000', '0.0000', '34.7772', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1475, 'Star', '', 410, '', 0, '3.6900', '0.0000', '0.0000', '69.8013', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1474, 'Star', '', 125, '', 0, '3.6900', '0.0000', '0.0000', '69.8013', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1473, 'Star', '', 414, '', 0, '3.6900', '0.0000', '0.0000', '27.8172', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1472, 'Star', '', 124, '', 0, '3.6900', '0.0000', '0.0000', '3.7847', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1471, 'Star', '', 564, '', 0, '3.6900', '0.0000', '0.0000', '38.0131', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1470, 'Star', '', 123, '', 0, '3.6900', '0.0000', '0.0000', '39.6140', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1469, 'Star', '', 411, '', 0, '3.6900', '0.0000', '0.0000', '73.4374', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1468, 'Star', '', 122, '', 0, '3.6900', '0.0000', '0.0000', '41.0446', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1467, 'Star', '', 563, '', 0, '3.6900', '0.0000', '0.0000', '36.5484', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1466, 'Star', '', 121, '', 0, '3.6900', '0.0000', '0.0000', '36.5484', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1465, 'Star', '', 562, '', 0, '3.6900', '0.0000', '0.0000', '35.4669', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1464, 'Star', '', 876, '', 0, '3.6900', '0.0000', '0.0000', '35.4669', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1463, 'Star', '', 409, '', 0, '3.6900', '0.0000', '0.0000', '40.1590', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1462, 'Star', '', 365, '', 0, '3.6900', '0.0000', '0.0000', '32.5410', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1461, 'Star', '', 407, '', 0, '3.6900', '0.0000', '0.0000', '24.8413', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1460, 'Star', '', 120, '', 0, '3.6900', '0.0000', '0.0000', '3.5969', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1459, 'Star', '', 190, '', 0, '3.6900', '0.0000', '0.0000', '112.4604', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1458, 'Star', '', 119, '', 0, '3.6900', '0.0000', '0.0000', '112.4604', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1457, 'Star', '', 406, '', 0, '3.6900', '0.0000', '0.0000', '25.0099', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1456, 'Star', '', 118, '', 0, '3.6900', '0.0000', '0.0000', '28.4383', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1455, 'Star', '', 405, '', 0, '3.6900', '0.0000', '0.0000', '88.3395', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1454, 'Star', '', 117, '', 0, '3.6900', '0.0000', '0.0000', '32.2566', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1453, 'Star', '', 404, '', 0, '3.6900', '0.0000', '0.0000', '48.2827', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1452, 'Star', '', 116, '', 0, '3.6900', '0.0000', '0.0000', '10.9083', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1451, 'Star', '', 403, '', 0, '3.6900', '0.0000', '0.0000', '40.0227', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1450, 'Star', '', 113, '', 0, '3.6900', '0.0000', '0.0000', '40.0227', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1449, 'Star', '', 382, '', 0, '3.6900', '0.0000', '0.0000', '49.5941', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1448, 'Star', '', 375, '', 0, '3.6900', '0.0000', '0.0000', '49.5941', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1447, 'Star', '', 114, '', 0, '3.6900', '0.0000', '0.0000', '33.6191', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1446, 'Star', '', 112, '', 0, '3.6900', '0.0000', '0.0000', '33.6191', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1445, 'Star', '', 402, '', 0, '3.6900', '0.0000', '0.0000', '47.5844', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1444, 'Star', '', 111, '', 0, '3.6900', '0.0000', '0.0000', '51.1269', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1443, 'Star', '', 401, '', 0, '3.6900', '0.0000', '0.0000', '28.6069', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1442, 'Star', '', 110, '', 0, '3.6900', '0.0000', '0.0000', '11.3426', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1441, 'Star', '', 108, '', 0, '3.6900', '0.0000', '0.0000', '37.7320', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1440, 'Star', '', 109, '', 0, '3.6900', '0.0000', '0.0000', '38.2089', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1439, 'Star', '', 107, '', 0, '3.6900', '0.0000', '0.0000', '18.7766', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1438, 'Star', '', 381, '', 0, '3.6900', '0.0000', '0.0000', '18.7766', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1437, 'Star', '', 400, '', 0, '3.6900', '0.0000', '0.0000', '26.5342', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1436, 'Star', '', 106, '', 0, '3.6900', '0.0000', '0.0000', '20.4371', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1435, 'Star', '', 561, '', 0, '3.6900', '0.0000', '0.0000', '32.2642', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1434, 'Star', '', 105, '', 0, '3.6900', '0.0000', '0.0000', '33.4942', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1433, 'Star', '', 139, '', 0, '3.6900', '0.0000', '0.0000', '58.1890', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(1432, 'Star', '', 101, '', 0, '3.6900', '0.0000', '0.0000', '58.1890', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2277, 'default', '', 101, '', 0, '3.6900', '0.0000', '0.0000', '58.2066', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2278, 'default', '', 103, '', 0, '3.6900', '0.0000', '0.0000', '44.7232', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2279, 'default', '', 105, '', 0, '3.6900', '0.0000', '0.0000', '33.5169', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2280, 'default', '', 106, '', 0, '3.6900', '0.0000', '0.0000', '20.4371', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2281, 'default', '', 107, '', 0, '3.6900', '0.0000', '0.0000', '18.7766', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2282, 'default', '', 108, '', 0, '3.6900', '0.0000', '0.0000', '37.7320', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2283, 'default', '', 109, '', 0, '3.6900', '0.0000', '0.0000', '38.2089', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2284, 'default', '', 110, '', 0, '3.6900', '0.0000', '0.0000', '11.3426', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2285, 'default', '', 111, '', 0, '3.6900', '0.0000', '0.0000', '51.1269', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2286, 'default', '', 112, '', 0, '3.6900', '0.0000', '0.0000', '33.6191', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2287, 'default', '', 113, '', 0, '3.6900', '0.0000', '0.0000', '40.0227', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2288, 'default', '', 114, '', 0, '3.6900', '0.0000', '0.0000', '33.6191', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2289, 'default', '', 115, '', 0, '3.6900', '0.0000', '0.0000', '51.9410', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2290, 'default', '', 116, '', 0, '3.6900', '0.0000', '0.0000', '10.9083', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2291, 'default', '', 117, '', 0, '3.6900', '0.0000', '0.0000', '32.2566', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2292, 'default', '', 118, '', 0, '3.6900', '0.0000', '0.0000', '28.4383', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2293, 'default', '', 119, '', 0, '3.6900', '0.0000', '0.0000', '112.4604', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2294, 'default', '', 120, '', 0, '3.6900', '0.0000', '0.0000', '3.5969', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2295, 'default', '', 121, '', 0, '3.6900', '0.0000', '0.0000', '36.5484', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2296, 'default', '', 122, '', 0, '3.6900', '0.0000', '0.0000', '41.0446', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2297, 'default', '', 123, '', 0, '3.6900', '0.0000', '0.0000', '39.6140', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2298, 'default', '', 125, '', 0, '3.6900', '0.0000', '0.0000', '69.8013', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2299, 'default', '', 126, '', 0, '3.6900', '0.0000', '0.0000', '34.7772', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2300, 'default', '', 127, '', 0, '3.6900', '0.0000', '0.0000', '33.8575', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2301, 'default', '', 128, '', 0, '3.6900', '0.0000', '0.0000', '64.9134', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2302, 'default', '', 129, '', 0, '3.6900', '0.0000', '0.0000', '29.1825', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2303, 'default', '', 130, '', 0, '3.6900', '0.0000', '0.0000', '10.4570', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2304, 'default', '', 131, '', 0, '3.6900', '0.0000', '0.0000', '56.2106', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2305, 'default', '', 134, '', 0, '3.6900', '0.0000', '0.0000', '40.4246', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2306, 'default', '', 136, '', 0, '3.6900', '0.0000', '0.0000', '43.4800', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2307, 'default', '', 137, '', 0, '3.6900', '0.0000', '0.0000', '28.2373', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2308, 'default', '', 139, '', 0, '3.6900', '0.0000', '0.0000', '58.2066', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2309, 'default', '', 140, '', 0, '3.6900', '0.0000', '0.0000', '45.6599', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2310, 'default', '', 141, '', 0, '3.6900', '0.0000', '0.0000', '5.9608', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2311, 'default', '', 142, '', 0, '3.6900', '0.0000', '0.0000', '151.8479', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2312, 'default', '', 143, '', 0, '3.6900', '0.0000', '0.0000', '20.2668', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2313, 'default', '', 144, '', 0, '3.6900', '0.0000', '0.0000', '182.7011', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2314, 'default', '', 145, '', 0, '3.6900', '0.0000', '0.0000', '103.4119', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2315, 'default', '', 146, '', 0, '3.6900', '0.0000', '0.0000', '48.4939', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2316, 'default', '', 147, '', 0, '3.6900', '0.0000', '0.0000', '44.8254', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2317, 'default', '', 148, '', 0, '3.6900', '0.0000', '0.0000', '68.4303', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2318, 'default', '', 149, '', 0, '3.6900', '0.0000', '0.0000', '63.8175', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2319, 'default', '', 151, '', 0, '3.6900', '0.0000', '0.0000', '16.1777', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2320, 'default', '', 152, '', 0, '3.6900', '0.0000', '0.0000', '83.5879', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2321, 'default', '', 153, '', 0, '3.6900', '0.0000', '0.0000', '97.8479', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2322, 'default', '', 154, '', 0, '3.6900', '0.0000', '0.0000', '49.4859', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2323, 'default', '', 156, '', 0, '3.6900', '0.0000', '0.0000', '19.2722', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2324, 'default', '', 157, '', 0, '3.6900', '0.0000', '0.0000', '36.7817', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2325, 'default', '', 158, '', 0, '3.6900', '0.0000', '0.0000', '43.5651', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2326, 'default', '', 159, '', 0, '3.6900', '0.0000', '0.0000', '29.4465', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2327, 'default', '', 160, '', 0, '3.6900', '0.0000', '0.0000', '32.9429', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2328, 'default', '', 161, '', 0, '3.6900', '0.0000', '0.0000', '28.6120', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2329, 'default', '', 162, '', 0, '3.6900', '0.0000', '0.0000', '46.6920', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2330, 'default', '', 163, '', 0, '3.6900', '0.0000', '0.0000', '74.1033', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2331, 'default', '', 164, '', 0, '3.6900', '0.0000', '0.0000', '25.5123', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2332, 'default', '', 165, '', 0, '3.6900', '0.0000', '0.0000', '26.2276', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2333, 'default', '', 166, '', 0, '3.6900', '0.0000', '0.0000', '30.8601', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2334, 'default', '', 167, '', 0, '3.6900', '0.0000', '0.0000', '50.1042', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2335, 'default', '', 168, '', 0, '3.6900', '0.0000', '0.0000', '54.4224', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2336, 'default', '', 169, '', 0, '3.6900', '0.0000', '0.0000', '54.4224', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2337, 'default', '', 170, '', 0, '3.6900', '0.0000', '0.0000', '33.0605', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2338, 'default', '', 171, '', 0, '3.6900', '0.0000', '0.0000', '71.0531', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2339, 'default', '', 172, '', 0, '3.6900', '0.0000', '0.0000', '55.1062', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2340, 'default', '', 173, '', 0, '3.6900', '0.0000', '0.0000', '6.8550', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2341, 'default', '', 174, '', 0, '3.6900', '0.0000', '0.0000', '37.0167', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2342, 'default', '', 175, '', 0, '3.6900', '0.0000', '0.0000', '95.7309', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2343, 'default', '', 176, '', 0, '3.6900', '0.0000', '0.0000', '40.9994', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2344, 'default', '', 177, '', 0, '3.6900', '0.0000', '0.0000', '20.0284', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2345, 'default', '', 178, '', 0, '3.6900', '0.0000', '0.0000', '26.2276', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2346, 'default', '', 179, '', 0, '3.6900', '0.0000', '0.0000', '24.4479', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2347, 'default', '', 180, '', 0, '3.6900', '0.0000', '0.0000', '67.6673', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2348, 'default', '', 181, '', 0, '3.6900', '0.0000', '0.0000', '18.2878', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2349, 'default', '', 182, '', 0, '3.6900', '0.0000', '0.0000', '3.9171', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2350, 'default', '', 188, '', 0, '3.6900', '0.0000', '0.0000', '52.2765', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2351, 'default', '', 189, '', 0, '3.6900', '0.0000', '0.0000', '32.0693', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2352, 'default', '', 190, '', 0, '3.6900', '0.0000', '0.0000', '112.4604', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2353, 'default', '', 191, '', 0, '3.6900', '0.0000', '0.0000', '56.2106', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2354, 'default', '', 193, '', 0, '3.6900', '0.0000', '0.0000', '20.6543', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2355, 'default', '', 194, '', 0, '3.6900', '0.0000', '0.0000', '182.7011', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2356, 'default', '', 195, '', 0, '3.6900', '0.0000', '0.0000', '63.8175', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2357, 'default', '', 196, '', 0, '3.6900', '0.0000', '0.0000', '97.8479', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2358, 'default', '', 197, '', 0, '3.6900', '0.0000', '0.0000', '67.6673', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2359, 'default', '', 198, '', 0, '3.6900', '0.0000', '0.0000', '87.7979', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2360, 'default', '', 199, '', 0, '3.6900', '0.0000', '0.0000', '25.9313', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2361, 'default', '', 200, '', 0, '3.6900', '0.0000', '0.0000', '89.3511', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2362, 'default', '', 201, '', 0, '3.6900', '0.0000', '0.0000', '130.9100', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2363, 'default', '', 202, '', 0, '3.6900', '0.0000', '0.0000', '39.9376', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2364, 'default', '', 203, '', 0, '3.6900', '0.0000', '0.0000', '44.8595', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2365, 'default', '', 205, '', 0, '3.6900', '0.0000', '0.0000', '36.1380', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2366, 'default', '', 206, '', 0, '3.6900', '0.0000', '0.0000', '58.0585', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2367, 'default', '', 208, '', 0, '3.6900', '0.0000', '0.0000', '79.5175', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2368, 'default', '', 209, '', 0, '3.6900', '0.0000', '0.0000', '76.5711', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2369, 'default', '', 211, '', 0, '3.6900', '0.0000', '0.0000', '75.1695', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2370, 'default', '', 212, '', 0, '3.6900', '0.0000', '0.0000', '48.8856', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2371, 'default', '', 213, '', 0, '3.6900', '0.0000', '0.0000', '45.2819', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2372, 'default', '', 215, '', 0, '3.6900', '0.0000', '0.0000', '124.5158', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2373, 'default', '', 216, '', 0, '3.6900', '0.0000', '0.0000', '33.9767', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2374, 'default', '', 217, '', 0, '3.6900', '0.0000', '0.0000', '72.3491', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2375, 'default', '', 218, '', 0, '3.6900', '0.0000', '0.0000', '54.8396', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2376, 'default', '', 220, '', 0, '3.6900', '0.0000', '0.0000', '87.7979', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2377, 'default', '', 221, '', 0, '3.6900', '0.0000', '0.0000', '10.3718', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2378, 'default', '', 222, '', 0, '3.6900', '0.0000', '0.0000', '5.0752', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2379, 'default', '', 223, '', 0, '3.6900', '0.0000', '0.0000', '9.6310', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2380, 'default', '', 225, '', 0, '3.6900', '0.0000', '0.0000', '42.5007', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2381, 'default', '', 226, '', 0, '3.6900', '0.0000', '0.0000', '8.2089', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2382, 'default', '', 227, '', 0, '3.6900', '0.0000', '0.0000', '46.2560', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2383, 'default', '', 228, '', 0, '3.6900', '0.0000', '0.0000', '18.6029', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2384, 'default', '', 229, '', 0, '3.6900', '0.0000', '0.0000', '39.3278', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2385, 'default', '', 230, '', 0, '3.6900', '0.0000', '0.0000', '42.8584', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2386, 'default', '', 231, '', 0, '3.6900', '0.0000', '0.0000', '47.8280', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2387, 'default', '', 232, '', 0, '3.6900', '0.0000', '0.0000', '23.7565', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2388, 'default', '', 234, '', 0, '3.6900', '0.0000', '0.0000', '8.1774', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2389, 'default', '', 236, '', 0, '3.6900', '0.0000', '0.0000', '5.3137', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2390, 'default', '', 237, '', 0, '3.6900', '0.0000', '0.0000', '92.9532', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2391, 'default', '', 238, '', 0, '3.6900', '0.0000', '0.0000', '22.2100', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2392, 'default', '', 239, '', 0, '3.6900', '0.0000', '0.0000', '94.8964', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2393, 'default', '', 240, '', 0, '3.6900', '0.0000', '0.0000', '18.8703', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2394, 'default', '', 241, '', 0, '3.6900', '0.0000', '0.0000', '58.0006', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2395, 'default', '', 242, '', 0, '3.6900', '0.0000', '0.0000', '10.6699', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2396, 'default', '', 243, '', 0, '3.6900', '0.0000', '0.0000', '42.5450', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2397, 'default', '', 244, '', 0, '3.6900', '0.0000', '0.0000', '18.1771', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2398, 'default', '', 245, '', 0, '3.6900', '0.0000', '0.0000', '25.9313', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2399, 'default', '', 246, '', 0, '3.6900', '0.0000', '0.0000', '33.7775', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2400, 'default', '', 247, '', 0, '3.6900', '0.0000', '0.0000', '89.3511', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2401, 'default', '', 248, '', 0, '3.6900', '0.0000', '0.0000', '32.4337', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2402, 'default', '', 249, '', 0, '3.6900', '0.0000', '0.0000', '63.4965', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2403, 'default', '', 250, '', 0, '3.6900', '0.0000', '0.0000', '93.4062', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2404, 'default', '', 252, '', 0, '3.6900', '0.0000', '0.0000', '30.6710', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2405, 'default', '', 253, '', 0, '3.6900', '0.0000', '0.0000', '130.9100', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2406, 'default', '', 254, '', 0, '3.6900', '0.0000', '0.0000', '35.8007', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2407, 'default', '', 255, '', 0, '3.6900', '0.0000', '0.0000', '17.0292', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2408, 'default', '', 256, '', 0, '3.6900', '0.0000', '0.0000', '6.3227', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2409, 'default', '', 257, '', 0, '3.6900', '0.0000', '0.0000', '31.9500', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2410, 'default', '', 258, '', 0, '3.6900', '0.0000', '0.0000', '57.5424', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2411, 'default', '', 259, '', 0, '3.6900', '0.0000', '0.0000', '141.4505', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2412, 'default', '', 260, '', 0, '3.6900', '0.0000', '0.0000', '60.9197', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2413, 'default', '', 262, '', 0, '3.6900', '0.0000', '0.0000', '64.9219', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2414, 'default', '', 263, '', 0, '3.6900', '0.0000', '0.0000', '39.3278', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2415, 'default', '', 264, '', 0, '3.6900', '0.0000', '0.0000', '135.1439', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2416, 'default', '', 265, '', 0, '3.6900', '0.0000', '0.0000', '97.8104', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2417, 'default', '', 266, '', 0, '3.6900', '0.0000', '0.0000', '47.0837', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2418, 'default', '', 268, '', 0, '3.6900', '0.0000', '0.0000', '26.9429', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2419, 'default', '', 269, '', 0, '3.6900', '0.0000', '0.0000', '152.4201', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2420, 'default', '', 270, '', 0, '3.6900', '0.0000', '0.0000', '122.7232', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2421, 'default', '', 272, '', 0, '3.6900', '0.0000', '0.0000', '60.2044', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2422, 'default', '', 273, '', 0, '3.6900', '0.0000', '0.0000', '62.0948', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2423, 'default', '', 275, '', 0, '3.6900', '0.0000', '0.0000', '46.2560', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2424, 'default', '', 276, '', 0, '3.6900', '0.0000', '0.0000', '32.9821', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2425, 'default', '', 277, '', 0, '3.6900', '0.0000', '0.0000', '129.6301', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2426, 'default', '', 278, '', 0, '3.6900', '0.0000', '0.0000', '55.8530', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2427, 'default', '', 279, '', 0, '3.6900', '0.0000', '0.0000', '41.8450', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2428, 'default', '', 282, '', 0, '3.6900', '0.0000', '0.0000', '11.2404', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2429, 'default', '', 283, '', 0, '3.6900', '0.0000', '0.0000', '152.4201', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2430, 'default', '', 284, '', 0, '3.6900', '0.0000', '0.0000', '122.7232', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2431, 'default', '', 285, '', 0, '3.6900', '0.0000', '0.0000', '182.5802', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2432, 'default', '', 286, '', 0, '3.6900', '0.0000', '0.0000', '8.4048', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2433, 'default', '', 287, '', 0, '3.6900', '0.0000', '0.0000', '71.6458', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2434, 'default', '', 288, '', 0, '3.6900', '0.0000', '0.0000', '91.7712', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2435, 'default', '', 289, '', 0, '3.6900', '0.0000', '0.0000', '62.7914', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2436, 'default', '', 291, '', 0, '3.6900', '0.0000', '0.0000', '73.3284', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2437, 'default', '', 292, '', 0, '3.6900', '0.0000', '0.0000', '52.2169', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2438, 'default', '', 294, '', 0, '3.6900', '0.0000', '0.0000', '55.9722', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2439, 'default', '', 295, '', 0, '3.6900', '0.0000', '0.0000', '34.5166', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2440, 'default', '', 296, '', 0, '3.6900', '0.0000', '0.0000', '47.0905', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2441, 'default', '', 297, '', 0, '3.6900', '0.0000', '0.0000', '20.3009', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2442, 'default', '', 298, '', 0, '3.6900', '0.0000', '0.0000', '57.8796', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2443, 'default', '', 300, '', 0, '3.6900', '0.0000', '0.0000', '91.7712', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2444, 'default', '', 301, '', 0, '3.6900', '0.0000', '0.0000', '219.3585', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2445, 'default', '', 303, '', 0, '3.6900', '0.0000', '0.0000', '125.6900', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2446, 'default', '', 304, '', 0, '3.6900', '0.0000', '0.0000', '49.0576', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2447, 'default', '', 305, '', 0, '3.6900', '0.0000', '0.0000', '24.2078', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2448, 'default', '', 306, '', 0, '3.6900', '0.0000', '0.0000', '8.4048', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2449, 'default', '', 307, '', 0, '3.6900', '0.0000', '0.0000', '219.3585', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2450, 'default', '', 308, '', 0, '3.6900', '0.0000', '0.0000', '59.9063', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2451, 'default', '', 309, '', 0, '3.6900', '0.0000', '0.0000', '51.7059', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2452, 'default', '', 310, '', 0, '3.6900', '0.0000', '0.0000', '11.2404', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2453, 'default', '', 311, '', 0, '3.6900', '0.0000', '0.0000', '86.1340', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2454, 'default', '', 312, '', 0, '3.6900', '0.0000', '0.0000', '91.2688', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2455, 'default', '', 313, '', 0, '3.6900', '0.0000', '0.0000', '5.9608', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2456, 'default', '', 314, '', 0, '3.6900', '0.0000', '0.0000', '8.0812', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2457, 'default', '', 315, '', 0, '3.6900', '0.0000', '0.0000', '71.6458', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2458, 'default', '', 316, '', 0, '3.6900', '0.0000', '0.0000', '58.5353', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2459, 'default', '', 317, '', 0, '3.6900', '0.0000', '0.0000', '74.3911', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2460, 'default', '', 319, '', 0, '3.6900', '0.0000', '0.0000', '74.6602', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2461, 'default', '', 320, '', 0, '3.6900', '0.0000', '0.0000', '54.9077', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2462, 'default', '', 322, '', 0, '3.6900', '0.0000', '0.0000', '25.4877', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2463, 'default', '', 323, '', 0, '3.6900', '0.0000', '0.0000', '64.3429', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2464, 'default', '', 324, '', 0, '3.6900', '0.0000', '0.0000', '7.3318', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2465, 'default', '', 325, '', 0, '3.6900', '0.0000', '0.0000', '74.1527', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2466, 'default', '', 327, '', 0, '3.6900', '0.0000', '0.0000', '24.3798', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2467, 'default', '', 328, '', 0, '3.6900', '0.0000', '0.0000', '50.1391', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2468, 'default', '', 329, '', 0, '3.6900', '0.0000', '0.0000', '103.9739', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2469, 'default', '', 330, '', 0, '3.6900', '0.0000', '0.0000', '52.6341', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2470, 'default', '', 331, '', 0, '3.6900', '0.0000', '0.0000', '20.0812', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2471, 'default', '', 333, '', 0, '3.6900', '0.0000', '0.0000', '35.8007', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2472, 'default', '', 334, '', 0, '3.6900', '0.0000', '0.0000', '125.2455', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2473, 'default', '', 335, '', 0, '3.6900', '0.0000', '0.0000', '3.9171', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2474, 'default', '', 336, '', 0, '3.6900', '0.0000', '0.0000', '156.0988', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2475, 'default', '', 337, '', 0, '3.6900', '0.0000', '0.0000', '57.3466', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2476, 'default', '', 338, '', 0, '3.6900', '0.0000', '0.0000', '5.4840', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2477, 'default', '', 339, '', 0, '3.6900', '0.0000', '0.0000', '34.9296', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2478, 'default', '', 340, '', 0, '3.6900', '0.0000', '0.0000', '23.1272', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2479, 'default', '', 341, '', 0, '3.6900', '0.0000', '0.0000', '71.1723', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2480, 'default', '', 342, '', 0, '3.6900', '0.0000', '0.0000', '143.2472', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2481, 'default', '', 343, '', 0, '3.6900', '0.0000', '0.0000', '29.7020', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2482, 'default', '', 344, '', 0, '3.6900', '0.0000', '0.0000', '27.0792', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2483, 'default', '', 346, '', 0, '3.6900', '0.0000', '0.0000', '55.7337', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2484, 'default', '', 348, '', 0, '3.6900', '0.0000', '0.0000', '134.5359', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2485, 'default', '', 349, '', 0, '3.6900', '0.0000', '0.0000', '7.5600', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2486, 'default', '', 350, '', 0, '3.6900', '0.0000', '0.0000', '46.8691', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2487, 'default', '', 351, '', 0, '3.6900', '0.0000', '0.0000', '157.0006', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2488, 'default', '', 353, '', 0, '3.6900', '0.0000', '0.0000', '9.1626', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2489, 'default', '', 354, '', 0, '3.6900', '0.0000', '0.0000', '8.1493', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2490, 'default', '', 355, '', 0, '3.6900', '0.0000', '0.0000', '47.2941', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2491, 'default', '', 359, '', 0, '3.6900', '0.0000', '0.0000', '156.0988', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2492, 'default', '', 360, '', 0, '3.6900', '0.0000', '0.0000', '54.3628', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2493, 'default', '', 361, '', 0, '3.6900', '0.0000', '0.0000', '28.0159', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2494, 'default', '', 362, '', 0, '3.6900', '0.0000', '0.0000', '85.2995', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2495, 'default', '', 365, '', 0, '3.6900', '0.0000', '0.0000', '32.5410', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2496, 'default', '', 366, '', 0, '3.6900', '0.0000', '0.0000', '20.0284', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2497, 'default', '', 367, '', 0, '3.6900', '0.0000', '0.0000', '26.0216', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2498, 'default', '', 368, '', 0, '3.6900', '0.0000', '0.0000', '22.3667', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2499, 'default', '', 369, '', 0, '3.6900', '0.0000', '0.0000', '28.3173', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2500, 'default', '', 370, '', 0, '3.6900', '0.0000', '0.0000', '49.9824', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2501, 'default', '', 371, '', 0, '3.6900', '0.0000', '0.0000', '62.7914', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2502, 'default', '', 373, '', 0, '3.6900', '0.0000', '0.0000', '26.1936', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2503, 'default', '', 374, '', 0, '3.6900', '0.0000', '0.0000', '37.8427', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2504, 'default', '', 375, '', 0, '3.6900', '0.0000', '0.0000', '49.5941', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2505, 'default', '', 377, '', 0, '3.6900', '0.0000', '0.0000', '34.1428', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2506, 'default', '', 378, '', 0, '3.6900', '0.0000', '0.0000', '20.6543', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2507, 'default', '', 379, '', 0, '3.6900', '0.0000', '0.0000', '24.4479', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2508, 'default', '', 381, '', 0, '3.6900', '0.0000', '0.0000', '18.7766', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2509, 'default', '', 382, '', 0, '3.6900', '0.0000', '0.0000', '49.5941', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2510, 'default', '', 399, '', 0, '3.6900', '0.0000', '0.0000', '111.5867', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2511, 'default', '', 400, '', 0, '3.6900', '0.0000', '0.0000', '26.5342', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2512, 'default', '', 401, '', 0, '3.6900', '0.0000', '0.0000', '28.6069', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2513, 'default', '', 402, '', 0, '3.6900', '0.0000', '0.0000', '47.5844', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2514, 'default', '', 403, '', 0, '3.6900', '0.0000', '0.0000', '40.0227', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2515, 'default', '', 404, '', 0, '3.6900', '0.0000', '0.0000', '48.2827', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2516, 'default', '', 405, '', 0, '3.6900', '0.0000', '0.0000', '88.3395', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2517, 'default', '', 406, '', 0, '3.6900', '0.0000', '0.0000', '25.0099', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2518, 'default', '', 407, '', 0, '3.6900', '0.0000', '0.0000', '24.8413', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2519, 'default', '', 409, '', 0, '3.6900', '0.0000', '0.0000', '40.1590', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2520, 'default', '', 410, '', 0, '3.6900', '0.0000', '0.0000', '69.8013', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2521, 'default', '', 411, '', 0, '3.6900', '0.0000', '0.0000', '73.4374', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2522, 'default', '', 412, '', 0, '3.6900', '0.0000', '0.0000', '29.3579', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2523, 'default', '', 413, '', 0, '3.6900', '0.0000', '0.0000', '84.3457', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2524, 'default', '', 415, '', 0, '3.6900', '0.0000', '0.0000', '69.1456', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2525, 'default', '', 416, '', 0, '3.6900', '0.0000', '0.0000', '33.0264', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2526, 'default', '', 417, '', 0, '3.6900', '0.0000', '0.0000', '46.6733', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2527, 'default', '', 418, '', 0, '3.6900', '0.0000', '0.0000', '34.6273', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2528, 'default', '', 419, '', 0, '3.6900', '0.0000', '0.0000', '30.8175', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2529, 'default', '', 421, '', 0, '3.6900', '0.0000', '0.0000', '28.2714', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2530, 'default', '', 422, '', 0, '3.6900', '0.0000', '0.0000', '117.3687', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2531, 'default', '', 424, '', 0, '3.6900', '0.0000', '0.0000', '62.7675', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2532, 'default', '', 426, '', 0, '3.6900', '0.0000', '0.0000', '33.5595', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2533, 'default', '', 427, '', 0, '3.6900', '0.0000', '0.0000', '103.7184', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2534, 'default', '', 429, '', 0, '3.6900', '0.0000', '0.0000', '21.0417', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2535, 'default', '', 430, '', 0, '3.6900', '0.0000', '0.0000', '34.5081', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2536, 'default', '', 431, '', 0, '3.6900', '0.0000', '0.0000', '18.3594', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2537, 'default', '', 432, '', 0, '3.6900', '0.0000', '0.0000', '27.9324', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2538, 'default', '', 434, '', 0, '3.6900', '0.0000', '0.0000', '73.9160', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2539, 'default', '', 436, '', 0, '3.6900', '0.0000', '0.0000', '41.0701', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2540, 'default', '', 437, '', 0, '3.6900', '0.0000', '0.0000', '58.7142', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2541, 'default', '', 438, '', 0, '3.6900', '0.0000', '0.0000', '59.6679', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2542, 'default', '', 439, '', 0, '3.6900', '0.0000', '0.0000', '52.2765', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2543, 'default', '', 441, '', 0, '3.6900', '0.0000', '0.0000', '98.6330', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2544, 'default', '', 445, '', 0, '3.6900', '0.0000', '0.0000', '34.5166', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2545, 'default', '', 446, '', 0, '3.6900', '0.0000', '0.0000', '59.6083', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2546, 'default', '', 448, '', 0, '3.6900', '0.0000', '0.0000', '48.3423', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2547, 'default', '', 449, '', 0, '3.6900', '0.0000', '0.0000', '34.6665', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2548, 'default', '', 450, '', 0, '3.6900', '0.0000', '0.0000', '40.5064', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2549, 'default', '', 451, '', 0, '3.6900', '0.0000', '0.0000', '81.7460', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2550, 'default', '', 452, '', 0, '3.6900', '0.0000', '0.0000', '75.9410', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2551, 'default', '', 453, '', 0, '3.6900', '0.0000', '0.0000', '37.7610', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2552, 'default', '', 454, '', 0, '3.6900', '0.0000', '0.0000', '72.9759', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2553, 'default', '', 455, '', 0, '3.6900', '0.0000', '0.0000', '54.6565', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2554, 'default', '', 456, '', 0, '3.6900', '0.0000', '0.0000', '6.8550', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2555, 'default', '', 459, '', 0, '3.6900', '0.0000', '0.0000', '29.6338', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2556, 'default', '', 460, '', 0, '3.6900', '0.0000', '0.0000', '57.7604', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2557, 'default', '', 462, '', 0, '3.6900', '0.0000', '0.0000', '23.0326', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2558, 'default', '', 465, '', 0, '3.6900', '0.0000', '0.0000', '69.4437', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2559, 'default', '', 466, '', 0, '3.6900', '0.0000', '0.0000', '74.0335', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2560, 'default', '', 468, '', 0, '3.6900', '0.0000', '0.0000', '76.7159', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2561, 'default', '', 469, '', 0, '3.6900', '0.0000', '0.0000', '45.4385', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2562, 'default', '', 470, '', 0, '3.6900', '0.0000', '0.0000', '92.6313', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2563, 'default', '', 471, '', 0, '3.6900', '0.0000', '0.0000', '140.6415', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2564, 'default', '', 472, '', 0, '3.6900', '0.0000', '0.0000', '23.3068', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2565, 'default', '', 473, '', 0, '3.6900', '0.0000', '0.0000', '45.3619', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2566, 'default', '', 474, '', 0, '3.6900', '0.0000', '0.0000', '52.4553', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2567, 'default', '', 475, '', 0, '3.6900', '0.0000', '0.0000', '39.2733', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2568, 'default', '', 476, '', 0, '3.6900', '0.0000', '0.0000', '80.8884', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2569, 'default', '', 477, '', 0, '3.6900', '0.0000', '0.0000', '35.9438', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2570, 'default', '', 478, '', 0, '3.6900', '0.0000', '0.0000', '51.7996', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2571, 'default', '', 480, '', 0, '3.6900', '0.0000', '0.0000', '11.4090', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2572, 'default', '', 482, '', 0, '3.6900', '0.0000', '0.0000', '29.7028', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2573, 'default', '', 483, '', 0, '3.6900', '0.0000', '0.0000', '16.5302', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2574, 'default', '', 484, '', 0, '3.6900', '0.0000', '0.0000', '47.4346', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2575, 'default', '', 485, '', 0, '3.6900', '0.0000', '0.0000', '86.0148', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2576, 'default', '', 486, '', 0, '3.6900', '0.0000', '0.0000', '29.9830', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2577, 'default', '', 487, '', 0, '3.6900', '0.0000', '0.0000', '17.2864', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2578, 'default', '', 488, '', 0, '3.6900', '0.0000', '0.0000', '54.7689', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2579, 'default', '', 489, '', 0, '3.6900', '0.0000', '0.0000', '45.6344', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2580, 'default', '', 490, '', 0, '3.6900', '0.0000', '0.0000', '50.4882', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2581, 'default', '', 492, '', 0, '3.6900', '0.0000', '0.0000', '20.8510', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2582, 'default', '', 493, '', 0, '3.6900', '0.0000', '0.0000', '9.1661', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2583, 'default', '', 494, '', 0, '3.6900', '0.0000', '0.0000', '48.1039', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2584, 'default', '', 495, '', 0, '3.6900', '0.0000', '0.0000', '84.3457', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2585, 'default', '', 496, '', 0, '3.6900', '0.0000', '0.0000', '66.5518', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2586, 'default', '', 497, '', 0, '3.6900', '0.0000', '0.0000', '59.6679', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2587, 'default', '', 498, '', 0, '3.6900', '0.0000', '0.0000', '52.2765', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2588, 'default', '', 499, '', 0, '3.6900', '0.0000', '0.0000', '124.5813', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2589, 'default', '', 501, '', 0, '3.6900', '0.0000', '0.0000', '6.7374', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2590, 'default', '', 502, '', 0, '3.6900', '0.0000', '0.0000', '113.4346', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2591, 'default', '', 503, '', 0, '3.6900', '0.0000', '0.0000', '32.1033', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2592, 'default', '', 504, '', 0, '3.6900', '0.0000', '0.0000', '73.0798', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2593, 'default', '', 505, '', 0, '3.6900', '0.0000', '0.0000', '56.9855', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2594, 'default', '', 506, '', 0, '3.6900', '0.0000', '0.0000', '72.4241', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2595, 'default', '', 508, '', 0, '3.6900', '0.0000', '0.0000', '19.7900', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2596, 'default', '', 509, '', 0, '3.6900', '0.0000', '0.0000', '53.5470', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2597, 'default', '', 510, '', 0, '3.6900', '0.0000', '0.0000', '88.7567', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2598, 'default', '', 511, '', 0, '3.6900', '0.0000', '0.0000', '68.3707', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2599, 'default', '', 512, '', 0, '3.6900', '0.0000', '0.0000', '87.6242', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2600, 'default', '', 516, '', 0, '3.6900', '0.0000', '0.0000', '62.0948', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2601, 'default', '', 517, '', 0, '3.6900', '0.0000', '0.0000', '40.9713', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2602, 'default', '', 518, '', 0, '3.6900', '0.0000', '0.0000', '11.3596', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2603, 'default', '', 519, '', 0, '3.6900', '0.0000', '0.0000', '58.1181', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2604, 'default', '', 520, '', 0, '3.6900', '0.0000', '0.0000', '83.4516', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2605, 'default', '', 521, '', 0, '3.6900', '0.0000', '0.0000', '80.8288', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2606, 'default', '', 522, '', 0, '3.6900', '0.0000', '0.0000', '78.9810', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2607, 'default', '', 523, '', 0, '3.6900', '0.0000', '0.0000', '121.4221', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2608, 'default', '', 524, '', 0, '3.6900', '0.0000', '0.0000', '4.6494', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2609, 'default', '', 525, '', 0, '3.6900', '0.0000', '0.0000', '33.3278', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2610, 'default', '', 527, '', 0, '3.6900', '0.0000', '0.0000', '207.9205', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2611, 'default', '', 528, '', 0, '3.6900', '0.0000', '0.0000', '68.4899', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2612, 'default', '', 530, '', 0, '3.6900', '0.0000', '0.0000', '63.1848', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2613, 'default', '', 531, '', 0, '3.6900', '0.0000', '0.0000', '74.3911', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2614, 'default', '', 532, '', 0, '3.6900', '0.0000', '0.0000', '76.0602', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2615, 'default', '', 533, '', 0, '3.6900', '0.0000', '0.0000', '97.8768', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2616, 'default', '', 536, '', 0, '3.6900', '0.0000', '0.0000', '64.3429', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2617, 'default', '', 537, '', 0, '3.6900', '0.0000', '0.0000', '34.3344', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2618, 'default', '', 538, '', 0, '3.6900', '0.0000', '0.0000', '43.6367', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2619, 'default', '', 539, '', 0, '3.6900', '0.0000', '0.0000', '95.2540', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2620, 'default', '', 540, '', 0, '3.6900', '0.0000', '0.0000', '32.1289', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2621, 'default', '', 541, '', 0, '3.6900', '0.0000', '0.0000', '76.2986', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2622, 'default', '', 542, '', 0, '3.6900', '0.0000', '0.0000', '52.6341', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2623, 'default', '', 543, '', 0, '3.6900', '0.0000', '0.0000', '42.3389', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2624, 'default', '', 544, '', 0, '3.6900', '0.0000', '0.0000', '31.9790', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2625, 'default', '', 546, '', 0, '3.6900', '0.0000', '0.0000', '71.1723', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2626, 'default', '', 547, '', 0, '3.6900', '0.0000', '0.0000', '143.2472', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2627, 'default', '', 549, '', 0, '3.6900', '0.0000', '0.0000', '43.0968', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2628, 'default', '', 550, '', 0, '3.6900', '0.0000', '0.0000', '45.6089', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2629, 'default', '', 553, '', 0, '3.6900', '0.0000', '0.0000', '65.6883', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2630, 'default', '', 555, '', 0, '3.6900', '0.0000', '0.0000', '88.1011', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2631, 'default', '', 556, '', 0, '3.6900', '0.0000', '0.0000', '58.5864', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2632, 'default', '', 557, '', 0, '3.6900', '0.0000', '0.0000', '50.6875', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2633, 'default', '', 559, '', 0, '3.6900', '0.0000', '0.0000', '35.9438', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2634, 'default', '', 560, '', 0, '3.6900', '0.0000', '0.0000', '39.1626', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2635, 'default', '', 561, '', 0, '3.6900', '0.0000', '0.0000', '32.2225', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2636, 'default', '', 562, '', 0, '3.6900', '0.0000', '0.0000', '35.4669', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2637, 'default', '', 563, '', 0, '3.6900', '0.0000', '0.0000', '36.5484', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2638, 'default', '', 564, '', 0, '3.6900', '0.0000', '0.0000', '38.0131', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2639, 'default', '', 565, '', 0, '3.6900', '0.0000', '0.0000', '33.0060', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2640, 'default', '', 566, '', 0, '3.6900', '0.0000', '0.0000', '33.8575', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2641, 'default', '', 567, '', 0, '3.6900', '0.0000', '0.0000', '41.5214', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2642, 'default', '', 568, '', 0, '3.6900', '0.0000', '0.0000', '114.3883', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2643, 'default', '', 569, '', 0, '3.6900', '0.0000', '0.0000', '45.6599', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2644, 'default', '', 570, '', 0, '3.6900', '0.0000', '0.0000', '45.2819', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2645, 'default', '', 571, '', 0, '3.6900', '0.0000', '0.0000', '72.3491', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2646, 'default', '', 572, '', 0, '3.6900', '0.0000', '0.0000', '154.8453', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2647, 'default', '', 573, '', 0, '3.6900', '0.0000', '0.0000', '69.2648', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2648, 'default', '', 574, '', 0, '3.6900', '0.0000', '0.0000', '43.1274', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2649, 'default', '', 575, '', 0, '3.6900', '0.0000', '0.0000', '18.6591', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2650, 'default', '', 576, '', 0, '3.6900', '0.0000', '0.0000', '48.6991', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2651, 'default', '', 577, '', 0, '3.6900', '0.0000', '0.0000', '60.2044', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2652, 'default', '', 578, '', 0, '3.6900', '0.0000', '0.0000', '114.2870', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2653, 'default', '', 579, '', 0, '3.6900', '0.0000', '0.0000', '46.9569', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2654, 'default', '', 580, '', 0, '3.6900', '0.0000', '0.0000', '31.1292', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2655, 'default', '', 581, '', 0, '3.6900', '0.0000', '0.0000', '34.0006', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2656, 'default', '', 582, '', 0, '3.6900', '0.0000', '0.0000', '96.6250', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2657, 'default', '', 583, '', 0, '3.6900', '0.0000', '0.0000', '93.4062', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2658, 'default', '', 585, '', 0, '3.6900', '0.0000', '0.0000', '64.9219', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2659, 'default', '', 586, '', 0, '3.6900', '0.0000', '0.0000', '135.1439', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2660, 'default', '', 587, '', 0, '3.6900', '0.0000', '0.0000', '62.0948', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2661, 'default', '', 588, '', 0, '3.6900', '0.0000', '0.0000', '114.2870', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2662, 'default', '', 590, '', 0, '3.6900', '0.0000', '0.0000', '74.6602', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2663, 'default', '', 592, '', 0, '3.6900', '0.0000', '0.0000', '103.9739', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2664, 'default', '', 593, '', 0, '3.6900', '0.0000', '0.0000', '69.5033', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2665, 'default', '', 594, '', 0, '3.6900', '0.0000', '0.0000', '50.3690', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2666, 'default', '', 595, '', 0, '3.6900', '0.0000', '0.0000', '30.3968', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2667, 'default', '', 596, '', 0, '3.6900', '0.0000', '0.0000', '160.7039', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2668, 'default', '', 598, '', 0, '3.6900', '0.0000', '0.0000', '57.3466', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2669, 'default', '', 599, '', 0, '3.6900', '0.0000', '0.0000', '208.2288', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2670, 'default', '', 600, '', 0, '3.6900', '0.0000', '0.0000', '208.2288', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2671, 'default', '', 680, '', 0, '3.6900', '0.0000', '0.0000', '182.5802', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2672, 'default', '', 690, '', 0, '3.6900', '0.0000', '0.0000', '125.2455', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2673, 'default', '', 875, '', 0, '3.6900', '0.0000', '0.0000', '26.6679', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2674, 'default', '', 876, '', 0, '3.6900', '0.0000', '0.0000', '35.4669', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2675, 'default', '', 878, '', 0, '3.6900', '0.0000', '0.0000', '43.1274', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2676, 'default', '', 879, '', 0, '3.6900', '0.0000', '0.0000', '44.2804', '0.0000', '0.0000', '', '0000-00-00 00:00:00'),
+(2677, 'default', '', 972, '', 0, '3.6900', '0.0000', '0.0000', '41.6577', '0.0000', '0.0000', '', '0000-00-00 00:00:00')
+");
+
+  return $ret;
+
+}
+
+function astbill_update_062() {
+  $ret = array();
+    $ret[] = update_sql("DROP VIEW IF EXISTS asv_sip");
+    $ret[] = update_sql("create view asv_sip as SELECT accountcode name,username,type,secret,host,
+callerid,context,dtmfmode,mailbox,nat,qualify,fromuser,authuser,fromdomain,fullcontact,
+insecure,canreinvite,disallow,allow,restrictid,ipaddr,port,regseconds,regserver 
+FROM astaccount where (tech = 'SIP' or tech = 'IN-SIP') and active = 1");
+
+    $ret[] = update_sql("DROP VIEW IF EXISTS asv_iax");
+    $ret[] = update_sql("create view asv_iax as SELECT accountcode name,username,type,
+secret,notransfer,inkeys,auth,accountcode,amaflags,callerid,context,defaultip,
+host,language,dtmfmode,mailbox,deny,permit,qualify,disallow,allow,ipaddr,port,
+regseconds FROM astaccount where (tech = 'IAX' or tech = 'IN-IAX' or tech = 'IAX2' ) and active = 1");
+
+  return $ret;
+
+}
+
+
+
+
+/*
+
+function astbill_update_057() {
+  $ret = array();
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+    $ret[] = update_sql("");
+  return $ret;
+
+// UNDER TESTING
+ALTER TABLE astpartner CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astaccount                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astacdid                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astacgroup                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astacname                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astactype                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astanicli                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccnccode                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccniso                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccnlist                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccnprefix                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astccnrate                  CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astcdr                      CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astconference               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astcountrycode              CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astcountryprefix            CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astcreditres                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astcurrency                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astdialplan                 CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astemailtext                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astextension                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE asthardware                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE asthardwaretype             CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astinvoice                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astinvoiceline              CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astinvrecurr                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlanguage                 CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astlog                      CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlogdb                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlogemail                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlogsms                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astlogsmsbatch              CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astorder                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astorderip                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astorderline                CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astparcontact               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpartner                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpayagent                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpayment                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpaymentbatch             CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astplans                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpricelist                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astpricelistcountry         CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astproduct                  CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astproductip                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astprospect                 CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astprospect2                CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astreplication              CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astreport                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astroute                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astserver                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE aststatus                   CONVERT TO CHARACTER SET utf8;
+
+ALTER TABLE astsumaccount               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsumorderip               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsumorderweek             CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsumorderweek2            CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsumpartner               CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsyslog                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astsystem                   CONVERT TO CHARACTER SET utf8;
+ALTER TABLE asttrunk                    CONVERT TO CHARACTER SET utf8;
+ALTER TABLE astuser                     CONVERT TO CHARACTER SET utf8;
+
+$ret[] = update_sql("alter table astinvrecurr drop db_prefix");
+$ret[] = update_sql("ALTER TABLE `astworkgroupuser` ADD `remarks` varchar(256) NOT NULL default '' AFTER uid");
+
+*/

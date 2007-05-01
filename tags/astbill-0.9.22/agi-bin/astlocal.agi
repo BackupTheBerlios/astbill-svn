@@ -1,0 +1,430 @@
+#!/usr/bin/perl -w
+
+#
+# AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+#
+# www.astbill.com
+#
+# Asterisk -- A telephony toolkit for Linux.
+# Drupal   -- An Open source content management platform.
+#
+# 
+# Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+#
+# Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+# Are Casilla        <areast  [Guess What?] astartelecom.com>
+#
+#
+# This program is free software, distributed under the terms of
+# the GNU General Public License
+#
+# 2006.03.17 Version 0.9.18
+# 
+#
+#  
+# 06 November 2005 astlocal.agi created
+#
+
+open(EXTEN,">/home/astbill/logs/agi_err_astlocal.log");
+
+
+use DBI;
+
+$|=1;
+
+# Setup some variables
+my %AGI; my $tests = 0; my $fail = 0; my $pass = 0;
+my $dialpath;
+my $dialstr;
+my $uniqueid = "";
+my $accountcode = "";
+
+my $config = &load_config();
+print EXTEN "config.conf loaded. dbhost = $config{dbhost}\n";
+
+if ($config{odbc} ne "YES") {
+while(<STDIN>) {
+	chomp;
+	last unless length($_);
+	if (/^agi_(\w+)\:\s+(.*)$/) {
+		$AGI{$1} = $2;
+	}
+}}
+
+print EXTEN "AGI Environment Dump:\n";
+foreach my $i (sort keys %AGI) {
+	print EXTEN " -- $i = $AGI{$i}\n";
+}
+
+
+my $dbh;
+if ($config{odbc} eq "YES") {
+	$dbh= DBI->connect("DBI:ODBC:$config{dbdsn}",$config{dbuser},$config{dbpass}) ||   die "Got error $DBI::errstr when connecting to $config{dbdsn}\n";
+}
+else {
+	#  $dbh = DBI->connect("dbi:mysql:dbname=$config{dbname};server=$config{dbhost}", "$config{dbuser}", "$config{dbpass}"); 
+	 $dbh   = DBI->connect ("DBI:mysql:database=$config{dbname}:host=$config{dbhost}", 
+		$config{dbuser},$config{dbpass}) or die "Can't connect to database: $DBI::errstr\n";
+}
+
+my $defmaxminute = &getMaxMinute();
+my $maxminute = $defmaxminute->{value};
+my $defTimeOut = &getTimeOut();
+my $maxTimeOut = $defTimeOut->{value};
+
+
+#### END OF CONFIGURATION #######################################################################################################
+
+sub getAccount($) {
+	my ($acc) = @_;
+	my $res;
+	$sth = $dbh->prepare("select accountcode from astaccount where accountcode = '$acc'");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
+sub getMaxMinute() {
+	my $res;
+	$sth = $dbh->prepare("select value from astsystem where name = 'MaxMinute' and serverid = 'DEF'");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+sub getTimeOut() {
+	my $res;
+	$sth = $dbh->prepare("select value from astsystem where name = 'DialLocal-Timeout-Parameter' and serverid = 'DEF'");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
+sub getNumber($) {
+	my ($uniqueid) = @_;
+	my $res;
+	$sth = $dbh->prepare("select cdr.accountcode, callednum, trunk, IFNULL(addprefix,'') addprefix,IFNULL(removeprefix,'') removeprefix, usstyleprefix, type from astcdr cdr, asttrunk tr where trunk = tr.name and uniqueid = '" . $uniqueid . "' LIMIT 1");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	my $usidd = ""; 
+	if ($res->{usstyleprefix} eq "1") {
+		$firstVar = substr($res->{callednum}, 0, 1);
+		if ($firstVar ne "1") {$usidd = "011"; print EXTEN ("US 011 Appended: = $firstVar\n");}
+    }
+	$res->{callednum} = $res->{addprefix} . $usidd . $res->{callednum};
+	return $res;
+}
+sub getLocal($) {
+	my ($callednum) = @_;
+	my $res;
+	$sth = $dbh->prepare("select tech, ifnull(forwardto,'') forwardto, mailbox from astaccount where accountcode = '" . $callednum . "' LIMIT 1");
+	$sth->execute;
+	$res = $sth->fetchrow_hashref;
+	$sth->finish;
+	return $res;
+}
+
+sub checkresult {
+	my ($res) = @_;
+	my $retval;
+	$tests++;
+	chomp $res;
+	if ($res =~ /^200/) {
+		$res =~ /result=(-?\d+)/;
+		if (!length($1)) {
+			print EXTEN "FAIL ($res)\n";
+			$fail++;
+		} else {
+			print EXTEN "PASS ($1)\n";
+			$pass++;
+		}
+	} else {
+		print EXTEN "FAIL (unexpected result '$res')\n";
+		$fail++;
+	}
+}
+sub getresult {
+	my ($cmd) = @_;
+	my $retval;
+	print "$cmd\n";
+	my $res = <STDIN>;
+	# $result2 = &getresult($result);
+	# print EXTEN "VOICEMAIL: $result2\n";
+
+	chomp $res;
+	if ($res =~ /^200/) {
+		$res =~ /result=(-?\d+)/;
+		if (!length($1)) {
+			print EXTEN "FAIL ($res)\n";
+		} else {
+			# print EXTEN "PASS ($1)\n";
+			$res =~ s/\(/</;   # Have to convert ( to > and ) to >
+			$res =~ s/\)/>/;
+			$x = "<(.+)>";    # IAX2/5004@5004/2    SIP/5003-130f
+			$res =~/$x/;
+			my $tmp = $1;
+			# print EXTEN "getresult: $1\n";
+			$retval = $1;
+			return $retval;
+		}
+	} else {
+		print EXTEN "FAIL (unexpected result '$res')\n";
+	}
+}
+
+# This Procedure collects the right dialingstring from the accounts info in the forward field
+sub getForward($) {
+	my ($forward) = @_;
+	my $res = "";
+	my $tech;
+
+	@dial = split(/&/, $forward);
+    # print EXTEN "@dial\n";
+    my $sqldial = "";
+    for my $dialstr ( @dial ) {
+		# print EXTEN "dialstr: "  . $dialstr . "\n";
+		$sqldial .= $dialstr . "','"
+	} 
+	chop($sqldial); chop($sqldial); # chop removes the last character - very cool
+	# print EXTEN $sqldial . "\n";
+	#    Recall that you can join the whole array together with a statement like $text = "@lines";
+	#	($num, $nide,$sec) = split(/&/, $forward,4);
+	#	($tmp, $num)  = split(/=/, $num,2);
+	#	($tmp, $nide) = split(/=/, $nide,2);
+    $SQL = "select tech, accountcode from astaccount where accountcode in ('" . $sqldial . ") and tech in ('IAX','SIP')";
+	my $result = $dbh->selectall_arrayref($SQL);
+	unless ($result) {
+		# check for errors after every single database call
+		print EXTEN "dbh->selectall_arrayref($SQL) failed!\n";
+		print EXTEN "DBI::err=[$DBI::err]\n";
+		print EXTEN "DBI::errstr=[$DBI::errstr]\n";
+		exit; }
+	my @resSet = @{$result};
+	if ( $#resSet == -1 ) {          
+		print EXTEN "You Currently have no Forwarding Account\n";
+		exit; }
+	foreach my $row ( @{ $result } ) {
+		my @result = @{ $row };
+        # print EXTEN "$result[0]   $result[1] \n";
+		$tech = $result[0];
+		if ($result[0] eq "IAX") {$tech = "IAX2"; }
+		$res .= $tech . "/" . $result[1] . "&"; }          
+
+	chop($res);  # chop removes the last character - very cool
+	print EXTEN  $res . "\n";
+	return $res;
+}
+
+sub load_config() {
+		$runtime = localtime(time);
+		if (-e "astbill.conf"){
+			open(CFG, "<astbill.conf");
+			
+		} else {
+			open(CFG, "</home/astbill/astbill.conf");
+		}
+		# chdir ('../newdir') || die ("Could not set new directory");
+        while(<CFG>) {
+                chomp;
+                my ($var, $val) = split(/\s*\=\s*/);
+                $config{$var} = $val;
+        }
+        close(CFG);
+		if ($config{odbc} eq "YES") {$jobstr = "XP";} # $ENV{"_"};
+        else {$jobstr = $ENV{"_"};}
+		print EXTEN "Executing: $jobstr    $runtime\n";
+		return $config;
+}
+
+#### PROGRAM START HER #######################################################################################################
+
+
+if ($config{odbc} eq "YES") {
+#	$uniqueid = '1122824054.34';   # Public Call
+#	$uniqueid = '1122887316.44';   # FORWARD Local Call
+	$uniqueid = '1129200702.63';   # Local Call
+#	$uniqueid = '1122890402.6';   # Debug maxtime 
+	
+}
+else {
+	$accountcode = $AGI{'accountcode'};
+	# $callerid = $AGI{'callerid'};
+	# $calleridname = $AGI{'calleridname'};
+	my $channel = $AGI{'channel'};
+	# $context = $AGI{'context'};
+	
+	# my $dnid = $AGI{'dnid'};      #  `callednum` in DB
+	# It is more flexible to use $ARGV[0] for $dnid/number to dial as it allows manipulation of numbers in extensions.conf
+	# This is an issue in Australia where international dialding is 0011
+	my $dnid = $ARGV[0];
+	my $extension = $AGI{'extension'};
+	
+	# $language = $AGI{'language'};
+	# $priority = $AGI{'priority'};
+	my $type = $AGI{'type'};
+	$uniqueid = $AGI{'uniqueid'};
+	if ($#ARGV==1) { 
+		# Use ${CALLERIDNUM ANI/CLI as Account Code
+		# exten => _0[0-9].,1,AGI(agiastar.agi,00${EXTEN}|${CALLERIDNUM})
+		$accountcode = $ARGV[1];
+		print EXTEN "Accountcode = CALLERIDNUM = $ARGV[1]\n";	
+	} 
+
+	if ($accountcode eq "") {
+		#  $channel = "SIP/77005-a6b5";
+		my $x = "/(.+)[-@\/]";    # IAX2/5004@5004/2    SIP/5003-130f   IAX2/70104/2
+		$channel =~/$x/;
+		#  print "$channel      more:$1\n";
+		$accountcode = $1;
+
+		# Ami Added 31 aug 05 Late Evening
+		if ($AGI{'type'} eq "IAX2") { 
+		    if ($accountcode =~ /\@/) {   # If there is @ in $accountcode
+		    	my $x = "^(.+)[@]";    # 70104@70104
+				$accountcode =~/$x/;
+				#  print "$channel      more:$1\n";
+				$accountcode = $1;
+			}
+		}
+	}
+    print EXTEN "dnid=$dnid  extension=$extension\n";
+	if ($dnid eq 'unknown') {$dnid = $extension};  # Problem when Zap is used
+
+	$dbh->do("CALL RateAddcdr('$accountcode','$channel','$dnid','$type','$uniqueid')");
+	print EXTEN "CALL RateAddcdr('$accountcode','$channel','$dnid','$type','$uniqueid')\n";
+}
+
+
+my $cnumber = &getNumber($uniqueid);
+my $acc = &getAccount($cnumber->{accountcode});
+
+ if (defined($cnumber))  {
+	print EXTEN "getNumber: $cnumber->{callednum}   $cnumber->{trunk}  $uniqueid\n";
+	print EXTEN "accountcode: $accountcode\n";
+	$atype = $cnumber->{type};
+	if ($cnumber->{type} eq "IAX2") { 
+		$atype = "IAX"; 
+	}
+	if ($config{odbc} ne "YES") {
+		my $result2 = &getresult("database get $atype/Registry $accountcode");
+		print EXTEN "database: $result2\n";
+		my $useragent = '';
+		if ($cnumber->{type} eq "SIP") { 
+			$useragent = &getresult("get variable SIPUSERAGENT");;
+			print EXTEN "USERAGENT: $useragent\n";
+		}
+		if ($result2 ne "0") {
+			$dbh->do("update astcdr set ipport = '$result2', useragent = '$useragent' where uniqueid = '$uniqueid'");
+		} else {
+			$dbh->do("update astcdr set ipport = (select concat(IFNULL(ipaddr,''),':',IFNULL(port,'')) 
+			from astaccount where accountcode = '$accountcode' limit 1),
+			useragent = '$useragent'
+			where uniqueid = '$uniqueid'");
+		}
+
+		$blindtrans = &getresult("get variable BLINDTRANSFER");
+		print STDERR "BLINDTRANSFER: $blindtrans\n";
+        $cdrcontext = $AGI{'context'};
+        $cdrrdnis = $AGI{'rdnis'};
+        $cdrdnid = $AGI{'dnid'};
+
+		if ($AGI{'rdnis'} ne "unknown") {
+		   $dbh->do("update astcdr set context = '$cdrcontext', rdnis = '$cdrrdnis', blindtransfer = '$blindtrans', dnid = '$cdrdnid' where uniqueid = '$uniqueid'");
+		} else {
+		   $dbh->do("update astcdr set context = '$cdrcontext', blindtransfer = '$blindtrans', dnid = '$cdrdnid' where uniqueid = '$uniqueid'");
+		} 
+
+    }
+	if ($cnumber->{trunk} eq "Local") {
+		my $clocal = &getLocal($cnumber->{callednum});
+		# $clocal->{tech}   $clocal->{forwardto}
+		print EXTEN "getLocal: $clocal->{tech}  $clocal->{forwardto}\n";
+
+		$maxminute = $defmaxminute->{value};  # Normally 60 min on local calls
+		$dialend = $maxTimeOut . ($maxminute * 60 * 1000) . ":60000:30000)";
+
+		if ($clocal->{tech} eq "IAX") {$clocal->{tech} = "IAX2"	};
+        # AstBill-0.9.0.9
+		$dialstr = $clocal->{tech}."/".$cnumber->{callednum};
+		# $dialstr = $clocal->{tech}."/".$cnumber->{addprefix}.$cnumber->{callednum};
+
+		if ($clocal->{tech} eq "VIR") {$dialstr = getForward($clocal->{forwardto})  };   # Used if Virtual Account
+
+		$dialstr = $dialstr . $dialend;
+		print "SET VARIABLE VOICEMAIL $clocal->{mailbox}\n";
+		if ($config{odbc} ne "YES") {
+			my $result = <STDIN>;
+			&checkresult($result);
+		}
+	} else {
+
+	 if (defined($acc)) {  
+		# This is an issue if user come in without autentication. If account number don't exist. We have to check for that and prevent any calls.
+		# $acc is not defined if there is no valid account number in the system.
+		print EXTEN "Account is defined with available Credit: $acc->{bal} Count: $acc->{usagecount} ThisCallCost: $cost->{sales} Rate: $cost->{rate}  BillTime: $cost->{billtime}\n";
+		# $acc->{bal} - $cost->{sales} = Min Bal to make a call
+		if (($acc->{bal} - $cost->{sales}) >= 0) { # We can make a call. There is some money
+		
+			if ($cost->{rate} != 0) { # Illegal division by zero 
+				# BUG WARNING - the maxminute is suposed to take care of incremental billing. This has to be fixed
+				$maxminute = (($acc->{bal} - $cost->{sales}) / $cost->{rate});  # Max minutes to call
+			 } else { $maxminute = $defmaxminute->{value} };
+			if ($maxminute > $defmaxminute->{value}) { $maxminute = $defmaxminute->{value}; }
+			print EXTEN "maxminute: $maxminute\n";
+			my $cpath = &getPath($cnumber->{trunk});
+			$dialpath = $cpath->{path};
+			print EXTEN "Dialpath1: $dialpath\n";
+
+
+			if ($cpath->{tech} eq "IAX2") {
+				$dialstr = $dialpath . $cnumber->{callednum} . $maxTimeOut . ($maxminute * 60 * 1000) . ":60000:30000)";
+				# print "SET VARIABLE TIMEOUT 3600\n";
+	
+			} elsif ($cpath->{tech} eq "SIP") {
+				$dialstr = "SIP/00" . $cnumber->{callednum} . $dialpath . $maxTimeOut . ($maxminute * 60 * 1000) . ":60000:30000)";
+				# $dialstr = $dialpath . $cnumber->{callednum} . "|30|HL(" . ($maxminute * 60 * 1000) . ":60000:30000)";
+				# print "SET VARIABLE TIMEOUT 3600\n";
+
+			} elsif ($cpath->{tech} eq "H323") {
+				$dialstr = "H323/" . $cnumber->{callednum} . $dialpath . "|30|tTL(" . ($maxminute * 60 * 1000) . ":60000:30000)";
+				# Dial(H323/${EXTEN}@sptterminate)
+				# $dialstr = $dialpath . $cnumber->{callednum} . "|30|HL(" . ($maxminute * 60 * 1000) . ":60000:30000)";
+
+			} else {
+				$dialstr = $cpath->{tech} . $cnumber->{callednum} . $dialpath . "|30|tTL(" . ($maxminute * 60 * 1000) . ":60000:30000)";
+			}
+		}
+		else {  $dialstr = "";     # DONT CALL - NO FOUNDING
+	    print EXTEN "Warning: NO CREDIT\n";
+		print "SET VARIABLE BILLSTATUS NOCREDIT\n";
+		# $dbh->do("UPDATE astcdr SET dialstatus = 'NOCREDIT' WHERE uniqueid = '$uniqueid'");
+		  # $dbh->do("CALL RateAddcdr('$accountcode','$channel','$dnid','$type','$uniqueid')");
+	      # UPDATE astcdr SET dialstatus = 'NOFOUNDING' WHERE uniqueid = suniqueid LIMIT 1;
+
+	}}}
+    
+	if (defined($acc)) {  
+		# This is an issue if user come in without autentication. If account number don't exist. We have to check for that and prevent any calls.
+		# $acc is not defined if there is no valid account number in the system.
+		print "SET VARIABLE DIALSTRING $dialstr\n";
+		print EXTEN "DEBUG: $dialstr\n";
+	} else {
+	    print EXTEN "Warning: NO ACCOUNT - NO CREDIT\n";
+		print "SET VARIABLE BILLSTATUS NOACCOUNT\n";
+	}
+
+	if ($#ARGV>0) { print EXTEN "ARGV[0]: $ARGV[0]    $#ARGV\n";	} 
+	if ($#ARGV==1) { print EXTEN "ARGV[1]: $ARGV[1]\n";	} 
+
+} else {  # EXECUTED only if there is no route to number and no astcdr
+	print EXTEN "That looks like an INVALID number\n";
+	print "SET VARIABLE BILLSTATUS INVALID\n";
+ }
+
+$dbh->disconnect;
+close EXTEN;
+
+exit 0;

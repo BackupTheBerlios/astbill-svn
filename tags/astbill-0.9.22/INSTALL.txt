@@ -1,0 +1,145 @@
+﻿You can find more examples in the AstBill manual.
+It is still work in progress, but please take a look at
+http://astbill.com/manual
+
+For the latest INSTALL.txt
+http://astbill.com/install
+
+For the latest CHANGELOG.txt
+http://astbill.com/changelog
+
+For Support:
+http://astbill.com/forum/3
+
+Installation instructions for AstBill Version 0.9.20
+
+Please read INSTALLMYSQL.txt and have your MySQL 5 Server working before you start the instructions in this file.
+
+1.0 - Introduction:
+
+AstBill is a Billing, Routing and Management software for Asterisk and MySQL
+Running on Drupal, A open source content management platform. AstBill gives a Web-Interface to Asterisk.
+
+2.0 - Requirements:
+
+Asterisk - Version 1.2.14  
+(Most of AstBill is also working on Asterisk 1.0.9 but 1.2.14 is needed for the REALTIME features)
+Asterisk - Addons Version 1.2.5
+(We are only using the module res_config_mysql from Asterisk - Addons)
+See enclosed file modules.conf for modules to unload to avoid error messages
+Asterisk - Sounds Version 1.2.1
+MySQL - Version 5.0.27
+(Astbill is using Views and Stored Procedures, which is only in MySQL 5 and up - See mysql Ver 5 Manual Section 2.7)
+Please read INSTALLMYSQL.txt
+
+Install perl DBI DBD-mysql
+In Debian you install with the command
+apt-get install -y libdbd-mysql-perl
+
+Apache - Version 2.0.54
+(It runs fine with apache Version 1.x aswell, but we only test on 2.x)
+
+Drupal - Version 4.6.10 (Included in the wwwroot directory of this AstBill Distribution)
+
+3.0 - Installation Instructions:
+
+First of all, make sure you have all the requirements set up properly.
+
+3.1. Extract astbill-0.9.20.tar.bz2 to /home
+
+cd /home
+tar jxvf astbill-0.9.20.tar.bz2 
+
+cd /home/astbill
+chmod +x install.sh
+
+IMPORTANT: Back up your files in the directory /etc/asterisk 
+Run the install script. Run it from the AstBill Home Directory!
+
+cd /home/astbill
+
+./install.sh
+
+Read INSTALLMYSQL.txt and Prepare MySQL 5 for AstBill.
+
+You have to edit /etc/asterisk/res_mysql.conf for your OS.
+You have to put the right path to mysql.sock. (See INSTALLMYSQL.txt. You need the same path as in /etc/my.cnf)
+
+AstBills WebRoot is now in /home/astbill/wwwroot This is what has to be published to the Web server
+
+On Linux Ensure wwwroot of AstBill is visible for the Apache Web Server
+
+ln -s /home/astbill/wwwroot /var/www/html/astbill
+
+Remember the files in the ajax directory have to be one level down from your web root. In a sub directory called ajax.
+This is allready done if you are using AstBill's wwwroot
+
+/home/astbill/astbill.conf contain MySQL username and passwords used for the PHP scrips in the ajax directory
+and the Perl agi scrips in the /var/lib/asterisk/agi-bin/ directory.
+You have to change this if you change the default mysql username and password. (highly recomended when your system is up and running)
+
+Edit wwwroot/sites/default/settings.php and change the following variables.
+(Use the search function of your editor to find the variables!)
+example:
+nano -w wwwroot/sites/default/settings.php
+
+Make sure the $db_url line matches the database defined in the previous steps:
+
+$db_url = "mysql://username:password@localhost/database";
+where 'username', 'password', 'localhost' and 'database' are the
+username, password, host and database name for your set up.
+
+The correct example for this guide is :
+$db_url = 'mysql://astbilluser:astbill419@localhost/astbill';
+
+Make sure $db_prefix is set to pbx_ or AstBill will NOT WORK!
+$db_prefix = 'pbx_';
+
+Set $base_url to the URL of your AstBill main page, with no trailing slash.
+$base_url = 'http://127.0.0.1/astbill';
+
+3.5. Test your installation
+Go to the url where you have installed drupal
+Example http://127.0.0.1/astbill
+You should get a login box and a default blue theme with a AstBill logo.
+
+An admin account is already set up.
+username: astbill
+password: demoastbill
+
+There is no need to download Drupal. Drupal is included in the directory wwwroot
+
+Apache
+
+Make sure to edit /etc/php4/apache2/php.ini and check that
+
+extension=mysql.so
+extension=gd.so
+
+You can find them commented under this section, if not just add the above lines.
+;;;;;;;;;;;;;;;;;;;;;;
+; Dynamic Extensions ;
+;;;;;;;;;;;;;;;;;;;;;;
+
+3.3. Preparing Asterisk for AstBill
+It is time to start Asterisk
+
+asterisk -vvvvgc
+
+5.0 - Support
+
+Don't forget that this is free software under development!
+Chances are good there's a crucial step that hasn't made it
+into the documentation. If you have any problems feel free to 
+contact us on the forum http://astbill.com/forum/3
+(please provide enough information to work with, and preferably be aware
+of what you're doing!) and keep track of major changes to the
+software, including performance improvements and security patches.
+
+The best way to get support is by using the forums, this allows other users to learn from your request.
+
+http://astbill.com/forum/3
+
+Andreas Mikkelborg - adoroar [Guess What?] astartelecom.com
+Are Casilla - areast [Guess What?] astartelecom.com
+

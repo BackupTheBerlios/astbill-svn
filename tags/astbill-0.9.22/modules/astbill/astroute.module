@@ -1,0 +1,2066 @@
+<?php
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2005, AOFFICE NOMINEE SECRETARIES LIMITED, UNITED KINGDOM.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2006.03.17 Version 0.9.18
+ * 
+ */
+
+/**
+* Display help and module information
+* @param section which section of the site we're displaying help
+* @return help text for section
+*/
+
+
+function astroute_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("AstBill Routing");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astroute_menu($may_cache) {
+	$items = array();
+	$access = user_access('can use provider route');
+	$access2 = user_access('can use provider trunks');
+	$items[] = array('path' => 'astbilladm/route',
+                                  'title' => t('Provider Routes'),
+                                  'callback' => '_astroute_all',
+				  'callback arguments' => array(),
+                                  'access' => $access);
+                                 // 'type' => MENU_CALLBACK);
+	$items[] = array('path' => 'astbilladm/route/import',
+                              'title' => t('Import'),
+                              'callback' => '_astroute_import',
+                              'access' => user_access('astroute route import'));
+                             // 'type' => MENU_CALLBACK);
+        $items[] = array('path' => 'astbilladm/route/export',
+                              'title' => t('Export'),
+                              'callback' => '_astroute_export',
+                              'access' => user_access('astroute route export'));
+                             // 'type' => MENU_CALLBACK);
+			     			 
+        $items[] = array('path' => 'astbilladm/pricelist',
+                              'title' => t('Price List'),
+                              'callback' => '_astpriceedit_all',
+			      'callback arguments' => array(),
+                              'access' => user_access('astroute pricelist edit'));
+                             // 'type' => MENU_CALLBACK);
+        $items[] = array('path' => 'astbilladm/pricelist/import',
+                              'title' => t('Import'),
+                              'callback' => '_astpriceedit_import',
+                              'access' => user_access('astroute pricelist import'));
+                             // 'type' => MENU_CALLBACK);
+        $items[] = array('path' => 'astbilladm/pricelist/export',
+                              'title' => t('Export'),
+                              'callback' => '_astpriceedit_export',
+                              'access' => user_access('astroute pricelist export'));
+                             // 'type' => MENU_CALLBACK);
+			     
+			     
+        $items[] = array('path' => 'astbilladm/trunks', 'title' => t('Provider Trunks'),
+	'callback' => 'astroute_trunks',
+	'access' => $access2);
+
+	$items[] = array('path' => 'astbilladm/trunks/change', 'title' => t('Provider Trunk Details'),
+	'callback' => 'page_astroute_trunk_formrules',
+	'callback arguments' => array(),
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astbilladm/trunks/dialplan', 'title' => t('Provider Trunk Dialplan'),
+	'callback' => 'page_astroute_trunkdialplan',
+	'callback arguments' => array(),
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astbilladm/trunks/create/rt', 'title' => t('Create Provider Trunk'),
+	'callback' => 'page_astroute_trunk_formrules',
+	'callback arguments' => array(),
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astbilladm/trunks/create/static', 'title' => t('Create STATIC Provider Trunk'),
+	'callback' => 'page_astroute_trunk_formrules',
+	'callback arguments' => array(),
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
+
+	$items[] = array('path' => 'astbilladm/trunks/remove', 'title' => t('Remove Provider Trunk'),
+	'callback' => 'page_astroute_trunkremove',
+	'callback arguments' => array(),
+	'access' => $access2,
+	'type' => MENU_CALLBACK);
+
+	return $items;
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+function astroute_perm() {
+	return array('can use provider route', 'can use provider trunks', 'astroute advanced provider trunks','astroute route export','astroute route import','astroute pricelist edit','astroute pricelist import','astroute pricelist export');
+	// return array('can use astentry', 'can use admin astentry', 'can use route', 'can use provider trunks');
+  // return array('can use astentry');
+} // function astentry_perm()
+
+
+// ##########################################################################################################
+
+// BEGIN ROUTE
+function _astroute_all() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+
+
+  switch (($op ? $op : arg(1))) {
+    case t('Go'):
+/*
+	$where = NULL;
+	$output = astroute_form($where, $edit['countrycode']);
+	$where = 'country';
+    	$output .= astroute_form($where, $edit['countrycode']);
+*/
+	drupal_goto("astbilladm/route/country/".$edit['countrycode']);
+	break;
+        case t('Create'):
+        if (astroute_validate($edit)) {
+		$countrycode = astroute_save($edit);
+		drupal_goto("astbilladm/route/country/".$countrycode);
+        }
+        break;
+        case t('Save'):
+        if (astroute_validate($edit)) {
+		$countrycode = astroute_save($edit);
+		drupal_goto("astbilladm/route/country/".$countrycode);
+        }
+	break;
+	case t('Confirm'):
+        if (astroute_validate($edit)) {
+		$countrycode = astroute_save($edit);
+		drupal_goto("astbilladm/route/country/".$countrycode);
+        }
+	break;
+	case t('Add'):
+		$where = 'create';
+		drupal_goto("astbilladm/route/create/".$edit['countrycode']."/".$edit['brand']);
+        break;  
+  	case t('Back'):
+	if (arg(2) == 'edit' || arg(2) == 'remove') {
+		$sql = db_fetch_object(db_query("SELECT countrycode FROM astroute WHERE id = '%s'", arg(3)));
+		drupal_goto("astbilladm/route/country/".$sql->countrycode);
+	}
+	if (arg(2) == 'create') {
+	drupal_goto("astbilladm/route/country/".$edit['countrycode']);
+	}
+        break;
+	default:
+        if (arg(2) == 'country' || arg(2) == 'edit' || arg(2) == 'create' || arg(2) == 'remove') {
+		if (!is_numeric(arg(3))) {
+		drupal_access_denied();
+		return;
+	} else {
+		$value = arg(3);
+	}}
+	
+	if (arg(2) == 'edit') {
+		$where = 'edit';
+	}
+	
+    	if (arg(2) == 'create') {
+		$where = 'create';
+	}
+	
+	if (arg(2) == 'remove') {
+		$where = 'remove';
+	}
+	
+    	$output = astroute_form($where, $value);
+	
+    	if (arg(2) == 'country') {
+		$where = 'country';
+		$output .= astroute_form($where, $value);
+
+	}
+	
+	
+  }
+
+  
+  if ($where == 'country') {
+	  $sql = db_fetch_object(db_query("SELECT country FROM astcountrycode WHERE countrycode = '%s'", $value));
+	  $title = $sql->country;
+  }
+  
+  if ($where == 'edit') {
+	  $sql = db_fetch_object(db_query("SELECT routename FROM astroute WHERE id = '%s'", $value));
+	  $title = $sql->routename;
+  }
+  
+  if ($where == 'create') {
+	  $title = 'Create';
+  }
+  
+  if ($where == 'remove') {
+	  $sql = db_fetch_object(db_query("SELECT routename FROM astroute WHERE id = '%s'", $value));
+	  $title = t('Remove route:').' '.$sql->routename;
+  }
+	  
+  if (empty($title)) {
+	  $title = t('Select Country');
+  }
+
+	astcore_printtheme($output, $title);
+}
+
+
+
+
+
+
+
+
+
+
+function _astroute_export() {
+	global $user;
+
+  	$edit = $_POST["edit"];
+  	$op = $_POST["op"];
+  
+	switch (($op ? $op : arg(1))) {
+		case t('Export'):
+		
+		
+		$list = 'countrycode,routename,pattern,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk
+';
+
+		$sqlout = db_query("SELECT countrycode,routename,pattern,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk FROM astroute order by countrycode, pattern");
+		
+		while ($sql = db_fetch_object($sqlout)) {
+			$list .= $sql->countrycode.','.$sql->routename.','.$sql->pattern.','.$sql->costplan.','.$sql->connectcharge.','.$sql->includedseconds.','.$sql->billincrement.','.$sql->minimumcost.','.$sql->cost.','.$sql->trunk.'
+';
+		}
+		$filename = 'RouteList_ALL.csv';
+		$size = strlen($list);
+		header("Content-length: ".$size);
+		header("Content-type: text/comma-separated-values");
+		header("Content-Disposition: attachment; filename=".$filename);
+		
+		echo $list;
+
+		exit;
+	break;
+        default:
+		$group .= form_submit(t('Export'));
+		$output = form($group);
+		$title = t('Export');
+		astcore_printtheme($output, $title);
+  }
+}
+
+
+function _astroute_import() {
+	global $user;
+	include_once 'class.csv.php';
+	
+	$clear = $_POST["clear"]['0'];
+	
+	$output .= '
+	<form enctype="multipart/form-data" action='.url("astbilladm/route/import").' method="POST">
+    	<input type="hidden" name="MAX_FILE_SIZE" value="0" />
+    	Send this file: <input name="import" type="file" /><BR>
+	<BR>
+	<input name="clear[]" value="1" type="checkbox"> Check this if you want to delete all records in the route list before importing.<BR>
+    	<input type="submit" value="Send File" /><BR>
+    	</form>
+	';
+	
+	$output .= '<BR><BR>';
+	
+	if ($_FILES['import']['error'] == '0') {
+				
+		
+		$csv = & new csv($_FILES['import']['tmp_name'], ',');
+		$csv->SkipEmptyRows(TRUE); // Will skip empty rows. TRUE by default. (Shown here for example only).
+  		$csv->TrimFields(TRUE); // Remove leading and trailing \s and \t. TRUE by default.
+ 
+		$oops = 1;
+  		while ($arr_data = $csv->NextLine()){
+			$count = $csv->RowCount();
+			
+			$arr_data[0] = trim($arr_data[0]);
+			$arr_data[1] = trim($arr_data[1]);
+			$arr_data[2] = trim($arr_data[2]);
+			$arr_data[3] = trim($arr_data[3]);
+			$arr_data[4] = trim($arr_data[4]);
+			$arr_data[5] = trim($arr_data[5]);
+			$arr_data[6] = trim($arr_data[6]);
+			$arr_data[7] = trim($arr_data[7]);
+			$arr_data[8] = trim($arr_data[8]);
+			$arr_data[9] = trim($arr_data[9]);
+			
+			if ($count == 1) {
+				
+				if ($arr_data[0] == 'countrycode' and $arr_data[1] == 'routename' and $arr_data[2] == 'pattern' and $arr_data[3] == 'costplan' and $arr_data[4] == 'connectcharge' and $arr_data[5] == 'includedseconds' and $arr_data[6] == 'billincrement' and $arr_data[7] == 'minimumcost' and $arr_data[8] == 'cost' and $arr_data[9] == 'trunk') {
+					$oops = 0;
+				}
+				
+				if ($clear == '1' and $oops == '0') {
+						$count = db_fetch_object(db_query("SELECT COUNT(*) value FROM astroute"));
+						$clearout = t('Number of rows deleted before import: '.$count->value.'<BR>');
+						db_query("DELETE FROM astroute");
+				}
+				
+			} else {
+				if($oops == 0) {
+					db_query("INSERT INTO astroute (countrycode,routename,pattern,costplan,connectcharge,includedseconds,billincrement,minimumcost,cost,trunk) 
+					VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+					$arr_data[0], $arr_data[1], $arr_data[2], $arr_data[3], $arr_data[4], $arr_data[5], $arr_data[6], $arr_data[7], $arr_data[8], $arr_data[9]);
+				}
+			}
+			
+  		}
+
+		if ($oops == 0) {
+			$rowcount = $csv->RowCount() - 1;
+			$output .= '<B>'.t('Success:').'</B><BR>';
+			$output .= t('File Name: '.$_FILES['import']['name']).'<BR>';
+			$output .= t('File Type: '.$_FILES['import']['type']).'<BR>';
+			$output .= t('File Size: '.$_FILES['import']['size']).' Bytes<BR>';
+			$output .= '<BR><B>'.t('Statistics:').'</B><BR>';
+			if ($clear == '1') {
+			$output .= $clearout;
+			}
+  			$output .= t('Number of rows Imported').": ".$rowcount;
+			$output .= "<br>".t('Number of rows skipped').": ".$csv->SkippedRowCount().'<BR>';
+			$count = db_fetch_object(db_query("SELECT COUNT(*) value FROM astroute"));
+			$output .= t('Number of rows after import: '.$count->value);
+		} else {
+		
+			$output .= "<B>".t('Error: Invalid RouteList csv file!')."</B><BR>";
+			$output .= t('File Name: '.$_FILES['import']['name']).'<BR>';
+			$output .= t('File Type: '.$_FILES['import']['type']).'<BR>';
+			$output .= t('File Size: '.$_FILES['import']['size']).' Bytes<BR>';
+		}
+
+	
+	$title = 'Uploaded '.$_FILES['import']['name'];	
+	}
+	if ($_FILES['import']['error'] == '1') {
+		$output .= '<B>'.t('Error: The uploaded file exceeds the upload_max_filesize directive in php.ini').'</B><BR>';
+		$title = 'Error';
+	}
+	if ($_FILES['import']['error'] == '2') {
+		$output .= '<B>'.t('Error: The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form (Please report this because this should not happen)').'</B><BR>';
+		$title = 'Error';
+	}
+	if ($_FILES['import']['error'] == '3') {
+		$output .= '<B>'.t('Error: The uploaded file was only partially uploaded!').'</B><BR>';
+		$title = 'Error';
+	}
+	if ($_FILES['import']['error'] == '4') {
+		$output .= '<B>'.t('Error: No file was uploaded!').'</B><BR>';
+		$title = 'Error';
+	}
+	if ($_FILES['import']['error'] == '6') {
+		$output .= '<B>'.t('Error: No temporary Folder available!').'</B><BR>';
+		$title = 'Error';
+	}
+	if ($_FILES['import']['error'] == '7') {
+		$output .= '<B>'.t('Error: Failed to write to disk!').'</B><BR>';
+		$title = 'Error';
+	}
+	
+	if (empty($title)) {
+	$title = t('Import');
+	}	
+  
+	astcore_printtheme($output, $title);
+}
+
+
+
+// FORM STUFF
+function astroute_validate($edit) {
+  $myerror = 1;
+  $errors = array();
+
+
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+
+function astroute_save($edit) {
+  global $user;
+
+if (arg(2) == 'remove') {
+	
+	$sql = db_fetch_object(db_query("SELECT countrycode FROM astroute WHERE id = '%s'", arg(3)));
+
+	db_query("DELETE FROM astroute WHERE id = '%s'", arg(3));
+
+	drupal_set_message(t('The route has been deleted.'));
+
+	
+	return $sql->countrycode;
+	
+}
+
+if (arg(2) == 'create') {
+	
+	if (!is_numeric(arg(3))) {
+		drupal_access_denied();
+		return;
+	}
+	
+	db_query("INSERT INTO astroute (pattern, routename, countrycode, costplan, connectcharge, includedseconds, billincrement, minimumcost, cost, trunk) 
+	VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+$edit['pattern'], $edit['routename'], $edit['countrycode'], $edit['costplan'],
+$edit['connectcharge'], $edit['includedseconds'],
+$edit['billincrement'], $edit['minimumcost'], $edit['cost'], $edit['trunk']);
+	
+	drupal_set_message(t('The route has been added.'));
+
+	
+	return $edit['countrycode'];
+	
+}
+
+if (arg(2) == 'edit') {
+	
+	if (!is_numeric(arg(3))) {
+		drupal_access_denied();
+		return;
+	}
+	
+	db_query("UPDATE astroute SET routename = '%s', costplan = '%s',
+	connectcharge = '%s', includedseconds = '%s', billincrement = '%s',
+	minimumcost = '%s', cost = '%s', trunk = '%s' WHERE id = '%s'",
+	$edit['routename'], $edit['costplan'],
+	$edit['connectcharge'], $edit['includedseconds'], $edit['billincrement'],
+	$edit['minimumcost'], $edit['cost'], $edit['trunk'], arg(3));
+	
+	drupal_set_message(t('The Route settings have been updated.'));
+	
+	$sql = db_fetch_object(db_query("SELECT countrycode FROM astroute WHERE id = '%s'", arg(3)));
+	
+	return $sql->countrycode;
+}
+
+
+
+}
+
+
+function astroute_form($where, $value) {
+	global $user;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+
+
+	
+
+if ($where == 'country') {
+	
+	if (!is_numeric(arg(3))) {
+		drupal_access_denied();
+		return;
+	} else {
+		$value = arg(3);
+		}
+/* // Code for using select form box instead.
+	if (empty($value)) {
+		drupal_goto("astbilladm/route/");
+		
+	} else {
+		
+
+	$sql = db_query("SELECT id, pattern, routename FROM astroute WHERE (countrycode LIKE '".$value."')  ORDER BY pattern");
+	
+	
+	$routeout = array();
+	while ($model = db_fetch_object($sql)) {
+		array_push2($routeout, $model->pattern.' '.$model->routename, $model->id);
+	}
+
+	
+	$group .= form_select(t("Select Route"), "routeid", NULL, $routeout);
+
+	
+	$group .= form_submit(t('Edit'));
+	$group .= form_submit(t('Back'));
+*/	
+
+$maxline = 40;
+
+
+  $header = array(
+    array('data' => t('Pattern&nbsp;&nbsp;'), 'field' => 'pattern'),
+    array('data' => t('Name&nbsp;&nbsp;'), 'field' => 'routename'),
+    array('data' => t('Trunk&nbsp;&nbsp;'), 'field' => 'trunk'),
+    array('data' => t('Cost&nbsp;&nbsp;'), 'field' => 'cost'),
+    array('data' => t('Bill Increment'), 'field' => 'billincrement'),
+    array('data' => t('Operations'), 'colspan' => 2)
+    );
+
+    $sql = db_query ("SELECT id, pattern, routename, cost, billincrement, trunk FROM astroute WHERE (countrycode LIKE '".$value."')". tablesort_sql($header));
+    
+    
+  while ($item = db_fetch_object($sql)) {
+	  	$rows[] = array(
+		$item->pattern.'&nbsp;&nbsp;',
+		$item->routename,
+		$item->trunk.'&nbsp;&nbsp;',
+		$item->cost.'&nbsp;&nbsp;',
+		$item->billincrement.'&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/route/edit/'.$item->id).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<A HREF="'.url('astbilladm/route/remove/'.$item->id).'">'.t('Remove').'</A>'
+		);
+  }
+
+  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+  if (!empty($pager)) {
+    $rows[] = array(array('data' => $pager, 'colspan' => 8));
+  }
+
+
+ $output .= (count($rows) == 0) ? t('No records.') : theme('table', $header, $rows);
+
+
+ return $output;
+	
+
+}
+
+if ($where == 'remove') {
+
+	$group .= '<BR>Please confirm that you want to delete this route?<BR><BR><BR>';
+	
+	
+	$group .= form_submit(t('Confirm'));
+	$group .= form_submit(t('Back'));
+
+	return form($group);
+	
+}
+
+
+if ($where == 'create') {
+	
+	$countrylist = db_query("SELECT countrycode, country FROM astcountrycode WHERE usstate is null order by country");
+	$countryout = array();
+  
+	while ($model = db_fetch_object($countrylist)) {
+		array_push2($countryout, $model->country, $model->countrycode);
+	}
+	
+	$trunksql = db_query("SELECT name FROM asttrunk");
+	$trunklist = array();
+	while ($model = db_fetch_object($trunksql)) {
+		if ($model->name == 'DEF' or $model->name == 'Local'){
+		} else {
+		array_push2($trunklist, $model->name, $model->name);
+	}}
+	$countrydefault = $value;
+	$name = db_fetch_object(db_query("SELECT country FROM astcountrycode WHERE countrycode = '%s'", $countrydefault));
+	$trunk = 'DEFVOIP';
+	$sec = '0.0000';
+	$billinc = '0.0000';
+	$mincost = '0.0000';
+	$cost = '0.0000';
+	$charge = '0.0000';
+	$costplan = '0.0000';
+
+	$group .= form_select(t("Select Country"), "countrycode", $countrydefault, $countryout);
+	$group .= form_select(t("Select Trunk"), "trunk", $trunk, $trunklist);
+	
+	$group .= form_textfield(t('Pattern'), 'pattern', $countrydefault, 30, 100);
+	$group .= form_textfield(t('Route'), 'routename', $name->country, 30, 100);
+	
+	$group .= form_textfield(t('Cost Plan'), 'costplan', $costplan, 30, 100);
+	$group .= form_textfield(t('Connection Charge'), 'connectcharge', $charge, 30, 100);
+	$group .= form_textfield(t('Included Seconds'), 'includedseconds', $sec, 30, 100);
+	$group .= form_textfield(t('Billing Increment'), 'billincrement', $billinc, 30, 100);
+	$group .= form_textfield(t('Minimum Cost'), 'minimumcost', $mincost, 30, 100);
+	$group .= form_textfield(t('Cost'), 'cost', $cost, 30, 100);
+
+	
+	
+	$group .= form_submit(t('Create'));
+	$group .= form_submit(t('Back'));
+	//$group .= '<input type="button" class="form-submit" name="op" value="Back" onClick="history.go(-1)">';
+	
+	return form($group);
+	
+}
+
+
+if ($where == 'edit') {
+	
+	
+	$valuessql = db_fetch_object(db_query("SELECT id, pattern, costplan, routename, connectcharge, includedseconds, billincrement, minimumcost, cost, trunk FROM astroute WHERE id = '%s'", $value));
+	
+	$trunksql = db_query("SELECT name FROM asttrunk");
+	$trunklist = array();
+	while ($model = db_fetch_object($trunksql)) {
+		if ($model->name == 'DEF' or $model->name == 'Local'){
+		} else {
+		array_push2($trunklist, $model->name, $model->name);
+	}}
+
+	$group .= t('Pattern:').' '.$valuessql->pattern.'<BR>';
+	$group .= form_textfield(t('Route'), 'routename', $valuessql->routename, 30, 100);
+	$group .= form_select(t("Select Trunk"), "trunk", $valuessql->trunk, $trunklist);
+	
+	$group .= form_textfield(t('Cost Plan'), 'costplan', $valuessql->costplan, 30, 100);
+	$group .= form_textfield(t('Connection Charge'), 'connectcharge', $valuessql->connectcharge, 30, 100);
+	$group .= form_textfield(t('Included Seconds'), 'includedseconds', $valuessql->includedseconds, 30, 100);
+	$group .= form_textfield(t('Billing Increment'), 'billincrement', $valuessql->billincrement, 30, 100);
+	$group .= form_textfield(t('Minimum Cost'), 'minimumcost', $valuessql->minimumcost, 30, 100);
+	$group .= form_textfield(t('Cost'), 'cost', $valuessql->cost, 30, 100);
+
+	
+	
+	$group .= form_submit(t('Save'));
+	$group .= form_submit(t('Back'));
+	//$group .= '<input type="button" class="form-submit" name="op" value="Back" onClick="history.go(-1)">';
+	
+	return form($group);
+	
+}
+
+
+if (empty($where)) {
+	
+	$countrylist = db_query("SELECT countrycode, country FROM astcountrycode WHERE usstate is null order by country");
+	$countryout = array();
+  
+	
+	while ($model = db_fetch_object($countrylist)) {
+		array_push2($countryout, $model->country, $model->countrycode);
+	}
+
+	if (empty($value)) {
+	$sql = db_fetch_object(db_query("SELECT countryprefix FROM astuser WHERE uid = '%d'", $user->uid));
+	$defaultcountry = $sql->countryprefix;
+	} else {
+		$defaultcountry = $value;
+		
+	}
+	
+	$group .= form_select(t("Select Country"), "countrycode", $defaultcountry, $countryout);
+	$group .= form_submit(t('Go'));
+	$group .= form_submit(t('Add'));
+	
+	return form($group);
+}
+
+
+
+}
+
+
+
+// END FORM STUFF
+// END ROUTE
+
+
+
+// BEGIN PRICELIST
+function _astpriceedit_all() {
+  global $user;
+
+  $edit = $_POST["edit"];
+  $op = $_POST["op"];
+
+
+
+  switch (($op ? $op : arg(1))) {
+        case t('Change Prices'):
+	drupal_goto("astbilladm/pricelist/country/".$edit['countrycode']."/".$edit['brand']."/prices");
+	break;
+	case t('Go'):
+	drupal_goto("astbilladm/pricelist/country/".$edit['countrycode']."/".$edit['brand']);
+	break;
+	
+	case t('Generate'):
+	//print_r($edit);
+        
+	if (astpriceedit_validate($edit)) {
+		$countrycode = astpriceedit_save($edit);
+		drupal_goto("astbilladm/pricelist/country/".$edit['hidcountry']."/".$edit['hidbrand']);
+	} else {
+		drupal_goto("astbilladm/pricelist/country/".$edit['hidcountry']."/".$edit['hidbrand']."/prices");
+	}
+	
+	
+	case t('Create'):
+        if (astpriceedit_validate($edit)) {
+		$countrycode = astpriceedit_save($edit);
+		drupal_goto("astbilladm/pricelist/country/".$countrycode."/".$edit['brand']);
+	}
+	break;
+        case t('Save'):
+        if (astpriceedit_validate($edit)) {
+		$countrycode = astpriceedit_save($edit);
+		drupal_goto("astbilladm/pricelist/country/".$countrycode."/".$edit['brand']);
+	}
+	break;
+	case t('Confirm'):
+        if (astpriceedit_validate($edit)) {
+		$brand = db_fetch_object(db_query("SELECT brand FROM astpricelist WHERE id = '%s'", arg(3)));
+		$countrycode = astpriceedit_save($edit);
+		drupal_goto("astbilladm/pricelist/country/".$countrycode."/".$brand->brand);
+        }
+	break;
+	case t('Add'):
+		$where = 'create';
+		drupal_goto("astbilladm/pricelist/create/".$edit['countrycode']."/".$edit['brand']);
+        break;
+  	case t('Back'):
+	if (arg(2) == 'edit' || arg(2) == 'remove') {
+	$sql = db_fetch_object(db_query("SELECT brand, countrycode FROM astpricelist WHERE id = '%s'", arg(3)));
+	drupal_goto("astbilladm/pricelist/country/".$sql->countrycode."/".$sql->brand);
+	}
+	if (arg(2) == 'create') {
+	drupal_goto("astbilladm/pricelist/country/".$edit['countrycode']."/".$edit['brand']);
+	}
+        break;
+        default:
+        if (arg(2) == 'country' || arg(2) == 'edit' || arg(2) == 'create' || arg(2) == 'remove') {
+		if (!is_numeric(arg(3))) {
+		drupal_access_denied();
+		return;
+	} else {
+		$value = arg(3);
+		$value2 = arg(4);
+	}}
+	
+	if (arg(2) == 'edit') {
+		$where = 'edit';
+	}
+	
+	if (arg(2) == 'create') {
+		$where = 'create';
+	}
+	
+	if (arg(2) == 'remove') {
+		$where = 'remove';
+	}
+    
+    	$output = astpriceedit_form($where, $value, $value2);
+	
+    	if (arg(2) == 'country') {
+		if (arg(5) == 'prices') {
+			$where = 'prices';
+		} else {
+			$where = 'country';
+		}
+		$output .= astpriceedit_form($where, $value, $value2);
+
+	}
+	
+	
+  }
+
+  
+  if ($where == 'country') {
+	  $sql = db_fetch_object(db_query("SELECT country FROM astcountrycode WHERE countrycode = '%s'", $value));
+	  $title = $sql->country;
+  }
+  
+  if ($where == 'edit') {
+	  $sql = db_fetch_object(db_query("SELECT name FROM astpricelist WHERE id = '%s'", $value));
+	  $title = $sql->name;
+  }
+  
+  if ($where == 'create') {
+	  $title = t('Create');
+  }
+  
+  if ($where == 'remove') {
+	  $sql = db_fetch_object(db_query("SELECT name FROM astpricelist WHERE id = '%s'", $value));
+	  $title = t('Remove price:').' '.$sql->name;
+  }
+  
+  if (empty($title)) {
+	  $title = t('Select Country');
+  }
+  
+
+	astcore_printtheme($output, $title);
+}
+
+
+function _astpriceedit_export() {
+	global $user;
+
+  	$edit = $_POST["edit"];
+  	$op = $_POST["op"];
+  
+	switch (($op ? $op : arg(1))) {
+		case t('Export'):
+		
+		$list = 'countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand
+';
+		if ($edit['brand'] == 'ALL') {
+			$sqlout = db_query("SELECT countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand FROM astpricelist order by brand,countrycode,pattern");
+		} else {
+			$sqlout = db_query("SELECT countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand FROM astpricelist WHERE brand = '%s'  order by countrycode,pattern", $edit['brand']);
+		}
+		
+		while ($sql = db_fetch_object($sqlout)) {
+			$list .= $sql->countrycode.','.$sql->pattern.','.$sql->name.','.$sql->weight.','.$sql->connectcharge.','.$sql->includedseconds.','.$sql->minimumprice.','.$sql->price.','.$sql->brand.'
+';
+		}
+		$filename = 'PriceList_'.$edit['brand'].'.csv';
+		$size = strlen($list);
+		header("Content-length: ".$size);
+		header("Content-type: text/comma-separated-values");
+		header("Content-Disposition: attachment; filename=".$filename);
+		
+		echo $list;
+
+		exit;
+	break;
+
+        default:
+		// $sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+		$sql = db_query("SELECT name brand FROM astplans order by name");
+		$brandlist = array('ALL' => 'ALL');
+		
+		while ($fetchit = db_fetch_object($sql)) {
+			array_push2($brandlist, $fetchit->brand, $fetchit->brand);
+		}
+		
+		$group .= form_select(t('Select Rate Plan'), "brand", 'ALL', $brandlist);
+		$group .= form_submit(t('Export'));
+
+		$output = form($group);
+		$title = 'Export';
+  		astcore_printtheme($output, $title);
+  }
+
+
+}
+
+
+function _astpriceedit_import() {
+	global $user;
+	include_once 'class.csv.php';
+	
+	$clear = $_POST["clear"]['0'];
+	
+	
+	// $sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	$sql = db_query("SELECT name brand FROM astplans order by name");
+	$brandlist = array('ALL' => 'ALL');
+	while ($fetchit = db_fetch_object($sql)) {
+	   array_push2($brandlist, $fetchit->brand, $fetchit->brand);
+	}
+	
+	$output .= '
+	<form enctype="multipart/form-data" action='.url("astbilladm/pricelist/import").' method="POST">
+    	<input type="hidden" name="MAX_FILE_SIZE" value="0" />
+    	Send this file: <input name="import" type="file" /><BR>
+	<BR>
+	<input name="clear[]" value="1" type="checkbox"> Check this and select what Rate Plan you want to delete before importing.<BR>'.
+	form_select(NULL, "brand", 'ALL', $brandlist).'
+    	<input type="submit" value="Send File" /><BR>
+    	</form>
+	';
+	
+	$output .= '<BR><BR>';
+	
+	if ($_FILES['import']['error'] == '0') {
+				
+		
+		$csv = & new csv($_FILES['import']['tmp_name'], ',');
+		$csv->SkipEmptyRows(TRUE); // Will skip empty rows. TRUE by default. (Shown here for example only).
+  		$csv->TrimFields(TRUE); // Remove leading and trailing \s and \t. TRUE by default.
+ 
+		$oops = 1;
+  		while ($arr_data = $csv->NextLine()){
+			$count = $csv->RowCount();
+			
+			$arr_data[0] = trim($arr_data[0]);
+			$arr_data[1] = trim($arr_data[1]);
+			$arr_data[2] = trim($arr_data[2]);
+			$arr_data[3] = trim($arr_data[3]);
+			$arr_data[4] = trim($arr_data[4]);
+			$arr_data[5] = trim($arr_data[5]);
+			$arr_data[6] = trim($arr_data[6]);
+			$arr_data[7] = trim($arr_data[7]);
+			$arr_data[8] = trim($arr_data[8]);
+			
+			if ($count == 1) {
+				
+				if ($arr_data[0] == 'countrycode' and $arr_data[1] == 'pattern' and $arr_data[2] == 'name' and $arr_data[3] == 'weight' and $arr_data[4] == 'connectcharge' and $arr_data[5] == 'includedseconds' and $arr_data[6] == 'minimumprice' and $arr_data[7] == 'price' and $arr_data[8] == 'brand') {
+					$oops = 0;
+				}
+				
+				if ($clear == '1' and $oops == '0') {
+					if ($_POST['edit']['brand'] == 'ALL') {
+						$count = db_fetch_object(db_query("SELECT COUNT(*) value FROM astpricelist"));
+						$clearout = t('Number of rows deleted before import: '.$count->value.'<BR>');
+						db_query("DELETE FROM astpricelist");
+					} else {
+						$count = db_fetch_object(db_query("SELECT COUNT(*) value FROM astpricelist WHERE brand = '%s'", $_POST['edit']['brand']));
+						$clearout = t('Number of rows deleted before import: '.$count->value.'<BR>');
+						db_query("DELETE FROM astpricelist WHERE brand = '%s'", $_POST['edit']['brand']);
+					}
+				}
+				
+			} else {
+				if($oops == 0) {
+					db_query("INSERT INTO astpricelist (countrycode,pattern,name,weight,connectcharge,includedseconds,minimumprice,price,brand) 
+					VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+					$arr_data[0], $arr_data[1], $arr_data[2], $arr_data[3], $arr_data[4], $arr_data[5], $arr_data[6], $arr_data[7], $arr_data[8]);
+				}
+			}
+			
+  		}
+
+		if ($oops == 0) {
+			$rowcount = $csv->RowCount() - 1;
+			$output .= '<B>'.t('Success:').'</B><BR>';
+			$output .= t('File Name: '.$_FILES['import']['name']).'<BR>';
+			$output .= t('File Type: '.$_FILES['import']['type']).'<BR>';
+			$output .= t('File Size: '.$_FILES['import']['size']).' Bytes<BR>';
+			$output .= '<BR><B>'.t('Statistics:').'</B><BR>';
+			if ($clear == '1') {
+			$output .= $clearout;
+			}
+  			$output .= t('Number of rows Imported').": ".$rowcount;
+			$output .= "<br>".t('Number of rows skipped').": ".$csv->SkippedRowCount().'<BR>';
+			$count = db_fetch_object(db_query("SELECT COUNT(*) value FROM astpricelist"));
+			$output .= t('Number of rows after import: '.$count->value);
+		} else {
+		
+			$output .= "<B>".t('Error: Invalid PriceList csv file!')."</B><BR>";
+			$output .= t('File Name: '.$_FILES['import']['name']).'<BR>';
+			$output .= t('File Type: '.$_FILES['import']['type']).'<BR>';
+			$output .= t('File Size: '.$_FILES['import']['size']).' Bytes<BR>';
+		}
+
+	
+	$title = 'Uploaded '.$_FILES['import']['name'];	
+	}
+	if ($_FILES['import']['error'] == '1') {
+		$output .= '<B>'.t('Error: The uploaded file exceeds the upload_max_filesize directive in php.ini').'</B><BR>';
+		$title = 'Error';
+	}
+	if ($_FILES['import']['error'] == '2') {
+		$output .= '<B>'.t('Error: The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form (Please report this because this should not happen)').'</B><BR>';
+		$title = 'Error';
+	}
+	if ($_FILES['import']['error'] == '3') {
+		$output .= '<B>'.t('Error: The uploaded file was only partially uploaded!').'</B><BR>';
+		$title = 'Error';
+	}
+	if ($_FILES['import']['error'] == '4') {
+		$output .= '<B>'.t('Error: No file was uploaded!').'</B><BR>';
+		$title = 'Error';
+	}
+	if ($_FILES['import']['error'] == '6') {
+		$output .= '<B>'.t('Error: No temporary Folder available!').'</B><BR>';
+		$title = 'Error';
+	}
+	if ($_FILES['import']['error'] == '7') {
+		$output .= '<B>'.t('Error: Failed to write to disk!').'</B><BR>';
+		$title = 'Error';
+	}
+	
+	if (empty($title)) {
+	$title = 'Import';
+	}	
+	astcore_printtheme($output, $title);
+}
+
+
+// FORM STUFF
+function astpriceedit_validate($edit) {
+  $myerror = 1;
+  $errors = array();
+  
+  if (arg(5) == 'prices') {  
+	if (!is_numeric($edit['percentage'])){
+		$errors['percentage'] = t('You must enter a numeric percentage.');
+		$myerror = 0;	
+  	}
+  }
+  
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  } 
+  return $myerror;
+}
+
+
+function astpriceedit_save($edit) {
+  global $user;
+
+  
+if (arg(5) == 'prices') { 
+/*	
+	$edit['hidcountry']
+	$edit['hidbrand']
+	$edit['percentage']
+	$edit['decorinc'] 0 = decrease and 1 = increase
+*/
+
+$sql = db_query("SELECT id, price FROM astpricelist WHERE countrycode = '%s' AND brand = '%s'", $edit['hidcountry'], $edit['hidbrand']);
+
+if ($edit['decorinc'] == '2') {
+while ($item = db_fetch_object($sql)) {
+	db_query("UPDATE astpricelist SET price = '%s' WHERE id = '%s'", $edit['percentage'], $item->id);
+}}
+
+if ($edit['decorinc'] == '1') {
+while ($item = db_fetch_object($sql)) {
+	$price = $item->price;
+	$var1 = $item->price/100;
+	$var2 = $edit['percentage'] * $var1;
+	$var3 = $price + $var2;
+	db_query("UPDATE astpricelist SET price = '%s' WHERE id = '%s'", $var3, $item->id);
+}}
+
+if ($edit['decorinc'] == '0') {
+while ($item = db_fetch_object($sql)) {
+	$price = $item->price;
+	$var1 = $item->price/100;
+	$var2 = $edit['percentage'] * $var1;
+	$var3 = $price - $var2;
+	db_query("UPDATE astpricelist SET price = '%s' WHERE id = '%s'", $var3, $item->id);
+}}
+
+
+drupal_set_message('Prices updated');
+
+}
+  
+  
+if (arg(2) == 'remove') {
+	
+	$sql = db_fetch_object(db_query("SELECT countrycode FROM astpricelist WHERE id = '%s'", arg(3)));
+
+	db_query("DELETE FROM astpricelist WHERE id = '%s'", arg(3));
+
+	drupal_set_message(t('The price has been deleted.'));
+
+	
+	return $sql->countrycode;
+	
+}
+
+if (arg(2) == 'create') {
+	
+	if (!is_numeric(arg(3))) {
+		drupal_access_denied();
+		return;
+	}
+	
+	db_query("INSERT INTO astpricelist (countrycode, pattern, name, connectcharge, includedseconds,
+	minimumprice, price, brand) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+	$edit['countrycode'], $edit['pattern'], $edit['name'],
+	$edit['connectcharge'], $edit['includedseconds'],
+	$edit['minimumprice'], $edit['price'], $edit['brand']);
+	
+	drupal_set_message(t('The Price has been added.'));
+
+	
+	return $edit['countrycode'];
+	
+}
+
+if (arg(2) == 'edit') {
+	
+	if (!is_numeric(arg(3))) {
+		drupal_access_denied();
+		return;
+	}
+	
+	db_query("UPDATE astpricelist SET pattern = '%s', name = '%s',
+	connectcharge = '%s', includedseconds = '%s',
+	minimumprice = '%s', price = '%s', brand = '%s' WHERE id = '%s'",
+	$edit['pattern'], $edit['name'],
+	$edit['connectcharge'], $edit['includedseconds'],
+	$edit['minimumprice'], $edit['price'], $edit['brand'], arg(3));
+	
+	drupal_set_message(t('The Price settings have been updated.'));
+	
+	$sql = db_fetch_object(db_query("SELECT countrycode FROM astpricelist WHERE id = '%s'", arg(3)));
+	
+	return $sql->countrycode;
+}
+
+
+
+}
+
+
+function astpriceedit_form($where, $value, $value2) {
+	global $user;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	
+	
+if ($where == 'prices') {	
+	$output .= form_radios(t('Choose percentage to increase or decrease or set a fixed price'), 'decorinc' ,1 ,array(0 => 'Decrease', 1 => 'Increase', 2 => 'Fixed'));
+	
+	$output .= form_textfield(t('Percentage/Fixed Value'), 'percentage', NULL, 7, 100);
+	$output .= form_hidden('hidcountry', $value, $edit = 'edit', $attributes = NULL);
+	$output .= form_hidden('hidbrand', $value2, $edit = 'edit', $attributes = NULL);
+	$output .= form_submit(t('Generate'));
+	
+	$output .= '<BR><BR>';
+}
+
+
+if ($where == 'country' or $where == 'prices') {
+	
+	if (!is_numeric(arg(3))) {
+		drupal_access_denied();
+		return;
+	} else {
+		$value = arg(3);
+		}
+/* // Code for using select form box instead.
+	if (empty($value)) {
+		drupal_goto("astbilladm/pricelist/");
+		
+	} else {
+		
+
+	$sql = db_query("SELECT id, pattern, priceeditname FROM astroute WHERE (countrycode LIKE '".$value."')  ORDER BY pattern");
+	
+	
+	$routeout = array();
+	while ($model = db_fetch_object($sql)) {
+		array_push2($routeout, $model->pattern.' '.$model->routename, $model->id);
+	}
+
+	
+	$group .= form_select(t("Select Route"), "routeid", NULL, $routeout);
+
+	
+	$group .= form_submit(t('Edit'));
+	$group .= form_submit(t('Back'));
+*/	
+
+$maxline = 40;
+
+
+  $header = array(
+    array('data' => t('Pattern&nbsp;&nbsp;'), 'field' => 'pattern'),
+    array('data' => t('Name&nbsp;&nbsp;'), 'field' => 'name'),
+    array('data' => t('Price&nbsp;&nbsp;'), 'field' => 'price', 'colspan' => 2),
+    array('data' => t('Operations'), 'colspan' => 3)
+    );
+
+    $sql = db_query("SELECT id, pattern, name, price, brand FROM astpricelist WHERE (countrycode LIKE '".$value."' AND brand LIKE '".$value2."')". tablesort_sql($header));
+    
+    
+  while ($item = db_fetch_object($sql)) {
+	  
+	  $sql2 = db_fetch_object(db_query("select currency FROM astplans WHERE name='%s'", $value2));
+	  // $cur = astpricelist_currency($sql2->currency);
+   	  $cur = db_fetch_object(db_query("select ratetabledesc FROM astcurrency WHERE currency='%s'", $sql2->currency));
+
+	  	$rows[] = array(
+		$item->pattern.'&nbsp;&nbsp;',
+		$item->name.'&nbsp;&nbsp;',
+		$cur->ratetabledesc.'&nbsp;',
+		array('data' => $item->price.'&nbsp;', 'align' => 'right'),
+		'<A HREF="'.url('astbilladm/pricelist/edit/'.$item->id).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+		'<A HREF="'.url('astbilladm/pricelist/remove/'.$item->id).'">'.t('Remove').'</A>'
+		);
+  }
+
+  $pager = theme('pager', null, $maxline, 0, tablesort_pager()); 
+  if (!empty($pager)) {
+    $rows[] = array(array('data' => $pager, 'colspan' => 8));
+  }
+
+
+ $output .= (count($rows) == 0) ? t('No records.') : theme('table', $header, $rows);
+
+ 
+ $group = form($output);
+ 
+ return $group;
+	
+
+}
+
+if ($where == 'remove') {
+
+	$group .= '<BR>Please confirm that you want to delete this price?<BR><BR><BR>';
+	
+	
+	$group .= form_submit(t('Confirm'));
+	$group .= form_submit(t('Back'));
+
+	return form($group);
+	
+}
+
+if ($where == 'edit') {
+	
+	
+	if (!is_numeric($value)) {
+		drupal_access_denied();
+		return;
+	}	
+	
+	$valuessql = db_fetch_object(db_query("SELECT id, pattern, name, connectcharge, includedseconds, minimumprice, price, brand FROM astpricelist WHERE id = '%s'", $value));
+
+	// $sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	$sql = db_query("SELECT name brand FROM astplans order by name");
+	$brandlist = array();
+	while ($model = db_fetch_object($sql)) {
+		array_push2($brandlist, $model->brand, $model->brand);
+	}
+	
+	$group .= form_select(t("Select Rate Plan"), "brand", $valuessql->brand, $brandlist);
+	$group .= form_textfield(t('Pattern'), 'pattern', $valuessql->pattern, 30, 100);
+	$group .= form_textfield(t('Name'), 'name', $valuessql->name, 30, 100);
+	$group .= form_textfield(t('Connection Charge'), 'connectcharge', $valuessql->connectcharge, 30, 100);
+	$group .= form_textfield(t('Included Seconds'), 'includedseconds', $valuessql->includedseconds, 30, 100);
+	$group .= form_textfield(t('Minimum Price'), 'minimumprice', $valuessql->minimumprice, 30, 100);
+	$group .= form_textfield(t('Price'), 'price', $valuessql->price, 30, 100);
+
+	
+	
+	$group .= form_submit(t('Save'));
+	$group .= form_submit(t('Back'));
+	//$group .= '<input type="button" class="form-submit" name="op" value="Back" onClick="history.go(-1)">';
+	
+	return form($group);
+	
+}
+
+
+
+if ($where == 'create') {
+	
+	/*
+	if (!is_numeric($value)) {
+		drupal_access_denied();
+		return;
+	}*/	
+	
+	$countrylist = db_query("SELECT countrycode, country FROM astcountrycode WHERE usstate is null order by country");
+	$countryout = array();
+  
+	while ($model = db_fetch_object($countrylist)) {
+		array_push2($countryout, $model->country, $model->countrycode);
+	}
+
+	// $sql = db_query("SELECT DISTINCT brand FROM astpricelist");
+	$sql = db_query("SELECT name brand FROM astplans order by name");
+	$brandlist = array();
+	while ($model = db_fetch_object($sql)) {
+		array_push2($brandlist, $model->brand, $model->brand);
+	}
+
+	$countrydefault = $value;
+	$branddefault = $value2;
+	$name = db_fetch_object(db_query("SELECT country FROM astcountrycode WHERE countrycode = '%s'", $countrydefault));
+	$charge = '0.0000';
+	$sec = '0.0000';
+	$mincost = '0.0000';
+	$cost = '0.0000';
+	
+	$group .= form_select(t("Select Country"), "countrycode", $countrydefault, $countryout);
+	$group .= form_select(t("Select Rate Plan"), "brand", $branddefault, $brandlist);
+	$group .= form_textfield(t('Pattern'), 'pattern', $countrydefault, 30, 100);
+	
+	$group .= form_textfield(t('Name'), 'name', $name->country, 30, 100);
+	$group .= form_textfield(t('Connection Charge'), 'connectcharge', $charge, 30, 100);
+	$group .= form_textfield(t('Included Seconds'), 'includedseconds', $sec, 30, 100);
+	$group .= form_textfield(t('Minimum Price'), 'minimumprice', $mincost, 30, 100);
+	$group .= form_textfield(t('Price'), 'price', $cost, 30, 100);
+
+	
+	
+	$group .= form_submit(t('Create'));
+	$group .= form_submit(t('Back'));
+	//$group .= '<input type="button" class="form-submit" name="op" value="Back" onClick="history.go(-1)">';
+	
+	return form($group);
+	
+}
+
+
+
+if (empty($where)) {
+	
+	$countrylist = db_query("SELECT countrycode, country FROM astcountrycode WHERE usstate is null order by country");
+	$countryout = array();
+  
+	
+	while ($model = db_fetch_object($countrylist)) {
+		array_push2($countryout, $model->country, $model->countrycode);
+	}
+
+	// $brandlist = db_query("SELECT DISTINCT brand FROM astpricelist");
+	$brandlist = db_query("SELECT name brand FROM astplans order by name");
+	$brandout = array();
+	
+	while ($model = db_fetch_object($brandlist)) {
+		array_push2($brandout, $model->brand, $model->brand);
+	}
+
+	if (empty($value)) {
+	$sql = db_fetch_object(db_query("SELECT countryprefix FROM astuser WHERE uid = '%d'", $user->uid));
+	$defaultcountry = $sql->countryprefix;
+	} else {
+		$defaultcountry = $value;
+		
+	}
+	
+	if (empty($value2)) {
+	$defaultbrand = 'default';
+	} else {
+		$defaultbrand = $value2;
+		
+	}
+	
+	
+	$group .= form_select(t("Select Rate Plan"), "brand", $defaultbrand, $brandout);
+	$group .= form_select(t("Select Country"), "countrycode", $defaultcountry, $countryout);
+	$group .= form_submit(t('Go'));
+	$group .= form_submit(t('Add'));
+	$group .= form_submit(t('Change Prices'));
+	
+	return form($group);
+}
+
+
+
+}
+
+
+
+// END FORM STUFF
+// END PRICELIST
+
+
+// Are Added Trunks 29 Oct 2005
+
+// START TRUNK STUFF
+function astroute_trunks() {
+	global $user;
+
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	
+	$maxline = 40;
+
+	$header = array(
+	array('data' => t('Name')),
+	array('data' => t('Path')),
+	array('data' => t('Tech')),
+	array('data' => t('Cost')),
+	array('data' => t('Use')),
+	array('data' => t('DB')),
+	array('data' => t('Default')),
+	array('data' => t('Dialplan')),
+	array('data' => t('Operations'), 'colspan' => 3)	
+	);
+
+	$sql = "SELECT isdefault, tid, name, tech, static, path, serverid, trunkcost, usagecount FROM asttrunk where name <> 'DEF' and name <> 'Local' order by name". tablesort_sql($header);
+
+	$result = pager_query($sql, $maxline);
+  
+	while ($item = db_fetch_object($result)) {
+		if ($item->isdefault == 1){$isdefault = '*';}
+		if ($item->isdefault == 0){$isdefault = '';}
+		$getdialstate = db_fetch_object(db_query("SELECT accountcode FROM astdialplan WHERE accountcode = 'trunk".$item->tid."'"));
+		if(empty($getdialstate->accountcode)) {
+			$dialplandef = t('Disabled');
+		} else {
+			$dialplandef = t('Active');
+		}
+		$rows[] = array($item->name.'&nbsp;&nbsp;',
+	    	$item->path.'&nbsp;&nbsp;',
+	    	$item->tech.'&nbsp;&nbsp;',
+		$item->trunkcost,
+		$item->usagecount,
+		$item->static,
+		$isdefault,
+		$dialplandef,
+		'<A HREF="'.url('astbilladm/trunks/change/'.$item->tid.'/'.$item->static).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>&nbsp;&nbsp;',
+		'<A HREF="'.url('astbilladm/trunks/dialplan/'.$item->tid).'">Dialplan</A>',
+		'|<A HREF="'.url('astbilladm/trunks/remove/'.$item->tid).'/'.$item->name.'">'.t('Remove').'</A>'
+		);
+	}
+
+	$output = astcore_list($header, $rows, t('No Trunks.'), $maxline);
+
+	$title = t("View");
+	$undermenu[] = url('astbilladm/trunks/create/rt/'.$user->uid).'">'.t('Create New Provider Trunk');
+	$undermenu[] = url('astbilladm/trunks/create/static/'.$user->uid).'">'.t('Create New STATIC Provider Trunk');
+	astcore_printtheme($output, $title, $undermenu);
+}
+
+function page_astroute_trunk_formrules() {
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+	switch ($op) {
+		case t('Change'):
+		if (astroute_trunk_validate($edit)) {
+			astroute_trunk_save($edit,arg(3));
+			drupal_goto("astbilladm/trunks");
+		} else {
+			drupal_goto("astbilladm/trunks/change/".arg(3).'/'.arg(4));
+		}
+		break;
+		case t('Create'):
+		if (astroute_trunk_validate($edit)) {
+			astroute_trunk_save($edit, arg(4));
+			drupal_goto("astbilladm/trunks");
+		} else {
+			drupal_goto("astbilladm/trunks/create/".arg(3));
+		}
+		break;
+		case t('Back'):
+		drupal_goto("astbilladm/trunks");
+		default:
+		$output = astroute_trunk_form();
+	}
+	
+	$undermenu = 'FALSE';
+	if (arg(2) == 'create') {
+		$title = t('You are creating a new Provider Trunk');
+	}
+
+	if (arg(2) == 'change') {
+		$title = t('You are Editing a Provider Trunk');
+		
+		$sql = db_fetch_object(db_query("SELECT accountcode FROM asttrunk WHERE tid = '%s'", arg(3)));
+		if (!empty($sql->accountcode)) {
+			$undermenu = array();
+			$undermenu[] = url('astbilladm/editaccount/'.$sql->accountcode).'">'.t('Advanced Provider Trunk Settings');
+		}
+	}
+	
+	if (arg(4) == 'S'){
+		$title = t('You are Editing a STATIC Provider Trunk');
+	}
+	
+	if (arg(3) == 'static'){ 
+		$title = t('You are creating a new STATIC Provider Trunk');
+	}
+	astcore_printtheme($output, $title, $undermenu);
+}
+
+function page_astroute_trunkdialplan() {
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+	switch ($op) {
+		case t('Change'):
+		$did = arg(1);
+		$title = t('Edit Account');
+		if (astroute_trunk_validate($edit)) {
+			astroute_trunk_save($edit, arg(3));
+			drupal_goto("astbilladm/trunks");
+		} else {
+			drupal_goto("astbilladm/trunks/dialplan/".arg(3));
+		}
+		break;
+		case t('Delete'):
+		db_query("DELETE FROM astdialplan WHERE accountcode = 'trunk".arg(3)."'");
+		drupal_goto("astbilladm/trunks");
+		break;
+		case t('Back'):
+		drupal_goto("astbilladm/trunks");
+		break;
+		default:
+	  	$output = astroute_trunk_form();
+	}
+
+	$title = t('Change');
+	astcore_printtheme($output, $title);
+}
+
+function astroute_trunk_form() {
+	global $user;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+
+
+	if (arg(2) == 'create'){ // START CHECK IF TRUNKCREATE
+
+		$sqlout->vat = '0.00';
+		$sqlout->vat2 = '0.00';
+		$sqlout->trunkcost = '0';
+		$sqlout->maxusage = '9999';
+		$sqlout->usstyleprefix = FALSE;
+		$sqlout->removeprefix = '0';
+
+		$group .= form_radios(t('Choose Provider Trunk type'), 'tech', $tech, array(0 => 'SIP' , 1 => 'IAX2', 2 => 'H323', 3 => 'Zap'));
+		$fieldtxt = "Trunk Name:<BR><FONT SIZE=1>Enter the Trunk Name. Every Trunk has to be given a unique name. Example: astartelecom</FONT>";
+		if (arg(3) == 'rt'){ $fieldtxt .= "<BR><FONT SIZE=1>NOTICE: If you are creating a SIP Trunk Enter the same name as your Provider Username</FONT>";}
+	
+		if (arg(3) == 'static'){ $fieldtxt .= "<BR><FONT SIZE=1>This form is for a Static Connection to the Provider. Enter the name of the connection as defined in your static files sip.conf iax.conf or h323.conf. Don't put the brackets.<BR>Example: if [astartelecom] is defined in iax.conf you enter astartelecom as your provider name</FONT>";}
+
+		$group .= form_textfield(t($fieldtxt), 'name', $sqlout->name, 30, 128, null, null, false);
+
+		//	$group .= form_select(t("ServerID"), "serverid", $sqlout->serverid, $getserverid);
+		$group .= form_textfield(t('Provider Username'), 'username', $sqlout->username, 30, 128, null, null, false);
+		
+		if (arg(3) == 'rt'){
+			$group .= form_textfield(t('Provider Password'), 'password', $sqlout->password, 30, 128, null, null, false);
+			$group .= form_textfield(t('Provider Host'), 'host', $sqlout->host, 30, 128, null, null, false);
+		}
+		
+		$group .= form_textfield(t('Description'), 'comment', $sqlout->comment, 100, 128, null, null, false);
+
+		//$group .= '<FONT SIZE=-1>If you want to add VAT to the Vendors prices before you calculate our cost. This field will make astcdr.ourcost include VAT. This is usefull if you are not able to get your VAT back.</FONT>';
+		$group .= form_textfield(t('Vat/Sales Tax:<BR><FONT SIZE=1>If you want to add VAT/Sales Tax to the Vendors prices before you calculate our cost. This field will make astcdr.ourcost include VAT/Sales Tax. This is usefull if you are not able to get your VAT/Sales Tax back</FONT>'), 'vat', $sqlout->vat, 5, 128, null, null, false);
+
+		//$group .= '<FONT SIZE=-1>If you dont want astcdr.ourcost to include the VAT but want to store the rate for use on reports. Update the vendors VAT rate. This rate is not used during calculations of astcdr.ourcost.</FONT>';
+		$group .= form_textfield(t("Vat2/Sales Tax2:<BR><FONT SIZE=1>If you don't want astcdr.ourcost to include the VAT/Sales Tax2 but want to store the rate for use on reports. Update the vendors VAT/Sales Tax2 rate. This rate is not used during calculations of astcdr.ourcost</FONT>"), 'vat2', $sqlout->vat2, 5, 128, null, null, false);
+
+		//  $group .= 'Current Usage Count is: <B>'.$sqlout->usagecount.'</B><BR>';
+		$group .= form_textfield(t('Maximum channels:<BR><FONT SIZE=1>Controls the maximum number of channels (simultaneous calls) that can be used on this trunk, including both incoming and outgoing calls. Enter 9999 to specify no maximum</FONT>'), 'maxusage', $sqlout->maxusage, 5, 128, null, null, false);
+		$group .= form_textfield(t('Relative Cost/Metric:<BR><FONT SIZE=1>Specifies the metric, ie. cost for the destination. This gives higher priority to lower cost routes</FONT>'), 'trunkcost', $sqlout->trunkcost, 5, 128, null, null, false);
+
+		$group .= form_textfield(t('Remove Prefix:<BR><FONT SIZE=1>The outbound dialing removeprefix is used to remove digits from the dialing string to all outbound calls placed on this trunk. Most users should leave this option 0.</FONT>'), 'removeprefix', $sqlout->removeprefix, 5, 128, null, null, false);
+
+		$group .= form_checkbox(t('<STRONG>US Style Prefix 011:<BR><FONT SIZE=1>The outbound US Style dialing prefix is used to prefix a dialing string to None US outbound calls placed on this trunk. If this option is choosen 011 will prefix all numbers not starting with 1. This is used with many US providers. The AddPrefix below will be appended before the 011 prefix.</FONT></STRONG>'), 'usstyleprefix', 1, $sqlout->usstyleprefix ,null ,null ,false);
+
+		$group .= form_textfield(t('AddPrefix<BR><FONT SIZE=1>The outbound dialing prefix is used to prefix a dialing string to all outbound calls placed on this trunk. For example, if this trunk is behind another PBX or is a Centrex line, then you would put 9 here to access an outbound line. Most users should leave this option blank.</FONT>'), 'addprefix', $sqlout->addprefix, 5, 128, null, null, false);
+
+		$group .= form_textfield(t('Register String:<BR><FONT SIZE=1>Register String Many VoIP providers require your system to REGISTER with theirs. Enter the registration line here. example: username:password@sip.astartelecom.com</FONT>'), 'registerstring', $sqlout->registerstring, 90, 128, null, null, false);
+		
+		if (arg(3) == 'rt'){
+		
+			$authmethods['plaintext'] = 'plaintext';
+			$authmethods['md5'] = 'md5';
+			$authmethods['rsa'] = 'rsa';
+		
+			list($var1, $var2, $var3) = explode(",", $sqlout->auth);
+		
+			$authvalues[$var1] = $var1;
+			$authvalues[$var2] = $var2;
+			$authvalues[$var3] = $var3;
+		
+			$group .= form_checkboxes(t('Choose authentication methods'), 'auth', $authvalues, $authmethods,null ,null ,false);
+		}
+	
+		$group .= form_checkbox(t('<STRONG>Click to make default:<BR><FONT SIZE=1>If this is your first Provider Trunk you have to click to make it default. You need one default Provider Trunk</FONT></STRONG>'), 'isdefault', 1, $ifchecked ,null ,null ,false);
+
+	} // END CHECK IF TRUNKCREATE
+
+
+	if (arg(2) == 'change'){ // START CHECK IF TRUNKCHANGE
+	
+		$sql = db_query("SELECT asttrunk.addprefix, asttrunk.removeprefix, usstyleprefix, asttrunk.registerstring, asttrunk.isdefault, asttrunk.name, asttrunk.tech, asttrunk.username, asttrunk.path, asttrunk.serverid, asttrunk.comment, asttrunk.vat, asttrunk.vat2, asttrunk.usagecount, asttrunk.maxusage, asttrunk.trunkcost, astaccount.secret password, astaccount.host, asttrunk.tid, astaccount.auth FROM asttrunk LEFT JOIN astaccount ON asttrunk.accountcode = astaccount.accountcode WHERE asttrunk.tid='%s'", arg(3));
+		$sqlout = db_fetch_object($sql);
+		
+		if ($sqlout->tech == 'SIP'){$tech = 0;}
+		if ($sqlout->tech == 'IAX2'){$tech = 1;}
+		if ($sqlout->tech == 'H323'){$tech = 2;}
+		if ($sqlout->tech == 'Zap'){$tech = 3;}
+
+		$isdefault = array();
+		if ($sqlout->isdefault == 1) {
+			$ifchecked = TRUE;
+		}
+
+  		$group .= '<B><FONT SIZE=2>'.t('Trunk Type:').'&nbsp;&nbsp;'.$sqlout->tech.'</FONT></B><BR>';
+
+		$fieldtxt = t("Trunk Name:<BR><FONT SIZE=1>Enter the Trunk Name. Every Trunk has to be given a unique name. Example: astartelecom</FONT>");
+		if (arg(4) == 'S'){ $fieldtxt .= t("<BR><FONT SIZE=1>This form is for a Static Connection to the Provider. Enter the name of the connection as defined in your static files sip.conf iax.conf or h323.conf. Don't put the brackets.<BR>Example: if [astartelecom] is defined in iax.conf you enter astartelecom as your provider name</FONT>");}
+		$group .= form_textfield(t($fieldtxt), 'name', $sqlout->name, 30, 128, null, null, false);
+
+		$group .= form_textfield(t('Provider Username'), 'username', $sqlout->username, 30, 128, null, null, false);
+		
+		if (arg(4) == 'R'){
+			$group .= form_textfield(t('Provider Password'), 'password', $sqlout->password, 30, 128, null, null, false);
+			$group .= form_textfield(t('Provider Host'), 'host', $sqlout->host, 30, 128, null, null, false);
+		}
+
+		$group .= form_textfield(t('Description'), 'comment', $sqlout->comment, 100, 128, null, null, false);
+
+		$group .= form_textfield(t('Vat/Sales Tax:<BR><FONT SIZE=1>If you want to add VAT/Sales Tax to the Vendors prices before you calculate our cost. This field will make astcdr.ourcost include VAT/Sales Tax. This is usefull if you are not able to get your VAT/Sales Tax back</FONT>'), 'vat', $sqlout->vat, 5, 128, null, null, false);
+
+		$group .= form_textfield(t("Vat2/Sales Tax2:<BR><FONT SIZE=1>If you don't want astcdr.ourcost to include the VAT/Sales Tax2 but want to store the rate for use on reports. Update the vendors VAT/Sales Tax2 rate. This rate is not used during calculations of astcdr.ourcost</FONT>"), 'vat2', $sqlout->vat2, 5, 128, null, null, false);
+
+		$group .= t('Current Usage Count is: ').'<B>'.$sqlout->usagecount.'</B><BR>';
+		$group .= form_textfield(t('Maximum channels:<BR><FONT SIZE=1>Controls the maximum number of channels (simultaneous calls) that can be used on this trunk, including both incoming and outgoing calls. Enter 9999 to specify no maximum</FONT>'), 'maxusage', $sqlout->maxusage, 5, 128, null, null, false);
+		$group .= form_textfield(t('Relative Cost/Metric:<BR><FONT SIZE=1>Specifies the metric, ie. cost for the destination. This gives higher priority to lower cost routes</FONT>'), 'trunkcost', $sqlout->trunkcost, 5, 128, null, null, false);
+	
+		$group .= form_textfield(t('Remove Prefix:<BR><FONT SIZE=1>The outbound dialing removeprefix is used to remove digits from the dialing string to all outbound calls placed on this trunk. Most users should leave this option 0.</FONT>'), 'removeprefix', $sqlout->removeprefix, 5, 128, null, null, false);
+	
+		$group .= form_checkbox(t('<STRONG>US Style Prefix 011:<BR><FONT SIZE=1>The outbound US Style dialing prefix is used to prefix a dialing string to None US outbound calls placed on this trunk. If this option is choosen 011 will prefix all numbers not starting with 1. This is used with many US providers. The AddPrefix above will be appended before this.</FONT></STRONG>'), 'usstyleprefix', 1, $sqlout->usstyleprefix ,null ,null ,false);
+
+		$group .= form_textfield(t('AddPrefix<BR><FONT SIZE=1>The outbound dialing prefix is used to prefix a dialing string to all outbound calls placed on this trunk. For example, if this trunk is behind another PBX or is a Centrex line, then you would put 9 here to access an outbound line. Most users should leave this option blank.</FONT>'), 'addprefix', $sqlout->addprefix, 5, 128, null, null, false);
+
+		$group .= form_textfield(t('Register String:<BR><FONT SIZE=1>Register String Many VoIP providers require your system to REGISTER with theirs. Enter the registration line here. example: username:password@sip.astartelecom.com</FONT>'), 'registerstring', $sqlout->registerstring, 90, 128, null, null, false);
+		
+		if (arg(4) == 'R'){
+		
+			$authmethods['plaintext'] = 'plaintext';
+			$authmethods['md5'] = 'md5';
+			$authmethods['rsa'] = 'rsa';
+		
+			list($var1, $var2, $var3) = explode(",", $sqlout->auth);
+		
+			$authvalues[$var1] = $var1;
+			$authvalues[$var2] = $var2;
+			$authvalues[$var3] = $var3;
+		
+			$group .= form_checkboxes(t('Choose authentication methods'), 'auth', $authvalues, $authmethods,null ,null ,false);
+		}
+		
+		$group .= form_checkbox(t('<STRONG>Click to make default:<BR><FONT SIZE=1>Only one Provider Trunk can be used as default</FONT></STRONG>'), 'isdefault', 1, $ifchecked ,null ,null ,false);
+
+
+	} // END CHECK IF TRUNKCHANGE
+
+
+	if (arg(2) == 'dialplan'){ // START CHECK IF DIALPLAN
+
+		$edit = db_fetch_array(db_query("SELECT conditions, action, mon, tue, wed, thu, fri, sat, sun, start_time_hr, start_time_min, end_time_hr, end_time_min FROM astdialplan WHERE accountcode = 'trunk".arg(3)."'"));
+
+		if (empty($edit)){
+
+			//db_query("INSERT INTO `astdialplan` ( `accountcode` , `conditions` , `action` , `mon` , `tue` , `wed` , `thu` , `fri` , `sat` , `sun` , `start_time_hr` , `start_time_min` , `end_time_hr` , `end_time_min` ) VALUES ('trunk".arg(3)."', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0')");
+
+			$edit['wasempty'] = 1;
+
+			$edit['mon'] = 1;
+			$edit['tue'] = 1;
+			$edit['wed'] = 1;
+			$edit['thu'] = 1;
+			$edit['fri'] = 1;
+			$edit['sat'] = 1;
+			$edit['sun'] = 1;
+			$edit['conditions'] = null;
+			$edit['action'] = null;
+			$edit['start_time_hr'] = 0;
+			$edit['start_time_min'] = 0;
+			$edit['end_time_hr'] = 23;
+			$edit['end_time_min'] = 59;
+		}
+
+		$days = array();
+		if ($edit['mon'] == 1) {$days['0'] = "0";}
+		if ($edit['tue'] == 1) {$days['1'] = "1";}
+		if ($edit['wed'] == 1) {$days['2'] = "2";}
+		if ($edit['thu'] == 1) {$days['3'] = "3";}
+		if ($edit['fri'] == 1) {$days['4'] = "4";}
+		if ($edit['sat'] == 1) {$days['5'] = "5";}
+		if ($edit['sun'] == 1) {$days['6'] = "6";}
+
+		$weekdays = array(0 => t('Monday') , 1 => t('Tuesday'), 2 => t('Wednesday'), 3 => t('Thursday'), 4 => t('Friday'), 5 => t('Saturday'), 6 => t('Sunday'));
+
+
+		if ($edit['conditions'] == 'Offline') {$conditions = 0;}
+		if ($edit['conditions'] == 'NoAnswer') {$conditions = 1;}
+		if ($edit['conditions'] == 'Busy') {$conditions = 2;}
+		if ($edit['action'] == 'Voicemail') {$action = 0;}
+		if ($edit['action'] == 'Forward') {$action = 1;}
+		if ($edit['action'] == 'NotAvailable') {$action = 2;}
+
+		$group .= form_checkboxes(t('Days of the week.'), 'days', $days, $weekdays,null ,null ,false);
+
+
+		$sttimehr = array(0 => 0);
+		$x = 0;
+
+		while ($x < 24) {
+			array_push2($sttimehr, $x, $x);
+			$x++;
+		}
+
+		$sttimemin = array(0 => 0);
+		$x = 0;
+
+		while ($x < 60) {
+			array_push2($sttimemin, $x, $x);
+			$x++;
+		}
+
+		$endtimehr = array(0 => 0);
+		$x = 0;
+
+		while ($x < 24) {
+			array_push2($endtimehr, $x, $x);
+			$x++;
+		}
+
+		$endtimemin = array(0 => 0);
+		$x = 0;
+
+		while ($x < 60) {
+			array_push2($endtimemin, $x, $x);
+			$x++;
+		}
+
+		$group .= t('<B>Start Time:</B><BR>');
+		$group .= form_select(t("Hour"), "starthour", $edit['start_time_hr'], $sttimehr);
+		$group .= form_select(t("Min"), "startmin", $edit['start_time_min'], $sttimemin);
+		$group .= t('<B>End Time:</B><BR>');
+		$group .= form_select(t("Hour"), "endhour", $edit['end_time_hr'], $endtimehr);
+		$group .= form_select(t("Min"), "endmin", $edit['end_time_min'], $endtimemin);
+
+	} // END CHECK IF DIALPLAN
+
+	if (arg(2) == 'create'){
+		$group .= form_submit(t('Create'));
+	} else {
+		$group .= form_submit(t('Change'));
+	}
+
+	if (arg(2) == 'dialplan') {
+		$group .= form_submit(t('Delete'));
+	}
+	
+	$group .= form_submit(t('Back'));
+	return form($group);
+}
+
+function astroute_trunk_save($edit, $account) {
+	global $user;
+
+	if (!empty($edit['auth'])) {
+		$x = 0;
+		foreach ($edit['auth'] as $key) {
+			if ($x != 0) {$auth .= ',';}
+			$x++;
+			if($key == 'md5'){$auth .= 'md5';}
+			if($key == 'plaintext'){$auth .= 'plaintext';}
+			if($key == 'rsa'){$auth .= 'rsa';}
+		}
+	}
+
+	if (arg(2) == 'create'){ // START CHECK IF TRUNKCREATE
+
+		if ($edit['tech'] == 0){$tech = 'SIP';}
+		if ($edit['tech'] == 1){$tech = 'IAX2';}
+		if ($edit['tech'] == 2){$tech = 'H323';}
+		if ($edit['tech'] == 3){$tech = 'Zap';}
+	
+		if (arg(3) == 'rt'){ 
+			if ($tech == 'SIP'){ $edit['name'] = $edit['username']; } 
+		}
+		
+		$static = 'R';
+		
+		if (arg(3) == 'static'){ 
+			$static = 'S'; 
+		} 
+		
+		$path = "@".$edit['name'];
+		
+		if ($tech == 'IAX2'){ $path = "IAX2/".$edit['username']."@".$edit['name']."/"; } 
+		// For now. select name, username, fromuser from asv_sip;
+		// They must all be = Providers Username
+
+		db_query("INSERT INTO `asttrunk` ( registerstring , addprefix , removeprefix , `name` , `tech` , `path` , `isdefault` , `serverid` , `comment` , `vat` , `vat2` , `maxusage` , `trunkcost`, static, username, usstyleprefix ) VALUES ('".$edit['registerstring']."','".$edit['addprefix']."','".$edit['removeprefix']."','".$edit['name']."', '".$tech."', '".$path."', '".$edit['isdefault']."' , '".$edit['serverid']."', '".$edit['comment']."', '".$edit['vat']."', '".$edit['vat2']."', '".$edit['maxusage']."', '".$edit['trunkcost']."', '".$static."', '".$edit['username']."', '".$edit['usstyleprefix']."')");
+		//registerstring addprefix removeprefix
+		
+		if ($edit['isdefault'] == 1){
+			db_query("UPDATE asttrunk SET isdefault = 0");
+			db_query("UPDATE asttrunk SET isdefault = 1 WHERE name = '%s'", $edit['name']);
+			//db_query("UPDATE asttrunk SET isdefault = 1");
+		}
+
+		if (arg(3) == 'rt') { 
+			$password = $edit['password'];
+			$username = $edit['username'];
+			$fromuser = $edit['username'];
+			// Remember accountcode, username and fromuser must be the same for REALTIME to work with must providers.
+			$Host = $edit['host'];
+			$FromDomain = $Host;
+			$type = "peer";
+			$context = "astbill-incoming";
+			$comment = $edit['comment'];
+			$nat = "no";
+			$qualify = "no";
+			// $DTMF = NULL;
+			$insecure = "very";    // Maybee NULL for IAX2
+			$canreinvite = "no";
+			// $restrictcid = NULL  //"Yes";
+			$active = '1';     // Realtime = 1
+			
+			$checkacc = db_fetch_object(db_query("select count(*) count from astaccount where accountcode = '%s'", $edit['name']));
+			$Accountcode = $edit['username'];
+			
+			if ($checkacc->count != '0') {
+				$Accountcode = $edit['username'].rand(1, 65535);
+			}
+				
+			$tech = "IN-".$tech;
+			
+			if ($tech == 'IN-IAX2'){ 
+				$tech = "IN-IAX"; 
+				$FromDomain = NULL;
+				$Accountcode = $edit['name'];
+				$fromuser = NULL;
+				if ($checkacc->count != '0') {
+					db_query("delete from astaccount where accountcode = '%s'", $edit['name']);
+				}
+			} 
+
+			db_query("update asttrunk set accountcode = '%s' where name = '%s'", $Accountcode,$edit['name']);
+
+			db_query("INSERT INTO astaccount (auth, accountcode, username, fromuser, tech, nat, qualify, type, context, comment,insecure, canreinvite,active,secret,host,fromdomain, uid, dtmfmode, date_created) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', 0, NULL, now())", $auth, $Accountcode,$username,$fromuser, $tech, $nat, $qualify,$type,$context,$comment,$insecure,$canreinvite,$active,$password,$Host,$FromDomain);
+
+		}
+		
+		
+		drupal_set_message(t('A new Trunk has been created.'));
+	} // END CHECK IF TRUNKCREATE
+	
+	
+	if (arg(2) == 'change'){ // START CHECK IF TRUNKCHANGE
+		
+		// We Don't allow tech change
+		if ($edit['tech'] == 0){$tech = 'SIP';}
+		if ($edit['tech'] == 1){$tech = 'IAX2';}
+		if ($edit['tech'] == 2){$tech = 'H323';}
+		if ($edit['tech'] == 3){$tech = 'Zap';}
+		if ($edit['isdefault'] == 1){
+			db_query("UPDATE asttrunk SET isdefault = 0");
+			db_query("UPDATE asttrunk SET isdefault = 1 WHERE tid = '%s'", $account);
+		}
+
+		$checktrunk = db_fetch_object(db_query("select accountcode, tech from asttrunk where tid = '%d'", arg(3)));
+		
+		if (arg(4) == 'R'){ 
+			if ($checktrunk->tech == 'IAX2'){ $path = "IAX2/".$edit['username']."@".$edit['name']."/"; } 
+			if ($checktrunk->tech == 'SIP'){ $edit['name'] = $checktrunk->accountcode; } 
+			$path = "@".$edit['name'];
+			$static = 'R';
+		}
+		
+		if (arg(4) == 'S'){ 
+			$path = "@".$edit['name'];
+			$static = 'S';
+		}
+	
+		//    if (arg(3) == 'static'){ $static = 'S'; } 
+
+		db_query("UPDATE asttrunk SET addprefix = '%s', removeprefix = '%s', registerstring = '%s', name = '%s', path = '%s', serverid = '%s', comment = '%s', vat = '%s', vat2 = '%s', maxusage = '%s', trunkcost = '%s', static = '%s', username = '%s', usstyleprefix = '%s' WHERE tid = '%s'",$edit['addprefix'], $edit['removeprefix'], $edit['registerstring'], $edit['name'] , $path ,$edit['serverid'] ,$edit['comment'] ,$edit['vat'] , $edit['vat2'] ,$edit['maxusage'] ,$edit['trunkcost'], $static,$edit['username'], $edit['usstyleprefix'], $account);
+
+		if (arg(4) == 'R') { 
+			$password = $edit['password'];
+			$username = $edit['username'];
+			$fromuser = $edit['username'];
+			// Remember accountcode, username and fromuser must be the same for REALTIME to work with must providers.
+			$Host = $edit['host'];
+			$FromDomain = $Host;
+			$comment = $edit['comment'];
+			$active = '1';     // Realtime = 1
+			if ($checktrunk->tech == 'IAX2'){ 
+				$FromDomain = NULL;
+				$fromuser = NULL;
+			} 
+
+			db_query("UPDATE astaccount SET username = '%s', fromuser = '%s', comment = '%s', active = '%s', secret = '%s',host = '%s',fromdomain = '%s', auth = '%s' WHERE accountcode = '%s'", $username, $fromuser, $comment, $active, $password, $Host, $FromDomain, $auth, $checktrunk->accountcode);
+		}
+
+		drupal_set_message(t('The Outgoing Trunk settings have been updated.'));
+	} // END CHECK IF TRUNKCHANGE
+
+
+	if (arg(2) == 'dialplan'){ // START CHECK IF DIALPLAN
+		$mon = 0;
+		$tue = 0;
+		$wed = 0;
+		$thu = 0;
+		$fri = 0;
+		$sat = 0;
+		$sun = 0;
+
+		if ($edit['days'][0] == 0) {$mon = 1;}
+			
+		if ($edit['days'][0] == 1) {$tue = 1;}
+		if ($edit['days'][1] == 1) {$tue = 1;}
+		
+		if ($edit['days'][0] == 2) {$wed = 1;}
+		if ($edit['days'][1] == 2) {$wed = 1;}
+		if ($edit['days'][2] == 2) {$wed = 1;}
+			
+		if ($edit['days'][0] == 3) {$thu = 1;}
+		if ($edit['days'][1] == 3) {$thu = 1;}
+		if ($edit['days'][2] == 3) {$thu = 1;}
+		if ($edit['days'][3] == 3) {$thu = 1;}
+
+		if ($edit['days'][0] == 4) {$fri = 1;}
+		if ($edit['days'][1] == 4) {$fri = 1;}
+		if ($edit['days'][2] == 4) {$fri = 1;}
+		if ($edit['days'][3] == 4) {$fri = 1;}
+		if ($edit['days'][4] == 4) {$fri = 1;}
+
+		if ($edit['days'][0] == 5) {$sat = 1;}
+		if ($edit['days'][1] == 5) {$sat = 1;}
+		if ($edit['days'][2] == 5) {$sat = 1;}
+		if ($edit['days'][3] == 5) {$sat = 1;}
+		if ($edit['days'][4] == 5) {$sat = 1;}
+		if ($edit['days'][5] == 5) {$sat = 1;}
+
+		if ($edit['days'][0] == 6) {$sun = 1;}
+		if ($edit['days'][1] == 6) {$sun = 1;}
+		if ($edit['days'][2] == 6) {$sun = 1;}
+		if ($edit['days'][3] == 6) {$sun = 1;}
+		if ($edit['days'][4] == 6) {$sun = 1;}
+		if ($edit['days'][5] == 6) {$sun = 1;}
+		if ($edit['days'][6] == 6) {$sun = 1;}
+
+		if ($edit['dropdown'] == 0) {$conditions = 'Offline';}
+		if ($edit['dropdown'] == 1) {$conditions = 'NoAnswer';}
+		if ($edit['dropdown'] == 2) {$conditions = 'Busy';}
+		if ($edit['action'] == 0) {$action = 'Voicemail';}
+		if ($edit['action'] == 1) {$action = 'Forward';}
+		if ($edit['action'] == 2) {$action = 'NotAvailable';}
+		
+		db_query("INSERT INTO `astdialplan` ( `accountcode` , `conditions` , `action` , `mon` , `tue` , `wed` , `thu` , `fri` , `sat` , `sun` , `start_time_hr` , `start_time_min` , `end_time_hr` , `end_time_min` ) VALUES ('trunk".$account."', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0')");
+
+		db_query("UPDATE astdialplan SET conditions = '%s', action = '%s', mon = '%s', tue = '%s', wed = '%s', thu = '%s', fri = '%s', sat = '%s', sun = '%s', start_time_hr = '%s', start_time_min = '%s', end_time_hr = '%s', end_time_min = '%s' WHERE accountcode = 'trunk%s'", $conditions, $action, $mon, $tue, $wed, $thu, $fri, $sat, $sun, $edit['starthour'], $edit['startmin'], $edit['endhour'], $edit['endmin'], $account);
+
+
+		drupal_set_message(t('The Dialplan settings have been updated.'));
+	} // END CHECK IF DIALPLAN
+}
+
+// TRUNK FORM STUFF
+function astroute_trunk_validate($edit) {
+	$myerror = 1;
+	$errors = array();
+	
+	if (arg(3) == 'dialplan') {
+
+		if($edit['starthour'] > $edit['endhour']){
+			$errors['time'] = t('Start Hour is set after End Hour.');
+			$myerror = 0;		
+		}
+		
+	}
+
+	if (arg(2) != 'dialplan') {
+		
+		if(empty($edit['name'])){
+			$errors['uniquename'] = t('Please enter a unique trunk name');
+			$myerror = 0;
+		}
+
+		if (ereg('[^A-Za-z0-9]', $edit['name'])) {
+			$errors['alphanum'] = t('Trunk Name can only contain AlphaNumeric characters');
+			$myerror = 0;
+		}
+
+	}
+	
+
+	if (arg(2) == 'create') {
+		$sql = db_query("SELECT name FROM asttrunk");
+
+		while ($getname = db_fetch_object($sql)){
+			if ($edit['name'] == $getname->name){
+				$errors['uniquename'] = t('Please enter a unique trunk name');
+				$myerror = 0;
+			}
+		}
+		
+		if (arg(3) == 'rt'){
+			if (empty($edit['username'])) {
+				$errors['uniqueusername'] = t('Please enter a unique Provider Username');
+				$myerror = 0;
+			}
+		}
+		
+	}
+
+	if (arg(2) == 'change') {
+		$sql = db_query("SELECT name FROM asttrunk");
+		$sql2 = db_fetch_object(db_query("SELECT name FROM asttrunk WHERE tid = '%s'", arg(3)));
+
+		while ($getname = db_fetch_object($sql)){
+			if ($edit['name'] != $sql2->name) {
+				if ($edit['name'] == $getname->name){
+					$errors['uniquename'] = t('Please enter a unique trunk name');
+					$myerror = 0;
+				}
+			}
+		}
+		
+	}
+
+
+	foreach ($errors as $name => $message) {
+		form_set_error($name, $message);
+	}
+	
+	return $myerror;
+}
+
+function page_astroute_trunkremove() {
+  	$pass = '1';
+	$errors = array();
+  	$checktrunk = db_fetch_object(db_query("select isdefault from asttrunk where tid = '%d'", arg(3)));
+	
+	if ($checktrunk->isdefault == '1') {
+		$errors["checkcdr"] = t("Unable to Delete Default Provider Trunk.");
+		$pass = '0';
+	}
+	
+	if ($pass == '1') {
+		$title = t('Remove Trunk:').' '.arg(4);
+		$confirmmsg = t('Are you sure you want to delete this trunk?');
+		$deletedmsg = t('Trunk '.arg(4).' was deleted');
+		$donegoto = 'astbilladm/trunks';
+		$dbqueries = array();
+		$dbqueries[] = "DELETE FROM astaccount WHERE accountcode = (select accountcode from asttrunk where tid = ".arg(3).")";
+		$dbqueries[] = "DELETE FROM asttrunk WHERE tid = ".arg(3);
+		$output = astcore_confirm_delete($title, $confirmmsg, $deletedmsg, $donegoto, $dbqueries);
+		
+	} else {
+		foreach ($errors as $name => $message) {
+			form_set_error($name, $message);
+		}
+		drupal_goto("astbilladm/trunks");
+	}
+
+}
+

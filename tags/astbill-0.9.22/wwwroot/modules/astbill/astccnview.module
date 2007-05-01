@@ -1,0 +1,633 @@
+<?php
+
+/*
+* AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+*
+* www.astbill.com
+*
+* Asterisk -- A telephony toolkit for Linux.
+* Drupal   -- An Open source content management platform.
+*
+*
+* Copyright (C) 2006, CBK TELE AS, OSLO, NORWAY.
+*
+* Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+* Are Casilla        <areast  [Guess What?] astartelecom.com>
+* Uvarajan	      <areast  [Guess What?] astartelecom.com>
+* Komathi	      <areast  [Guess What?] astartelecom.com>
+*
+*
+* This program is free software, distributed under the terms of
+* the GNU General Public License
+*
+* 2005.01.13 Version 0.9.16
+*
+*/
+
+
+function astccnview_help($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("Order Status");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astccnview_menu($may_cache) {
+	$items = array();
+	$edit = $_POST["edit"];
+	$access  = user_access('astccnview module');
+   	$access2 = user_access('astccnview pdf');
+
+	$items[] = array('path' => 'astbilladm/astccnpricelist/ccnview', 'title' => t('View CCN'),
+				'callback' => 'astccnview_create',
+				'callback arguments' => 'ccnview',
+				'access' => $access,
+				);
+
+	$items[] = array('path' => 'astbilladm/astccnpricelist/ccnview/allccn', 'title' => t('View CCN'),
+				'callback' => 'astccnview_create',
+				'callback arguments' => 'ccnview',
+				'access' => $access,
+				'type' => MENU_DEFAULT_LOCAL_TASK,
+				'weight' => 2
+				);
+
+	$items[] = array('path' => 'astbilladm/astccnpricelist/ccnview/allplans', 'title' => t('Add CCN'),
+				'callback' => 'astccnview_add',
+				'callback arguments' => 'allplans',
+				'access' => $access,
+				'type' => MENU_LOCAL_TASK,
+				'weight' => 4
+				);
+
+	$items[] = array('path' => 'astbilladm/astccnpricelist/ccnview/prefix', 'title' => t('Add Prefix'),
+				'callback' => 'astccnview_prefix',
+				'callback arguments' => 'allplans',
+				'access' => $access,
+				'type' => MENU_LOCAL_TASK,
+				'weight' => 6
+				);
+				
+	/*$items[] = array('path' => 'astbilladm/astccnpricelist/ccnview/edit/prefix', 'title' => t('Edit Prefix'),
+				'callback' => 'astccnview_prefix_edit',
+				'callback arguments' => 'editprefix',
+				'access' => $access,
+				'type' => MENU_LOCAL_TASK,
+				'weight' => 8
+				);*/
+
+	return $items;
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content
+* or administrate the module:
+*/
+
+
+function astccnview_perm() {
+	return array('astccnview module','astviewccn pdf');
+}
+
+function astccnview_main() {
+
+$title = t('View CCN and Prefix');
+astcore_printtheme($output, $title);
+
+}
+
+
+function astccnview_create()
+{
+	global $user;
+	global $db_prefix;
+	$op = $_POST["op"];
+	$edit = $_POST["edit"];
+	$editprefix = arg(3);
+	$ccnval = arg(4);
+	
+	if ($editprefix == "editprefix"){
+		astccnview_Order_edit_prefix();
+	}
+	else if ($editprefix == "editccn"){
+		astccnview_Order_edit_ccn();
+	}
+	else
+	{
+		$posturl ="astbilladm/astccnpricelist/ccnview";
+		$output .= astcore_search($edit, $posturl = url($posturl.$param), $value, 'NO');
+		$output .= astccnview_Order_save();
+		$title = t('View CCN and Prefix');
+		$overmenu = array(url('astpbx/ccorders/create/').'">');
+		astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu);
+	}
+
+}
+
+
+function astccnview_Order_edit_prefix()
+{
+	global $user;
+	global $db_prefix;
+	$output .= astccnview_prefix_edit_item();
+	$title = t('Edit Prefix');
+	astcore_printtheme($output, $title);
+}
+
+
+function astccnview_Order_edit_ccn()
+{
+	global $user;
+	global $db_prefix;
+	$output .= astccnview_prefix_edit_ccn();
+	$title = t('Edit CCN');
+	astcore_printtheme($output, $title);
+}
+
+function astccnview_Order_save() {
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$sea = $edit['search'];
+	$op = $_POST["op"];
+	$order=$_GET["order"];
+	$search = $edit['destination'];
+	$code	= $edit['countrycode'];
+
+	if ($op=="Save"){
+		astccnview_Order_list_update($edit);
+	}
+	if (arg(3)=="edit"){
+		drupal_set_title("Edit CCN");
+		$ccn = arg(4);
+		$prefix = arg(5);
+		$searchval = arg(6);
+		$sql  = "select distinct lis.ccn, pre.prefix, concat( country, IF (lis.mobile = '1', '-Mobile', '') ) ccn_country, pre.description prefix_desc, traffictype FROM astccniso iso, astccnlist lis LEFT JOIN astccnprefix pre USING ( ccn ) where lis.ccn =$ccn and pre.prefix = $prefix and country like '$searchval%'";
+		$ret = db_query($sql);
+		while ($item = db_fetch_object($ret)) {
+		$rows[] = array(
+		astcore_form_start(),
+		astcore_form_textfield(t('ccn'), 'ccn', $item->ccn, 30, 100),
+		astcore_form_textfield(t('prefix'), 'prefix', $item->prefix, 30, 100),
+		astcore_form_textfield(t('ccn_country'), 'ccn_country', $item->ccn_country, 30, 100),
+		astcore_form_textfield(t('prefix_desc'), 'prefix_desc', $item->prefix_desc, 30, 100),
+		astcore_form_textfield(t('traffictype'), 'traffictype', $item->traffictype, 30, 100),
+		astcore_form_end(),
+		);
+
+		}
+
+		$output = theme('table', $header, $rows);
+		$output .= form_submit(t('Save'));
+		//return form($output,'post');
+
+	}
+	else
+	{
+		if ($op==t("View")){
+			$output = astccnview_Order_list($search);
+
+		}
+		else
+		{
+			$output = astccnview_Order_list($sea);
+		}
+
+		$SQL = "select distinct iso.isoid, iso.country destination from astccniso iso,astccnlist lis WHERE iso.isoid = lis.isoid and iso.language = 'en' order by iso.country";
+		$ret = db_query($SQL);
+		while ($manufacture = db_fetch_object($ret)) {
+		$mtypes_display[$manufacture->isoid] = $manufacture->destination; }
+		$chekdisplay = array(-1 => 'Please select');
+		$mtypes_display = $chekdisplay . $mtypes_display;
+		$group .= '<table border=0 width=500><tr><td><b>Select a Country</td><td>'.form_select(t(''), 'destination',$edit['destination'], $mtypes_display);
+		$group .= '<tr><td></td><td>'.form_submit(t('View'));
+		$group .= '</td></tr>';
+		//$group .= form_textfield(t('Country Code'), 'countrycode', $edit['countrycode'], 10, 100);
+		//$group .= form_submit(t('Search'));
+	}
+	$group .= $output;
+	return form($group);
+
+}
+
+
+function astccnview_Order_list($search)
+{
+	 global $user;
+	 global $db_prefix;
+	 $edit = $_POST["edit"];
+	 $op = $_POST["op"];
+	 $maxline = 40;
+	 $order = "Edit Ordre";
+
+
+   	$header = array(
+    	array('data' => t('CCN')),//, 'field' => 'ccn'),
+    	array('data' => t('Prefix')),//, 'field' => 'prefix'),
+    	//array('data' => t('CountryCode')),//, 'field' => 'prefix'),
+    	array('data' => t('Mobile')),//, 'field' => 'prefix'),
+  	array('data' => t('Ccn_country')),//, 'field' => 'ccn_country'),
+  	array('data' => t('Prefix_desc')),//, 'field' => 'prefix_desc'),
+  	array('data' => t('Traffictype')),//, 'field' => 'traffictype'),
+  	//array('data' => t('Operations'), 'colspan' => 3),
+
+	);
+
+	$ccn = arg(3);
+	$ccnval = arg(4);	
+	
+
+
+	if ($op=="View" && $ccn==""){
+		$SQL = "select lis.ccn,pre.prefix, lis.mobile, concat(country,IF(lis.mobile = '1', '-Mobile','')) ccn_country,pre.description prefix_desc,traffictype from astccniso iso, astccnlist lis LEFT JOIN astccnprefix pre USING (ccn) WHERE lis.isoid = iso.isoid and lis.isoid = '".$search."' and iso.language = 'en'  order by ccn,prefix";
+	 	$result = db_query($SQL);
+	 	$count = mysql_num_rows($result);
+	}
+
+	else if($search !="" && $ccn=="")
+	{
+		$search = trim($search);
+		/*		$SQL = "select lis.ccn, pre.prefix, concat(country,IF(lis.mobile = '1', 
+		'-Mobile','')) ccn_country, pre.description prefix_desc,traffictype from 
+		astccniso iso, astccnlist lis LEFT JOIN astccnprefix pre USING (ccn) WHERE 
+		lis.isoid = iso.isoid and lis.countrycode = $search and iso.language = 'en'  
+		order by ccn, prefix";
+		*/
+
+		
+		
+			$SQL = "select distinct lis.ccn, pre.prefix,lis.mobile, concat(country,IF(lis.mobile = '1', '-Mobile','')) ccn_country, pre.description  prefix_desc,traffictype from astccniso iso, astccnlist lis LEFT JOIN astccnprefix pre USING (ccn) WHERE lis.isoid = iso.isoid  and CONCAT_WS(',',lis.ccn, LOWER(pre.prefix), LOWER(country), LOWER(pre.description),LOWER(traffictype)) like LOWER('%".$search."%') order by ccn,prefix";
+			$result = db_query($SQL);
+			$count = mysql_num_rows($result);
+			}
+			while ($item = db_fetch_object($result)){
+			if ($item->mobile=='0')
+			{ $mobile = "";}
+			else
+			{$mobile= "m";}
+
+			$rows[] = array(
+			//$item->ccn."&nbsp;",
+			l($item->ccn,'astbilladm/astccnpricelist/ccnview/editccn/'.$item->ccn)."&nbsp;",
+			l($item->prefix,'astbilladm/astccnpricelist/ccnview/editprefix/'.$item->prefix)."&nbsp;",
+			//$item->countrycode."&nbsp;",
+			$mobile."&nbsp;",
+			$item->ccn_country."&nbsp;",
+			$item->prefix_desc ."&nbsp;",
+			$item->traffictype."&nbsp;",
+			/*'<A HREF="'.url('astbilladm/astccnpricelist/ccnview/edit/'.$item->ccn ..'/'.$item->prefix.'/'.$item->ccn_country).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',*/
+			);
+			}
+				$output = astcore_list($header, $rows, $noresults = t(''), $maxline);
+				return form($output);
+
+
+}
+
+
+function astccnview_add()
+{
+
+	global $user;
+	global $db_prefix;
+	$output .= astccnview_add_ccn();
+	$title = t('Add Private Subscribers');
+	astcore_printtheme($output, $title);
+	return $output;	
+
+}
+
+function astccnview_add_ccn()
+{
+	 global $user;
+	 global $db_prefix;
+	 $edit = $_POST["edit"];
+	 $op = $_POST["op"];
+	 $countrycode = $edit['countrycode'];
+
+	 if ($op == "Save"){
+	 	astccnview_add_ccn_list($edit);
+	 }
+
+	$sql = "SELECT isoid,country from astccniso where language = 'en' order by country";
+	$res = db_query($sql);
+	while ($item = db_fetch_object($res)) {
+	$mtypes[$item->isoid] = $item->country;
+	}
+	$chekdisplay = array(-1 => 'Please select');
+	$mtypes = $chekdisplay + $mtypes;
+
+
+	$SQL = "select distinct mobile from astccnlist";
+	$ret = db_query($SQL);
+	while ($manufacture = db_fetch_object($ret)) {
+	$mtypes_display[$manufacture->mobile] = $manufacture->mobile; }
+
+
+	$psql = "SELECT prefix from astccnprefix";
+	$result = db_query($psql);
+	while ($items = db_fetch_object($result)) {
+	$mtypes_prefix[$items->prefix] = $items->prefix;
+	}
+	if($countrycode==""){
+		$countrycode = "";
+	}
+	else
+	{
+		$countrycode = $countrycode;
+	}
+	$group .= astcore_form_start();
+	//$group .= '<table border=0><th width=80 height=10><br>CCN:</th><td>'.form_textfield(t(''), 'ccn', $edit['ccn'], 30, 100);
+	//$group .= '<tr>'.astcore_form_select(t('Prefix'), 'prefix',$edit['prefix'], $mtypes_prefix);
+	//$group .= '<table border=0><th><br>Country Code: </th><td><input type="textbox" name="edit[countrycode]" id="edit[countrycode]" value='.$countrycode.'> '.form_submit(t('Search')).'</td></tr>';
+	/*$group .= '<table border=1><th><br>Country Code:</th><td>'.form_textfield(t(''), 'countrycode', $edit['countrycode'], 10, 100).''.form_submit(t('Search')).'</td></tr>';   */
+	//$group .= astcore_form_textfield(t('CCN'), 'ccn', $edit['ccn'], 30, 100);
+  	//$group .= astcore_form_textfield(t('Isoid'), 'isoid', $edit['isoid'], 30, 100);
+
+  	$group .= astcore_form_textfield(t('CCN'), 'ccn', $edit['ccn'], 30, 100);
+	//$group .= astcore_form_textfield(t('Countrycode'), 'countrycode', $edit['countrycode'], 30, 100);
+	$group .= astcore_form_select(t('Country'), 'isoid',$edit['isoid'], $mtypes);
+	$group .= astcore_form_select(t('Mobile'), 'mobile',$edit['mobile'], $mtypes_display);
+	//$group .= astcore_form_textfield(t('Mobile'), 'mobile', $edit['mobile'], 30, 100);
+	$group .= astcore_form_textfield(t('Productcode'), 'productcode', '950', 30, 100);
+	$group .= astcore_form_textfield(t('Traffictype'), 'traffictype', $edit['traffictype'], 30, 100);
+	$group .= astcore_form_end();
+  	$group .= form_submit(t('Save'));
+	return form($group);
+
+}
+
+function astccnview_add_ccn_list($edit)
+{
+	if ($edit['ccn']==""){
+		form_set_error($name, 'Enter a CCN Number!');
+	}
+	else
+	{
+		db_query("Insert into astccnlist  (ccn, isoid, mobile,productcode, traffictype) VALUES ('%s','%s', '%s', '%s', '%s')", $edit['ccn'],$edit['isoid'],$edit['mobile'],$edit['productcode'],$edit['traffictype']);
+		drupal_set_message(t('Values are Inserted!'));
+	}
+
+}
+
+function astccnview_prefix()
+{
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	$output .= astccnview_prefix_list();
+	$title = t('Add Prefix');
+	astcore_printtheme($output, $title);
+	
+}
+
+function astccnview_prefix_list()
+{
+
+		global $user;
+		global $db_prefix;
+		$edit = $_POST["edit"];
+		$op = $_POST["op"];
+		if ($op == "Save"){
+			astccnview_prefix_list_save($edit);
+		}
+
+		drupal_set_title("View Prefix");
+
+		$psql = "select lis.ccn, concat_ws('-',lis.ccn,iso.country)country from astccnlist lis, astccniso iso where lis.isoid = iso.isoid order by lis.ccn";
+		$result = db_query($psql);
+		while ($items = db_fetch_object($result)) {
+		$mtypes_prefix[$items->ccn] = $items->country;
+		}
+		$chekdisplay = array(-1 => 'Please select');
+		$mtypes_prefix = $chekdisplay + $mtypes_prefix;
+
+		$group .= astcore_form_start();
+		$group .= astcore_form_textfield(t('Prefix'), 'prefix', $item->prefix, 37, 100);
+		$group .= astcore_form_select(t('CCN'), 'ccn',$edit['ccn'], $mtypes_prefix);
+		$group .= astcore_form_textfield(t('Description'), 'description', $item->description, 37, 100);
+		$group .= astcore_form_end();
+		$group .= form_submit(t('Save'));
+		return form($group);
+}
+
+function astccnview_prefix_list_save($edit)
+{
+	db_query("Insert into astccnprefix  (prefix, ccn, description) VALUES ('%s','%s', '%s')", $edit['prefix'], $edit['ccn'],$edit['description']);
+	drupal_set_message(t('Values are Inserted!'));
+}
+
+
+/*
+function astccnview_prefix_edit()
+{
+	global $user;
+	global $db_prefix;
+	$op = $_POST["op"];
+	$edit = $_POST["edit"];
+	$search = Trim($edit['search']);
+	$pre = arg(5);
+	$posturl ="astbilladm/astccnpricelist/ccnview/edit/prefix";
+	if ($pre==""){
+		$output .= astcore_search($edit, $posturl = url($posturl.$param), $value, 'NO');
+	}
+
+	
+	 $output .= astccnview_prefix_edit_item();
+ 	 $title = t('Edit CCN');
+	 $overmenu = array();
+	 astcore_printtheme($output, $title, $undermenu = 'FALSE', $undermenutitle = 'FALSE', $overmenu);
+	 return $output;
+
+	
+	
+}
+	
+function astccnview_prefix_edit_item($search)
+{
+	global $user;
+	global $db_prefix;
+	$value = Trim($value);
+	$maxline = 20;
+	$op = $_POST["op"];
+	$edit = $_POST["edit"];	
+	$pre = arg(5);
+	$ccnno = arg(6);
+ 	
+ 	if ($op=="Update"){
+ 		astccnview_prefix_edit_update($edit,$pre,$ccnno);
+ 	}
+ 	
+ 	if ($pre == "" && $ccnno == ""){
+		$header = array(
+		array('data' => t('prefix'), 'field' => 'prefix'),
+		array('data' => t('ccn'), 'field' => 'ccn'),
+		array('data' => t('description'), 'field' => 'description'),
+		array('data' => t('Operations')),
+		);
+		if ($search==""){
+			$SQL = "select prefix,ccn,description from astccnprefix". tablesort_sql($header);
+		}
+		else
+		{
+			$SQL = "select prefix,ccn,description from astccnprefix where CONCAT_WS(',', prefix,ccn,LOWER(description)) like LOWER('%".$search."%')";
+		}
+		$result = pager_query($SQL, $maxline);
+		while ($res = db_fetch_object($result)) {
+
+		$rows[] = array(
+			$res->prefix."&nbsp;",
+			$res->ccn."&nbsp;",
+			$res->description."&nbsp;",
+			'<A HREF="'.url('astbilladm/astccnpricelist/ccnview/edit/prefix/'.$res->prefix.'/'.$res->ccn).'"><IMG BORDER="0" src="files/astar/edit.gif"></A>',
+			);
+		  }
+		$output = astcore_list($header, $rows, $noresults = t('No MSN Numbers'), $maxline);
+		return $output;	
+	}
+	else if(arg(3)=="prefix")
+	{
+	
+		$psql = "SELECT ccn from astccnprefix";
+		$result = db_query($psql);
+		while ($items = db_fetch_object($result)) {
+			$mtypes_prefix[$items->ccn] = $items->ccn;
+		}
+		
+		$SQL = "select prefix,ccn,description from astccnprefix where ccn=$ccnno and prefix=$pre";
+		$res = db_query($SQL);
+		while ($item = db_fetch_object($res)) {
+			$group .= astcore_form_start();
+			$group .= astcore_form_textfield(t('Prefix'), 'prefix', $item->prefix, 37, 100);
+			$group .= astcore_form_select(t('CCN'), 'ccn',$item->ccn, $mtypes_prefix);
+			$group .= astcore_form_textfield(t('Description'), 'description', $item->description, 37, 100);
+			$group .= astcore_form_end();
+		}
+		$group .= form_submit(t('Update'));
+		return form($group);
+	}
+}
+
+function astccnview_prefix_edit_update($edit,$pre,$ccnno)
+{
+	//echo $pre;
+	//echo $ccnno;	
+	$upsql = "update astccnprefix set prefix='".$edit['prefix']."', ccn='".$edit['ccn']."', description='".$edit['description']."' where prefix=$pre and ccn = $ccnno";
+	$result = db_query($upsql);
+	drupal_set_message(t('Changes has been updated!'));  
+	$posturl = "astbilladm/astccnpricelist/ccnview/edit/prefix";
+	drupal_goto($posturl);
+}*/
+
+function astccnview_prefix_edit_ccn()
+{
+	global $user;
+	global $db_prefix;
+	$value = Trim($value);
+	$maxline = 20;
+	$op = $_POST["op"];
+	$edit = $_POST["edit"];	
+	$pre = arg(4);
+	
+	if ($op=="Update"){
+		astccnview_ccn_edit_update($edit,$pre);
+	}
+	
+	$SQL = "select distinct mobile from astccnlist";
+	$ret = db_query($SQL);
+	while ($manufacture = db_fetch_object($ret)) {
+	$mtypes_display[$manufacture->mobile] = $manufacture->mobile; }
+
+	$sql = "SELECT isoid,country from astccniso where language = 'en' order by country";
+	$res = db_query($sql);
+	while ($item = db_fetch_object($res)) {
+	$mtypes[$item->isoid] = $item->country;
+	}
+	$chekdisplay = array(-1 => 'Please select');
+	$mtypes = $chekdisplay + $mtypes;
+
+	 $Sql = "select ccn, isoid, mobile, productcode, traffictype from astccnlist where ccn = $pre ";
+	 $res = db_query($Sql);
+	 
+	 while ($item = db_fetch_object($res)) {
+		$group .= astcore_form_start();
+		$group .= '<th>CCN:</th><td>'.$item->ccn.'</td></tr><tr>';
+		$group .= astcore_form_select(t('Country'), 'isoid',$item->isoid, $mtypes);
+		$group .= astcore_form_select(t('Mobile'), 'mobile',$item->mobile, $mtypes_display);
+		$group .= astcore_form_textfield(t('Productcode'), 'productcode', '950', 30, 100);
+		$group .= astcore_form_textfield(t('Traffictype'), 'traffictype', $item->traffictype, 30, 100);
+		$group .= astcore_form_end();
+	}
+	$group .= form_submit(t('Update'));
+	return form($group);
+}
+
+
+function astccnview_prefix_edit_item()
+{
+	global $user;
+	global $db_prefix;
+	$value = Trim($value);
+	$maxline = 20;
+	$op = $_POST["op"];
+	$edit = $_POST["edit"];	
+	$pre = arg(4);
+
+	if ($op=="Update"){
+		astccnview_prefix_edit_update($edit,$pre);
+	}
+
+	$sql = "SELECT isoid,country from astccniso where language = 'en' order by country";
+	$res = db_query($sql);
+	while ($item = db_fetch_object($res)) {
+		$mtypes[$item->isoid] = $item->country;
+	}
+	//$chekdisplay = array(-1 => 'Please select');
+	//$mtypes = $chekdisplay + $mtypes;
+
+	$psql = "select lis.ccn, concat_ws('-',lis.ccn,iso.country)country from astccnlist lis, astccniso iso where lis.isoid = iso.isoid order by lis.ccn";
+	$result = db_query($psql);
+	while ($items = db_fetch_object($result)) {
+	$mtypes_prefix[$items->ccn] = $items->country;
+	}
+
+	
+	$SQL = "select prefix,ccn,description from astccnprefix where prefix=$pre";
+	$res = db_query($SQL);
+	$count = mysql_num_rows($res);
+	while ($item = db_fetch_object($res)) {
+		$group .= astcore_form_start();
+		$group .= '<th>Prefix:</th><td>'.$item->prefix.'</td></tr><tr>';
+		$group .= astcore_form_select(t('CCN'), 'ccn',$item->ccn, $mtypes_prefix);
+		$group .= astcore_form_textfield(t('Description'), 'description', $item->description, 37, 100);
+		$group .= form_hidden('count][', $count);
+		$group .= form_hidden('prefix][', $item->prefix);
+		$group .= astcore_form_end();
+	}
+	$group .= form_submit(t('Update'));
+	return form($group);
+}
+
+function astccnview_prefix_edit_update($edit,$pre)
+{
+	 $updatequery = "update astccnprefix set ccn = '".$edit['ccn']."', description = '".$edit['description']."' where prefix = $pre";
+	 $result = db_query($updatequery);
+ 	 drupal_set_message(t('Changes has been updated!'));
+	 //$posturl = "astbilladm/astccnpricelist/ccnview";
+	 //drupal_goto($posturl);
+}
+
+function astccnview_ccn_edit_update($edit,$pre)
+{
+	 $updatequery = "update astccnlist set isoid = '".$edit['isoid']."', mobile = '".$edit['mobile']."',productcode = '".$edit['productcode']."', traffictype = '".$edit['traffictype']."' where ccn = $pre";
+	 $result = db_query($updatequery);
+ 	 drupal_set_message(t('Changes has been updated!'));
+}

@@ -1,0 +1,300 @@
+<?php
+
+/*
+ * AstBill  -- Billing, Routing and Management software for Asterisk and MySQL using Drupal
+ *
+ * www.astbill.com
+ *
+ * Asterisk -- A telephony toolkit for Linux.
+ * Drupal   -- An Open source content management platform.
+ *
+ * 
+ * Copyright (C) 2006, CBK TELE AS, OSLO, NORWAY.
+ *
+ * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
+ * Are Casilla        <areast  [Guess What?] astartelecom.com>
+ * Uvarajan	      <areast  [Guess What?] astartelecom.com>
+ * Komathi	      <areast  [Guess What?] astartelecom.com>
+ *
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License
+ *
+ * 2006.12.05 Version 0.9.20
+ * 
+ */
+
+
+function astccnaudit($section='') {
+  $output = '';
+  switch ($section) {
+    case "admin/modules#description":
+      $output = t("Audit CCN");
+      break;
+  }
+  return $output;
+} // function astentry_help
+
+
+function astccnaudit_menu($may_cache) {
+	$items = array();
+	$access = user_access('astccnaudit module');
+     
+   	$items[] = array('path' => 'astbilladm/auditccn', 'title' => t('CCN Audit'),
+	'callback' => 'astccnaudit_main',
+	'callback arguments' => 'audit',
+	'access' => $access);
+	
+	$items[] = array('path' => 'astbilladm/auditccn/audit', 'title' => t('CCN Audit'),	
+	'callback' => 'astccnaudit_main',
+	'callback arguments' => 'audit',
+	'access' => $access,
+   	 'type' => MENU_DEFAULT_LOCAL_TASK,	
+	'weight' => 2
+	);
+
+	$items[] = array('path' => 'astbilladm/auditccn/testcall', 'title' => t('Test Call Rating'),	
+	'callback' => 'asttestcallrating_search',
+	'callback arguments' => 'allplans',
+	'access' => $access,
+	'type' => MENU_LOCAL_TASK,
+	'weight' => 4
+	);
+	
+	$items[] = array('path' => 'astbilladm/auditccn/invccn', 'title' => t('List CCN'),	
+	'callback' => 'asttestlistccn_search',
+	'callback arguments' => 'allplans',
+	'access' => $access,
+	'type' => MENU_LOCAL_TASK,
+	'weight' => 6
+	);
+	
+	return $items;
+
+}
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the astentry module
+* At this point, we'll give permission to anyone who can access site content 
+* or administrate the module:
+*/
+
+
+function astccnaudit_perm() {
+	return array('astccnaudit module');
+}
+
+
+
+function astccnaudit_main() {
+
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$param = arg(3);
+	$args = arg(2);
+	$output .= astccnaudit_list($edit, $value, $param);
+	$title = t('Audit CCN');
+	astcore_printtheme($output, $title);
+}
+function astccnaudit_list($value, $edit, $param) {
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	$ccn = $edit['ccn'];
+	$rateplan=$edit['rateplan'];
+
+	if ($op=="Show"){
+		$output = astccnaudit_show_list($edit,$ccn,$rateplan);	
+	}
+		$edit['calltime'] = date('Y-m-d H-i-s');
+		$selectValue = db_query("SELECT distinct name brand FROM astplans pla,astccnrate rat where pla.name=rat.rateplan and pla.active = 1 order by pla.name");
+		while ($selectval = db_fetch_object($selectValue)) {
+
+		$mtypes_disp[$selectval->brand] = $selectval->brand; }
+		$group .= astcore_form_start();
+		$group .= astcore_form_select(t('Select Rateplan'), 'rateplan', $rateplan, $mtypes_disp);
+		//$group .= astcore_formselect_datetime(t('Call Time'),$edit['calltime'],$edit, FALSE, TRUE);
+		$group .= astcore_form_textfield(t('CCN'), 'ccn', $ccn, 26, 30,NULL,NULL,TRUE);
+		$group .= astcore_form_end();
+		$group .= form_submit(t('Show'));
+		$group .= $output;
+		return form($group);
+
+}
+
+function astccnaudit_show_list($edit,$ccn,$rateplan)
+{
+
+		if ($ccn=="")
+		{
+			$ccn = 0;
+		}
+		$maxline = 20;
+		$header = array(
+		array('data' => t('CCN')),
+		array('data' => t('Rateplan')),
+		array('data' => t('Isoid')),
+		array('data' => t('Country')),
+		array('data' => t('Connect')),
+		array('data' => t('Rate')),
+		array('data' => t('Rateoffpeak')),
+		array('data' => t('Rateweekend')),
+		array('data' => t('Traffictype')),
+		array('data' => t('Remarks')),
+		);                                                                                 
+
+		$sql = "select ccl.ccn,ccl.isoid,iso.country,cn.connectcharge,cn.rate,cn.rateoffpeak,cn.rateweekend,cn.rateplan,ccl.traffictype,cn.remarks from astccnlist ccl Join astccniso iso on ccl.isoid=iso.isoid  Join astccnrate cn on ccl.ccn=cn.ccn where ccl.ccn=$ccn and cn.rateplan='".$rateplan."' and language='en'";
+		$result = db_query($sql, $maxline);
+		
+		  while ($item = db_fetch_object($result)) {
+				$rows[] = array(
+				array('data' => $item->ccn, 'align' => 'right'),
+				array('data' => $item->rateplan, 'align' => 'right'),
+				array('data' => $item->isoid, 'align' => 'right'),
+				array('data' => $item->country, 'align' => 'right'),
+				array('data' => $item->connectcharge, 'align' => 'right'),
+				array('data' => $item->rate, 'align' => 'right'),
+				array('data' => $item->rateoffpeak, 'align' => 'right'),
+				array('data' => $item->rateweekend, 'align' => 'right'),
+				array('data' => $item->traffictype.'&nbsp;&nbsp;', 'align' => 'right'),
+				array('data' => $item->remarks, 'align' => 'right'),
+
+				//$item->ccn.'&nbsp;&nbsp;',
+				//$item->rateplan.'&nbsp;&nbsp;',
+				//$item->isoid.'&nbsp;&nbsp;',
+				//$item->country.'&nbsp;&nbsp;',
+				//$item->connectcharge.'&nbsp;&nbsp;',
+				//$item->rate.'&nbsp;&nbsp;',
+				//$item->rateoffpeak.'&nbsp;&nbsp;',
+				//$item->rateweekend.'&nbsp;&nbsp;',
+				//$item->traffictype.'&nbsp;&nbsp;',
+				//$item->remarks.'&nbsp;&nbsp;'
+				);
+		  }
+		$output = astcore_list($header, $rows, $noresults = t('<br><b>No Results.'), $maxline);
+		return $output;
+}
+
+function asttestcallrating_search()
+{
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$output .= asttestcallrating_list();
+	$title = t('Test Call Rating');
+	astcore_printtheme($output, $title);
+}
+
+function asttestcallrating_list()
+{
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	if ($op=="Show"){
+		$output = asttestcallrating_show_list();	
+	}
+
+	$edit['calltime'] = date('Y-m-d H-i-s');
+	$selectValue = db_query("SELECT distinct name brand FROM astplans pla,astccnrate rat where pla.name=rat.rateplan and pla.active = 1 order by pla.name");
+	while ($selectval = db_fetch_object($selectValue)) {
+
+	$mtypes_disp[$selectval->brand] = $selectval->brand; }
+	$group .= astcore_form_start();
+	$group .= astcore_form_select(t('Select Rateplan'), 'rateplan', $rateplan, $mtypes_disp);
+	//$group .= astcore_formselect_datetime(t('Call Time'),$edit['calltime'],$edit, FALSE, TRUE);
+	$group .= astcore_form_textfield(t('Phone Number'), 'phone', $phone, 26, 30,NULL,NULL,TRUE);
+	$group .= '<table border=0><tr><td colspan=2><input type="radio" name="edit[callcharge]" id="edit[callcharge]" value="1" checked><b>Simulate call charges based on the call durations</option></td></tr> ';
+	$group .= '</tr><tr><td>'.form_textfield(t('Duration'), 'duration', $duration, 26, 30,NULL,NULL,TRUE);
+	$group .= '<tr><td colspan=2><input type="radio" name="edit[callcharge]" id="edit[callcharge]" value="1" checked><b>Simulate call charges based on the call durations</option></td></tr> ';
+	$group .= '</tr><tr><td>'.form_textfield(t('Available Funds'), 'funds', $funds, 26, 30,NULL,NULL,TRUE);
+	//$group .= '<table border=0><tr><td colspan=2>'.form_radios(t(''), 'type', $type, array('callcharge' => '<b>Simulate call charges based on the call durations' , 'authorization' => '<b>Simulate authorization based on the available funds'));
+	$group .= astcore_form_end();
+	$group .= form_submit(t('Show'));
+	$group .= $output;
+	return form($group);
+}
+function asttestcallrating_show_list()
+{
+	//$group .='<table border=1><tr><td>Calculation comming soon!</td><tr>';
+	$output = astcore_list($header, $rows, $noresults = t('<br><br><br><b>Calculations comming soon!'), $maxline);
+	return $output;	
+}
+
+
+function asttestlistccn_search()
+{
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$output .= asttestlistccn_list();
+	$title = t('List CCN');
+	astcore_printtheme($output, $title);
+}
+
+function asttestlistccn_list()
+{
+	global $user;
+	global $db_prefix;
+	$edit = $_POST["edit"];
+	$op = $_POST["op"];
+	if ($op==t('Show')){
+		$output = asttestlistccn_show_list();	
+	}
+	$group .= astcore_form_start();
+	$group .= astcore_form_textfield(t('Invoice Number'), 'invoiceno', $invoiceno, 26, 30,NULL,NULL,TRUE);
+	$group .= astcore_form_end();
+	$group .= form_submit(t('Show'));
+	$group .= $output;
+	return form($group);
+}
+
+function asttestlistccn_show_list()
+{
+
+//echo "Uva";
+
+
+	$edit = $_POST["edit"];
+	$invoiceid = $edit["invoiceno"];
+	$maxline = 30;
+	
+		$header = array(
+		array('data' => t('CCN')),
+		array('data' => t('Rateplan')),
+		array('data' => t('Isoid')),
+		array('data' => t('Country')),
+		array('data' => t('Connect')),
+		array('data' => t('Rate')),
+		array('data' => t('Rateoffpeak')),
+		array('data' => t('Rateweekend')),
+		array('data' => t('Traffictype')),
+		array('data' => t('Remarks')),
+		); 
+	
+	$selectqry = "select ccl.ccn,ccl.isoid,iso.country,cn.connectcharge,cn.rate,cn.rateoffpeak,cn.rateweekend,cn.rateplan,ccl.traffictype,cn.remarks from astccnlist ccl Join astccniso iso on ccl.isoid=iso.isoid  Join astccnrate cn on ccl.ccn=cn.ccn where ccl.ccn in (select distinct ccn from astcdr where invoiceid = $invoiceid) and cn.rateplan='ippcom' and language='en'";	
+	$result = db_query($selectqry, $maxline);
+	while ($item = db_fetch_object($result)) {
+	
+	$rows[] = array(
+		array('data' => $item->ccn, 'align' => 'right'),
+		array('data' => $item->rateplan, 'align' => 'right'),
+		array('data' => $item->isoid, 'align' => 'right'),
+		array('data' => $item->country, 'align' => 'right'),
+		array('data' => $item->connectcharge, 'align' => 'right'),
+		array('data' => $item->rate, 'align' => 'right'),
+		array('data' => $item->rateoffpeak, 'align' => 'right'),
+		array('data' => $item->rateweekend, 'align' => 'right'),
+		array('data' => $item->traffictype.'&nbsp;&nbsp;', 'align' => 'right'),
+		array('data' => $item->remarks, 'align' => 'right'),
+		);
+	}
+	$output = astcore_list($header, $rows, $noresults = t('<br><b>No Results.'), $maxline);
+	return $output;
+
+
+}
