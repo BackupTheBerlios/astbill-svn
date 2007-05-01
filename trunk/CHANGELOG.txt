@@ -1,6 +1,6 @@
 You can find more examples in the AstBill wiki.
 It is still work in progress, but please take a look at
-http://wiki.astbill.com
+http://astbill.com/wiki/
 
 For the latest CHANGELOG.txt
 http://astbill.com/changelog
@@ -8,13 +8,25 @@ http://astbill.com/changelog
 For Support:
 http://astbill.com/forum/3
 
+01 May 2007
+# Preparing to release AstBill 0.9.22
+# This is a minor release but incorporate a few bug fixes. It also fixes the database problems reported in the forums.
+# There are 7 new modules. They are not really fully integrated in AstBill yet as the next version of AstBill
+# is to be released during May 2007. This version is based on Drupal 5.1 and has a lot of new features.
+# Including full use of CCN = Charge Code Numbers and a fully intergraded Trouble Ticket System
+# Have a look at our Roadmap if you are wondering where AstBill is heading
+# http://astbill.com/wiki/index.php/Roadmap
+#
+# Are Casilla
+# London 1 May 2007
+
 29 April 2007
 # If you are upgrading Remember to enable the new modules. Please visit http://127.0.0.1/?q=admin/modules
 # The new modules are not really used in this version. It is just a preview of what is comming and to
 # give a framework for further development. This is fully developed in the next version of Astbill
 # that is based on Drupal 5.1 and have a lot of new functions and modules.
 # We have added 4900 lines to the database in this release. There may be close to 1000 database changes. 
-# Our database is becomming more and more compleet and capable of handing all the issues facing a modern telecom.
+# Our database is becomming more and more compleet and capable of handing all the issues facing a modern small and medium telecom.
 #
 
 13 Jan 2007

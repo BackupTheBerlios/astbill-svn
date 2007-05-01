@@ -780,4 +780,9 @@ GRANT EXECUTE ON *.* TO 'astbilluser'@'localhost';
 
 delete from pbx_sessions;
 delete from pbx_cache;
+delete from astdialplan;
+
+-- delete from pbx_accesslog;
+-- delete from astlog;
+-- delete from astlogdb;
 

@@ -2,18 +2,8 @@ To upgrade your AstBill Database
 
 Run: http://yoursite.com/astbillupdate.php
 
-If you are running SVN you can also get the latest database updates by running
-
-http://yoursite.com/astbillupdatesvn.php
-
-This will fetch the latest database update file from 
-
-http://update.astbill.com/ud/
-
-WARNING: The SVN update is experimental and is reported not to be working on some Linux clients.
-
 Problem with modules: If there are new modules you may sometimes have problem loading your application. 
-It may help to activate the module by going direct to 
+It may help to deactivate and activate the module by going direct to 
 
 http://yoursite.com/astbill/?q=admin/modules
 
