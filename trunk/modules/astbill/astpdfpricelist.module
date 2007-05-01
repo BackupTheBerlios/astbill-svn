@@ -8,7 +8,7 @@
  * Asterisk -- A telephony toolkit for Linux.
  * Drupal   -- An Open source content management platform.
  *
- * 
+ *
  * Copyright (C) 2006, CBK TELE AS, OSLO, NORWAY.
  *
  * Andreas Mikkelborg <adoroar [Guess What?] astartelecom.com>
@@ -21,7 +21,7 @@
  * the GNU General Public License
  *
  * 2005.01.13 Version 0.9.16
- * 
+ *
  */
 
 // &#229;  = å
@@ -45,8 +45,8 @@ function astpdfpricelist_menu($may_cache) {
 	$items = array();
 	$edit = $_POST["edit"];
 	$access = user_access('astpdfpricelist module');
-     
-	$items[] = array('path' => 'astglobal/astpdfpricelist', 'title' => t('Price List'),	
+
+	$items[] = array('path' => 'astglobal/astpdfpricelist', 'title' => t('Price List'),
 		'callback' => 'astpdfpricelist_create',
 		'access' => $access);
 
@@ -65,7 +65,7 @@ function astpdfpricelist_menu($may_cache) {
 /**
 * Valid permissions for this module
 * @return array An array of valid permissions for the astentry module
-* At this point, we'll give permission to anyone who can access site content 
+* At this point, we'll give permission to anyone who can access site content
 * or administrate the module:
 */
 
@@ -100,7 +100,7 @@ function astpdfpricelist_create()
 	$search = $edit['workflow'];
 	$pre =$edit['prefix']."_" ;
 	$flow = $edit['prefix'];
-	
+
 	global $user;
 	global $db_prefix;
 	$op = $_POST["op"];
@@ -116,7 +116,7 @@ function astpdfpricelist_create()
  	array('data' => t('Connect')),
  	array('data' => t('Rate')),
 	);
-	$SQL ="select distinct lis.ccn,concat( iso.country, IF (lis.mobile = '1', '-Mobile', '') ) country, ROUND(connectcharge/100,2) connect, ROUND(rate/100,4) rate from astccnrate rat, astccnlist lis, astccniso iso, astccnprefix pre where rat.ccn = lis.ccn and lis.isoid = iso.isoid and lis.ccn = pre.ccn and iso.language = 'en' and rat.rateplan = 'ippcom'order by country and iso.isoid <> 'no'";
+	$SQL ="select distinct lis.ccn,concat( iso.country, IF (lis.mobile = '1', '-Mobile', '') ) country, ROUND(connectcharge/100,2) connect, ROUND(rate/100,4) rate from astccnrate rat, astccnlist lis, astccniso iso, astccnprefix pre where rat.ccn = lis.ccn and lis.isoid = iso.isoid and lis.ccn = pre.ccn and iso.language = 'en' and rat.rateplan = 'default' order by country and iso.isoid <> 'no'";
 	$result = pager_query($SQL, $maxline);
 	$count = mysql_num_rows($result);
 	while ($item = db_fetch_object($result)){
@@ -125,10 +125,10 @@ function astpdfpricelist_create()
 		$item->country."&nbsp;",
 		$item->connect."&nbsp;",
 		$item->rate."&nbsp;",
-		);		
+		);
  }
 	$output = astcore_list($header, $rows, $noresults = t('<br><b>No Search results.'), $maxline);
-	return form($output); 
+	return form($output);
 }
 
 function astpdfpricelist_Order_select()
@@ -138,15 +138,15 @@ global $user;
 	$edit = $_POST["edit"];
 	$op = $_POST["op"];
 	$order=$_GET["order"];
-	$search = $edit['workflow'];	
+	$search = $edit['workflow'];
 	if ($op=="Print Pdf"){
 	$output = astpdfpricelist_print_pdf($op);
 	}
-	//$dbsql = db_query("select name from astplans where status = 1 order by name");  
+	//$dbsql = db_query("select name from astplans where status = 1 order by name");
 	//while ($res = db_fetch_object($dbsql)) {
 	//	$mtypes_display[$res->name] = $res->name;
 	//	}
-		
+
 		$SQL = "select name from astplans where active = 1 order by name";
 		$ret = db_query($SQL);
 		while ($manufacture = db_fetch_object($ret)) {
@@ -157,9 +157,9 @@ global $user;
 	$group .= form_submit(t('Print Pdf'));
 	$group .= $output;
 	return form($group);
-	
+
  }
-	
+
 
 
 function astpdfpricelist_print_pdf($op){
@@ -171,14 +171,14 @@ function astpdfpricelist_print_pdf($op){
  $pre =$edit['name'] ;
 
  // echo$op;
- if ($op == "Print Pdf") { 
+ if ($op == "Print Pdf") {
 	drupal_goto('astglobal/astpdfpricelist/pdf/'.$pre);
  }
  $op = $_POST["op"];
-drupal_set_title("PDF Report");	
-return form($output); 
+drupal_set_title("PDF Report");
+return form($output);
  }
- 
+
 
 
 function astpdfpricelistpdf_main() {
@@ -200,7 +200,7 @@ function astpdfpricelistpdf_gen($search,$rateplan,$download) {
 
 	$pdf = new PDFLIST( 'P', 'mm', 'A4' );
 	$pdf->Open();
-	
+
 	$pdf->AliasNbPages();  // Counts Total number of Pages
 	$pdf->AddPage();
 	//$pdf->SetFont("Arial",'b',10);
@@ -213,9 +213,9 @@ function astpdfpricelistpdf_gen($search,$rateplan,$download) {
 	//$pdf->Cell(40,5,"Countrycode",1,0,"C",1);
 	//$pdf->Cell(55,5,"Minute price",1,0,"C",1);
 	//$pdf->Ln();
-	
-	//$SQL ="select distinct lis.ccn,concat( iso.country, IF (lis.mobile = '1', '-Mobile', '') ) country, ROUND(connectcharge/100,2) connect, ROUND(rate/100,4) rate from astccnrate rat, astccnlist lis, astccniso iso, astccnprefix pre where rat.ccn = lis.ccn and lis.isoid = iso.isoid and lis.ccn = pre.ccn and iso.language = 'en' and rat.rateplan = 'ippcom' and iso.isoid <> 'no' order by country";
-	$SQL = "select distinct lis.ccn,concat( iso.country, IF (lis.mobile = '1', '-Mobile', '') ) country, ROUND(connectcharge/100,2) connect, ROUND(rate/100,4) rate, cty.countrycode from astccnrate rat, astccnlist lis, astccniso iso, astccnprefix pre, astccnccode cty where rat.ccn = lis.ccn and lis.isoid = iso.isoid and lis.ccn = pre.ccn and iso.language = 'en' and rat.rateplan = 'ippcom' and iso.isoid <> 'no' and cty.isoid=iso.isoid order by country";
+
+	//$SQL ="select distinct lis.ccn,concat( iso.country, IF (lis.mobile = '1', '-Mobile', '') ) country, ROUND(connectcharge/100,2) connect, ROUND(rate/100,4) rate from astccnrate rat, astccnlist lis, astccniso iso, astccnprefix pre where rat.ccn = lis.ccn and lis.isoid = iso.isoid and lis.ccn = pre.ccn and iso.language = 'en' and rat.rateplan = 'default' and iso.isoid <> 'no' order by country";
+	$SQL = "select distinct lis.ccn,concat( iso.country, IF (lis.mobile = '1', '-Mobile', '') ) country, ROUND(connectcharge/100,2) connect, ROUND(rate/100,4) rate, cty.countrycode from astccnrate rat, astccnlist lis, astccniso iso, astccnprefix pre, astccnccode cty where rat.ccn = lis.ccn and lis.isoid = iso.isoid and lis.ccn = pre.ccn and iso.language = 'en' and rat.rateplan = 'default' and iso.isoid <> 'no' and cty.isoid=iso.isoid order by country";
 	$ret = mysql_query($SQL);
 	while ($row = db_fetch_array($ret)) {
 		$country	= $row["country"];
@@ -229,7 +229,7 @@ function astpdfpricelistpdf_gen($search,$rateplan,$download) {
 		$pdf->Cell(55,5,$rate,1,0,"C");
 		$pdf->Ln();
 	}
-	
+
 	$pdf->SetXY(10,230);
 	$pdf->SetFont("Arial",'',8);
 
@@ -241,7 +241,7 @@ function astpdfpricelistpdf_gen($search,$rateplan,$download) {
 		$pdf->WriteHTML($value);
 		$pdf->Ln();
 	}
-	      
+
 	$rateplan = "RatePlan : ".$rateplan;
 	$pdf->SetXY(10,250);
 	$pdf->SetFont("Arial",'b',8);
